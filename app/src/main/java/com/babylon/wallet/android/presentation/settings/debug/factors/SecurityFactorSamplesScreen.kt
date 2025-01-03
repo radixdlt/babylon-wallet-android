@@ -13,15 +13,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceKindCardView
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
@@ -50,10 +54,20 @@ fun SecurityFactorSamplesScreen(
     SecurityFactorSamplesContent(
         state = state,
         onBackClick = onBackClick,
-        onSelect = viewModel::onSelect,
+        onSelectFactorSourceKind = viewModel::onSelectFactorSourceKind,
+        onSelectFactorSource = viewModel::onSelectFactorSource,
         onCheckedChange = viewModel::onCheckedChange,
-        onRemoveClick = viewModel::onRemoveClick
+        onRemoveClick = viewModel::onRemoveClick,
+        onChooseFactorSourceClick = viewModel::onChooseFactorSourceClick
     )
+
+    if (state.isBottomSheetVisible) {
+        ChooseFactorSourceBottomSheet(
+            viewModel = hiltViewModel(),
+            onContinueClick = viewModel::onSelectedFactorSourceConfirm,
+            onDismissSheet = viewModel::onSheetClosed
+        )
+    }
 }
 
 @Composable
@@ -61,9 +75,11 @@ private fun SecurityFactorSamplesContent(
     modifier: Modifier = Modifier,
     state: SecurityFactorSamplesViewModel.State,
     onBackClick: () -> Unit,
-    onSelect: (FactorSourceKindCard) -> Unit,
+    onSelectFactorSourceKind: (FactorSourceKindCard) -> Unit,
+    onSelectFactorSource: (FactorSourceCard) -> Unit,
     onCheckedChange: (FactorSourceCard, Boolean) -> Unit,
-    onRemoveClick: (FactorSourceCard) -> Unit
+    onRemoveClick: (FactorSourceCard) -> Unit,
+    onChooseFactorSourceClick: () -> Unit,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -96,7 +112,14 @@ private fun SecurityFactorSamplesContent(
             items(state.singleChoiceFactorSourceKindItems) {
                 SelectableSingleChoiceFactorSourceKindCard(
                     item = it,
-                    onSelect = onSelect
+                    onSelect = onSelectFactorSourceKind
+                )
+            }
+
+            items(state.singleChoiceFactorSourceItems) {
+                SelectableSingleChoiceFactorSourceCard(
+                    item = it,
+                    onSelect = onSelectFactorSource
                 )
             }
 
@@ -111,6 +134,13 @@ private fun SecurityFactorSamplesContent(
                 RemovableFactorSourceCard(
                     item = it,
                     onRemoveClick = onRemoveClick
+                )
+            }
+
+            item {
+                RadixPrimaryButton(
+                    text = "Choose Factor Source",
+                    onClick = onChooseFactorSourceClick
                 )
             }
         }
@@ -177,6 +207,24 @@ private fun SecurityFactorSamplesPreview() {
                         )
                     )
                 ),
+                singleChoiceFactorSourceItems = persistentListOf(
+                    Selectable(
+                        data = FactorSourceCard(
+                            id = FactorSourceId.Hash.init(
+                                kind = FactorSourceKind.DEVICE,
+                                mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                            ),
+                            name = "My Phone 666",
+                            includeDescription = false,
+                            lastUsedOn = "Today",
+                            kind = FactorSourceKind.DEVICE,
+                            messages = persistentListOf(),
+                            accounts = persistentListOf(),
+                            personas = persistentListOf(),
+                            hasHiddenEntities = false
+                        )
+                    )
+                ),
                 multiChoiceItems = persistentListOf(
                     Selectable(
                         data = FactorSourceCard(
@@ -197,9 +245,11 @@ private fun SecurityFactorSamplesPreview() {
                 )
             ),
             onBackClick = {},
-            onSelect = {},
+            onSelectFactorSourceKind = {},
+            onSelectFactorSource = {},
             onCheckedChange = { _, _ -> },
-            onRemoveClick = {}
+            onRemoveClick = {},
+            onChooseFactorSourceClick = {}
         )
     }
 }

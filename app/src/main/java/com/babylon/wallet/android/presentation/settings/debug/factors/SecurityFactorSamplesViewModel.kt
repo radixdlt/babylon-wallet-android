@@ -26,6 +26,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
 import timber.log.Timber
@@ -122,6 +123,16 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 selected = false
             )
         }.toPersistentList(),
+        singleChoiceFactorSourceItems = persistentListOf(
+            Selectable(
+                data = DeviceFactorSource.sample().toFactorSourceCard(
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(Account.sampleMainnet()),
+                    hasHiddenEntities = false
+                ),
+                selected = false
+            )
+        ),
         multiChoiceItems = getSupportedKinds().map {
             Selectable(
                 data = FactorSourceCard(
@@ -150,16 +161,29 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }.toPersistentList(),
         removableItems = persistentListOf(
             DeviceFactorSource.sample().toFactorSourceCard(includeDescription = true),
-            LedgerHardwareWalletFactorSource.sample().toFactorSourceCard(includeDescription = true, hasHiddenEntities = true)
+            LedgerHardwareWalletFactorSource.sample()
+                .toFactorSourceCard(includeDescription = true, hasHiddenEntities = true)
         )
     )
 
-    fun onSelect(item: FactorSourceKindCard) {
+    fun onSelectFactorSourceKind(item: FactorSourceKindCard) {
         _state.update { state ->
             state.copy(
                 singleChoiceFactorSourceKindItems = state.singleChoiceFactorSourceKindItems.map { selectableItem ->
                     selectableItem.copy(
                         selected = selectableItem.data.kind == item.kind
+                    )
+                }.toPersistentList()
+            )
+        }
+    }
+
+    fun onSelectFactorSource(factorSourceCard: FactorSourceCard) {
+        _state.update { state ->
+            state.copy(
+                singleChoiceFactorSourceItems = state.singleChoiceFactorSourceItems.map { selectableItem ->
+                    selectableItem.copy(
+                        selected = selectableItem.data == factorSourceCard
                     )
                 }.toPersistentList()
             )
@@ -229,12 +253,27 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         )
     }
 
+    fun onChooseFactorSourceClick() = _state.update { it.copy(isBottomSheetVisible = true) }
+
+    fun onSelectedFactorSourceConfirm(factorSourceCard: FactorSourceCard) {
+        _state.update {
+            it.copy(isBottomSheetVisible = false)
+        }
+        Timber.d("factor source selected: ${factorSourceCard.name}")
+    }
+
+    fun onSheetClosed() = _state.update { state ->
+        state.copy(isBottomSheetVisible = false)
+    }
+
     data class State(
         val displayOnlyFactorSourceKindItems: PersistentList<FactorSourceKindCard> = persistentListOf(),
         val displayOnlyFactorSourceItems: PersistentList<FactorSourceCard> = persistentListOf(),
+        val singleChoiceFactorSourceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
         val singleChoiceFactorSourceKindItems: PersistentList<Selectable<FactorSourceKindCard>> = persistentListOf(),
         val multiChoiceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
-        val removableItems: PersistentList<FactorSourceCard> = persistentListOf()
+        val removableItems: PersistentList<FactorSourceCard> = persistentListOf(),
+        val isBottomSheetVisible: Boolean = false
     ) : UiState
 
     companion object {
@@ -243,5 +282,132 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             FactorSourceKind.TRUSTED_CONTACT,
             FactorSourceKind.SECURITY_QUESTIONS
         )
+
+        @OptIn(UsesSampleValues::class)
+        private val availableDeviceFactorSources = persistentListOf(
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "Fotis Ioannidis",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                        Persona.sampleStokenet()
+                    ),
+                    hasHiddenEntities = false
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "666",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                        Persona.sampleStokenet()
+                    ),
+                    hasHiddenEntities = true
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "999",
+                    includeDescription = false,
+                    lastUsedOn = "Yesterday",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "XXX",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                    ),
+                    hasHiddenEntities = true
+                )
+            )
+        )
+
+        @OptIn(UsesSampleValues::class)
+        private val availableLedgerFactorSources = persistentListOf(
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "ALFZ PSF",
+                    includeDescription = false,
+                    lastUsedOn = "every year",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet()
+                    ),
+                    hasHiddenEntities = false
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "DPG7000",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = true
+                )
+            )
+        )
+
+        val availableFactorSources = mapOf(
+            FactorSourceKind.DEVICE to availableDeviceFactorSources,
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET to availableLedgerFactorSources
+        ).toPersistentMap()
     }
 }
