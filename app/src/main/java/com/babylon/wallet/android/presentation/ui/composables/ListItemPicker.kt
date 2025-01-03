@@ -84,7 +84,6 @@ fun <T> ListItemPicker(
     }
 
     val verticalContentPadding = itemHeightDp * visibleItemsMiddle
-
     val lazyListState = rememberSaveable(items, saver = LazyListState.Saver) {
         LazyListState(
             firstVisibleItemIndex = listStartIndex,

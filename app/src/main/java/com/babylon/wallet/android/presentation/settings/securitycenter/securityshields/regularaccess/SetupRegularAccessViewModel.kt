@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -55,7 +56,14 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onAddThresholdFactorClick() {
-        // Show factor source selector
+        _state.update { state ->
+            state.copy(
+                selectFactor = State.SelectFactor(
+                    purpose = State.SelectFactor.Purpose.Threshold,
+                    excludeFactorSources = state.thresholdFactors.map { it.id }.toPersistentList()
+                )
+            )
+        }
     }
 
     fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
@@ -63,15 +71,48 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onAddOverrideClick() {
-        // Show factor source selector
+        _state.update { state ->
+            state.copy(
+                selectFactor = State.SelectFactor(
+                    purpose = State.SelectFactor.Purpose.Override,
+                    excludeFactorSources = state.overrideFactors.map { it.id }.toPersistentList()
+                )
+            )
+        }
     }
 
     fun onAddAuthenticationFactorClick() {
-        // Show factor source selector
+        _state.update { state ->
+            state.copy(
+                selectFactor = State.SelectFactor(
+                    purpose = State.SelectFactor.Purpose.Authentication,
+                    excludeFactorSources = persistentListOf()
+                )
+            )
+        }
+    }
+
+    fun onFactorSelected(card: FactorSourceCard) {
+        val selectFactor = _state.value.selectFactor ?: return
+
+        viewModelScope.launch {
+            when (selectFactor.purpose) {
+                State.SelectFactor.Purpose.Threshold -> securityShieldBuilderClient.updatePrimaryRoleThresholdFactorSourceSelection(
+                    id = card.id,
+                    isSelected = true
+                )
+                State.SelectFactor.Purpose.Override -> securityShieldBuilderClient.addPrimaryRoleOverrideFactorSource(card.id)
+                State.SelectFactor.Purpose.Authentication -> securityShieldBuilderClient.setAuthenticationFactor(card.id)
+            }
+        }
+    }
+
+    fun onDismissSelectFactor() {
+        _state.update { state -> state.copy(selectFactor = null) }
     }
 
     fun onRemoveAuthenticationFactorClick() {
-        viewModelScope.launch { securityShieldBuilderClient.removeAuthenticationFactor() }
+        viewModelScope.launch { securityShieldBuilderClient.setAuthenticationFactor(null) }
     }
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
@@ -96,7 +137,8 @@ class SetupRegularAccessViewModel @Inject constructor(
                             authenticationFactor = selection.authenticationFactor?.toCompactInstanceCard(true),
                             status = selection.shieldStatus,
                             numberOfFactors = State.NumberOfFactors.fromThreshold(selection.threshold, selection.thresholdFactors.size),
-                            selectNumberOfFactors = null
+                            selectNumberOfFactors = null,
+                            selectFactor = null
                         )
                     }
                 }
@@ -110,8 +152,21 @@ class SetupRegularAccessViewModel @Inject constructor(
         val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val overrideFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val authenticationFactor: FactorSourceCard? = null,
-        val message: UiMessage? = null
+        val message: UiMessage? = null,
+        val selectFactor: SelectFactor? = null
     ) : UiState {
+
+        data class SelectFactor(
+            val purpose: Purpose,
+            val excludeFactorSources: PersistentList<FactorSourceId>
+        ) {
+
+            enum class Purpose {
+                Threshold,
+                Override,
+                Authentication
+            }
+        }
 
         data class SelectNumberOfFactors(
             val current: NumberOfFactors,

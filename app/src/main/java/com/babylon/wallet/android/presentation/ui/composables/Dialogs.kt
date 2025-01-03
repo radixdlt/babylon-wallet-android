@@ -117,12 +117,14 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    sheetBackgroundColor: Color = RadixTheme.colors.defaultBackground,
     headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
     centerContent: Boolean = false,
     onDismiss: () -> Unit,
+    onHeaderBackIconClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -202,7 +204,10 @@ fun BottomSheetDialogWrapper(
                             }
                     )
                     .animateContentSize()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
+                    .background(
+                        color = sheetBackgroundColor,
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    )
                     .clip(RadixTheme.shapes.roundedRectTopMedium),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -214,9 +219,14 @@ fun BottomSheetDialogWrapper(
                             modifier = Modifier
                                 .padding(top = RadixTheme.dimensions.paddingMedium)
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
+                                .background(
+                                    color = sheetBackgroundColor,
+                                    shape = RadixTheme.shapes.roundedRectTopDefault
+                                ),
                             backIcon = headerBackIcon,
-                            onDismissRequest = { onDismissRequest() },
+                            onDismissRequest = {
+                                onHeaderBackIconClick?.invoke() ?: onDismissRequest()
+                            },
                             title = title
                         )
                     }
@@ -509,7 +519,10 @@ fun FailureDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = RadixTheme.colors.gray5)
-                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(
+                        vertical = RadixTheme.dimensions.paddingLarge,
+                        horizontal = RadixTheme.dimensions.paddingXLarge
+                    ),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
