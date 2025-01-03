@@ -7,6 +7,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilder
+import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
@@ -66,17 +67,25 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
+    suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
+        val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
+        val selectedFactorSources = allFactorSources.filter { it.id in selectedFactorSourceIds }
+        executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
+        onPrimaryRoleSelectionUpdate()
+        onRecoveryRoleSelectionUpdate()
+    }
+
     suspend fun addPrimaryRoleOverrideFactorSource(id: FactorSourceId) = withContext(dispatcher) {
         executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryOverride(id) }
         onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun removeFactorsFromPrimary(ids: List<FactorSourceId>) = withContext(dispatcher) {
+    suspend fun removeFactorSourcesFromPrimary(ids: List<FactorSourceId>) = withContext(dispatcher) {
         ids.forEach { id -> securityShieldBuilder.removeFactorFromPrimary(id) }
         onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun setAuthenticationFactor(id: FactorSourceId?) = withContext(dispatcher) {
+    suspend fun setAuthenticationFactorSource(id: FactorSourceId?) = withContext(dispatcher) {
         securityShieldBuilder.setAuthenticationSigningFactor(id)
         onPrimaryRoleSelectionUpdate()
     }
@@ -86,12 +95,22 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun removeFactorFromRecovery(id: FactorSourceId) = withContext(dispatcher) {
+    suspend fun addFactorSourceToRecovery(id: FactorSourceId) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.addFactorSourceToRecoveryOverride(id) }
+        onRecoveryRoleSelectionUpdate()
+    }
+
+    suspend fun addFactorSourceToConfirmation(id: FactorSourceId) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.addFactorSourceToConfirmationOverride(id) }
+        onRecoveryRoleSelectionUpdate()
+    }
+
+    suspend fun removeFactorSourceFromRecovery(id: FactorSourceId) = withContext(dispatcher) {
         securityShieldBuilder.removeFactorFromRecovery(id)
         onRecoveryRoleSelectionUpdate()
     }
 
-    suspend fun removeFactorFromConfirmation(id: FactorSourceId) = withContext(dispatcher) {
+    suspend fun removeFactorSourceFromConfirmation(id: FactorSourceId) = withContext(dispatcher) {
         securityShieldBuilder.removeFactorFromConfirmation(id)
         onRecoveryRoleSelectionUpdate()
     }
@@ -101,12 +120,10 @@ class SecurityShieldBuilderClient @Inject constructor(
         onRecoveryRoleSelectionUpdate()
     }
 
-    suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
-        val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
-        val selectedFactorSources = allFactorSources.filter { it.id in selectedFactorSourceIds }
-        executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
-        onPrimaryRoleSelectionUpdate()
-        onRecoveryRoleSelectionUpdate()
+    suspend fun buildShield(name: String): SecurityStructureOfFactorSourceIDs = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.setName(name) }
+        securityShieldBuilder.build()
+            .also { Timber.w("Shield created: $it") }
     }
 
     private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {

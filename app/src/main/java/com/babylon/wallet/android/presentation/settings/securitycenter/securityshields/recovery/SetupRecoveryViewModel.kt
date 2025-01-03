@@ -2,10 +2,14 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -18,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SetupRecoveryViewModel @Inject constructor(
     private val securityShieldBuilderClient: SecurityShieldBuilderClient
-) : StateViewModel<SetupRecoveryViewModel.State>() {
+) : StateViewModel<SetupRecoveryViewModel.State>(),
+    OneOffEventHandler<SetupRecoveryViewModel.Event> by OneOffEventHandlerImpl() {
 
     init {
         initSelection()
@@ -27,26 +32,59 @@ class SetupRecoveryViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onAddStartRecoveryFactorClick() {
-        // Show factor source selector
+        _state.update { state ->
+            state.copy(
+                selectFactor = State.SelectFactor(
+                    purpose = State.SelectFactor.Purpose.StartRecovery,
+                    excludeFactorSources = state.startRecoveryFactors.map { it.id }.toPersistentList()
+                )
+            )
+        }
     }
 
     fun onRemoveStartRecoveryFactor(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorFromRecovery(card.id) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourceFromRecovery(card.id) }
     }
 
     fun onAddConfirmRecoveryFactorClick() {
-        // Show factor source selector
+        _state.update { state ->
+            state.copy(
+                selectFactor = State.SelectFactor(
+                    purpose = State.SelectFactor.Purpose.Confirmation,
+                    excludeFactorSources = state.confirmationFactors.map { it.id }.toPersistentList()
+                )
+            )
+        }
     }
 
     fun onRemoveConfirmRecoveryFactor(card: FactorSourceCard) {
         viewModelScope.launch {
-            securityShieldBuilderClient.removeFactorFromConfirmation(card.id)
+            securityShieldBuilderClient.removeFactorSourceFromConfirmation(card.id)
             initSelection()
         }
     }
 
+    fun onFactorSelected(card: FactorSourceCard) {
+        val selectFactor = _state.value.selectFactor ?: return
+
+        viewModelScope.launch {
+            when (selectFactor.purpose) {
+                State.SelectFactor.Purpose.StartRecovery -> securityShieldBuilderClient.addFactorSourceToRecovery(card.id)
+                State.SelectFactor.Purpose.Confirmation -> securityShieldBuilderClient.addFactorSourceToConfirmation(card.id)
+            }
+        }
+    }
+
+    fun onDismissSelectFactor() {
+        _state.update { state -> state.copy(selectFactor = null) }
+    }
+
     fun onContinueClick() {
-        // Show shield name sheet
+        _state.update { state ->
+            state.copy(
+                setShieldName = State.SetShieldName(name = "")
+            )
+        }
     }
 
     private fun initSelection() {
@@ -55,8 +93,8 @@ class SetupRecoveryViewModel @Inject constructor(
                 .collect { selection ->
                     _state.update { state ->
                         state.copy(
-                            startFactors = selection.startRecoveryFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                            confirmFactors = selection.confirmationFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            startRecoveryFactors = selection.startRecoveryFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            confirmationFactors = selection.confirmationFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             status = selection.shieldStatus,
                             fallbackPeriod = if (selection.numberOfDaysUntilAutoConfirm % DAYS_IN_A_WEEK == 0) {
                                 State.FallbackPeriod(
@@ -69,7 +107,8 @@ class SetupRecoveryViewModel @Inject constructor(
                                     unit = State.FallbackPeriod.Unit.DAYS
                                 )
                             },
-                            selectFallbackPeriod = null
+                            selectFallbackPeriod = null,
+                            selectFactor = null
                         )
                     }
                 }
@@ -127,15 +166,51 @@ class SetupRecoveryViewModel @Inject constructor(
         }
     }
 
+    fun onShieldNameChange(value: String) {
+        _state.update { state ->
+            state.copy(
+                setShieldName = state.setShieldName?.copy(name = value)
+            )
+        }
+    }
+
+    fun onDismissSetShieldName() {
+        _state.update { state -> state.copy(setShieldName = null) }
+    }
+
+    fun onConfirmShieldNameClick() {
+        viewModelScope.launch {
+            val shieldName = requireNotNull(state.value.setShieldName?.name)
+            val securityStructureOfFactorSourceIDs = securityShieldBuilderClient.buildShield(shieldName)
+
+            // TODO save shield to profile
+
+            sendEvent(Event.ShieldCreated)
+        }
+    }
+
     data class State(
         val status: SecurityShieldBuilderInvalidReason? = null,
-        val startFactors: PersistentList<FactorSourceCard> = persistentListOf(),
-        val confirmFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val startRecoveryFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val confirmationFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val fallbackPeriod: FallbackPeriod? = null,
-        val selectFallbackPeriod: SelectFallbackPeriod? = null
+        val selectFallbackPeriod: SelectFallbackPeriod? = null,
+        val selectFactor: SelectFactor? = null,
+        val setShieldName: SetShieldName? = null
     ) : UiState {
 
         val isButtonEnabled = status == null
+
+        data class SelectFactor(
+            val purpose: Purpose,
+            val excludeFactorSources: PersistentList<FactorSourceId>
+        ) {
+
+            enum class Purpose {
+                StartRecovery,
+                Confirmation
+            }
+        }
 
         data class SelectFallbackPeriod(
             val currentValue: Int,
@@ -162,6 +237,18 @@ class SetupRecoveryViewModel @Inject constructor(
                 }
             }
         }
+
+        data class SetShieldName(
+            val name: String
+        ) {
+
+            val isButtonEnabled = name.isNotBlank()
+        }
+    }
+
+    sealed interface Event : OneOffEvent {
+
+        data object ShieldCreated : Event
     }
 
     companion object {

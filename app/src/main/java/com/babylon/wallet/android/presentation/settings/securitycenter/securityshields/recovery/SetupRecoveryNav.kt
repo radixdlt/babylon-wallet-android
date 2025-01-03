@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
 
 const val ROUTE_SETUP_RECOVERY = "setup_recovery"
 
@@ -28,7 +29,11 @@ fun NavGraphBuilder.setupRecoveryScreen(
         SetupRecoveryScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) }
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onShieldCreated = {
+                navController.popBackStack(ROUTE_SECURITY_SHIELDS_GRAPH, true)
+                // TODO navigate to shield created screen
+            }
         )
     }
 }

@@ -11,38 +11,49 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -68,7 +79,8 @@ import kotlinx.collections.immutable.toPersistentList
 fun SetupRecoveryScreen(
     viewModel: SetupRecoveryViewModel,
     onDismiss: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onShieldCreated: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -85,8 +97,28 @@ fun SetupRecoveryScreen(
         onFallbackPeriodUnitChange = viewModel::onFallbackPeriodUnitChange,
         onSetFallbackPeriodClick = viewModel::onSetFallbackPeriodClick,
         onDismissFallbackPeriod = viewModel::onDismissFallbackPeriod,
+        onShieldNameChange = viewModel::onShieldNameChange,
+        onDismissSetShieldName = viewModel::onDismissSetShieldName,
+        onConfirmShieldNameClick = viewModel::onConfirmShieldNameClick,
         onContinueClick = viewModel::onContinueClick
     )
+
+    state.selectFactor?.let { selectFactor ->
+        ChooseFactorSourceBottomSheet(
+            viewModel = hiltViewModel(),
+            excludeFactorSources = selectFactor.excludeFactorSources,
+            onContinueClick = viewModel::onFactorSelected,
+            onDismissSheet = viewModel::onDismissSelectFactor
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                SetupRecoveryViewModel.Event.ShieldCreated -> onShieldCreated()
+            }
+        }
+    }
 }
 
 @Composable
@@ -104,6 +136,9 @@ private fun SetupRecoveryContent(
     onFallbackPeriodUnitChange: (SetupRecoveryViewModel.State.FallbackPeriod.Unit) -> Unit,
     onSetFallbackPeriodClick: () -> Unit,
     onDismissFallbackPeriod: () -> Unit,
+    onShieldNameChange: (String) -> Unit,
+    onDismissSetShieldName: () -> Unit,
+    onConfirmShieldNameClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
     Scaffold(
@@ -164,7 +199,7 @@ private fun SetupRecoveryContent(
                 }
 
                 FactorsView(
-                    factors = state.startFactors,
+                    factors = state.startRecoveryFactors,
                     onAddFactorClick = onAddStartRecoveryFactorClick,
                     onRemoveFactorClick = onRemoveStartRecoveryFactor
                 )
@@ -189,7 +224,7 @@ private fun SetupRecoveryContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
                 FactorsView(
-                    factors = state.confirmFactors,
+                    factors = state.confirmationFactors,
                     onAddFactorClick = onAddConfirmRecoveryFactorClick,
                     onRemoveFactorClick = onRemoveConfirmRecoveryFactor
                 )
@@ -223,6 +258,15 @@ private fun SetupRecoveryContent(
             onUnitChange = onFallbackPeriodUnitChange,
             onSetClick = onSetFallbackPeriodClick,
             onDismiss = onDismissFallbackPeriod
+        )
+    }
+
+    if (state.setShieldName != null) {
+        SetShieldNameSheet(
+            input = state.setShieldName,
+            onNameChange = onShieldNameChange,
+            onConfirmClick = onConfirmShieldNameClick,
+            onDismiss = onDismissSetShieldName
         )
     }
 }
@@ -465,6 +509,76 @@ private fun SelectFallbackPeriodSheet(
 }
 
 @Composable
+private fun SetShieldNameSheet(
+    input: SetupRecoveryViewModel.State.SetShieldName,
+    onNameChange: (String) -> Unit,
+    onConfirmClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val inputFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        inputFocusRequester.requestFocus()
+    }
+
+    BottomSheetDialogWrapper(
+        addScrim = true,
+        showDragHandle = true,
+        onDismiss = onDismiss
+    ) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                text = "Name your Security Shield", // TODO crowdin
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+                text = "Give this Security Shield a name, so you can identify it later.", // TODO crowdin
+                style = RadixTheme.typography.body1Link,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+            RadixTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
+                    .focusRequester(focusRequester = inputFocusRequester),
+                onValueChanged = onNameChange,
+                keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
+                value = input.name,
+                singleLine = true,
+                hintColor = RadixTheme.colors.gray2
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        }
+
+        RadixBottomBar(
+            onClick = onConfirmClick,
+            text = stringResource(R.string.common_confirm),
+            insets = WindowInsets.navigationBars.union(WindowInsets.ime),
+            enabled = input.isButtonEnabled
+        )
+    }
+}
+
+@Composable
 private fun SetupRecoveryViewModel.State.FallbackPeriod.title(): String = "$value ${unit.displayName()}"
 
 @Composable
@@ -493,6 +607,9 @@ private fun SetupRecoveryPreview(
             onFallbackPeriodUnitChange = {},
             onSetFallbackPeriodClick = {},
             onDismissFallbackPeriod = {},
+            onShieldNameChange = {},
+            onDismissSetShieldName = {},
+            onConfirmShieldNameClick = {},
             onContinueClick = {}
         )
     }
@@ -504,7 +621,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
     override val values: Sequence<SetupRecoveryViewModel.State>
         get() = sequenceOf(
             SetupRecoveryViewModel.State(
-                startFactors = persistentListOf(
+                startRecoveryFactors = persistentListOf(
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
@@ -520,7 +637,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         hasHiddenEntities = false
                     )
                 ),
-                confirmFactors = persistentListOf(
+                confirmationFactors = persistentListOf(
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
@@ -547,6 +664,11 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                     currentUnit = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS,
                     values = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS.possibleValues,
                     units = SetupRecoveryViewModel.State.FallbackPeriod.Unit.entries.toPersistentList()
+                )
+            ),
+            SetupRecoveryViewModel.State(
+                setShieldName = SetupRecoveryViewModel.State.SetShieldName(
+                    name = ""
                 )
             )
         )
