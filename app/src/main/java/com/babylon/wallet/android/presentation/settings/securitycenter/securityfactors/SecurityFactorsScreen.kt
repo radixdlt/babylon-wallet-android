@@ -1,16 +1,11 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,9 +18,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.SecurityFactorsViewModel.Companion.currentSecurityFactorsSettings
-import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListView
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -69,67 +64,16 @@ private fun SecurityFactorsContent(
                 )
                 HorizontalDivider(color = RadixTheme.colors.gray4)
             }
-        },
-        containerColor = RadixTheme.colors.gray5
+        }
     ) { padding ->
-        LazyColumn(
+        SecurityFactorTypesListView(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
-        ) {
-            item {
-                Text(
-                    text = stringResource(id = R.string.securityFactors_subtitle),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray2,
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
-                )
-            }
-            securityFactorSettingItems.forEach { (category, securityFactorsItems) ->
-                // Add a header for the security factor category if any
-                val categoryTitleRes = category.titleRes()
-                categoryTitleRes?.let {
-                    item {
-                        Text(
-                            text = stringResource(id = categoryTitleRes),
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray2,
-                            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
-                        )
-                    }
-                }
-                // Add security factor items
-                items(securityFactorsItems.toList()) { securityFactorsItem ->
-                    val isLastItem = securityFactorsItem == securityFactorsItems.last()
-                    DefaultSettingsItem(
-                        title = stringResource(id = securityFactorsItem.titleRes()),
-                        subtitle = stringResource(id = securityFactorsItem.subtitleRes()),
-                        leadingIconRes = securityFactorsItem.getIcon(),
-                        onClick = {
-                            onSecurityFactorSettingItemClick(securityFactorsItem)
-                        },
-                        warnings = if (securityFactorsItem is SecurityFactorsSettingsItem.BiometricsPin) {
-                            getSecurityWarnings(securityFactorsSettingsItem = securityFactorsItem)
-                        } else {
-                            null
-                        }
-                    )
-                    if (isLastItem.not()) {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .background(color = RadixTheme.colors.defaultBackground)
-                                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                            color = RadixTheme.colors.gray4
-                        )
-                    } else {
-                        HorizontalDivider(color = RadixTheme.colors.gray4)
-                    }
-                }
-            }
-            item {
-                Spacer(modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault))
-            }
-        }
+                .fillMaxSize(),
+            isDescriptionVisible = true,
+            securityFactorSettingItems = securityFactorSettingItems,
+            onSecurityFactorSettingItemClick = onSecurityFactorSettingItemClick
+        )
     }
 }
 
@@ -158,7 +102,7 @@ private fun SecurityFactorsPreview() {
     RadixWalletTheme {
         SecurityFactorsContent(
             modifier = Modifier,
-            securityFactorSettingItems = currentSecurityFactorsSettings,
+            securityFactorSettingItems = currentSecurityFactorTypeItems,
             onSecurityFactorSettingItemClick = {},
             onBackClick = {}
         )

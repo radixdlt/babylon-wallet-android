@@ -1,17 +1,16 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.securityproblems.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.CoroutineDispatcher
@@ -27,7 +26,7 @@ class SecurityFactorsViewModel @Inject constructor(
     @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SecurityFactorsViewModel.State>() {
 
-    override fun initialState(): State = State(securityFactorSettingItems = currentSecurityFactorsSettings)
+    override fun initialState(): State = State(securityFactorSettingItems = currentSecurityFactorTypeItems)
 
     init {
         viewModelScope.launch {
@@ -35,8 +34,8 @@ class SecurityFactorsViewModel @Inject constructor(
                 .flowOn(defaultDispatcher)
                 .collectLatest { securityProblems ->
                     if (securityProblems.isNotEmpty()) {
-                        val firstCategory = currentSecurityFactorsSettings.keys.first()
-                        val updatedSecurityFactorsSettings = currentSecurityFactorsSettings.put(
+                        val firstCategory = currentSecurityFactorTypeItems.keys.first()
+                        val updatedSecurityFactorsSettings = currentSecurityFactorTypeItems.put(
                             key = firstCategory,
                             value = persistentSetOf(
                                 SecurityFactorsSettingsItem.BiometricsPin(
@@ -49,7 +48,7 @@ class SecurityFactorsViewModel @Inject constructor(
                         }
                     } else {
                         _state.update {
-                            it.copy(securityFactorSettingItems = currentSecurityFactorsSettings)
+                            it.copy(securityFactorSettingItems = currentSecurityFactorTypeItems)
                         }
                     }
                 }
@@ -59,27 +58,4 @@ class SecurityFactorsViewModel @Inject constructor(
     data class State(
         val securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>
     ) : UiState
-
-    companion object {
-        val currentSecurityFactorsSettings = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
-            persistentMapOf(
-                SecurityFactorCategory.Own to persistentSetOf(SecurityFactorsSettingsItem.BiometricsPin(persistentSetOf())),
-                SecurityFactorCategory.Hardware to persistentSetOf(
-                    SecurityFactorsSettingsItem.ArculusCard,
-                    SecurityFactorsSettingsItem.LedgerNano
-                ),
-                SecurityFactorCategory.Information to persistentSetOf(
-                    SecurityFactorsSettingsItem.Password,
-                    SecurityFactorsSettingsItem.Passphrase
-                )
-            )
-        } else {
-            persistentMapOf(
-                SecurityFactorCategory.Own to persistentSetOf(SecurityFactorsSettingsItem.BiometricsPin(persistentSetOf())),
-                SecurityFactorCategory.Hardware to persistentSetOf(
-                    SecurityFactorsSettingsItem.LedgerNano
-                )
-            )
-        }
-    }
 }
