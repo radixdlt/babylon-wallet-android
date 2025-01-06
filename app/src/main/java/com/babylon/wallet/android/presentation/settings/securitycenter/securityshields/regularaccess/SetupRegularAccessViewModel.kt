@@ -97,10 +97,7 @@ class SetupRegularAccessViewModel @Inject constructor(
 
         viewModelScope.launch {
             when (selectFactor.purpose) {
-                State.SelectFactor.Purpose.Threshold -> securityShieldBuilderClient.updatePrimaryRoleThresholdFactorSourceSelection(
-                    id = card.id,
-                    isSelected = true
-                )
+                State.SelectFactor.Purpose.Threshold -> securityShieldBuilderClient.addPrimaryRoleThresholdFactorSource(card.id)
                 State.SelectFactor.Purpose.Override -> securityShieldBuilderClient.addPrimaryRoleOverrideFactorSource(card.id)
                 State.SelectFactor.Purpose.Authentication -> securityShieldBuilderClient.setAuthenticationFactorSource(card.id)
             }

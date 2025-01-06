@@ -48,7 +48,7 @@ private fun ShieldBuilderTitlePreview() {
     RadixWalletPreviewTheme {
         ShieldBuilderTitleView(
             imageRes = DSR.ic_regular_access,
-            title = "Regular Access", // TODO crowdin
+            title = "Regular Access"
         )
     }
 }

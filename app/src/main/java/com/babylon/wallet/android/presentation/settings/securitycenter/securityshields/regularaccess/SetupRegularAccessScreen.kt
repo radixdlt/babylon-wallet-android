@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewS
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
+import com.babylon.wallet.android.utils.annotatedParts
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -308,7 +309,7 @@ private fun OverrideFactorsView(
                         top = RadixTheme.dimensions.paddingSmall,
                         bottom = RadixTheme.dimensions.paddingMedium
                     ),
-                    text = "Or you can use the following:",
+                    text = "Or you can use the following:", // TODO crowdin
                     color = RadixTheme.colors.gray1,
                     style = RadixTheme.typography.body2Regular
                 )
@@ -362,9 +363,18 @@ private fun ThresholdFactorsView(
         ) { measuredSize ->
             Text(
                 text = buildAnnotatedString {
-                    append("You'll need to use") // TODO crowdin
-                    appendInlineContent(id = "button")
-                    append("of the following:") // TODO crowdin
+                    val text = "You'll need to use **%s** of the following:" // TODO crowdin
+                    val annotatedPart = text.annotatedParts().firstOrNull()
+
+                    if (annotatedPart != null) {
+                        val parts = text.split(annotatedPart)
+                        append(parts[0])
+                        appendInlineContent(id = "button")
+                        append(parts[1])
+                    } else {
+                        append(text)
+                        appendInlineContent(id = "button")
+                    }
                 },
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
@@ -408,7 +418,6 @@ private fun NumberOfFactorsView(
     numberOfFactors: SetupRegularAccessViewModel.State.NumberOfFactors
 ) {
     Row(
-        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

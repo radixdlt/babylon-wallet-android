@@ -31,7 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -49,7 +48,6 @@ fun AddFactorScreen(
     modifier: Modifier = Modifier,
     viewModel: AddFactorViewModel,
     onDismiss: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     toFactorSetup: (FactorSourceKind) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -59,7 +57,7 @@ fun AddFactorScreen(
         state = state,
         onDismiss = onDismiss,
         onFactorSourceKindSelect = viewModel::onFactorSourceKindSelect,
-        onInfoClick = onInfoClick,
+        onNoHardwareClick = viewModel::onNoHardwareClick,
         onButtonClick = viewModel::onButtonClick,
         onMessageShown = viewModel::onMessageShown
     )
@@ -79,7 +77,7 @@ private fun AddFactorContent(
     state: AddFactorViewModel.State,
     onDismiss: () -> Unit,
     onFactorSourceKindSelect: (FactorSourceKindCard) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
+    onNoHardwareClick: () -> Unit,
     onButtonClick: () -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -109,7 +107,7 @@ private fun AddFactorContent(
                     {
                         RadixTextButton(
                             text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
-                            onClick = { onInfoClick(GlossaryItem.nohardwaredevice) }
+                            onClick = onNoHardwareClick
                         )
                     }
                 } else {
@@ -205,7 +203,7 @@ private fun AddFactorPreview(
             onDismiss = {},
             state = state,
             onFactorSourceKindSelect = {},
-            onInfoClick = {},
+            onNoHardwareClick = {},
             onButtonClick = {},
             onMessageShown = {}
         )

@@ -307,7 +307,7 @@ private fun FactorsView(
         modifier = modifier
     ) {
         Text(
-            text = "You'll need to use the following:",
+            text = "You'll need to use the following:", // TODO crowdin
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
@@ -321,7 +321,20 @@ private fun FactorsView(
                     onRemoveClick = onRemoveFactorClick
                 )
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                if (factors.indexOf(factor) < factors.size - 1) {
+                    Text(
+                        modifier = Modifier
+                            .padding(end = RadixTheme.dimensions.paddingXXXLarge)
+                            .align(Alignment.CenterHorizontally),
+                        text = "OR", // TODO crowdin
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray1
+                    )
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
             }
         }
 
@@ -635,6 +648,20 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false
+                    ),
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "Metal Jacket",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     )
                 ),
                 confirmationFactors = persistentListOf(
@@ -644,6 +671,20 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                         ),
                         name = "Metal Jacket",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
+                    ),
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "Ledger ABC",
                         includeDescription = true,
                         lastUsedOn = null,
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,

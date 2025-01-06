@@ -6,7 +6,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 
 @Composable
 fun buildStatusMessageAnnotatedString(
@@ -27,15 +26,5 @@ fun buildStatusMessageAnnotatedString(
         )
         append(" ")
         append(annotation)
-    }
-}
-
-fun StatusMessage.onStatusMessageInfoAnnotationClick(
-    offset: Int,
-    glossaryItem: GlossaryItem,
-    onInfoClick: (GlossaryItem) -> Unit
-) {
-    message.getStringAnnotations(glossaryItem.name, offset, offset).firstOrNull()?.let {
-        onInfoClick(glossaryItem)
     }
 }
