@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.common.c
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
@@ -21,15 +23,14 @@ fun ShieldSetupStatusView(
         is SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
-                message = "You need at least 1 factor to sign transactions. Select a signing factor to continue to the next step.", // TODO crowdin
+                message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
                 type = StatusMessage.Type.WARNING
             )
         )
         else -> StatusMessageText(
             modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
             message = StatusMessage(
-                // TODO crowdin
-                message = "You cannot create a Shield with this combination of factors. **Read more**".formattedSpans(
+                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
                     boldStyle = SpanStyle(
                         color = RadixTheme.colors.blue2,
                         fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,

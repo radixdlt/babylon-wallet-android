@@ -159,7 +159,8 @@ private fun SelectFactorsContent(
                     is SelectFactorsViewModel.State.UiItem.CategoryHeader -> CategoryHeaderView(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXLarge),
                         item = item,
-                        message = "Cannot use this factor by itself".takeIf { state.showPasswordWarning(item) } // TODO crowdin
+                        message = stringResource(id = R.string.shieldSetupStatus_factorCannotBeUsedByItself)
+                            .takeIf { state.showPasswordWarning(item) }
                     )
                     is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
@@ -215,21 +216,21 @@ private fun StatusView(
         SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupSelectFactors_statusMessage_recommendedFactors),
+                message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
                 type = StatusMessage.Type.WARNING
             )
         )
         SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupSelectFactors_statusMessage_atLeastOneFactor),
+                message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
                 type = StatusMessage.Type.ERROR
             )
         )
         SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessageText(
             modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
             message = StatusMessage(
-                message = "You cannot create a Shield with this combination of factors. **Read more**".formattedSpans(
+                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
                     boldStyle = SpanStyle(
                         color = RadixTheme.colors.blue2,
                         fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,

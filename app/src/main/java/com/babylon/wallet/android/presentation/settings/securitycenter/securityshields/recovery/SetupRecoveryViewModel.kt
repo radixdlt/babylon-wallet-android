@@ -17,6 +17,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -184,6 +185,7 @@ class SetupRecoveryViewModel @Inject constructor(
             val securityStructureOfFactorSourceIDs = securityShieldBuilderClient.buildShield(shieldName)
 
             // TODO save shield to profile
+            Timber.w("Security structure: $securityStructureOfFactorSourceIDs")
 
             sendEvent(Event.ShieldCreated)
         }

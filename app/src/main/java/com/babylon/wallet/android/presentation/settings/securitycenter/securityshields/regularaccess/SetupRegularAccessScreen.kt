@@ -129,7 +129,7 @@ private fun SetupRegularAccessContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Step 1 of 2", // TODO crowdin
+                title = stringResource(id = R.string.shieldWizardRegularAccess_step_title),
                 onBackClick = onDismiss,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -156,13 +156,13 @@ private fun SetupRegularAccessContent(
                 ShieldBuilderTitleView(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     imageRes = DSR.ic_regular_access,
-                    title = "Regular Access", // TODO crowdin
+                    title = stringResource(id = R.string.shieldWizardRegularAccess_title)
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                 Text(
-                    text = "Factors required to withdraw assets from Accounts.", // TODO crowdin
+                    text = stringResource(id = R.string.shieldWizardRegularAccess_subtitle),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -238,7 +238,7 @@ private fun OverrideFactorsView(
                 modifier = Modifier
                     .padding(top = RadixTheme.dimensions.paddingXXSmall)
                     .align(Alignment.End),
-                text = "Add an override",
+                text = stringResource(id = R.string.shieldWizardRegularAccess_override_button),
                 leadingIcon = {
                     Icon(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXXSmall),
@@ -257,7 +257,7 @@ private fun OverrideFactorsView(
                 modifier = Modifier
                     .padding(vertical = RadixTheme.dimensions.paddingDefault)
                     .align(Alignment.CenterHorizontally),
-                text = "OR", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRegularAccess_combination_label),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )
@@ -276,7 +276,7 @@ private fun OverrideFactorsView(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = "Override (advanced)", // TODO crowdin
+                    text = stringResource(id = R.string.shieldWizardRegularAccess_override_title),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.white,
                 )
@@ -309,7 +309,7 @@ private fun OverrideFactorsView(
                         top = RadixTheme.dimensions.paddingSmall,
                         bottom = RadixTheme.dimensions.paddingMedium
                     ),
-                    text = "Or you can use the following:", // TODO crowdin
+                    text = stringResource(id = R.string.shieldWizardRegularAccess_override_description),
                     color = RadixTheme.colors.gray1,
                     style = RadixTheme.typography.body2Regular
                 )
@@ -326,7 +326,7 @@ private fun OverrideFactorsView(
                                 .padding(end = RadixTheme.dimensions.paddingXXXLarge)
                                 .padding(vertical = RadixTheme.dimensions.paddingDefault)
                                 .align(Alignment.CenterHorizontally),
-                            text = "OR", // TODO crowdin
+                            text = stringResource(id = R.string.shieldWizardRegularAccess_overrideCombination_label),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray1
                         )
@@ -361,25 +361,27 @@ private fun ThresholdFactorsView(
             modifier = Modifier.noIndicationClickable { onNumberOfFactorsClick() },
             viewToMeasure = { NumberOfFactorsView(numberOfFactors) },
         ) { measuredSize ->
+            val inlineContentKey = "button"
+
             Text(
                 text = buildAnnotatedString {
-                    val text = "You'll need to use **%s** of the following:" // TODO crowdin
+                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title)
                     val annotatedPart = text.annotatedParts().firstOrNull()
 
                     if (annotatedPart != null) {
                         val parts = text.split(annotatedPart)
                         append(parts[0])
-                        appendInlineContent(id = "button")
+                        appendInlineContent(id = inlineContentKey)
                         append(parts[1])
                     } else {
                         append(text)
-                        appendInlineContent(id = "button")
+                        appendInlineContent(id = inlineContentKey)
                     }
                 },
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 inlineContent = mapOf(
-                    "button" to InlineTextContent(
+                    inlineContentKey to InlineTextContent(
                         with(density) {
                             Placeholder(
                                 width = measuredSize.width.toSp(),
@@ -422,7 +424,9 @@ private fun NumberOfFactorsView(
     ) {
         Text(
             text = when (numberOfFactors) {
-                SetupRegularAccessViewModel.State.NumberOfFactors.All -> "All" // TODO crowdin
+                SetupRegularAccessViewModel.State.NumberOfFactors.All -> stringResource(
+                    id = R.string.shieldWizardRegularAccess_thresholdDescription_all
+                )
                 is SetupRegularAccessViewModel.State.NumberOfFactors.Count -> numberOfFactors.value.toString()
             },
             style = RadixTheme.typography.body2Link,
@@ -448,7 +452,7 @@ private fun AuthenticationFactorView(
         modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
     ) {
         Text(
-            text = "Single factor required to log in to dApps with Personas and prove ownership of Accounts.",
+            text = stringResource(id = R.string.shieldWizardRegularAccess_authentication_title),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
@@ -462,7 +466,7 @@ private fun AuthenticationFactorView(
                     bottom = RadixTheme.dimensions.paddingSemiLarge
                 ),
                 message = StatusMessage(
-                    message = "You need to choose a factor to continue", // TODO crowdin
+                    message = stringResource(id = R.string.shieldSetupStatus_authentication_atLeastOneFactor),
                     type = StatusMessage.Type.WARNING
                 )
             )
@@ -503,7 +507,7 @@ private fun SelectNumberOfFactorsSheet(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                text = "Set the number of factors required to sign", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRegularAccess_setThreshold_title),
                 style = RadixTheme.typography.header,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -522,7 +526,9 @@ private fun SelectNumberOfFactorsSheet(
                 },
                 label = { item ->
                     when (item) {
-                        SetupRegularAccessViewModel.State.NumberOfFactors.All -> "All (Recommended)" // TODO crowdin
+                        SetupRegularAccessViewModel.State.NumberOfFactors.All -> stringResource(
+                            id = R.string.shieldWizardRegularAccess_setThreshold_all
+                        )
                         is SetupRegularAccessViewModel.State.NumberOfFactors.Count -> item.value.toString()
                     }
                 }
@@ -533,7 +539,7 @@ private fun SelectNumberOfFactorsSheet(
             RadixBottomBar(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onSelect(selectedItem) },
-                text = "Set", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRegularAccess_setThreshold_button),
                 enabled = true
             )
         }

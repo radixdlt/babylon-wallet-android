@@ -145,7 +145,7 @@ private fun SetupRecoveryContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Step 2 of 2", // TODO crowdin
+                title = stringResource(id = R.string.shieldWizardRecovery_step_title),
                 onBackClick = onDismiss,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -173,14 +173,14 @@ private fun SetupRecoveryContent(
                 ShieldBuilderTitleView(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     imageRes = DSR.ic_shield_recovery,
-                    title = "Recovery", // TODO crowdin
+                    title = stringResource(id = R.string.shieldWizardRecovery_title),
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                 SectionHeaderView(
-                    title = "Starting a Recovery", // TODO crowdin
-                    subtitle = "Factors you can use to start recovering, and temporarily lock, Accounts and Personas if you lose access.", // TODO crowdin
+                    title = stringResource(id = R.string.shieldWizardRecovery_start_title),
+                    subtitle = stringResource(id = R.string.shieldWizardRecovery_start_subtitle),
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -217,8 +217,8 @@ private fun SetupRecoveryContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 SectionHeaderView(
-                    title = "Confirming a Recovery", // TODO crowdin
-                    subtitle = "Factors you can use to complete the recovery of your Accounts and Personas.", // TODO crowdin
+                    title = stringResource(id = R.string.shieldWizardRecovery_confirm_title),
+                    subtitle = stringResource(id = R.string.shieldWizardRecovery_confirm_subtitle),
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
@@ -233,7 +233,7 @@ private fun SetupRecoveryContent(
                     modifier = Modifier
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .align(Alignment.CenterHorizontally),
-                    text = "OR", // TODO crowdin
+                    text = stringResource(id = R.string.shieldWizardRecovery_combination_label),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray1
                 )
@@ -307,7 +307,7 @@ private fun FactorsView(
         modifier = modifier
     ) {
         Text(
-            text = "You'll need to use the following:", // TODO crowdin
+            text = stringResource(id = R.string.shieldWizardRecovery_factors_title),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
@@ -315,7 +315,7 @@ private fun FactorsView(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
         if (factors.isNotEmpty()) {
-            factors.forEach { factor ->
+            factors.forEachIndexed { index, factor ->
                 RemovableFactorSourceCard(
                     item = factor,
                     onRemoveClick = onRemoveFactorClick
@@ -323,12 +323,12 @@ private fun FactorsView(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                if (factors.indexOf(factor) < factors.size - 1) {
+                if (index < factors.size - 1) {
                     Text(
                         modifier = Modifier
                             .padding(end = RadixTheme.dimensions.paddingXXXLarge)
                             .align(Alignment.CenterHorizontally),
-                        text = "OR", // TODO crowdin
+                        text = stringResource(id = R.string.shieldWizardRecovery_combination_label),
                         style = RadixTheme.typography.body1Link,
                         color = RadixTheme.colors.gray1
                     )
@@ -374,7 +374,7 @@ private fun EmergencyFallbackView(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = "Emergency Fallback", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRecovery_fallback_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.white
             )
@@ -393,7 +393,7 @@ private fun EmergencyFallbackView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Set a time period to automatically confirm recovery **WITHOUT** presenting any of the above confirmation factors." // TODO crowdin
+            text = stringResource(id = R.string.shieldWizardRecovery_fallback_subtitle)
                 .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
@@ -437,7 +437,7 @@ private fun EmergencyFallbackView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-            text = "We recommend setting this for an extended period, so you have time to notice and cancel a recovery you don’t want.", // TODO crowdin
+            text = stringResource(id = R.string.shieldWizardRecovery_fallback_note),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.red1
         )
@@ -468,7 +468,7 @@ private fun SelectFallbackPeriodSheet(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                text = "Emergency Fallback", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRecovery_setFallback_title),
                 style = RadixTheme.typography.header,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -476,7 +476,7 @@ private fun SelectFallbackPeriodSheet(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                text = "Set a time period to automatically confirm recovery **WITHOUT** presenting any confirmation factors." // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRecovery_setFallback_subtitle)
                     .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
@@ -505,7 +505,7 @@ private fun SelectFallbackPeriodSheet(
                     items = selectFallbackPeriod.units,
                     selectedValue = selectFallbackPeriod.currentUnit,
                     onValueChange = onUnitChange,
-                    label = { item -> item.displayName() },
+                    label = { item -> item.displayName(false) },
                     contentAlignment = Alignment.CenterStart,
                     contentPadding = PaddingValues(start = RadixTheme.dimensions.paddingSemiLarge)
                 )
@@ -514,7 +514,7 @@ private fun SelectFallbackPeriodSheet(
             RadixBottomBar(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onSetClick,
-                text = "Set", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardRecovery_setFallback_button),
                 enabled = true
             )
         }
@@ -547,7 +547,7 @@ private fun SetShieldNameSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                text = "Name your Security Shield", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardName_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -559,7 +559,7 @@ private fun SetShieldNameSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = "Give this Security Shield a name, so you can identify it later.", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardName_subtitle),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -592,12 +592,16 @@ private fun SetShieldNameSheet(
 }
 
 @Composable
-private fun SetupRecoveryViewModel.State.FallbackPeriod.title(): String = "$value ${unit.displayName()}"
+private fun SetupRecoveryViewModel.State.FallbackPeriod.title(): String = "$value ${unit.displayName(value == 1)}"
 
 @Composable
-private fun SetupRecoveryViewModel.State.FallbackPeriod.Unit.displayName(): String = when (this) {
-    SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS -> "Days" // TODO crowdin
-    SetupRecoveryViewModel.State.FallbackPeriod.Unit.WEEKS -> "Weeks" // TODO crowdin
+private fun SetupRecoveryViewModel.State.FallbackPeriod.Unit.displayName(isSingular: Boolean): String = when (this) {
+    SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS -> stringResource(
+        id = if (isSingular) R.string.shieldWizardRecovery_fallback_day_label else R.string.shieldWizardRecovery_fallback_days_label
+    )
+    SetupRecoveryViewModel.State.FallbackPeriod.Unit.WEEKS -> stringResource(
+        id = if (isSingular) R.string.shieldWizardRecovery_fallback_week_label else R.string.shieldWizardRecovery_fallback_weeks_label
+    )
 }
 
 @Composable
