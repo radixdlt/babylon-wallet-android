@@ -1444,6 +1444,7 @@ Code: %s</string>
   <string name="shieldSetupPrepareFactors_addHardwareFactor_title">Add a Hardware Device</string>
   <string name="shieldSetupPrepareFactors_addHardwareFactor_subtitle">Choose a hardware device to use as a security factor in your Shield.</string>
   <string name="shieldSetupPrepareFactors_addHardwareFactor_button">Add Hardware Device</string>
+  <string name="shieldSetupPrepareFactors_addHardwareFactor_noDeviceButton">I don’t have a hardware device</string>
   <string name="shieldSetupPrepareFactors_addAnotherFactor_title">Add Another Factor</string>
   <string name="shieldSetupPrepareFactors_addAnotherFactor_subtitle">You need to add **1 more factor** to begin building your Shield.</string>
   <string name="shieldSetupPrepareFactors_addAnotherFactor_passphraseHint">Choosing a passphrase is only recommended for advanced users</string>
