@@ -27,17 +27,13 @@ class GeneralTransferProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return if (withdraws.isEmpty() && deposits.isEmpty()) {
-            PreviewType.NonConforming
-        } else {
-            PreviewType.Transaction(
-                from = withdraws,
-                to = deposits,
-                involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(components = dApps),
-                badges = badges,
-                newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
-            )
-        }
+        return PreviewType.Transaction(
+            from = withdraws,
+            to = deposits,
+            involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(components = dApps),
+            badges = badges,
+            newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
+        )
     }
 
     private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
