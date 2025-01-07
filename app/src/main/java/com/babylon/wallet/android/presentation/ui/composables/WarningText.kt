@@ -2,8 +2,8 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +24,7 @@ fun WarningText(
     textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
     contentColor: Color = RadixTheme.colors.orange1,
     iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+    onTextClick: ((Int) -> Unit)? = null
 ) {
     Row(
         modifier = modifier,
@@ -37,10 +38,12 @@ fun WarningText(
             contentDescription = null,
             tint = contentColor
         )
-        Text(
+        ClickableText(
             text = text,
-            style = textStyle,
-            color = contentColor
+            style = textStyle.copy(
+                color = contentColor
+            ),
+            onClick = { offset -> onTextClick?.invoke(offset) }
         )
     }
 }

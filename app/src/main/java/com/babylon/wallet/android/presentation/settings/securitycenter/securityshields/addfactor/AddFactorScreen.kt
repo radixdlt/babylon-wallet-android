@@ -38,9 +38,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceKind
 
@@ -58,7 +58,7 @@ fun AddFactorScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
-        onFactorSourceSelect = viewModel::onFactorSourceSelect,
+        onFactorSourceKindSelect = viewModel::onFactorSourceKindSelect,
         onInfoClick = onInfoClick,
         onButtonClick = viewModel::onButtonClick,
         onMessageShown = viewModel::onMessageShown
@@ -78,7 +78,7 @@ private fun AddFactorContent(
     modifier: Modifier = Modifier,
     state: AddFactorViewModel.State,
     onDismiss: () -> Unit,
-    onFactorSourceSelect: (FactorSourceCard) -> Unit,
+    onFactorSourceKindSelect: (FactorSourceKindCard) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onButtonClick: () -> Unit,
     onMessageShown: () -> Unit
@@ -161,14 +161,13 @@ private fun AddFactorContent(
                 }
             }
 
-            items(state.factorSources) { item ->
-                SelectableSingleChoiceFactorSourceCard(
+            items(state.factorSourceKinds) { item ->
+                SelectableSingleChoiceFactorSourceKindCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     item = item,
-                    isSelected = item.kind == state.selected,
-                    onSelect = onFactorSourceSelect
+                    onSelect = onFactorSourceKindSelect
                 )
             }
         }
@@ -205,7 +204,7 @@ private fun AddFactorPreview(
         AddFactorContent(
             onDismiss = {},
             state = state,
-            onFactorSourceSelect = {},
+            onFactorSourceKindSelect = {},
             onInfoClick = {},
             onButtonClick = {},
             onMessageShown = {}

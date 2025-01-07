@@ -13,7 +13,6 @@ import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
-import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
@@ -196,40 +195,43 @@ fun Profile.addAccounts(
     return updatedProfile.withUpdatedContentHint()
 }
 
+@Suppress("UnusedParameter")
 fun Profile.addAuthSigningFactorInstanceForEntity(
     entity: ProfileEntity,
     authSigningFactorInstance: HierarchicalDeterministicFactorInstance
 ): Profile {
-    val updatedNetworks = networks.mapWhen(predicate = { network -> network.id == entity.networkId }) { network ->
-        when (entity) {
-            is ProfileEntity.AccountEntity -> network.copy(
-                accounts = Accounts(
-                    network.accounts.mapWhen(predicate = { it.address == entity.accountAddress }) { account ->
-                        val updatedSecurityState = when (val state = account.securityState) {
-                            is EntitySecurityState.Unsecured -> state.copy(
-                                value = state.value.copy(authenticationSigning = authSigningFactorInstance)
-                            )
-                        }
-                        account.copy(securityState = updatedSecurityState)
-                    }
-                ).asList()
-            )
-
-            is ProfileEntity.PersonaEntity -> network.copy(
-                personas = Personas(
-                    network.personas.mapWhen(predicate = { it.address == entity.identityAddress }) { persona ->
-                        val updatedSecurityState = when (val state = persona.securityState) {
-                            is EntitySecurityState.Unsecured -> state.copy(
-                                value = state.value.copy(authenticationSigning = authSigningFactorInstance)
-                            )
-                        }
-                        persona.copy(securityState = updatedSecurityState)
-                    }
-                ).asList()
-            )
-        }
-    }
-    return copy(networks = ProfileNetworks(updatedNetworks).asList())
+    // TODO AuthSigningFactorInstance: replace the commented code below with the updated implementation
+//    val updatedNetworks = networks.mapWhen(predicate = { network -> network.id == entity.networkId }) { network ->
+//        when (entity) {
+//            is ProfileEntity.AccountEntity -> network.copy(
+//                accounts = Accounts(
+//                    network.accounts.mapWhen(predicate = { it.address == entity.accountAddress }) { account ->
+//                        val updatedSecurityState = when (val state = account.securityState) {
+//                            is EntitySecurityState.Unsecured -> state.copy(
+//                                value = state.value.copy(authenticationSigning = authSigningFactorInstance)
+//                            )
+//                        }
+//                        account.copy(securityState = updatedSecurityState)
+//                    }
+//                ).asList()
+//            )
+//
+//            is ProfileEntity.PersonaEntity -> network.copy(
+//                personas = Personas(
+//                    network.personas.mapWhen(predicate = { it.address == entity.identityAddress }) { persona ->
+//                        val updatedSecurityState = when (val state = persona.securityState) {
+//                            is EntitySecurityState.Unsecured -> state.copy(
+//                                value = state.value.copy(authenticationSigning = authSigningFactorInstance)
+//                            )
+//                        }
+//                        persona.copy(securityState = updatedSecurityState)
+//                    }
+//                ).asList()
+//            )
+//        }
+//    }
+//    return copy(networks = ProfileNetworks(updatedNetworks).asList())
+    return this
 }
 
 fun Profile.updateThirdPartyDepositSettings(

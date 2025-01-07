@@ -43,7 +43,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object GetEpoch : DappRequestException()
         data object RejectedByUser : DappRequestException()
         data object InvalidRequest : DappRequestException()
-        data object UnacceptableManifest : DappRequestException()
+        data class UnacceptableManifest(override val cause: Throwable) : DappRequestException(cause = cause)
         data object InvalidPersona : DappRequestException()
         data object InvalidPersonaOrAccounts : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
@@ -74,7 +74,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 InvalidRequestChallenge -> DappWalletInteractionErrorType.FAILED_TO_SIGN_AUTH_CHALLENGE
                 NotPossibleToAuthenticateAutomatically -> DappWalletInteractionErrorType.INVALID_REQUEST
                 RejectedByUser -> DappWalletInteractionErrorType.REJECTED_BY_USER
-                UnacceptableManifest -> DappWalletInteractionErrorType.INVALID_REQUEST
+                is UnacceptableManifest -> DappWalletInteractionErrorType.INVALID_REQUEST
                 is WrongNetwork -> DappWalletInteractionErrorType.WRONG_NETWORK
                 is PreviewError -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
                 InvalidPersonaOrAccounts -> DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS
@@ -292,7 +292,7 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
             R.string.dAppRequest_validationOutcome_invalidRequestMessage
         )
 
-        RadixWalletException.DappRequestException.UnacceptableManifest -> context.getString(
+        is RadixWalletException.DappRequestException.UnacceptableManifest -> context.getString(
             R.string.transactionReview_unacceptableManifest_rejected
         )
 
@@ -471,7 +471,7 @@ fun Throwable.getDappMessage(): String? {
             "Wallet is using network ID: $currentNetworkId, request sent specified network ID: $requestNetworkId"
         }
 
-        else -> message
+        else -> message ?: cause?.message
     }
 }
 

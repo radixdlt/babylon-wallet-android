@@ -35,10 +35,9 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
@@ -58,15 +57,15 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun FactorSourceCardView(
-    item: FactorSourceCard,
+fun FactorSourceKindCardView(
+    item: FactorSourceKindCard,
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
         modifier = modifier
     ) {
-        SimpleFactorSourceCardView(
+        SimpleFactorCardView(
             iconRes = item.kind.iconRes(),
             title = item.kind.title(),
             subtitle = item.kind.subtitle(),
@@ -81,15 +80,15 @@ fun FactorSourceCardView(
 }
 
 @Composable
-fun FactorSourceInstanceCardView(
-    item: FactorSourceInstanceCard,
+fun FactorSourceCardView(
+    item: FactorSourceCard,
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
         modifier = modifier
     ) {
-        SimpleFactorSourceCardView(
+        SimpleFactorCardView(
             iconRes = item.kind.iconRes(),
             title = item.name,
             subtitle = item.kind.subtitle().takeIf { item.includeDescription },
@@ -106,13 +105,18 @@ fun FactorSourceInstanceCardView(
 
         LinkedEntitiesView(
             accounts = item.accounts,
-            personas = item.personas
+            personas = item.personas,
+            hasHiddenEntities = item.hasHiddenEntities
         )
     }
 }
 
+/**
+ * A composable that can be used either to present a factor source or a factor source kind.
+ *
+ */
 @Composable
-fun SimpleFactorSourceCardView(
+fun SimpleFactorCardView(
     @DrawableRes iconRes: Int,
     title: String,
     modifier: Modifier = Modifier,
@@ -223,7 +227,8 @@ private fun MessagesView(
 @Composable
 private fun LinkedEntitiesView(
     accounts: PersistentList<Account>,
-    personas: PersistentList<Persona>
+    personas: PersistentList<Persona>,
+    hasHiddenEntities: Boolean
 ) {
     if (accounts.isEmpty() && personas.isEmpty()) {
         return
@@ -239,15 +244,28 @@ private fun LinkedEntitiesView(
         personas.size == 1 -> stringResource(id = R.string.factorSources_card_personaSingular)
         else -> stringResource(id = R.string.factorSources_card_personaPlural, personas.size)
     }
-    val linkedText = when {
-        accountsText != null && personasText != null -> stringResource(
-            id = R.string.factorSources_card_linkedAccountsAndPersonas,
-            accountsText,
-            personasText
-        )
-        accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
-        personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
-        else -> ""
+    val linkedText = if (hasHiddenEntities) {
+        when {
+            accountsText != null && personasText != null -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsAndPersonasSomeHidden,
+                accountsText,
+                personasText
+            )
+            accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, accountsText)
+            personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, personasText)
+            else -> ""
+        }
+    } else {
+        when {
+            accountsText != null && personasText != null -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsAndPersonas,
+                accountsText,
+                personasText
+            )
+            accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
+            personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
+            else -> ""
+        }
     }
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -272,6 +290,7 @@ private fun LinkedEntitiesView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = linkedText,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
@@ -320,6 +339,10 @@ private fun LinkedEntitiesView(
                             ),
                         persona = it
                     )
+                }
+
+                if (hasHiddenEntities) {
+                    HiddenEntityCard(modifier = Modifier.fillMaxWidth())
                 }
             }
         }
@@ -372,6 +395,19 @@ fun FactorSourceKind.subtitle(): String {
 @Composable
 @Preview
 @UsesSampleValues
+private fun FactorSourceKindCardPreview(
+    @PreviewParameter(FactorSourceKindCardPreviewProvider::class) item: FactorSourceKindCard
+) {
+    RadixWalletPreviewTheme {
+        FactorSourceKindCardView(
+            item = item
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
 private fun FactorSourceCardPreview(
     @PreviewParameter(FactorSourceCardPreviewProvider::class) item: FactorSourceCard
 ) {
@@ -382,37 +418,24 @@ private fun FactorSourceCardPreview(
     }
 }
 
-@Composable
-@Preview
 @UsesSampleValues
-private fun FactorSourceInstanceCardPreview(
-    @PreviewParameter(FactorSourceInstanceCardPreviewProvider::class) item: FactorSourceInstanceCard
-) {
-    RadixWalletPreviewTheme {
-        FactorSourceInstanceCardView(
-            item = item
-        )
-    }
-}
+class FactorSourceKindCardPreviewProvider : PreviewParameterProvider<FactorSourceKindCard> {
 
-@UsesSampleValues
-class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCard> {
-
-    override val values: Sequence<FactorSourceCard>
+    override val values: Sequence<FactorSourceKindCard>
         get() = sequenceOf(
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 messages = persistentListOf()
             ),
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.ARCULUS_CARD,
                 messages = persistentListOf()
             ),
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.PASSWORD,
                 messages = persistentListOf()
             ),
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 messages = persistentListOf(
                     FactorSourceStatusMessage.Dynamic(
@@ -427,11 +450,11 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
 }
 
 @UsesSampleValues
-class FactorSourceInstanceCardPreviewProvider : PreviewParameterProvider<FactorSourceInstanceCard> {
+class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCard> {
 
-    override val values: Sequence<FactorSourceInstanceCard>
+    override val values: Sequence<FactorSourceCard>
         get() = sequenceOf(
-            FactorSourceInstanceCard(
+            FactorSourceCard(
                 id = FactorSourceId.Hash.init(
                     kind = FactorSourceKind.DEVICE,
                     mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -455,7 +478,32 @@ class FactorSourceInstanceCardPreviewProvider : PreviewParameterProvider<FactorS
                 personas = persistentListOf(
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
-                )
+                ),
+                hasHiddenEntities = true
+            ),
+            FactorSourceCard(
+                id = FactorSourceId.Hash.init(
+                    kind = FactorSourceKind.DEVICE,
+                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                ),
+                name = "My Phone",
+                includeDescription = false,
+                lastUsedOn = "Today",
+                kind = FactorSourceKind.DEVICE,
+                messages = persistentListOf(
+                    FactorSourceStatusMessage.PassphraseHint,
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "Warning text",
+                            type = StatusMessage.Type.WARNING
+                        )
+                    )
+                ),
+                accounts = persistentListOf(
+                    Account.sampleMainnet()
+                ),
+                personas = persistentListOf(),
+                hasHiddenEntities = true
             )
         )
 }

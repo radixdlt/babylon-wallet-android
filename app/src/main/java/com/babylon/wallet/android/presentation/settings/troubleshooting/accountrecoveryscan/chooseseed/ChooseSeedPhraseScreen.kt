@@ -42,7 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSourceId
