@@ -132,11 +132,6 @@ fun BoundedAmountSection(
             is BoundedAmount.Exact -> {
                 amount(boundedAmount.amount)
             }
-            is BoundedAmount.Max -> {
-                qualifier(stringResource(id = R.string.interactionReview_noMoreThan))
-
-                amount(boundedAmount.amount)
-            }
             is BoundedAmount.Min -> {
                 qualifier(stringResource(id = R.string.interactionReview_atLeast))
 
@@ -211,13 +206,15 @@ fun UnknownAmount(
     modifier: Modifier = Modifier,
     amount: BoundedAmount?
 ) {
-    val unknownAmount = remember(amount) { amount as? BoundedAmount.Unknown }
+    val unknownAmount = remember(amount) {
+        BoundedAmount.Unknown.takeIf { amount is BoundedAmount.Unknown || amount is BoundedAmount.Max }
+    }
     unknownAmount?.let {
-        WarningText(
+        Text(
             modifier = modifier,
-            text = AnnotatedString(stringResource(id = R.string.interactionReview_unknown_amount)),
-            textStyle = RadixTheme.typography.body2HighImportance,
-            contentColor = RadixTheme.colors.orange1
+            text = stringResource(id = R.string.interactionReview_unknown_amount),
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2
         )
     }
 }
@@ -300,16 +297,35 @@ private fun LargeBoundedAmountSectionPreview(
     }
 }
 
+@Composable
+@Preview
+private fun UnknownAmountSectionPreview() {
+    RadixWalletPreviewTheme {
+        UnknownAmount(
+            amount = BoundedAmount.Unknown
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun UnknownMaxAmountSectionPreview() {
+    RadixWalletPreviewTheme {
+        UnknownAmount(
+            amount = BoundedAmount.Max(Decimal192.sample())
+        )
+    }
+}
+
 @UsesSampleValues
 class BoundedAmountSectionPreviewProvider : PreviewParameterProvider<BoundedAmount> {
 
     override val values: Sequence<BoundedAmount>
         get() = sequenceOf(
             BoundedAmount.Exact(Decimal192.sample()),
-            BoundedAmount.Max(Decimal192.sample()),
             BoundedAmount.Min(Decimal192.sample()),
             BoundedAmount.Range(Decimal192.sample(), Decimal192.sample.other()),
-            BoundedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192()),
-            BoundedAmount.Unknown
+            BoundedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192())
         )
 }
