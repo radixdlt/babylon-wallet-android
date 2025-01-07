@@ -101,7 +101,7 @@ private fun TroubleshootingSettingsContent(
                                             is Troubleshooting.ContactSupport -> {
                                                 context.openEmail(item.supportAddress, item.subject, item.body)
                                             }
-                                            Troubleshooting.Discord -> context.openUrl("http://discord.gg/radixdlt")
+                                            Troubleshooting.Discord -> context.openUrl("https://go.radixdlt.com/Discord")
                                             else -> {
                                                 onSettingItemClick(item)
                                             }
