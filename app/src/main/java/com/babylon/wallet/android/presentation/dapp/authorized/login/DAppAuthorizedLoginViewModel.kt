@@ -572,7 +572,16 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             numberOfAccounts = numberOfAccounts,
             quantifier = ongoingAccountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
         )
-        if (request.resetRequestItem?.accounts == true || potentialOngoingAddresses.isEmpty()) {
+
+        // if challenge exists then always navigate to choose accounts screen and get signatures
+        if (ongoingAccountsRequestItem.challenge != null) {
+            sendEvent(
+                event = Event.NavigateToOngoingAccounts(
+                    isExactAccountsCount = isExactAccountsCount,
+                    numberOfAccounts = numberOfAccounts
+                )
+            )
+        } else if (request.resetRequestItem?.accounts == true || potentialOngoingAddresses.isEmpty()) {
             sendEvent(
                 event = Event.NavigateToOngoingAccounts(
                     isExactAccountsCount = isExactAccountsCount,
@@ -581,7 +590,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             )
         } else {
             val selectedAccounts = potentialOngoingAddresses.mapNotNull {
-                getProfileUseCase().activeAccountOnCurrentNetwork(it) // ?.toUiModel(true)
+                getProfileUseCase().activeAccountOnCurrentNetwork(it)
             }.map { it.asProfileEntity() }
             _state.update { it.copy(ongoingAccountsWithSignatures = selectedAccounts.associateWith { null }) }
             mutex.withLock {
