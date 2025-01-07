@@ -215,11 +215,11 @@ private fun StatusView(
     val readMoreGlossaryItem = GlossaryItem.buildingshield
     val message = when (status) {
         SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupSelectFactors_statusMessage_recommendedFactors),
+            message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
             type = StatusMessage.Type.WARNING
         )
         SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupSelectFactors_statusMessage_atLeastOneFactor),
+            message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
             type = StatusMessage.Type.ERROR
         )
         SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
