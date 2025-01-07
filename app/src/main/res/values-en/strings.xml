@@ -920,7 +920,7 @@ Code: %s</string>
   <string name="factorSources_list_seedPhraseNotRecoverable">Write down seed phrase to make this factor recoverable</string>
   <string name="factorSources_list_arculusCardNotWorking">Arculus not working. Try adding it again</string>
   <string name="factorSources_list_lostFactorSource">This factor has been lost</string>
-  <string name="factorSources_detail_settings">Factor Settings</string>
+  <string name="factorSources_detail_manage">Manage Factor</string>
   <string name="factorSources_detail_test">Test</string>
   <string name="factorSources_detail_advanced">Advanced</string>
   <string name="factorSources_detail_rename">Rename this factor</string>
@@ -929,6 +929,8 @@ Code: %s</string>
   <string name="factorSources_detail_lastUsed">**Last used:** %s</string>
   <string name="factorSources_detail_viewSeedPhrase">View Seed Phrase</string>
   <string name="factorSources_detail_writeSeedPhrase">Write down the seed phrase for advanced recovery</string>
+  <string name="factorSources_detail_seedPhraseLost">Seed Phrase Lost</string>
+  <string name="factorSources_detail_enterSeedPhrase">Enter seed phrase to recover use of this factor</string>
   <string name="factorSources_detail_changePin">Change PIN</string>
   <string name="customizeNetworkFees_normalMode_title">Customize Fees</string>
   <string name="customizeNetworkFees_feeBreakdownTitle">Estimated Transaction Fees</string>
