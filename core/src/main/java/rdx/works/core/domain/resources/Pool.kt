@@ -52,8 +52,8 @@ data class Pool(
                     )
                 ),
                 resources = listOf(
-                    Resource.FungibleResource.sampleMainnet.random(),
-                    Resource.FungibleResource.sampleMainnet.random()
+                    Resource.FungibleResource.sampleMainnet(),
+                    Resource.FungibleResource.sampleMainnet.other()
                 ),
                 associatedDApp = DApp.sampleMainnet()
             )

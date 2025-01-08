@@ -53,11 +53,13 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
 import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
 
@@ -290,7 +292,10 @@ private fun PoolUnitDialogContentPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()))
+                amounts = mapOf(
+                    ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()),
+                    ResourceAddress.sampleMainnet.other().string to BoundedAmount.Max(Decimal192.sample()),
+                )
             ),
             poolUnit = PoolUnit(
                 stake = Resource.FungibleResource(
@@ -305,7 +310,7 @@ private fun PoolUnitDialogContentPreview() {
                         )
                     )
                 ),
-                pool = null
+                pool = Pool.sampleMainnet()
             ),
             poolUnitPrice = null,
             isLoadingBalance = false,

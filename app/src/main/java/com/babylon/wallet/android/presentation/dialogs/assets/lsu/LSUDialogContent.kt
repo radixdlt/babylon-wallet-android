@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.composables.BoundedAmountSection
 import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.UnknownAmount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -285,67 +286,75 @@ private fun LSUResourceValue(
     price: AssetPrice.LSUPrice?,
     isLoadingBalance: Boolean
 ) {
-    Row(
+    Column(
         modifier = modifier
             .assetOutlineBorder()
             .padding(
                 horizontal = RadixTheme.dimensions.paddingDefault,
-                vertical = RadixTheme.dimensions.paddingLarge
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        Thumbnail.Fungible(
-            modifier = Modifier.size(44.dp),
-            token = Resource.FungibleResource(
-                address = XrdResource.address(Gateway.default.network.id),
-                ownedAmount = null
+                vertical = RadixTheme.dimensions.paddingDefault
             )
-        )
-        Text(
-            modifier = Modifier.weight(1f),
-            text = XrdResource.SYMBOL,
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
-            maxLines = 2
-        )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Thumbnail.Fungible(
+                modifier = Modifier.size(44.dp),
+                token = Resource.FungibleResource(
+                    address = XrdResource.address(Gateway.default.network.id),
+                    ownedAmount = null
+                )
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = XrdResource.SYMBOL,
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
 
-        Column(horizontalAlignment = Alignment.End) {
-            Box(
-                modifier = Modifier
-                    .widthIn(min = RadixTheme.dimensions.amountShimmeringWidth)
-                    .radixPlaceholder(visible = amount == null),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                amount?.let {
-                    BoundedAmountSection(
-                        boundedAmount = it,
-                        isCompact = true
+            Column(horizontalAlignment = Alignment.End) {
+                Box(
+                    modifier = Modifier
+                        .widthIn(min = RadixTheme.dimensions.amountShimmeringWidth)
+                        .radixPlaceholder(visible = amount == null),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    amount?.let {
+                        BoundedAmountSection(
+                            boundedAmount = it,
+                            isCompact = true
+                        )
+                    }
+                }
+
+                val xrdPrice = remember(price, amount) {
+                    (amount as? BoundedAmount.Exact)?.amount?.let { amount ->
+                        price?.xrdPrice(amount)
+                    }
+                }
+                if (isLoadingBalance) {
+                    ShimmeringView(
+                        modifier = Modifier
+                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                            .height(12.dp)
+                            .fillMaxWidth(0.3f),
+                        isVisible = true
+                    )
+                }
+                if (xrdPrice != null) {
+                    FiatBalanceView(
+                        fiatPrice = xrdPrice,
+                        textStyle = RadixTheme.typography.body2HighImportance
                     )
                 }
             }
-
-            val xrdPrice = remember(price, amount) {
-                (amount as? BoundedAmount.Exact)?.amount?.let { amount ->
-                    price?.xrdPrice(amount)
-                }
-            }
-            if (isLoadingBalance) {
-                ShimmeringView(
-                    modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
-                        .height(12.dp)
-                        .fillMaxWidth(0.3f),
-                    isVisible = true
-                )
-            }
-            if (xrdPrice != null) {
-                FiatBalanceView(
-                    fiatPrice = xrdPrice,
-                    textStyle = RadixTheme.typography.body2HighImportance
-                )
-            }
         }
+
+        UnknownAmount(
+            modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+            amount = amount
+        )
     }
 }
 
