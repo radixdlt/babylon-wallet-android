@@ -33,8 +33,8 @@ enum class GlossaryItem {
     gateways,
     preauthorizations,
     possibledappcalls,
-    securityshield,
-    buildsecurityshields,
-    nohardwaredevice,
-    biometricsPIN // TODO pending the right glossary item
+    securityshields,
+    buildingshield,
+    biometricsPIN, // TODO pending the right glossary item
+    emergencyFallback
 }

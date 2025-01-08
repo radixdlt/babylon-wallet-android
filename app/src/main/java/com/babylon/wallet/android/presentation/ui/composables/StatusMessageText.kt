@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 @Composable
 fun StatusMessageText(
     modifier: Modifier = Modifier,
-    onTextClick: ((Int) -> Unit)? = null,
     message: StatusMessage
 ) {
     WarningText(
@@ -17,8 +16,7 @@ fun StatusMessageText(
         text = message.message,
         textStyle = RadixTheme.typography.body2HighImportance,
         contentColor = message.type.color(),
-        iconRes = message.type.iconRes(),
-        onTextClick = onTextClick
+        iconRes = message.type.iconRes()
     )
 }
 

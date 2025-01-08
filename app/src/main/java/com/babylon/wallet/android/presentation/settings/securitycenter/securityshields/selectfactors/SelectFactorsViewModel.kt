@@ -3,6 +3,9 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -21,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SelectFactorsViewModel @Inject constructor(
     private val securityShieldBuilderClient: SecurityShieldBuilderClient
-) : StateViewModel<SelectFactorsViewModel.State>() {
+) : StateViewModel<SelectFactorsViewModel.State>(),
+    OneOffEventHandler<SelectFactorsViewModel.Event> by OneOffEventHandlerImpl() {
 
     init {
         initFactorSources()
@@ -29,22 +33,61 @@ class SelectFactorsViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    fun onMessageShown() {
-        _state.update { state -> state.copy(message = null) }
+    fun onFactorCheckedChange(
+        card: FactorSourceCard,
+        checked: Boolean
+    ) {
+        viewModelScope.launch {
+            securityShieldBuilderClient.updatePrimaryRoleThresholdFactorSourceSelection(card.id, checked)
+        }
+    }
+
+    fun onBuildShieldClick() {
+        viewModelScope.launch {
+            securityShieldBuilderClient.autoAssignSelectedFactors()
+            sendEvent(Event.ToRegularAccess)
+        }
     }
 
     private fun initFactorSources() {
         viewModelScope.launch {
+            securityShieldBuilderClient.newSecurityShieldBuilder()
+
             _state.update { state ->
                 state.copy(
-                    status = securityShieldBuilderClient.validateFactorSourceSelection(),
-                    items = securityShieldBuilderClient.getFactorSources()
+                    items = securityShieldBuilderClient.getSortedPrimaryThresholdFactorSources()
                         .groupBy { it.kind }
                         .flatMap { entry ->
                             listOf(State.UiItem.CategoryHeader(entry.key)) + entry.value.map { it.toUiItem() }
                         }
                 )
             }
+
+            observeSelection()
+        }
+    }
+
+    private fun observeSelection() {
+        viewModelScope.launch {
+            securityShieldBuilderClient.primaryRoleSelection()
+                .collect {
+                    _state.update { state ->
+                        state.copy(
+                            status = it.primaryRoleStatus,
+                            items = state.items.map { item ->
+                                if (item is State.UiItem.Factor) {
+                                    item.copy(
+                                        card = item.card.copy(
+                                            selected = item.card.data.id in it.thresholdFactors.map { factor -> factor.id }
+                                        )
+                                    )
+                                } else {
+                                    item
+                                }
+                            }
+                        )
+                    }
+                }
         }
     }
 
@@ -61,40 +104,19 @@ class SelectFactorsViewModel @Inject constructor(
         )
     }
 
-    fun onFactorCheckedChange(
-        card: FactorSourceCard,
-        checked: Boolean
-    ) {
-        viewModelScope.launch {
-            val selectedFactorIds = securityShieldBuilderClient.updateFactorSourceSelection(card.id, checked)
-
-            _state.update { state ->
-                state.copy(
-                    status = securityShieldBuilderClient.validateFactorSourceSelection(),
-                    items = state.items.map { item ->
-                        if (item is State.UiItem.Factor) {
-                            item.copy(card = item.card.copy(selected = item.card.data.id in selectedFactorIds))
-                        } else {
-                            item
-                        }
-                    }
-                )
-            }
-        }
-    }
-
     data class State(
         val items: List<UiItem> = emptyList(),
         val status: SelectedFactorSourcesForRoleStatus? = null,
         val message: UiMessage? = null
     ) : UiState {
 
-        val isButtonEnabled: Boolean = items.any { it is UiItem.Factor && it.card.selected }
+        val isButtonEnabled: Boolean = status == SelectedFactorSourcesForRoleStatus.OPTIMAL ||
+            status == SelectedFactorSourcesForRoleStatus.SUBOPTIMAL
 
         fun showPasswordWarning(categoryHeader: UiItem.CategoryHeader): Boolean =
             categoryHeader.kind == FactorSourceKind.PASSWORD && items.any {
                 (it as? UiItem.Factor)?.card?.data?.kind == FactorSourceKind.PASSWORD && it.card.selected
-            }
+            } && status == SelectedFactorSourcesForRoleStatus.INVALID
 
         sealed interface UiItem {
 
@@ -106,5 +128,10 @@ class SelectFactorsViewModel @Inject constructor(
                 val card: Selectable<FactorSourceCard>
             ) : UiItem
         }
+    }
+
+    sealed interface Event : OneOffEvent {
+
+        data object ToRegularAccess : Event
     }
 }

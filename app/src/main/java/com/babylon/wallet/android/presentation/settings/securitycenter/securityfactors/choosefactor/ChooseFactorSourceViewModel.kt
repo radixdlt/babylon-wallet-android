@@ -13,7 +13,9 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFac
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableMap
@@ -35,17 +37,22 @@ class ChooseFactorSourceViewModel @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : StateViewModel<ChooseFactorSourceViewModel.State>(), OneOffEventHandler<ChooseFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private var factorSourcesFromProfile = state.value.selectableFactorSources
+
+    init {
+        initData()
+    }
+
     override fun initialState(): State = State(
         currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
         securityFactorTypeItems = currentSecurityFactorTypeItems
     )
 
-    private var factorSourcesFromProfile = state.value.selectableFactorSources
-
-    init {
+    fun initData(excludeFactorSources: List<FactorSourceId> = emptyList()) {
         viewModelScope.launch(defaultDispatcher) {
             factorSourcesFromProfile = osManager.sargonOs
                 .factorSources()
+                .filter { it.id !in excludeFactorSources }
                 .map { factorSource ->
                     Selectable(factorSource.toFactorSourceCard())
                 }

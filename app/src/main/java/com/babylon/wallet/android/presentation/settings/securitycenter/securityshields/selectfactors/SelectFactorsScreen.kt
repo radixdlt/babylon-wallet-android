@@ -12,24 +12,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -39,8 +35,6 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
@@ -48,6 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.title
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
+import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -63,7 +58,7 @@ fun SelectFactorsScreen(
     viewModel: SelectFactorsViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onBuildShield: () -> Unit
+    toRegularAccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -73,9 +68,16 @@ fun SelectFactorsScreen(
         onDismiss = onDismiss,
         onFactorCheckedChange = viewModel::onFactorCheckedChange,
         onInfoClick = onInfoClick,
-        onBuildShieldClick = onBuildShield,
-        onMessageShown = viewModel::onMessageShown
+        onBuildShieldClick = viewModel::onBuildShieldClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                SelectFactorsViewModel.Event.ToRegularAccess -> toRegularAccess()
+            }
+        }
+    }
 }
 
 @Composable
@@ -85,17 +87,8 @@ private fun SelectFactorsContent(
     onDismiss: () -> Unit,
     onFactorCheckedChange: (FactorSourceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onMessageShown: () -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    SnackbarUIMessage(
-        message = state.message,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -112,12 +105,6 @@ private fun SelectFactorsContent(
                 enabled = state.isButtonEnabled
             )
         },
-        snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
-            )
-        },
         containerColor = RadixTheme.colors.white
     ) { padding ->
         LazyColumn(
@@ -125,7 +112,7 @@ private fun SelectFactorsContent(
                 start = RadixTheme.dimensions.paddingDefault,
                 end = RadixTheme.dimensions.paddingDefault,
                 top = padding.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding()
+                bottom = padding.calculateBottomPadding() + RadixTheme.dimensions.paddingSemiLarge
             ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -172,7 +159,8 @@ private fun SelectFactorsContent(
                     is SelectFactorsViewModel.State.UiItem.CategoryHeader -> CategoryHeaderView(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXLarge),
                         item = item,
-                        message = "Cannot use this factor by itself".takeIf { state.showPasswordWarning(item) } // TODO crowdin
+                        message = stringResource(id = R.string.shieldSetupStatus_factorCannotBeUsedByItself)
+                            .takeIf { state.showPasswordWarning(item) }
                     )
                     is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
@@ -224,47 +212,36 @@ private fun StatusView(
     status: SelectedFactorSourcesForRoleStatus,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
-    val readMoreGlossaryItem = GlossaryItem.buildsecurityshields
-    val message = when (status) {
-        SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
-            type = StatusMessage.Type.WARNING
+    when (status) {
+        SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessageText(
+            modifier = modifier,
+            message = StatusMessage(
+                message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
+                type = StatusMessage.Type.WARNING
+            )
         )
-        SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
-            type = StatusMessage.Type.ERROR
+        SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessageText(
+            modifier = modifier,
+            message = StatusMessage(
+                message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
+                type = StatusMessage.Type.ERROR
+            )
         )
-        SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
-            message = buildAnnotatedString {
-                append("You cannot create a Shield with this combination of factors.") // TODO crowdin
-                withStyle(
-                    RadixTheme.typography.body1StandaloneLink.copy(
-                        fontSize = 14.sp,
-                        color = RadixTheme.colors.blue2
-                    ).toSpanStyle()
-                ) {
-                    pushStringAnnotation(
-                        tag = readMoreGlossaryItem.name,
-                        annotation = readMoreGlossaryItem.name
+        SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessageText(
+            modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
+            message = StatusMessage(
+                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
+                    boldStyle = SpanStyle(
+                        color = RadixTheme.colors.blue2,
+                        fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
+                        fontSize = RadixTheme.typography.body2Link.fontSize
                     )
-                    append(" ")
-                    append("Read more") // TODO crowdin
-                }
-            },
-            type = StatusMessage.Type.ERROR
+                ),
+                type = StatusMessage.Type.ERROR
+            )
         )
         SelectedFactorSourcesForRoleStatus.OPTIMAL -> return
     }
-
-    StatusMessageText(
-        modifier = modifier,
-        message = message,
-        onTextClick = { offset ->
-            message.message.getStringAnnotations(readMoreGlossaryItem.name, offset, offset).firstOrNull()?.let {
-                onInfoClick(readMoreGlossaryItem)
-            }
-        }
-    )
 }
 
 @Composable
@@ -280,7 +257,6 @@ private fun SelectFactorsPreview(
             onFactorCheckedChange = { _, _ -> },
             onInfoClick = {},
             onBuildShieldClick = {},
-            onMessageShown = {}
         )
     }
 }
