@@ -6,11 +6,6 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HDSignatureInput
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HdSignature
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.SignaturesPerFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.PublicKey
@@ -24,10 +19,16 @@ import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.os.signing.FactorOutcome
+import com.radixdlt.sargon.os.signing.HdSignature
+import com.radixdlt.sargon.os.signing.HdSignatureInput
+import com.radixdlt.sargon.os.signing.PerFactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorSourceInput
+import com.radixdlt.sargon.os.signing.Signable
+import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
-import rdx.works.core.sargon.Signable
 import rdx.works.core.sargon.init
 import rdx.works.core.sargon.updateLastUsed
 import rdx.works.core.then
@@ -45,9 +46,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
      */
     suspend fun mono(
         ledgerFactorSource: FactorSource.Ledger,
-        input: InputPerFactorSource<Signable.Payload>
-    ): Result<SignaturesPerFactorSource<Signable.ID>> {
-        val hdSignatures = input.transactions.map { perTransaction ->
+        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+    ): Result<PerFactorOutcome<Signable.ID>> {
+        val hdSignatures = input.perTransaction.map { perTransaction ->
             when (val payload = perTransaction.payload) {
                 is Signable.Payload.Transaction -> signTransaction(
                     inputPerTransaction = perTransaction,
@@ -75,15 +76,15 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         profileRepository.saveProfile(profile.updateLastUsed(ledgerFactorSource.id))
 
         return Result.success(
-            SignaturesPerFactorSource(
+            PerFactorOutcome(
                 factorSourceId = input.factorSourceId,
-                hdSignatures = hdSignatures
+                outcome = FactorOutcome.Signed(producedSignatures = hdSignatures)
             )
         )
     }
 
     private suspend fun signTransaction(
-        inputPerTransaction: InputPerTransaction<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
         payload: Signable.Payload.Transaction,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -111,7 +112,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signSubintent(
-        inputPerTransaction: InputPerTransaction<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
         payload: Signable.Payload.Subintent,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -139,7 +140,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signAuth(
-        inputPerTransaction: InputPerTransaction<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
         payload: Signable.Payload.Auth,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -179,7 +180,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             it.factorInstance.publicKey.derivationPath.string == derivedPublicKey.derivationPath
         } ?: error("No derivation path from ledger, matched the input ownedFactorInstances.")
 
-        val input = HDSignatureInput(
+        val input = HdSignatureInput(
             payloadId = payloadId,
             ownedFactorInstance = ownedFactorInstance
         )

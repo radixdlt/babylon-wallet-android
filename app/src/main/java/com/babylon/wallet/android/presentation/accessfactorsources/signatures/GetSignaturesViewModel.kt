@@ -16,19 +16,20 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.NeglectFactorReason
-import com.radixdlt.sargon.SecureStorageAccessErrorKind.USER_CANCELLED
+import com.radixdlt.sargon.NeglectedFactor
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.os.signing.FactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorSourceInput
+import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.Signable
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -43,12 +44,12 @@ class GetSignaturesViewModel @Inject constructor(
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
     @Suppress("UNCHECKED_CAST")
-    private val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSign<Signable.Payload>
+    private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSign<Signable.Payload, Signable.ID>
 
     private var signingJob: Job? = null
 
     override fun initialState(): State = State(
-        signPurpose = input.purpose
+        signPurpose = proxyInput.purpose
     )
 
     init {
@@ -58,27 +59,18 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     fun onDismiss() = viewModelScope.launch {
-        signingJob?.cancel()
-
-        val output = input.perFactorSource.map { input ->
-            OutputPerFactorSource.Neglected<Signable.ID>(
-                factorSourceId = input.factorSourceId,
-                reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED
-            )
-        }
-
-        sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output))
+        finishWithFailure(
+            factorSourceId = proxyInput.input.factorSourceId,
+            neglectFactorReason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED
+        )
     }
 
     fun onRetry() {
-        val factorSources = _state.value.factorSources ?: return
-
-        val factorSourcesById = factorSources.associateBy { (it.id as FactorSourceId.Hash).value }
+        val factorSource = _state.value.factorSource ?: return
 
         signingJob?.cancel()
         signingJob = viewModelScope.launch {
-            sign(factorSourcesById)
+            sign(factorSource)
         }
     }
 
@@ -89,23 +81,29 @@ class GetSignaturesViewModel @Inject constructor(
     private suspend fun resolveFactorSourcesAndSign() {
         val profile = getProfileUseCase()
 
-        val factorSources = input.perFactorSource.map { perFactorSource ->
-            profile.factorSourceById(perFactorSource.factorSourceId.asGeneral()) ?: run {
-                finishWithFailure(perFactorSource.factorSourceId, NeglectFactorReason.FAILURE)
-                return
-            }
+        val factorSource = profile.factorSourceById(
+            id = proxyInput.input.factorSourceId.asGeneral()
+        ) ?: run {
+            finishWithFailure(proxyInput.input.factorSourceId, NeglectFactorReason.FAILURE)
+            return
         }
 
-        val factorSourcesById = factorSources.associateBy { (it.id as FactorSourceId.Hash).value }
-        sign(factorSourcesById)
+        sign(factorSource)
     }
 
-    private suspend fun sign(factorSources: Map<FactorSourceIdFromHash, FactorSource>) {
-        signMonoOrPoly(factorSources).onSuccess { signaturesPerFactorSource ->
+    private suspend fun sign(factorSource: FactorSource) {
+        _state.update {
+            it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource))
+        }
+
+        signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        ).onSuccess { perFactorOutcome ->
             _state.update { it.copy(isSigningInProgress = false) }
-            finishWithSuccess(signaturesPerFactorSource)
+            finishWithSuccess(perFactorOutcome)
         }.onFailure { error ->
-            val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind == USER_CANCELLED) {
+            val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
                 null
             } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
                 null
@@ -117,44 +115,10 @@ class GetSignaturesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun signMonoOrPoly(
-        factorSources: Map<FactorSourceIdFromHash, FactorSource>
-    ) = if (input.perFactorSource.size > 1) {
-        if (input.perFactorSource.any { it.factorSourceId.kind != FactorSourceKind.DEVICE }) {
-            error("Poly factor sign is currently only supported for DeviceFactorSource kind.")
-        } else {
-            _state.update {
-                it.copy(
-                    isSigningInProgress = true,
-                    factorSourcesToSign = State.FactorSourcesToSign.Poly(
-                        kind = input.kind,
-                        factorSources = factorSources.values.toList()
-                    )
-                )
-            }
-
-            signWithDeviceFactorSourceUseCase.poly(
-                deviceFactorSources = factorSources.values.filterIsInstance<FactorSource.Device>(),
-                inputs = input.perFactorSource
-            )
-        }
-    } else if (input.perFactorSource.size == 1) {
-        val input = input.perFactorSource.first()
-        val factorSource = factorSources.getValue(input.factorSourceId)
-        _state.update { it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource)) }
-
-        signMono(
-            factorSource = factorSource,
-            input = input
-        ).map { listOf(it) }
-    } else {
-        error("Did not provide any factor source to sign")
-    }
-
     private suspend fun signMono(
         factorSource: FactorSource,
-        input: InputPerFactorSource<Signable.Payload>
-    ): Result<SignaturesPerFactorSource<Signable.ID>> = when (factorSource) {
+        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+    ): Result<PerFactorOutcome<Signable.ID>> = when (factorSource) {
         is FactorSource.Device -> signWithDeviceFactorSourceUseCase.mono(
             deviceFactorSource = factorSource,
             input = input
@@ -168,26 +132,31 @@ class GetSignaturesViewModel @Inject constructor(
         else -> error("Signing with ${factorSource.kind} is not yet supported")
     }
 
-    private suspend fun finishWithSuccess(signaturesPerFactorSource: List<SignaturesPerFactorSource<Signable.ID>>) {
-        val output = signaturesPerFactorSource.map { OutputPerFactorSource.Signed(signatures = it) }
-
+    private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output))
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output = outcome))
     }
 
     private suspend fun finishWithFailure(
         factorSourceId: FactorSourceIdFromHash,
         neglectFactorReason: NeglectFactorReason
     ) {
+        signingJob?.cancel()
+
         // end the signing process and return the output (error)
         sendEvent(event = Event.Completed)
+
+        val outcome = FactorOutcome.Neglected<Signable.ID>(
+            factor = NeglectedFactor(
+                reason = neglectFactorReason,
+                factor = factorSourceId
+            )
+        )
         accessFactorSourcesIOHandler.setOutput(
             AccessFactorSourcesOutput.SignOutput(
-                perFactorSource = listOf(
-                    OutputPerFactorSource.Neglected(
-                        factorSourceId = factorSourceId,
-                        reason = neglectFactorReason
-                    )
+                output = PerFactorOutcome(
+                    factorSourceId = factorSourceId,
+                    outcome = outcome
                 )
             )
         )
@@ -200,20 +169,14 @@ class GetSignaturesViewModel @Inject constructor(
         val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState {
 
-        val factorSources: List<FactorSource>? = when (factorSourcesToSign) {
-            is FactorSourcesToSign.Mono -> listOf(factorSourcesToSign.factorSource)
-            is FactorSourcesToSign.Poly -> factorSourcesToSign.factorSources
+        val factorSource: FactorSource? = when (factorSourcesToSign) {
+            is FactorSourcesToSign.Mono -> factorSourcesToSign.factorSource
             FactorSourcesToSign.Resolving -> null
         }
 
         sealed interface FactorSourcesToSign {
 
             data object Resolving : FactorSourcesToSign
-
-            data class Poly(
-                val kind: FactorSourceKind,
-                val factorSources: List<FactorSource>
-            ) : FactorSourcesToSign
 
             data class Mono(
                 val factorSource: FactorSource

@@ -3,8 +3,6 @@ package com.babylon.wallet.android.presentation.interactor
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource.Companion.into
-import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.KeyDerivationRequest
 import com.radixdlt.sargon.KeyDerivationResponse
@@ -12,11 +10,12 @@ import com.radixdlt.sargon.KeyDerivationResponsePerFactorSource
 import com.radixdlt.sargon.SignRequestOfAuthIntent
 import com.radixdlt.sargon.SignRequestOfSubintent
 import com.radixdlt.sargon.SignRequestOfTransactionIntent
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfAuthIntentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfSubintentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfTransactionIntentHash
+import com.radixdlt.sargon.SignResponseOfAuthIntentHash
+import com.radixdlt.sargon.SignResponseOfSubintentHash
+import com.radixdlt.sargon.SignResponseOfTransactionIntentHash
+import com.radixdlt.sargon.os.signing.into
+import com.radixdlt.sargon.os.signing.intoSargon
 import kotlinx.coroutines.delay
-import rdx.works.core.sargon.Signable
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
@@ -54,68 +53,71 @@ class WalletInteractor @Inject constructor(
         return KeyDerivationResponse(perFactorSource = publicKeysPerFactorSource)
     }
 
-    override suspend fun signAuth(request: SignRequestOfAuthIntent): SignWithFactorsOutcomeOfAuthIntentHash =
-        if (request.factorSourceKind == FactorSourceKind.DEVICE) {
-            accessFactorSourcesProxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(
-                    kind = request.factorSourceKind,
-                    input = request.perFactorSource
+    override suspend fun signAuth(request: SignRequestOfAuthIntent): SignResponseOfAuthIntentHash {
+        val perFactorOutcome = request.perFactorSource.mapIndexed { index, input ->
+            val output = accessFactorSourcesProxy.sign(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
+                    purpose = AccessFactorSourcesInput.ToSign.Purpose.AuthIntents,
+                    kind = input.factorSourceId.kind,
+                    input = input.into()
                 )
-            ).perFactorSource
-        } else {
-            request.perFactorSource.map { perFactorSource ->
-                accessFactorSourcesProxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(
-                        kind = request.factorSourceKind,
-                        input = listOf(perFactorSource)
-                    )
-                ).perFactorSource.first().also {
-                    delay(delayPerFactorSource)
-                }
-            }
-        }.into()
+            ).output.intoSargon()
 
-    override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash =
-        if (request.factorSourceKind == FactorSourceKind.DEVICE) {
-            accessFactorSourcesProxy.sign<Signable.Payload.Subintent, Signable.ID.Subintent>(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromSubintents(
-                    kind = request.factorSourceKind,
-                    input = request.perFactorSource
-                )
-            ).perFactorSource
-        } else {
-            request.perFactorSource.map { perFactorSource ->
-                accessFactorSourcesProxy.sign<Signable.Payload.Subintent, Signable.ID.Subintent>(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromSubintents(
-                        kind = request.factorSourceKind,
-                        input = listOf(perFactorSource)
-                    )
-                ).perFactorSource.first().also {
-                    delay(delayPerFactorSource)
-                }
+            if (index != request.perFactorSource.lastIndex) {
+                delay(delayPerFactorSource)
             }
-        }.into()
 
-    override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignWithFactorsOutcomeOfTransactionIntentHash =
-        if (request.factorSourceKind == FactorSourceKind.DEVICE) {
-            accessFactorSourcesProxy.sign<Signable.Payload.Transaction, Signable.ID.Transaction>(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromTransactionIntents(
-                    kind = request.factorSourceKind,
-                    input = request.perFactorSource
+            output
+        }
+
+        return SignResponseOfAuthIntentHash(
+            perFactorOutcome = perFactorOutcome
+        )
+    }
+
+    override suspend fun signSubintents(request: SignRequestOfSubintent): SignResponseOfSubintentHash {
+        val perFactorOutcome = request.perFactorSource.mapIndexed { index, input ->
+            val output = accessFactorSourcesProxy.sign(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
+                    purpose = AccessFactorSourcesInput.ToSign.Purpose.SubIntents,
+                    kind = input.factorSourceId.kind,
+                    input = input.into()
                 )
-            ).perFactorSource
-        } else {
-            request.perFactorSource.map { perFactorSource ->
-                accessFactorSourcesProxy.sign<Signable.Payload.Transaction, Signable.ID.Transaction>(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromTransactionIntents(
-                        kind = request.factorSourceKind,
-                        input = listOf(perFactorSource)
-                    )
-                ).perFactorSource.first().also {
-                    delay(delayPerFactorSource)
-                }
+            ).output.intoSargon()
+
+            if (index != request.perFactorSource.lastIndex) {
+                delay(delayPerFactorSource)
             }
-        }.into()
+
+            output
+        }
+
+        return SignResponseOfSubintentHash(
+            perFactorOutcome = perFactorOutcome
+        )
+    }
+
+    override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignResponseOfTransactionIntentHash {
+        val perFactorOutcome = request.perFactorSource.mapIndexed { index, input ->
+            val output = accessFactorSourcesProxy.sign(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
+                    purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
+                    kind = input.factorSourceId.kind,
+                    input = input.into()
+                )
+            ).output.intoSargon()
+
+            if (index != request.perFactorSource.lastIndex) {
+                delay(delayPerFactorSource)
+            }
+
+            output
+        }
+
+        return SignResponseOfTransactionIntentHash(
+            perFactorOutcome = perFactorOutcome
+        )
+    }
 
     companion object {
 

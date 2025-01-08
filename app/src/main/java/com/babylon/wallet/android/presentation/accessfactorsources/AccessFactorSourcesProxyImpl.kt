@@ -3,9 +3,9 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.os.signing.Signable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
-import rdx.works.core.sargon.Signable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -60,8 +60,8 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
-    override suspend fun <P : Signable.Payload, ID : Signable.ID> sign(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<P>
+    override suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
     ): AccessFactorSourcesOutput.SignOutput<ID> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.GetSignatures)

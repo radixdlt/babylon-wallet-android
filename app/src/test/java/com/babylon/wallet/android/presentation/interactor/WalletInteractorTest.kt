@@ -4,17 +4,14 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HDSignatureInput
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HdSignature
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.SignaturesPerFactorSource
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AuthIntent
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdSignatureInputOfAuthIntentHash
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
@@ -29,32 +26,36 @@ import com.radixdlt.sargon.KeyDerivationResponse
 import com.radixdlt.sargon.KeyDerivationResponsePerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OwnedFactorInstance
+import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
+import com.radixdlt.sargon.PerFactorSourceInputOfAuthIntent
+import com.radixdlt.sargon.PerFactorSourceInputOfSubintent
+import com.radixdlt.sargon.PerFactorSourceInputOfTransactionIntent
 import com.radixdlt.sargon.SignRequestOfAuthIntent
 import com.radixdlt.sargon.SignRequestOfSubintent
 import com.radixdlt.sargon.SignRequestOfTransactionIntent
 import com.radixdlt.sargon.SignResponseOfAuthIntentHash
 import com.radixdlt.sargon.SignResponseOfSubintentHash
 import com.radixdlt.sargon.SignResponseOfTransactionIntentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfAuthIntentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfSubintentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.SignaturesPerFactorSourceOfAuthIntentHash
-import com.radixdlt.sargon.SignaturesPerFactorSourceOfSubintentHash
-import com.radixdlt.sargon.SignaturesPerFactorSourceOfTransactionIntentHash
 import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
 import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
 import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
-import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfAuthIntent
-import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfSubintent
-import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfTransactionIntent
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.sign
+import com.radixdlt.sargon.os.signing.FactorOutcome
+import com.radixdlt.sargon.os.signing.HdSignature
+import com.radixdlt.sargon.os.signing.HdSignatureInput
+import com.radixdlt.sargon.os.signing.PerFactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorSourceInput
+import com.radixdlt.sargon.os.signing.Signable
+import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
@@ -63,7 +64,6 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.sargon.Signable
 import rdx.works.core.sargon.transactionSigningFactorInstance
 
 class WalletInteractorTest {
@@ -154,36 +154,33 @@ class WalletInteractorTest {
             proxy.sign<Signable.Payload.Transaction, Signable.ID.Transaction>(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
                     kind = FactorSourceKind.DEVICE,
-                    perFactorSource = listOf(
-                        InputPerFactorSource(
-                            factorSourceId = device.id,
-                            transactions = listOf(
-                                InputPerTransaction(
-                                    payload = Signable.Payload.Transaction(transaction.compile()),
-                                    factorSourceId = device.id,
-                                    ownedFactorInstances = instances
-                                )
+                    input = PerFactorSourceInput(
+                        factorSourceId = device.id,
+                        perTransaction = listOf(
+                            TransactionSignRequestInput(
+                                payload = Signable.Payload.Transaction(transaction.compile()),
+                                factorSourceId = device.id,
+                                ownedFactorInstances = instances
                             )
-                        )
+                        ),
+                        invalidTransactionsIfNeglected = emptyList()
                     ),
                     purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents
                 )
             )
         } returns AccessFactorSourcesOutput.SignOutput(
-            perFactorSource = listOf(
-                OutputPerFactorSource.Signed(
-                    signatures = SignaturesPerFactorSource(
-                        factorSourceId = device.id,
-                        hdSignatures = expectedSignatures.map { entry ->
-                            HdSignature(
-                                input = HDSignatureInput(
-                                    payloadId = Signable.ID.Transaction(transaction.hash()),
-                                    ownedFactorInstance = entry.key
-                                ),
-                                signature = entry.value
-                            )
-                        }
-                    )
+            output = PerFactorOutcome(
+                factorSourceId = device.id,
+                outcome = FactorOutcome.Signed(
+                    producedSignatures = expectedSignatures.map { entry ->
+                        HdSignature(
+                            input = HdSignatureInput(
+                                payloadId = Signable.ID.Transaction(transaction.hash()),
+                                ownedFactorInstance = entry.key
+                            ),
+                            signature = entry.value
+                        )
+                    }
                 )
             )
         )
@@ -192,28 +189,28 @@ class WalletInteractorTest {
             request = SignRequestOfTransactionIntent(
                 factorSourceKind = FactorSourceKind.DEVICE,
                 perFactorSource = listOf(
-                    TransactionToSignPerFactorSourceOfTransactionIntent(
+                    PerFactorSourceInputOfTransactionIntent(
                         factorSourceId = device.id,
-                        transactions = listOf(
+                        perTransaction = listOf(
                             TransactionSignRequestInputOfTransactionIntent(
                                 payload = transaction.compile(),
                                 factorSourceId = device.id,
                                 ownedFactorInstances = instances
                             ),
-                        )
+                        ),
+                        invalidTransactionsIfNeglected = emptyList()
                     )
-                ),
-                invalidTransactionsIfNeglected = emptyList()
+                )
             )
         )
 
         assertEquals(
-            SignWithFactorsOutcomeOfTransactionIntentHash.Signed(
-                producedSignatures = SignResponseOfTransactionIntentHash(
-                    perFactorSource = listOf(
-                        SignaturesPerFactorSourceOfTransactionIntentHash(
-                            factorSourceId = device.id,
-                            hdSignatures = expectedSignatures.map {
+            SignResponseOfTransactionIntentHash(
+                perFactorOutcome = listOf(
+                    PerFactorOutcomeOfTransactionIntentHash(
+                        factorSourceId = device.id,
+                        outcome = FactorOutcomeOfTransactionIntentHash.Signed(
+                            producedSignatures = expectedSignatures.map {
                                 HdSignatureOfTransactionIntentHash(
                                     input = HdSignatureInputOfTransactionIntentHash(
                                         payloadId = transaction.hash(),
@@ -254,36 +251,33 @@ class WalletInteractorTest {
             proxy.sign<Signable.Payload.Subintent, Signable.ID.Subintent>(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
                     kind = FactorSourceKind.DEVICE,
-                    perFactorSource = listOf(
-                        InputPerFactorSource(
-                            factorSourceId = device.id,
-                            transactions = listOf(
-                                InputPerTransaction(
-                                    payload = Signable.Payload.Subintent(subintent.compile()),
-                                    factorSourceId = device.id,
-                                    ownedFactorInstances = instances
-                                )
+                    input = PerFactorSourceInput(
+                        factorSourceId = device.id,
+                        perTransaction = listOf(
+                            TransactionSignRequestInput(
+                                payload = Signable.Payload.Subintent(subintent.compile()),
+                                factorSourceId = device.id,
+                                ownedFactorInstances = instances
                             )
-                        )
+                        ),
+                        invalidTransactionsIfNeglected = emptyList()
                     ),
                     purpose = AccessFactorSourcesInput.ToSign.Purpose.SubIntents
                 )
             )
         } returns AccessFactorSourcesOutput.SignOutput(
-            perFactorSource = listOf(
-                OutputPerFactorSource.Signed(
-                    signatures = SignaturesPerFactorSource(
-                        factorSourceId = device.id,
-                        hdSignatures = expectedSignatures.map { entry ->
-                            HdSignature(
-                                input = HDSignatureInput(
-                                    payloadId = Signable.ID.Subintent(subintent.hash()),
-                                    ownedFactorInstance = entry.key
-                                ),
-                                signature = entry.value
-                            )
-                        }
-                    )
+            output = PerFactorOutcome(
+                factorSourceId = device.id,
+                outcome = FactorOutcome.Signed(
+                    producedSignatures = expectedSignatures.map { entry ->
+                        HdSignature(
+                            input = HdSignatureInput(
+                                payloadId = Signable.ID.Subintent(subintent.hash()),
+                                ownedFactorInstance = entry.key
+                            ),
+                            signature = entry.value
+                        )
+                    }
                 )
             )
         )
@@ -292,28 +286,28 @@ class WalletInteractorTest {
             request = SignRequestOfSubintent(
                 factorSourceKind = FactorSourceKind.DEVICE,
                 perFactorSource = listOf(
-                    TransactionToSignPerFactorSourceOfSubintent(
+                    PerFactorSourceInputOfSubintent(
                         factorSourceId = device.id,
-                        transactions = listOf(
+                        perTransaction = listOf(
                             TransactionSignRequestInputOfSubintent(
                                 payload = subintent.compile(),
                                 factorSourceId = device.id,
                                 ownedFactorInstances = instances
                             ),
-                        )
+                        ),
+                        invalidTransactionsIfNeglected = emptyList()
                     )
-                ),
-                invalidTransactionsIfNeglected = emptyList()
+                )
             )
         )
 
         assertEquals(
-            SignWithFactorsOutcomeOfSubintentHash.Signed(
-                producedSignatures = SignResponseOfSubintentHash(
-                    perFactorSource = listOf(
-                        SignaturesPerFactorSourceOfSubintentHash(
-                            factorSourceId = device.id,
-                            hdSignatures = expectedSignatures.map {
+            SignResponseOfSubintentHash(
+                perFactorOutcome = listOf(
+                    PerFactorOutcomeOfSubintentHash(
+                        factorSourceId = device.id,
+                        outcome = FactorOutcomeOfSubintentHash.Signed(
+                            producedSignatures = expectedSignatures.map {
                                 HdSignatureOfSubintentHash(
                                     input = HdSignatureInputOfSubintentHash(
                                         payloadId = subintent.hash(),
@@ -354,36 +348,33 @@ class WalletInteractorTest {
             proxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
                     kind = FactorSourceKind.DEVICE,
-                    perFactorSource = listOf(
-                        InputPerFactorSource(
-                            factorSourceId = device.id,
-                            transactions = listOf(
-                                InputPerTransaction(
-                                    payload = Signable.Payload.Auth(authIntent),
-                                    factorSourceId = device.id,
-                                    ownedFactorInstances = instances
-                                )
+                    input = PerFactorSourceInput(
+                        factorSourceId = device.id,
+                        perTransaction = listOf(
+                            TransactionSignRequestInput(
+                                payload = Signable.Payload.Auth(authIntent),
+                                factorSourceId = device.id,
+                                ownedFactorInstances = instances
                             )
-                        )
+                        ),
+                        invalidTransactionsIfNeglected = emptyList()
                     ),
                     purpose = AccessFactorSourcesInput.ToSign.Purpose.AuthIntents
                 )
             )
         } returns AccessFactorSourcesOutput.SignOutput(
-            perFactorSource = listOf(
-                OutputPerFactorSource.Signed(
-                    signatures = SignaturesPerFactorSource(
-                        factorSourceId = device.id,
-                        hdSignatures = expectedSignatures.map { entry ->
-                            HdSignature(
-                                input = HDSignatureInput(
-                                    payloadId = Signable.ID.Auth(authIntent.hash()),
-                                    ownedFactorInstance = entry.key
-                                ),
-                                signature = entry.value
-                            )
-                        }
-                    )
+            output = PerFactorOutcome(
+                factorSourceId = device.id,
+                outcome = FactorOutcome.Signed(
+                    producedSignatures = expectedSignatures.map { entry ->
+                        HdSignature(
+                            input = HdSignatureInput(
+                                payloadId = Signable.ID.Auth(authIntent.hash()),
+                                ownedFactorInstance = entry.key
+                            ),
+                            signature = entry.value
+                        )
+                    }
                 )
             )
         )
@@ -392,28 +383,28 @@ class WalletInteractorTest {
             request = SignRequestOfAuthIntent(
                 factorSourceKind = FactorSourceKind.DEVICE,
                 perFactorSource = listOf(
-                    TransactionToSignPerFactorSourceOfAuthIntent(
+                    PerFactorSourceInputOfAuthIntent(
                         factorSourceId = device.id,
-                        transactions = listOf(
+                        perTransaction = listOf(
                             TransactionSignRequestInputOfAuthIntent(
                                 payload = authIntent,
                                 factorSourceId = device.id,
                                 ownedFactorInstances = instances
                             ),
-                        )
+                        ),
+                        invalidTransactionsIfNeglected = emptyList()
                     )
-                ),
-                invalidTransactionsIfNeglected = emptyList()
+                )
             )
         )
 
         assertEquals(
-            SignWithFactorsOutcomeOfAuthIntentHash.Signed(
-                producedSignatures = SignResponseOfAuthIntentHash(
-                    perFactorSource = listOf(
-                        SignaturesPerFactorSourceOfAuthIntentHash(
-                            factorSourceId = device.id,
-                            hdSignatures = expectedSignatures.map {
+            SignResponseOfAuthIntentHash(
+                perFactorOutcome = listOf(
+                    PerFactorOutcomeOfAuthIntentHash(
+                        factorSourceId = device.id,
+                        outcome = FactorOutcomeOfAuthIntentHash.Signed(
+                            producedSignatures = expectedSignatures.map {
                                 HdSignatureOfAuthIntentHash(
                                     input = HdSignatureInputOfAuthIntentHash(
                                         payloadId = authIntent.hash(),

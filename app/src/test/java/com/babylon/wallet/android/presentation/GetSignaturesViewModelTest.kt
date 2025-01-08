@@ -8,12 +8,6 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HDSignatureInput
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HdSignature
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.SignaturesPerFactorSource
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountPath
 import com.radixdlt.sargon.AddressOfAccountOrPersona
@@ -46,6 +40,13 @@ import com.radixdlt.sargon.newDeviceFactorSourceBabylon
 import com.radixdlt.sargon.newMnemonicSampleDevice
 import com.radixdlt.sargon.newMnemonicSampleDeviceOther
 import com.radixdlt.sargon.newMnemonicSampleLedger
+import com.radixdlt.sargon.os.signing.FactorOutcome
+import com.radixdlt.sargon.os.signing.HdSignature
+import com.radixdlt.sargon.os.signing.HdSignatureInput
+import com.radixdlt.sargon.os.signing.PerFactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorSourceInput
+import com.radixdlt.sargon.os.signing.Signable
+import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -60,7 +61,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.sargon.Signable
 import rdx.works.core.sargon.allAccountsOnCurrentNetwork
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.initBabylon
@@ -72,6 +72,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 class GetSignaturesViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+
     @get:Rule
     val coroutineRule = TestDispatcherRule(
         dispatcher = testDispatcher
@@ -107,37 +108,43 @@ class GetSignaturesViewModelTest {
                     Account.initBabylon(
                         networkId = NetworkId.MAINNET,
                         displayName = DisplayName("Acc1"),
-                        hdPublicKey = deviceMnemonic.derivePublicKey(DerivationPath.Account(
-                            AccountPath(
-                                networkId = NetworkId.MAINNET,
-                                keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-                                index = Hardened.Unsecurified(v1 = UnsecurifiedHardened.initFromLocal(0u))
+                        hdPublicKey = deviceMnemonic.derivePublicKey(
+                            DerivationPath.Account(
+                                AccountPath(
+                                    networkId = NetworkId.MAINNET,
+                                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                                    index = Hardened.Unsecurified(v1 = UnsecurifiedHardened.initFromLocal(0u))
+                                )
                             )
-                        )),
+                        ),
                         factorSourceId = deviceFactorSource1.id.asGeneral(),
                     ),
                     Account.initBabylon(
                         networkId = NetworkId.MAINNET,
                         displayName = DisplayName("Acc2"),
-                        hdPublicKey = otherDeviceMnemonic.derivePublicKey(DerivationPath.Account(
-                            AccountPath(
-                                networkId = NetworkId.MAINNET,
-                                keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-                                index = Hardened.Unsecurified(v1 = UnsecurifiedHardened.initFromLocal(1u))
+                        hdPublicKey = otherDeviceMnemonic.derivePublicKey(
+                            DerivationPath.Account(
+                                AccountPath(
+                                    networkId = NetworkId.MAINNET,
+                                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                                    index = Hardened.Unsecurified(v1 = UnsecurifiedHardened.initFromLocal(1u))
+                                )
                             )
-                        )),
+                        ),
                         factorSourceId = deviceFactorSource2.id.asGeneral(),
                     ),
                     Account.initBabylon(
                         networkId = NetworkId.MAINNET,
                         displayName = DisplayName("Acc3"),
-                        hdPublicKey = fakeLedgerMnemonic.derivePublicKey(DerivationPath.Account(
-                            AccountPath(
-                                networkId = NetworkId.MAINNET,
-                                keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-                                index = Hardened.Unsecurified(v1 = UnsecurifiedHardened.initFromLocal(2u))
+                        hdPublicKey = fakeLedgerMnemonic.derivePublicKey(
+                            DerivationPath.Account(
+                                AccountPath(
+                                    networkId = NetworkId.MAINNET,
+                                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                                    index = Hardened.Unsecurified(v1 = UnsecurifiedHardened.initFromLocal(2u))
+                                )
                             )
-                        )),
+                        ),
                         factorSourceId = ledgerFactorSource1.id.asGeneral(),
                     )
                 ),
@@ -155,137 +162,96 @@ class GetSignaturesViewModelTest {
         )
     }
     private val deviceFactorInstances = ownedFactorInstances.filter { it.factorInstance.factorSourceId.kind == FactorSourceKind.DEVICE }
-    private val ledgerFactorInstances = ownedFactorInstances.filter { it.factorInstance.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
+    private val ledgerFactorInstances =
+        ownedFactorInstances.filter { it.factorInstance.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
 
     private val signWithDeviceFactorSourceUseCaseMock = mockk<SignWithDeviceFactorSourceUseCase>()
     private val signWithLedgerFactorSourceUseCaseMock = mockk<SignWithLedgerFactorSourceUseCase>()
     private val accessFactorSourcesIOHandler = mockk<AccessFactorSourcesIOHandler>()
 
-    private val signaturesPerInput: Map<InputPerFactorSource<Signable.Payload>, SignaturesPerFactorSource<Signable.ID>> = mapOf(
-        InputPerFactorSource<Signable.Payload>(
+    private val signaturesPerInput: Map<PerFactorSourceInput<Signable.Payload, Signable.ID>, PerFactorOutcome<Signable.ID>> = mapOf(
+        PerFactorSourceInput<Signable.Payload, Signable.ID>(
             factorSourceId = deviceFactorSource1.id,
-            transactions = listOf(InputPerTransaction(
-                payload = Signable.Payload.Transaction(CompiledTransactionIntent.sample()),
-                factorSourceId = deviceFactorSource1.id,
-                ownedFactorInstances = listOf(deviceFactorInstances[0])
-            ))
-        ) to SignaturesPerFactorSource(
+            perTransaction = listOf(
+                TransactionSignRequestInput(
+                    payload = Signable.Payload.Transaction(CompiledTransactionIntent.sample()),
+                    factorSourceId = deviceFactorSource1.id,
+                    ownedFactorInstances = listOf(deviceFactorInstances[0])
+                )
+            ),
+            invalidTransactionsIfNeglected = emptyList()
+        ) to PerFactorOutcome(
             factorSourceId = deviceFactorSource1.id,
-            hdSignatures = listOf(HdSignature(
-                input = HDSignatureInput(
-                    payloadId = Signable.ID.Transaction(CompiledTransactionIntent.sample().decompile().hash()),
-                    ownedFactorInstance = deviceFactorInstances[0]
-                ),
-                signature = deviceMnemonic.sign(
-                    hash = CompiledTransactionIntent.sample().decompile().hash().hash,
-                    path = deviceFactorInstances[0].factorInstance.publicKey.derivationPath
+            outcome = FactorOutcome.Signed(
+                producedSignatures = listOf(
+                    HdSignature(
+                        input = HdSignatureInput(
+                            payloadId = Signable.ID.Transaction(CompiledTransactionIntent.sample().decompile().hash()),
+                            ownedFactorInstance = deviceFactorInstances[0]
+                        ),
+                        signature = deviceMnemonic.sign(
+                            hash = CompiledTransactionIntent.sample().decompile().hash().hash,
+                            path = deviceFactorInstances[0].factorInstance.publicKey.derivationPath
+                        )
+                    )
                 )
-            ))
+            )
         ),
-        InputPerFactorSource<Signable.Payload>(
+        PerFactorSourceInput<Signable.Payload, Signable.ID>(
             factorSourceId = deviceFactorSource2.id,
-            transactions = listOf(InputPerTransaction(
-                payload = Signable.Payload.Transaction(CompiledTransactionIntent.sample()),
-                factorSourceId = deviceFactorSource2.id,
-                ownedFactorInstances = listOf(deviceFactorInstances[1])
-            ))
-        ) to SignaturesPerFactorSource(
-            factorSourceId = deviceFactorSource2.id,
-            hdSignatures = listOf(HdSignature(
-                input = HDSignatureInput(
-                    payloadId = Signable.ID.Transaction(CompiledTransactionIntent.sample().decompile().hash()),
-                    ownedFactorInstance = deviceFactorInstances[1]
-                ),
-                signature = otherDeviceMnemonic.sign(
-                    hash = CompiledTransactionIntent.sample().decompile().hash().hash,
-                    path = deviceFactorInstances[1].factorInstance.publicKey.derivationPath
+            perTransaction = listOf(
+                TransactionSignRequestInput(
+                    payload = Signable.Payload.Transaction(CompiledTransactionIntent.sample()),
+                    factorSourceId = deviceFactorSource2.id,
+                    ownedFactorInstances = listOf(deviceFactorInstances[1])
                 )
-            ))
+            ),
+            invalidTransactionsIfNeglected = emptyList()
+        ) to PerFactorOutcome(
+            factorSourceId = deviceFactorSource2.id,
+            outcome = FactorOutcome.Signed(
+                producedSignatures = listOf(
+                    HdSignature(
+                        input = HdSignatureInput(
+                            payloadId = Signable.ID.Transaction(CompiledTransactionIntent.sample().decompile().hash()),
+                            ownedFactorInstance = deviceFactorInstances[1]
+                        ),
+                        signature = otherDeviceMnemonic.sign(
+                            hash = CompiledTransactionIntent.sample().decompile().hash().hash,
+                            path = deviceFactorInstances[1].factorInstance.publicKey.derivationPath
+                        )
+                    )
+                )
+            )
         ),
-        InputPerFactorSource<Signable.Payload>(
+        PerFactorSourceInput<Signable.Payload, Signable.ID>(
             factorSourceId = ledgerFactorSource1.id,
-            transactions = listOf(InputPerTransaction(
-                payload = Signable.Payload.Transaction(CompiledTransactionIntent.sample()),
-                factorSourceId = ledgerFactorSource1.id,
-                ownedFactorInstances = listOf(ledgerFactorInstances[0])
-            ))
-        ) to SignaturesPerFactorSource(
-            factorSourceId = ledgerFactorSource1.id,
-            hdSignatures = listOf(HdSignature(
-                input = HDSignatureInput(
-                    payloadId = Signable.ID.Transaction(CompiledTransactionIntent.sample().decompile().hash()),
-                    ownedFactorInstance = ledgerFactorInstances[0]
-                ),
-                signature = fakeLedgerMnemonic.sign(
-                    hash = CompiledTransactionIntent.sample().decompile().hash().hash,
-                    path = ledgerFactorInstances[0].factorInstance.publicKey.derivationPath
+            perTransaction = listOf(
+                TransactionSignRequestInput(
+                    payload = Signable.Payload.Transaction(CompiledTransactionIntent.sample()),
+                    factorSourceId = ledgerFactorSource1.id,
+                    ownedFactorInstances = listOf(ledgerFactorInstances[0])
                 )
-            ))
+            ),
+            invalidTransactionsIfNeglected = emptyList()
+        ) to PerFactorOutcome(
+            factorSourceId = ledgerFactorSource1.id,
+            outcome = FactorOutcome.Signed(
+                producedSignatures = listOf(
+                    HdSignature(
+                        input = HdSignatureInput(
+                            payloadId = Signable.ID.Transaction(CompiledTransactionIntent.sample().decompile().hash()),
+                            ownedFactorInstance = ledgerFactorInstances[0]
+                        ),
+                        signature = fakeLedgerMnemonic.sign(
+                            hash = CompiledTransactionIntent.sample().decompile().hash().hash,
+                            path = ledgerFactorInstances[0].factorInstance.publicKey.derivationPath
+                        )
+                    )
+                )
+            )
         )
     )
-
-    @Test
-    fun `when multiple device factor sources are received, poly signing is resolved`() = testScope.runTest {
-        coEvery { signWithDeviceFactorSourceUseCaseMock.poly(any(), any()) } returns Result.success(
-            signaturesPerInput.values.filter { it.factorSourceId.kind == FactorSourceKind.DEVICE }.toList()
-        )
-        val input = AccessFactorSourcesInput.ToSign(
-            purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-            kind = FactorSourceKind.DEVICE,
-            perFactorSource = signaturesPerInput.keys.filter { it.factorSourceId.kind == FactorSourceKind.DEVICE }.toList()
-        )
-
-        val vm = initVM(input = input)
-        vm.state.test {
-            val initialState = awaitItem()
-            assertEquals(
-                GetSignaturesViewModel.State(signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents),
-                initialState
-            )
-
-            val gatherFactorSourcesState = awaitItem()
-            assertEquals(
-                GetSignaturesViewModel.State(
-                    signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    isSigningInProgress = true,
-                    factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Poly(
-                        kind = FactorSourceKind.DEVICE,
-                        factorSources = listOf(
-                            deviceFactorSource1.asGeneral(),
-                            deviceFactorSource2.asGeneral()
-                        )
-                    )
-                ),
-                gatherFactorSourcesState
-            )
-
-            val returnSignaturesState = awaitItem()
-            assertEquals(
-                GetSignaturesViewModel.State(
-                    signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    isSigningInProgress = false,
-                    factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Poly(
-                        kind = FactorSourceKind.DEVICE,
-                        factorSources = listOf(
-                            deviceFactorSource1.asGeneral(),
-                            deviceFactorSource2.asGeneral()
-                        )
-                    )
-                ),
-                returnSignaturesState
-            )
-
-            coVerify {
-                accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.SignOutput(
-                        signaturesPerInput.values.filter { it.factorSourceId.kind == FactorSourceKind.DEVICE }.map {
-                            OutputPerFactorSource.Signed(it)
-                        }
-                    )
-                )
-            }
-        }
-    }
 
     @Test
     fun `when one device factor source is received, mono signing is resolved`() = testScope.runTest {
@@ -296,7 +262,7 @@ class GetSignaturesViewModelTest {
         val input = AccessFactorSourcesInput.ToSign(
             purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
             kind = FactorSourceKind.DEVICE,
-            perFactorSource = listOf(signaturesPerInput.keys.first())
+            input = signaturesPerInput.keys.first()
         )
 
         val vm = initVM(input = input)
@@ -329,7 +295,7 @@ class GetSignaturesViewModelTest {
             coVerify {
                 accessFactorSourcesIOHandler.setOutput(
                     AccessFactorSourcesOutput.SignOutput(
-                        listOf(OutputPerFactorSource.Signed(signaturesPerInput.values.toList()[0]))
+                        output = signaturesPerInput.values.toList()[0]
                     )
                 )
             }
@@ -344,7 +310,7 @@ class GetSignaturesViewModelTest {
         val input = AccessFactorSourcesInput.ToSign(
             purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-            perFactorSource = listOf(signaturesPerInput.keys.toList()[2])
+            input = signaturesPerInput.keys.toList()[2]
         )
 
         val vm = initVM(input = input)
@@ -378,15 +344,15 @@ class GetSignaturesViewModelTest {
 
             coVerify {
                 accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.SignOutput(
-                        listOf(OutputPerFactorSource.Signed(signaturesPerInput.values.toList()[2]))
+                    output = AccessFactorSourcesOutput.SignOutput(
+                        output = signaturesPerInput.values.toList()[2]
                     )
                 )
             }
         }
     }
 
-    private fun <SP: Signable.Payload> initVM(input: AccessFactorSourcesInput.ToSign<SP>): GetSignaturesViewModel {
+    private fun <SP : Signable.Payload, ID: Signable.ID> initVM(input: AccessFactorSourcesInput.ToSign<SP, ID>): GetSignaturesViewModel {
         every { accessFactorSourcesIOHandler.getInput() } returns input
         coEvery { accessFactorSourcesIOHandler.setOutput(any()) } just Runs
 

@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
@@ -118,12 +117,6 @@ private fun GetSignaturesBottomSheetContent(
 
             when (val factorSourcesToSign = state.factorSourcesToSign) {
                 is GetSignaturesViewModel.State.FactorSourcesToSign.Resolving -> {}
-                is GetSignaturesViewModel.State.FactorSourcesToSign.Poly -> {
-                    if (factorSourcesToSign.kind == FactorSourceKind.DEVICE) {
-                        // This will change in the near future, all device factor sources will be listed.
-                        DeviceContent(signPurpose = state.signPurpose)
-                    }
-                }
                 is GetSignaturesViewModel.State.FactorSourcesToSign.Mono -> {
                     when (factorSourcesToSign.factorSource) {
                         is FactorSource.Ledger -> LedgerContent(
@@ -199,28 +192,6 @@ private fun LedgerContent(
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun GetSignaturesForSigningTransactionWithPolyDevicePreview() {
-    RadixWalletPreviewTheme {
-        GetSignaturesBottomSheetContent(
-            state = GetSignaturesViewModel.State(
-                signPurpose = Purpose.TransactionIntents,
-                factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Poly(
-                    kind = FactorSourceKind.DEVICE,
-                    factorSources = listOf(
-                        DeviceFactorSource.sample().asGeneral(),
-                        DeviceFactorSource.sample.other().asGeneral(),
-                    )
-                )
-            ),
-            onDismiss = {},
-            onRetryClick = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Preview(showBackground = false)
-@Composable
 fun GetSignaturesForSigningTransactionWithMonoDevicePreview() {
     RadixWalletPreviewTheme {
         GetSignaturesBottomSheetContent(
@@ -246,28 +217,6 @@ fun GetSignaturesForSigningTransactionWithMonoLedgerPreview() {
                 signPurpose = Purpose.TransactionIntents,
                 factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
                     factorSource = LedgerHardwareWalletFactorSource.sample().asGeneral()
-                )
-            ),
-            onDismiss = {},
-            onRetryClick = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Preview(showBackground = false)
-@Composable
-fun GetSignaturesForProvingOwnershipWithPolyDevicePreview() {
-    RadixWalletTheme {
-        GetSignaturesBottomSheetContent(
-            state = GetSignaturesViewModel.State(
-                signPurpose = Purpose.AuthIntents,
-                factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Poly(
-                    kind = FactorSourceKind.DEVICE,
-                    factorSources = listOf(
-                        DeviceFactorSource.sample().asGeneral(),
-                        DeviceFactorSource.sample.other().asGeneral()
-                    )
                 )
             ),
             onDismiss = {},
