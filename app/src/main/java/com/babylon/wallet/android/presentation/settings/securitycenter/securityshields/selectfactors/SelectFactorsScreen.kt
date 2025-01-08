@@ -31,8 +31,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.buildStatusMessageAnnotatedString
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.onStatusMessageInfoAnnotationClick
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -44,6 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.title
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
+import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -160,7 +159,8 @@ private fun SelectFactorsContent(
                     is SelectFactorsViewModel.State.UiItem.CategoryHeader -> CategoryHeaderView(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXLarge),
                         item = item,
-                        message = "Cannot use this factor by itself".takeIf { state.showPasswordWarning(item) } // TODO crowdin
+                        message = stringResource(id = R.string.shieldSetupStatus_factorCannotBeUsedByItself)
+                            .takeIf { state.showPasswordWarning(item) }
                     )
                     is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
@@ -212,32 +212,36 @@ private fun StatusView(
     status: SelectedFactorSourcesForRoleStatus,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
-    val readMoreGlossaryItem = GlossaryItem.buildingshield
-    val message = when (status) {
-        SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
-            type = StatusMessage.Type.WARNING
+    when (status) {
+        SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessageText(
+            modifier = modifier,
+            message = StatusMessage(
+                message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
+                type = StatusMessage.Type.WARNING
+            )
         )
-        SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
-            type = StatusMessage.Type.ERROR
+        SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessageText(
+            modifier = modifier,
+            message = StatusMessage(
+                message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
+                type = StatusMessage.Type.ERROR
+            )
         )
-        SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
-            message = buildStatusMessageAnnotatedString(
-                message = "You cannot create a Shield with this combination of factors.", // TODO crowdin
-                glossaryItem = readMoreGlossaryItem,
-                annotation = "Read more" // TODO crowdin
-            ),
-            type = StatusMessage.Type.ERROR
+        SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessageText(
+            modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
+            message = StatusMessage(
+                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
+                    boldStyle = SpanStyle(
+                        color = RadixTheme.colors.blue2,
+                        fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
+                        fontSize = RadixTheme.typography.body2Link.fontSize
+                    )
+                ),
+                type = StatusMessage.Type.ERROR
+            )
         )
         SelectedFactorSourcesForRoleStatus.OPTIMAL -> return
     }
-
-    StatusMessageText(
-        modifier = modifier,
-        message = message,
-        onTextClick = { offset -> message.onStatusMessageInfoAnnotationClick(offset, readMoreGlossaryItem, onInfoClick) }
-    )
 }
 
 @Composable

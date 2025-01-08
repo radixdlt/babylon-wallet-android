@@ -67,7 +67,7 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorsFromPrimary(listOf(card.id)) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id)) }
     }
 
     fun onAddOverrideClick() {
@@ -97,12 +97,9 @@ class SetupRegularAccessViewModel @Inject constructor(
 
         viewModelScope.launch {
             when (selectFactor.purpose) {
-                State.SelectFactor.Purpose.Threshold -> securityShieldBuilderClient.updatePrimaryRoleThresholdFactorSourceSelection(
-                    id = card.id,
-                    isSelected = true
-                )
+                State.SelectFactor.Purpose.Threshold -> securityShieldBuilderClient.addPrimaryRoleThresholdFactorSource(card.id)
                 State.SelectFactor.Purpose.Override -> securityShieldBuilderClient.addPrimaryRoleOverrideFactorSource(card.id)
-                State.SelectFactor.Purpose.Authentication -> securityShieldBuilderClient.setAuthenticationFactor(card.id)
+                State.SelectFactor.Purpose.Authentication -> securityShieldBuilderClient.setAuthenticationFactorSource(card.id)
             }
         }
     }
@@ -112,17 +109,17 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveAuthenticationFactorClick() {
-        viewModelScope.launch { securityShieldBuilderClient.setAuthenticationFactor(null) }
+        viewModelScope.launch { securityShieldBuilderClient.setAuthenticationFactorSource(null) }
     }
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorsFromPrimary(listOf(card.id)) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id)) }
     }
 
     fun onRemoveAllOverrideFactorsClick() {
         viewModelScope.launch {
             val ids = _state.value.overrideFactors.map { it.id }
-            securityShieldBuilderClient.removeFactorsFromPrimary(ids)
+            securityShieldBuilderClient.removeFactorSourcesFromPrimary(ids)
         }
     }
 

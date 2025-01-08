@@ -228,8 +228,8 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
     GlossaryItem.securityshields -> stringResource(id = R.string.infoLink_glossary_securityshields)
     GlossaryItem.buildingshield -> stringResource(id = R.string.infoLink_glossary_buildingshield)
-    GlossaryItem.nohardwaredevice -> "" // TODO crowdin
-    GlossaryItem.biometricsPIN -> "" // TODO()
+    GlossaryItem.biometricsPIN -> stringResource(id = R.string.infoLink_glossary_biometricspin)
+    GlossaryItem.emergencyFallback -> "" // TODO crowdin
 }
 
 @Composable
