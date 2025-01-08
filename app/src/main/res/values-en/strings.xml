@@ -1131,11 +1131,11 @@ Code: %s</string>
   <string name="configurationBackup_automated_outdatedBackupIOS">Out-of-date backup still present on iCloud</string>
   <string name="configurationBackup_automated_deleteOutdatedBackupIOS">Delete</string>
   <string name="configurationBackup_automated_accountsItemTitle">Accounts</string>
-  <string name="configurationBackup_automated_accountsItemSubtitle">Your list of Accounts and the Factors required to recover them</string>
+  <string name="configurationBackup_automated_accountsItemSubtitle">Your list of Accounts and the factors required to recover them</string>
   <string name="configurationBackup_automated_personasItemTitle">Personas</string>
-  <string name="configurationBackup_automated_personasItemSubtitle">Your list of Personas and the Factors required to recover them. Also your Persona data.</string>
+  <string name="configurationBackup_automated_personasItemSubtitle">Your list of Personas and the factors required to recover them. Also your Persona data.</string>
   <string name="configurationBackup_automated_securityFactorsItemTitle">Security Factors</string>
-  <string name="configurationBackup_automated_securityFactorsItemSubtitle">The list of Security Factors you need to recover your Accounts and Personas.</string>
+  <string name="configurationBackup_automated_securityFactorsItemSubtitle">The list of security factors you need to recover your Accounts and Personas.</string>
   <string name="configurationBackup_automated_walletSettingsItemTitle">Wallet settings</string>
   <string name="configurationBackup_automated_walletSettingsItemSubtitle">Your general settings, such as trusted dApps, linked Connectors and wallet display settings.</string>
   <string name="configurationBackup_automated_walletTransferredTitle">Wallet Control Has Been Transferred</string>
@@ -1461,6 +1461,7 @@ Code: %s</string>
   <string name="renameLabel_factorSource_title">Rename Factor Source</string>
   <string name="renameLabel_factorSource_subtitle">Enter a new name for this Factor Source</string>
   <string name="renameLabel_factorSource_empty">Factor Source name required</string>
+  <string name="renameLabel_factorSource_tooLong">Factor Source name too long</string>
   <string name="renameLabel_connector_title">Rename Connector</string>
   <string name="renameLabel_connector_subtitle">Enter a new name for this Linked Connector</string>
   <string name="renameLabel_connector_empty">Linked Connector name required</string>
