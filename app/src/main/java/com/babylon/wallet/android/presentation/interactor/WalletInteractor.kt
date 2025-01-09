@@ -16,12 +16,9 @@ import com.radixdlt.sargon.SignResponseOfTransactionIntentHash
 import com.radixdlt.sargon.os.signing.into
 import com.radixdlt.sargon.os.signing.intoSargon
 import kotlinx.coroutines.delay
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
 
-@Singleton
-class WalletInteractor @Inject constructor(
+class WalletInteractor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy
 ) : HostInteractor {
 

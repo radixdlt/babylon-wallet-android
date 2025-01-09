@@ -68,9 +68,6 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var biometricsHandler: BiometricsHandler
 
-    @Inject
-    lateinit var getProfileUseCase: GetProfileUseCase
-
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
