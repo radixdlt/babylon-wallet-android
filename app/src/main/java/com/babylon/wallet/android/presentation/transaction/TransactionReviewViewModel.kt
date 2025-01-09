@@ -212,8 +212,8 @@ class TransactionReviewViewModel @Inject constructor(
                     it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
                 }
             }.onFailure {
-                _state.update {
-                    it.copy(proposingDApp = State.ProposingDApp.Unknown)
+                _state.update { state ->
+                    state.copy(proposingDApp = State.ProposingDApp.Unknown)
                 }
             }
         }
