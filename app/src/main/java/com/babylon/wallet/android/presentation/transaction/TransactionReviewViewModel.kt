@@ -201,14 +201,21 @@ class TransactionReviewViewModel @Inject constructor(
 
     private suspend fun processDApp(request: TransactionRequest) {
         if (request.isInternal) {
-            _state.update { it.copy(proposingDApp = State.ProposingDApp.None) }
+            _state.update { it.copy(proposingDApp = State.ProposingDApp.Internal) }
         } else {
-            getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false)
-                .onSuccess { dApp ->
-                    _state.update {
-                        it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
-                    }
+            runCatching {
+                AccountAddress.init(request.requestMetadata.dAppDefinitionAddress)
+            }.then { dAppDefinitionAddress ->
+                getDAppsUseCase(dAppDefinitionAddress, false)
+            }.onSuccess { dApp ->
+                _state.update {
+                    it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
                 }
+            }.onFailure {
+                _state.update {
+                    it.copy(proposingDApp = State.ProposingDApp.Unknown)
+                }
+            }
         }
     }
 
@@ -384,13 +391,16 @@ class TransactionReviewViewModel @Inject constructor(
 
             val name: String?
                 get() = when (this) {
-                    is Some -> dApp?.name
-                    None -> null
+                    is Some -> dApp.name
+                    Internal -> null
+                    Unknown -> null
                 }
 
-            data object None : ProposingDApp
+            data object Internal : ProposingDApp
 
-            data class Some(val dApp: DApp?) : ProposingDApp
+            data object Unknown : ProposingDApp
+
+            data class Some(val dApp: DApp) : ProposingDApp
         }
 
         interface Sheet {
