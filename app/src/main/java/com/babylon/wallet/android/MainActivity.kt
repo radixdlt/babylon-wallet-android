@@ -41,7 +41,6 @@ import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
-import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
