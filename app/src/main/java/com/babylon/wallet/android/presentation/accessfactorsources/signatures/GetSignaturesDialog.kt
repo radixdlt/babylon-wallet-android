@@ -16,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -28,16 +27,18 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import rdx.works.core.sargon.sample
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.samples.sample
 
 @Composable
 fun GetSignaturesDialog(
@@ -46,47 +47,39 @@ fun GetSignaturesDialog(
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
 
     BackHandler {
-        viewModel.onUserDismiss()
+        viewModel.onDismiss()
+    }
+
+    state.errorMessage?.let { errorMessage ->
+        BasicPromptAlertDialog(
+            finish = { viewModel.onMessageShown() },
+            messageText = errorMessage.getMessage(),
+            dismissText = null
+        )
     }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is GetSignaturesViewModel.Event.RequestBiometricToAccessDeviceFactorSources -> {
-                    context.biometricAuthenticate { biometricAuthenticationResult ->
-                        when (biometricAuthenticationResult) {
-                            BiometricAuthenticationResult.Succeeded -> viewModel.collectSignaturesForDeviceFactorSource()
-                            BiometricAuthenticationResult.Error -> { /* do nothing */ }
-                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
-                        }
-                    }
-                }
-
-                GetSignaturesViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
-                GetSignaturesViewModel.Event.UserDismissed -> onDismiss()
+                GetSignaturesViewModel.Event.Completed -> onDismiss()
             }
         }
     }
 
     GetSignaturesBottomSheetContent(
         modifier = modifier,
-        signPurpose = state.signPurpose,
-        showContentForFactorSource = state.showContentForFactorSource,
-        isRetryButtonEnabled = state.isRetryButtonEnabled,
-        onDismiss = viewModel::onUserDismiss,
-        onRetryClick = viewModel::onRetryClick
+        state = state,
+        onDismiss = viewModel::onDismiss,
+        onRetryClick = viewModel::onRetry
     )
 }
 
 @Composable
 private fun GetSignaturesBottomSheetContent(
     modifier: Modifier = Modifier,
-    signPurpose: SignPurpose,
-    showContentForFactorSource: State.ShowContentForFactorSource,
-    isRetryButtonEnabled: Boolean,
+    state: GetSignaturesViewModel.State,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -114,63 +107,84 @@ private fun GetSignaturesBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 style = RadixTheme.typography.title,
-                text = when (signPurpose) {
-                    SignPurpose.SignTransaction -> stringResource(id = R.string.factorSourceActions_signature_title)
-                    SignPurpose.SignAuth -> stringResource(id = R.string.factorSourceActions_proveOwnership_title)
+                text = when (state.signPurpose) {
+                    Purpose.TransactionIntents,
+                    Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_signature_title)
+                    Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_proveOwnership_title)
                 }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            when (showContentForFactorSource) {
-                is State.ShowContentForFactorSource.Device -> {
-                    Text(
-                        style = RadixTheme.typography.body1Regular,
-                        textAlign = TextAlign.Center,
-                        text = when (signPurpose) {
-                            SignPurpose.SignTransaction -> stringResource(id = R.string.factorSourceActions_device_messageSignature)
-                            SignPurpose.SignAuth -> stringResource(id = R.string.factorSourceActions_device_message)
+
+            when (val factorSourcesToSign = state.factorSourcesToSign) {
+                is GetSignaturesViewModel.State.FactorSourcesToSign.Resolving -> {}
+                is GetSignaturesViewModel.State.FactorSourcesToSign.Mono -> {
+                    when (factorSourcesToSign.factorSource) {
+                        is FactorSource.Ledger -> LedgerContent(
+                            signPurpose = state.signPurpose,
+                            factorSource = factorSourcesToSign.factorSource
+                        )
+                        is FactorSource.Device -> DeviceContent(signPurpose = state.signPurpose)
+                        else -> {
+                            // Not yet handled
                         }
-                    )
-                }
-
-                is State.ShowContentForFactorSource.Ledger -> {
-                    val stringRes = when (signPurpose) {
-                        SignPurpose.SignTransaction -> stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
-                        SignPurpose.SignAuth -> stringResource(id = R.string.factorSourceActions_ledger_message)
                     }
-                    Text(
-                        text = stringRes.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.ledgerFactorSource.value.hint.label)
                 }
-
-                State.ShowContentForFactorSource.None -> { /* nothing */ }
             }
+
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.common_retry),
-                enabled = isRetryButtonEnabled,
+                enabled = !state.isSigningInProgress,
                 onClick = onRetryClick
             )
         }
     }
 }
 
-@UsesSampleValues
-@Preview(showBackground = false)
 @Composable
-fun GetSignaturesForSigningTransactionWithDevicePreview() {
-    RadixWalletTheme {
-        GetSignaturesBottomSheetContent(
-            signPurpose = SignPurpose.SignTransaction,
-            showContentForFactorSource = State.ShowContentForFactorSource.Device,
-            isRetryButtonEnabled = true,
-            onDismiss = {},
-            onRetryClick = {}
+private fun DeviceContent(
+    modifier: Modifier = Modifier,
+    signPurpose: Purpose
+) {
+    Text(
+        modifier = modifier,
+        style = RadixTheme.typography.body1Regular,
+        textAlign = TextAlign.Center,
+        text = when (signPurpose) {
+            Purpose.TransactionIntents,
+            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_device_messageSignature)
+            Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_device_message)
+        }
+    )
+}
+
+@Composable
+private fun LedgerContent(
+    modifier: Modifier = Modifier,
+    signPurpose: Purpose,
+    factorSource: FactorSource.Ledger
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val stringRes = when (signPurpose) {
+            Purpose.TransactionIntents,
+            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
+            Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_ledger_message)
+        }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringRes.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        RoundLedgerItem(
+            ledgerName = factorSource.value.hint.label
         )
     }
 }
@@ -178,14 +192,15 @@ fun GetSignaturesForSigningTransactionWithDevicePreview() {
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun GetSignaturesForSigningTransactionWithLedgerPreview() {
-    RadixWalletTheme {
+fun GetSignaturesForSigningTransactionWithMonoDevicePreview() {
+    RadixWalletPreviewTheme {
         GetSignaturesBottomSheetContent(
-            signPurpose = SignPurpose.SignTransaction,
-            showContentForFactorSource = State.ShowContentForFactorSource.Ledger(
-                ledgerFactorSource = FactorSource.Ledger.sample()
+            state = GetSignaturesViewModel.State(
+                signPurpose = Purpose.TransactionIntents,
+                factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
+                    factorSource = DeviceFactorSource.sample().asGeneral()
+                )
             ),
-            isRetryButtonEnabled = true,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -195,12 +210,15 @@ fun GetSignaturesForSigningTransactionWithLedgerPreview() {
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun GetSignaturesForProvingOwnershipWithDevicePreview() {
+fun GetSignaturesForSigningTransactionWithMonoLedgerPreview() {
     RadixWalletTheme {
         GetSignaturesBottomSheetContent(
-            signPurpose = SignPurpose.SignAuth,
-            showContentForFactorSource = State.ShowContentForFactorSource.Device,
-            isRetryButtonEnabled = true,
+            state = GetSignaturesViewModel.State(
+                signPurpose = Purpose.TransactionIntents,
+                factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
+                    factorSource = LedgerHardwareWalletFactorSource.sample().asGeneral()
+                )
+            ),
             onDismiss = {},
             onRetryClick = {}
         )

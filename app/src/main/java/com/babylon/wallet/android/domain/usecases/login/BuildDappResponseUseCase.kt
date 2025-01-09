@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionProof
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DappWalletInteractionPersona
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.PersonaData
@@ -35,7 +36,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor() {
         ongoingAccountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?> = emptyMap(),
         ongoingSharedPersonaData: PersonaData? = null,
         onetimeSharedPersonaData: PersonaData? = null,
-        verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
+        verifiedEntities: Map<AddressOfAccountOrPersona, SignatureWithPublicKey> = emptyMap()
     ): Result<WalletToDappInteractionResponse> {
         val dappWalletInteractionPersona = DappWalletInteractionPersona(
             identityAddress = authorizedPersona.first.identityAddress,
@@ -47,7 +48,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor() {
                 val signatureForAuthorizedPersona = authorizedPersona.second
 
                 if (signatureForAuthorizedPersona == null) {
-                    return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
+                    return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge)
                 } else {
                     WalletToDappInteractionAuthRequestResponseItem.LoginWithChallenge(
                         v1 = WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem(

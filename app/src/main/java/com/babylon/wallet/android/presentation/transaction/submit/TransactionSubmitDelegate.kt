@@ -36,10 +36,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
-import rdx.works.core.logNonFatalException
 import rdx.works.core.mapError
 import rdx.works.core.toUnitResult
-import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import java.time.Instant
@@ -253,28 +251,9 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         approvalJob = null
 
         when (error) {
-            is ProfileException.SecureStorageAccess -> {
-                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+            // When signing is rejected we just need to stop the submit process. User can retry.
+            is CommonException.SigningRejected -> {
                 _state.update { it.copy(isSubmitting = false) }
-            }
-
-            // When rejected by user (signing with Ledger), we just need to stop the submit process.
-            // No need to report back to dApp, as the user can retry and no need to show an error.
-            is RadixWalletException.DappRequestException.RejectedByUser -> {
-                _state.update { it.copy(isSubmitting = false) }
-            }
-
-            // These two kinds of errors should not report back to the dApp. The user can recover.
-            // Although the error should appear.
-            is RadixWalletException.LedgerCommunicationException,
-            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> {
-                logNonFatalException(error)
-                _state.update {
-                    it.copy(
-                        isSubmitting = false,
-                        error = TransactionErrorMessage(error)
-                    )
-                }
             }
 
             // Errors that need to be reported both to the user and back to the dApp. The user cannot recover.

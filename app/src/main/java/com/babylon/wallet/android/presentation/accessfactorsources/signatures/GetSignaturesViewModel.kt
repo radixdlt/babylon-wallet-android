@@ -2,36 +2,34 @@ package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State.FactorSourceRequest.DeviceRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State.FactorSourceRequest.LedgerRequest
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.sargon.EntitySecurityState
+import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.NeglectFactorReason
+import com.radixdlt.sargon.NeglectedFactor
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.os.signing.FactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorSourceInput
+import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -41,310 +39,152 @@ class GetSignaturesViewModel @Inject constructor(
     private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
     private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
     private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    private val getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToGetSignatures
+    @Suppress("UNCHECKED_CAST")
+    private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSign<Signable.Payload, Signable.ID>
 
-    private var collectSignaturesWithDeviceJob: Job? = null
-    private var collectSignaturesWithLedgerJob: Job? = null
+    private var signingJob: Job? = null
 
-    override fun initialState(): State = State(signPurpose = input.signPurpose)
+    override fun initialState(): State = State(
+        signPurpose = proxyInput.purpose
+    )
 
     init {
-        viewModelScope.launch {
-            val signersPerFactorSource = getSigningEntitiesByFactorSource(signers = input.signers)
-
-            val requests = mutableListOf<State.FactorSourceRequest>()
-            signersPerFactorSource.forEach { (factorSource, entities) ->
-                when (factorSource) {
-                    is FactorSource.Device -> {
-                        val deviceRequest = (
-                            requests
-                                .find { request ->
-                                    request is DeviceRequest
-                                } as? DeviceRequest
-                            ) ?: DeviceRequest(mutableMapOf()).also {
-                            requests.add(it)
-                        }
-
-                        deviceRequest.deviceFactorSources[factorSource] = entities
-                    }
-
-                    is FactorSource.Ledger -> {
-                        requests.add(
-                            LedgerRequest(
-                                factorSource = factorSource,
-                                entities = entities
-                            )
-                        )
-                    }
-
-                    is FactorSource.ArculusCard -> {
-                        // Not implemented yet
-                    }
-
-                    is FactorSource.OffDeviceMnemonic -> {
-                        // Not implemented yet
-                    }
-
-                    is FactorSource.SecurityQuestions -> {
-                        // Not implemented yet
-                    }
-
-                    is FactorSource.TrustedContact -> {
-                        // Not implemented yet
-                    }
-                    is FactorSource.Password -> error("Password factor source is not yet supported.")
-                }
-            }
-
-            _state.update { state -> state.copy(signersRequests = requests) }
-            proceedToNextSigners()
+        signingJob = viewModelScope.launch {
+            resolveFactorSourcesAndSign()
         }
     }
 
-    // Currently if one of the signatures fails it means ending a whole signing process,
-    // but with MFA, this may not be the case, we may be able to proceed to try to get other signatures.
-    private suspend fun proceedToNextSigners() {
-        _state.update { it.proceedToNextSigners() }
+    fun onDismiss() = viewModelScope.launch {
+        finishWithFailure(
+            factorSourceId = proxyInput.input.factorSourceId,
+            neglectFactorReason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED
+        )
+    }
 
-        when (val request = state.value.nextRequest) {
-            is LedgerRequest -> {
-                _state.update { state ->
-                    state.copy(
-                        showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = request.factorSource)
-                    )
-                }
-                collectSignaturesForLedgerFactorSource(
-                    ledgerFactorSource = request.factorSource,
-                    signers = request.entities,
-                    signRequest = input.signRequest
-                )
-            }
+    fun onRetry() {
+        val factorSource = _state.value.factorSource ?: return
 
-            is DeviceRequest -> {
-                _state.update { state ->
-                    state.copy(
-                        showContentForFactorSource = State.ShowContentForFactorSource.Device,
-                        isRetryButtonEnabled = true
-                    )
-                }
-                sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)
-            }
-
-            null -> {
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
-                accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.EntitiesWithSignatures(
-                        signersWithSignatures = state.value.entitiesWithSignatures
-                    )
-                )
-            }
+        signingJob?.cancel()
+        signingJob = viewModelScope.launch {
+            sign(factorSource)
         }
     }
 
-    fun onRetryClick() {
-        viewModelScope.launch {
-            val signersPerFactorSource = getSigningEntitiesByFactorSource(input.signers)
-
-            when (val content = state.value.showContentForFactorSource) {
-                is State.ShowContentForFactorSource.Device -> {
-                    sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)
-                }
-
-                is State.ShowContentForFactorSource.Ledger -> {
-                    val signersWithLedgerFactor = signersPerFactorSource[content.ledgerFactorSource] ?: return@launch
-                    collectSignaturesForLedgerFactorSource(
-                        ledgerFactorSource = content.ledgerFactorSource,
-                        signers = signersWithLedgerFactor,
-                        signRequest = input.signRequest
-
-                    )
-                }
-
-                State.ShowContentForFactorSource.None -> {}
-            }
-        }
+    fun onMessageShown() {
+        _state.update { it.copy(errorMessage = null) }
     }
 
-    // user clicked on X icon or navigated back thus the bottom sheet is dismissed
-    fun onUserDismiss() {
-        viewModelScope.launch {
-            accessFactorSourcesIOHandler.setOutput(
-                output = AccessFactorSourcesOutput.Failure(RadixWalletException.DappRequestException.RejectedByUser)
-            )
-            sendEvent(Event.UserDismissed)
-        }
-    }
-
-    fun collectSignaturesForDeviceFactorSource() {
-        collectSignaturesWithDeviceJob?.cancel()
-        collectSignaturesWithDeviceJob = viewModelScope.launch {
-            // user has already authenticated with biometric prompt
-            // so disable the Retry button as long as wallet is collecting the signatures
-            _state.update { state -> state.copy(isRetryButtonEnabled = false) }
-
-            val request = state.value.nextRequest as? DeviceRequest ?: return@launch
-            val entitiesWithSignaturesForAllDeviceFactorSources = mutableListOf<EntityWithSignature>()
-
-            request.deviceFactorSources.forEach { (deviceFactorSource, entities) ->
-                signWithDeviceFactorSourceUseCase(
-                    deviceFactorSource = deviceFactorSource,
-                    signers = entities,
-                    signRequest = input.signRequest
-                ).onSuccess { entitiesWithSignaturesList ->
-                    entitiesWithSignaturesForAllDeviceFactorSources.addAll(entitiesWithSignaturesList)
-                }.onFailure {
-                    // end the signing process and return the output (error)
-                    sendEvent(event = Event.AccessingFactorSourceCompleted)
-                    accessFactorSourcesIOHandler.setOutput(
-                        AccessFactorSourcesOutput.Failure(error = it)
-                    )
-                    return@launch
-                }
-            }
-
-            _state.update { state ->
-                state.addEntitiesWithSignatures(entitiesWithSignaturesList = entitiesWithSignaturesForAllDeviceFactorSources)
-            }
-            proceedToNextSigners()
-        }
-    }
-
-    private fun collectSignaturesForLedgerFactorSource(
-        ledgerFactorSource: FactorSource.Ledger,
-        signers: List<ProfileEntity>,
-        signRequest: SignRequest
-    ) {
-        collectSignaturesWithLedgerJob?.cancel()
-        collectSignaturesWithLedgerJob = viewModelScope.launch {
-            signWithLedgerFactorSourceUseCase(
-                ledgerFactorSource = ledgerFactorSource,
-                signers = signers,
-                signRequest = signRequest
-            ).onSuccess { entitiesWithSignaturesList ->
-                _state.update { state ->
-                    state.addEntitiesWithSignatures(entitiesWithSignaturesList = entitiesWithSignaturesList)
-                }
-                proceedToNextSigners()
-            }.onFailure { error ->
-                if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
-                    error.reason == LedgerErrorCode.Generic // Generic can mean anything, e.g. user closed the browser tab
-                ) {
-                    return@launch // should be return@launch to keep the bottom sheet open
-                }
-                // end the signing process and return the output (error)
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
-                accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.Failure(error = error)
-                )
-            }
-        }
-    }
-
-    @Suppress("UnsafeCallOnNullableType")
-    private suspend fun getSigningEntitiesByFactorSource(
-        signers: List<ProfileEntity>
-    ): Map<FactorSource, List<ProfileEntity>> = withContext(defaultDispatcher) {
-        val result = mutableMapOf<FactorSource, List<ProfileEntity>>()
+    private suspend fun resolveFactorSourcesAndSign() {
         val profile = getProfileUseCase()
 
-        signers.forEach { signer ->
-            when (val securityState = signer.securityState) {
-                is EntitySecurityState.Unsecured -> {
-                    val factorSourceId = when (state.value.signPurpose) {
-                        SignPurpose.SignTransaction -> securityState.value.transactionSigning.factorSourceId.asGeneral()
-                        SignPurpose.SignAuth ->
-                            // TODO AuthSigningFactorInstance update this when the feature is implemented, for now hiding the button
-//                            securityState.value.authenticationSigning?.factorSourceId?.asGeneral()
-//                            ?:
-                            securityState.value.transactionSigning.factorSourceId.asGeneral()
-                    }
-                    val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
-
-                    if (factorSource.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
-                        if (result[factorSource] != null) {
-                            result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
-                        } else {
-                            result[factorSource] = listOf(signer)
-                        }
-                    }
-                }
-            }
+        val factorSource = profile.factorSourceById(
+            id = proxyInput.input.factorSourceId.asGeneral()
+        ) ?: run {
+            finishWithFailure(proxyInput.input.factorSourceId, NeglectFactorReason.FAILURE)
+            return
         }
 
-        result.keys
-            .sortedBy { factorSource ->
-                factorSource.kind.signingOrder()
-            }.associateWith { factorSource ->
-                result[factorSource]!!
-            }
+        sign(factorSource)
     }
 
-    private fun FactorSourceKind.signingOrder(): Int { // based on difficulty - most "challenging" factor comes first
-        return when (this) {
-            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 0
-            FactorSourceKind.DEVICE -> 1
-            else -> Int.MAX_VALUE // it doesn't matter because we add only the ledger or device factor sources
+    private suspend fun sign(factorSource: FactorSource) {
+        _state.update {
+            it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource))
         }
+
+        signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        ).onSuccess { perFactorOutcome ->
+            _state.update { it.copy(isSigningInProgress = false) }
+            finishWithSuccess(perFactorOutcome)
+        }.onFailure { error ->
+            val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
+                null
+            } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
+                null
+            } else {
+                UiMessage.ErrorMessage(error)
+            }
+
+            _state.update { it.copy(isSigningInProgress = false, errorMessage = errorMessageToShow) }
+        }
+    }
+
+    private suspend fun signMono(
+        factorSource: FactorSource,
+        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+    ): Result<PerFactorOutcome<Signable.ID>> = when (factorSource) {
+        is FactorSource.Device -> signWithDeviceFactorSourceUseCase.mono(
+            deviceFactorSource = factorSource,
+            input = input
+        )
+
+        is FactorSource.Ledger -> signWithLedgerFactorSourceUseCase.mono(
+            ledgerFactorSource = factorSource,
+            input = input
+        )
+
+        else -> error("Signing with ${factorSource.kind} is not yet supported")
+    }
+
+    private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
+        sendEvent(event = Event.Completed)
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output = outcome))
+    }
+
+    private suspend fun finishWithFailure(
+        factorSourceId: FactorSourceIdFromHash,
+        neglectFactorReason: NeglectFactorReason
+    ) {
+        signingJob?.cancel()
+
+        // end the signing process and return the output (error)
+        sendEvent(event = Event.Completed)
+
+        val outcome = FactorOutcome.Neglected<Signable.ID>(
+            factor = NeglectedFactor(
+                reason = neglectFactorReason,
+                factor = factorSourceId
+            )
+        )
+        accessFactorSourcesIOHandler.setOutput(
+            AccessFactorSourcesOutput.SignOutput(
+                output = PerFactorOutcome(
+                    factorSourceId = factorSourceId,
+                    outcome = outcome
+                )
+            )
+        )
     }
 
     data class State(
-        val signPurpose: SignPurpose,
-        private val signersRequests: List<FactorSourceRequest> = emptyList(),
-        private val selectedSignersIndex: Int = -1,
-        // map to keep signature for each entity (signer). This will be returned as output once all signers are done.
-        val entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
-        val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None,
-        val isRetryButtonEnabled: Boolean = true
+        val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
+        val factorSourcesToSign: FactorSourcesToSign = FactorSourcesToSign.Resolving,
+        val isSigningInProgress: Boolean = false,
+        val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState {
 
-        sealed class FactorSourceRequest {
-
-            data class LedgerRequest(
-                val factorSource: FactorSource.Ledger,
-                val entities: List<ProfileEntity>
-            ) : FactorSourceRequest()
-
-            data class DeviceRequest(
-                val deviceFactorSources: MutableMap<FactorSource.Device, List<ProfileEntity>>
-            ) : FactorSourceRequest()
+        val factorSource: FactorSource? = when (factorSourcesToSign) {
+            is FactorSourcesToSign.Mono -> factorSourcesToSign.factorSource
+            FactorSourcesToSign.Resolving -> null
         }
 
-        val nextRequest: FactorSourceRequest?
-            get() = signersRequests.getOrNull(selectedSignersIndex)
+        sealed interface FactorSourcesToSign {
 
-        fun proceedToNextSigners() = copy(selectedSignersIndex = selectedSignersIndex + 1)
+            data object Resolving : FactorSourcesToSign
 
-        fun addEntitiesWithSignatures(entitiesWithSignaturesList: List<EntityWithSignature>) = copy(
-            entitiesWithSignatures = entitiesWithSignatures.toMutableMap().apply {
-                putAll(
-                    entitiesWithSignaturesList.associate { entityWithSignature ->
-                        entityWithSignature.entity to entityWithSignature.signatureWithPublicKey
-                    }
-                )
-            }
-        )
-
-        sealed interface ShowContentForFactorSource {
-
-            data object None : ShowContentForFactorSource
-
-            data object Device : ShowContentForFactorSource
-
-            data class Ledger(val ledgerFactorSource: FactorSource.Ledger) : ShowContentForFactorSource
+            data class Mono(
+                val factorSource: FactorSource
+            ) : FactorSourcesToSign
         }
     }
 
     sealed interface Event : OneOffEvent {
-
-        data object RequestBiometricToAccessDeviceFactorSources : Event
-
-        data object AccessingFactorSourceCompleted : Event
-
-        data object UserDismissed : Event
+        data object Completed : Event
     }
 }

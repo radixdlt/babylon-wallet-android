@@ -19,7 +19,6 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Header
-import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.NetworkId
@@ -193,45 +192,6 @@ fun Profile.addAccounts(
     }
     val updatedProfile = copy(networks = ProfileNetworks(newNetworks).asList())
     return updatedProfile.withUpdatedContentHint()
-}
-
-@Suppress("UnusedParameter")
-fun Profile.addAuthSigningFactorInstanceForEntity(
-    entity: ProfileEntity,
-    authSigningFactorInstance: HierarchicalDeterministicFactorInstance
-): Profile {
-    // TODO AuthSigningFactorInstance: replace the commented code below with the updated implementation
-//    val updatedNetworks = networks.mapWhen(predicate = { network -> network.id == entity.networkId }) { network ->
-//        when (entity) {
-//            is ProfileEntity.AccountEntity -> network.copy(
-//                accounts = Accounts(
-//                    network.accounts.mapWhen(predicate = { it.address == entity.accountAddress }) { account ->
-//                        val updatedSecurityState = when (val state = account.securityState) {
-//                            is EntitySecurityState.Unsecured -> state.copy(
-//                                value = state.value.copy(authenticationSigning = authSigningFactorInstance)
-//                            )
-//                        }
-//                        account.copy(securityState = updatedSecurityState)
-//                    }
-//                ).asList()
-//            )
-//
-//            is ProfileEntity.PersonaEntity -> network.copy(
-//                personas = Personas(
-//                    network.personas.mapWhen(predicate = { it.address == entity.identityAddress }) { persona ->
-//                        val updatedSecurityState = when (val state = persona.securityState) {
-//                            is EntitySecurityState.Unsecured -> state.copy(
-//                                value = state.value.copy(authenticationSigning = authSigningFactorInstance)
-//                            )
-//                        }
-//                        persona.copy(securityState = updatedSecurityState)
-//                    }
-//                ).asList()
-//            )
-//        }
-//    }
-//    return copy(networks = ProfileNetworks(updatedNetworks).asList())
-    return this
 }
 
 fun Profile.updateThirdPartyDepositSettings(
