@@ -258,7 +258,7 @@ fun LedgerDevicesScreenPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = true // TODO fix the message
+                    hasHiddenEntities = false
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(

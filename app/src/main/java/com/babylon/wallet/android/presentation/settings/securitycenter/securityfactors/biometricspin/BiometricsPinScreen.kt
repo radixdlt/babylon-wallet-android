@@ -122,9 +122,7 @@ private fun BiometricsPinPreview() {
                     lastUsedOn = "Today",
                     kind = FactorSourceKind.DEVICE,
                     messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
-                    accounts = persistentListOf(
-                        Account.sampleMainnet()
-                    ),
+                    accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
@@ -142,14 +140,26 @@ private fun BiometricsPinPreview() {
                         lastUsedOn = "Today",
                         kind = FactorSourceKind.DEVICE,
                         messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
-                        accounts = persistentListOf(
-                            Account.sampleMainnet()
-                        ),
+                        accounts = persistentListOf(Account.sampleMainnet()),
                         personas = persistentListOf(
                             Persona.sampleMainnet(),
                             Persona.sampleStokenet()
                         ),
                         hasHiddenEntities = true
+                    ),
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "XXX phone",
+                        includeDescription = false,
+                        lastUsedOn = "Last year",
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(Account.sampleMainnet()),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = true // TODO fix the message
                     )
                 )
             ),
