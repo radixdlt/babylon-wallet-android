@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesUseCaseOfType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -28,26 +29,20 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class BiometricsPinViewModel @Inject constructor(
+    getFactorSourcesUseCaseOfType: GetFactorSourcesUseCaseOfType,
     private val sargonOsManager: SargonOsManager,
     private val preferencesManager: PreferencesManager,
-    getProfileUseCase: GetProfileUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -55,11 +50,7 @@ class BiometricsPinViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        getProfileUseCase.flow
-            .flatMapConcat { profile ->
-                profile.factorSources.asFlow()
-            }
-            .filterIsInstance<FactorSource.Device>()
+        getFactorSourcesUseCaseOfType<FactorSource.Device>()
             .map { deviceFactorSource ->
                 val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
                     factorSource = FactorSource.Device(deviceFactorSource.value),
@@ -98,10 +89,9 @@ class BiometricsPinViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    @Suppress("UnusedParameter") // TODO
     fun onDeviceFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
-            sendEvent(Event.NavigateToDeviceFactorSourceDetails)
+            sendEvent(Event.NavigateToDeviceFactorSourceDetails(factorSourceId))
         }
     }
 
@@ -139,7 +129,8 @@ class BiometricsPinViewModel @Inject constructor(
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
 
         return if (isDeviceFactorSourceLinkedToAnyEntities) {
-            val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
+            val deviceFactorSourceIntegrity =
+                entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
             deviceFactorSourceIntegrity.toMessages().toPersistentList()
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
             // the integrity, but we can check if the user backed up the seed phrase
@@ -171,6 +162,6 @@ class BiometricsPinViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data object NavigateToDeviceFactorSourceDetails : Event
+        data class NavigateToDeviceFactorSourceDetails(val factorSourceId: FactorSourceId) : Event
     }
 }
