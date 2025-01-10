@@ -135,7 +135,7 @@ private fun ChooseFactorSourceContent(
                 State.Page.SelectFactorSourceType -> {
                     SecurityFactorTypesListView(
                         securityFactorSettingItems = state.securityFactorTypeItems,
-                        onSecurityFactorSettingItemClick = onSecurityFactorTypeClick
+                        onSecurityFactorTypeItemClick = onSecurityFactorTypeClick
                     )
                 }
 

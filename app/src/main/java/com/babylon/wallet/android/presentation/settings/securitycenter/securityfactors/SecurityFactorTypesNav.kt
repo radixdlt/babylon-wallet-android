@@ -9,20 +9,20 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 
-private const val ROUTE_SECURITY_FACTORS_SCREEN = "settings_security_factors_screen"
+private const val ROUTE_SECURITY_FACTOR_TYPES_SCREEN = "settings_security_factor_types_screen"
 
-fun NavController.securityFactors() {
-    navigate(ROUTE_SECURITY_FACTORS_SCREEN) {
+fun NavController.securityFactorTypes() {
+    navigate(ROUTE_SECURITY_FACTOR_TYPES_SCREEN) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.securityFactors(
+fun NavGraphBuilder.securityFactorTypes(
     onBackClick: () -> Unit,
-    onSecurityFactorSettingItemClick: (SettingsItem.SecurityFactorsSettingsItem) -> Unit
+    onSecurityFactorTypeClick: (SettingsItem.SecurityFactorsSettingsItem) -> Unit
 ) {
     composable(
-        route = ROUTE_SECURITY_FACTORS_SCREEN,
+        route = ROUTE_SECURITY_FACTOR_TYPES_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -36,10 +36,10 @@ fun NavGraphBuilder.securityFactors(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        SecurityFactorsScreen(
+        SecurityFactorTypesScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onSecurityFactorSettingItemClick = onSecurityFactorSettingItemClick
+            onSecurityFactorTypeClick = onSecurityFactorTypeClick
         )
     }
 }

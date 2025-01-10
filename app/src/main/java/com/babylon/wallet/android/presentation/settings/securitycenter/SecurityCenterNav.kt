@@ -64,7 +64,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.securityShieldOnboardingScreen()
                 },
                 onSecurityFactorsClick = {
-                    navController.securityFactors()
+                    navController.securityFactorTypes()
                 },
                 onBackupConfigurationClick = {
                     navController.backupScreen()
@@ -84,11 +84,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
         ) {
             navController.popBackStack()
         }
-        securityFactors(
+        securityFactorTypes(
             onBackClick = {
                 navController.popBackStack()
             },
-            onSecurityFactorSettingItemClick = { item ->
+            onSecurityFactorTypeClick = { item ->
                 when (item) {
                     is SettingsItem.SecurityFactorsSettingsItem.LedgerNano -> {
                         navController.ledgerHardwareWalletsScreen()

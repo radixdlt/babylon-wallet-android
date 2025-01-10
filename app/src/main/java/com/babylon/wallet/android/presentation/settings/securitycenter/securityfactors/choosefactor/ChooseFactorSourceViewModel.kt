@@ -73,7 +73,7 @@ class ChooseFactorSourceViewModel @Inject constructor(
                     SecurityFactorsSettingsItem.ArculusCard -> State.Page.ArculusCard.ordinal
                     is SecurityFactorsSettingsItem.BiometricsPin -> State.Page.BiometricsPin.ordinal
                     SecurityFactorsSettingsItem.LedgerNano -> State.Page.LedgerNano.ordinal
-                    SecurityFactorsSettingsItem.Passphrase -> State.Page.Passphrase.ordinal
+                    SecurityFactorsSettingsItem.Mnemonic -> State.Page.Passphrase.ordinal
                     SecurityFactorsSettingsItem.Password -> State.Page.Password.ordinal
                 }
             )
