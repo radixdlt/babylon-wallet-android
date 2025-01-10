@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flatMapConcat
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
-class GetFactorSourcesUseCaseOfType @Inject constructor(
+class GetFactorSourcesOfTypeUseCase @Inject constructor(
     val getProfileUseCase: GetProfileUseCase
 ) {
 

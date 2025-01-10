@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesUseCaseOfType
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -37,7 +37,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LedgerDevicesViewModel @Inject constructor(
-    getFactorSourcesUseCaseOfType: GetFactorSourcesUseCaseOfType,
+    getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
     private val ledgerMessenger: LedgerMessenger,
     private val p2PLinksRepository: P2PLinksRepository,
@@ -48,7 +48,7 @@ class LedgerDevicesViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        getFactorSourcesUseCaseOfType<FactorSource.Ledger>()
+        getFactorSourcesOfTypeUseCase<FactorSource.Ledger>()
             .map { ledgerFactorSource ->
                 val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
                     factorSource = FactorSource.Ledger(ledgerFactorSource.value),

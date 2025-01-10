@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesUseCaseOfType
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -34,7 +34,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PasswordsViewModel @Inject constructor(
-    getFactorSourcesUseCaseOfType: GetFactorSourcesUseCaseOfType,
+    getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<PasswordsViewModel.State>(),
@@ -43,7 +43,7 @@ class PasswordsViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        getFactorSourcesUseCaseOfType<FactorSource.Password>()
+        getFactorSourcesOfTypeUseCase<FactorSource.Password>()
             .map { passwordFactorSource ->
                 val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
                     factorSource = FactorSource.Password(passwordFactorSource.value),
