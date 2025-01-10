@@ -137,13 +137,24 @@ class SeedPhraseInputDelegate(
             if (isInputEmpty) {
                 return false
             }
-            return isSeedPhraseInputValid && runCatching {
-                Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
-            }.getOrNull() != null
+            return isSeedPhraseInputValid && wordsIntoMnemonic().getOrNull() != null
+        }
+
+        fun validSeedPhraseOrNull(): MnemonicWithPassphrase? {
+            if (isInputEmpty || !isSeedPhraseInputValid) {
+                return null
+            }
+
+            return wordsIntoMnemonic().map {
+                MnemonicWithPassphrase(
+                    mnemonic = it,
+                    passphrase = bip39Passphrase
+                )
+            }.getOrNull()
         }
 
         fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = Mnemonic.init(seedPhraseWords.joinToString(separator = " ") { it.value }),
+            mnemonic = wordsIntoMnemonic().getOrThrow(),
             passphrase = bip39Passphrase
         )
 
@@ -155,6 +166,10 @@ class SeedPhraseInputDelegate(
                 )
             }.toPersistentList()
         )
+
+        private fun wordsIntoMnemonic(): Result<Mnemonic> = runCatching {
+            Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
+        }
     }
 
     override fun initialState(): State {

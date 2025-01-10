@@ -3,21 +3,18 @@ package com.babylon.wallet.android.domain.usecases.signing
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.SecureStorageKey
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.mapError
-import com.radixdlt.sargon.extensions.sign
 import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.os.driver.BiometricsFailure
 import com.radixdlt.sargon.os.signing.FactorOutcome
-import com.radixdlt.sargon.os.signing.HdSignature
-import com.radixdlt.sargon.os.signing.HdSignatureInput
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
+import rdx.works.core.sargon.signInteractorInput
 import rdx.works.core.sargon.updateLastUsed
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -65,32 +62,13 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
         }.mapCatching { mnemonic ->
             PerFactorOutcome(
                 factorSourceId = input.factorSourceId,
-                outcome = FactorOutcome.Signed(mnemonic.sign(input))
+                outcome = FactorOutcome.Signed(mnemonic.signInteractorInput(input))
             )
         }.onSuccess {
             val updatedProfile = getProfileUseCase().updateLastUsed(deviceFactorSource.id)
             profileRepository.saveProfile(updatedProfile)
         }
     }
-
-    private fun MnemonicWithPassphrase.sign(
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>,
-    ) = input.perTransaction.map { perTransaction ->
-        perTransaction.ownedFactorInstances.map { perFactorInstance ->
-            val signatureWithPublicKey = sign(
-                hash = perTransaction.payload.getSignable().hash(),
-                path = perFactorInstance.factorInstance.publicKey.derivationPath
-            )
-
-            HdSignature(
-                input = HdSignatureInput(
-                    payloadId = perTransaction.payload.getSignable().getId(),
-                    ownedFactorInstance = perFactorInstance
-                ),
-                signature = signatureWithPublicKey
-            )
-        }
-    }.flatten()
 
     /**
      * Guarantees to return a `CommonException` in case of an error
@@ -134,7 +112,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
 
                     PerFactorOutcome(
                         factorSourceId = input.factorSourceId,
-                        outcome = FactorOutcome.Signed(mnemonic.sign(input))
+                        outcome = FactorOutcome.Signed(mnemonic.signInteractorInput(input))
                     )
                 }
             }.mapError { error ->

@@ -3,11 +3,12 @@ package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
-import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessDeviceFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessLedgerHardwareWalletFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessOffDeviceMnemonicFactorSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -26,7 +27,6 @@ import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -39,8 +39,9 @@ import javax.inject.Inject
 @HiltViewModel
 class GetSignaturesViewModel @Inject constructor(
     private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
-    private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
-    private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
+    private val accessDeviceFactorSource: AccessDeviceFactorSource,
+    private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSource,
+    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
     private val getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
@@ -49,6 +50,7 @@ class GetSignaturesViewModel @Inject constructor(
     private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSign<Signable.Payload, Signable.ID>
 
     private var signingJob: Job? = null
+    private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     override fun initialState(): State = State(
         signPurpose = proxyInput.purpose,
@@ -56,6 +58,17 @@ class GetSignaturesViewModel @Inject constructor(
     )
 
     init {
+        viewModelScope.launch {
+            seedPhraseInputDelegate.state.collect { delegateState ->
+                _state.update { it.copy(seedPhraseInputState = delegateState) }
+
+                val seedPhrase = delegateState.validSeedPhraseOrNull()
+                if (seedPhrase != null) {
+                    accessOffDeviceMnemonicFactorSource.onSeedPhraseProvided(seedPhrase = seedPhrase)
+                }
+            }
+        }
+
         signingJob = viewModelScope.launch {
             resolveFactorSourcesAndSign()
         }
@@ -69,11 +82,11 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) {
-
+        seedPhraseInputDelegate.onWordChanged(wordIndex, word)
     }
 
     fun onPasswordTyped(password: String) {
-
+        _state.update { it.copy(passwordInput = password) }
     }
 
     fun onRetry() {
@@ -108,13 +121,35 @@ class GetSignaturesViewModel @Inject constructor(
 
     private suspend fun sign(factorSource: FactorSource) {
         _state.update {
-            it.copy(isSigningInProgress = true, factorSourceToSign = State.FactorSourcesToSign.Mono(factorSource))
+            it.copy(
+                isSigningInProgress = true,
+                factorSourceToSign = State.FactorSourcesToSign.Mono(factorSource),
+                seedPhraseInputState = if (factorSource is FactorSource.OffDeviceMnemonic) {
+                    it.seedPhraseInputState.setSeedPhraseSize(factorSource.value.hint.wordCount)
+                } else {
+                    it.seedPhraseInputState
+                }
+            )
         }
 
-        signMono(
-            factorSource = factorSource,
-            input = proxyInput.input
-        ).onSuccess { perFactorOutcome ->
+        when (factorSource) {
+            is FactorSource.Device -> accessDeviceFactorSource.signMono(
+                factorSource = factorSource,
+                input = proxyInput.input
+            )
+            is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
+                factorSource = factorSource,
+                input = proxyInput.input
+            )
+            is FactorSource.ArculusCard -> TODO()
+            is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
+                factorSource = factorSource,
+                input = proxyInput.input
+            )
+            is FactorSource.Password -> TODO()
+            is FactorSource.SecurityQuestions -> error("Signing with ${factorSource.value.kind} is not supported yet")
+            is FactorSource.TrustedContact -> error("Signing with ${factorSource.value.kind} is not supported yet")
+        }.onSuccess { perFactorOutcome ->
             _state.update { it.copy(isSigningInProgress = false) }
             finishWithSuccess(perFactorOutcome)
         }.onFailure { error ->
@@ -128,23 +163,6 @@ class GetSignaturesViewModel @Inject constructor(
 
             _state.update { it.copy(isSigningInProgress = false, errorMessage = errorMessageToShow) }
         }
-    }
-
-    private suspend fun signMono(
-        factorSource: FactorSource,
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
-    ): Result<PerFactorOutcome<Signable.ID>> = when (factorSource) {
-        is FactorSource.Device -> signWithDeviceFactorSourceUseCase.mono(
-            deviceFactorSource = factorSource,
-            input = input
-        )
-
-        is FactorSource.Ledger -> signWithLedgerFactorSourceUseCase.mono(
-            ledgerFactorSource = factorSource,
-            input = input
-        )
-
-        else -> error("Signing with ${factorSource.kind} is not yet supported")
     }
 
     private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
