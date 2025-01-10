@@ -46,10 +46,11 @@ data class FactorSourceCard(
 
 fun FactorSource.toFactorSourceCard(
     includeDescription: Boolean = false,
+    includeLastUsedOn: Boolean = true,
     messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
     accounts: PersistentList<Account> = persistentListOf(),
     personas: PersistentList<Persona> = persistentListOf(),
-    hasHiddenEntities: Boolean = false
+    hasHiddenEntities: Boolean = false,
 ): FactorSourceCard {
     return FactorSourceCard(
         id = this.id,
@@ -62,13 +63,17 @@ fun FactorSource.toFactorSourceCard(
             else -> ""
         },
         includeDescription = includeDescription,
-        lastUsedOn = when (this) {
-            is FactorSource.ArculusCard -> this.value.common.lastUsedOn.relativeTimeFormatted()
-            is FactorSource.Device -> this.value.common.lastUsedOn.relativeTimeFormatted()
-            is FactorSource.Ledger -> this.value.common.lastUsedOn.relativeTimeFormatted()
-            is FactorSource.OffDeviceMnemonic -> this.value.common.lastUsedOn.relativeTimeFormatted()
-            is FactorSource.Password -> this.value.common.lastUsedOn.relativeTimeFormatted()
-            else -> ""
+        lastUsedOn = if (includeLastUsedOn) {
+            when (this) {
+                is FactorSource.ArculusCard -> this.value.common.lastUsedOn.relativeTimeFormatted()
+                is FactorSource.Device -> this.value.common.lastUsedOn.relativeTimeFormatted()
+                is FactorSource.Ledger -> this.value.common.lastUsedOn.relativeTimeFormatted()
+                is FactorSource.OffDeviceMnemonic -> this.value.common.lastUsedOn.relativeTimeFormatted()
+                is FactorSource.Password -> this.value.common.lastUsedOn.relativeTimeFormatted()
+                else -> ""
+            }
+        } else {
+            null
         },
         kind = kind,
         messages = messages,

@@ -33,7 +33,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun RadixTextField(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onValueChanged: (String) -> Unit,
     value: String,
     colors: TextFieldColors? = null,
