@@ -40,5 +40,5 @@ enum class GlossaryItem {
     arculus, // TODO pending the right glossary item
     ledgerNano, // TODO pending the right glossary item
     passwords, // TODO pending the right glossary item
-    mnemonic, // TODO pending the right glossary item
+    offDeviceMnemonic, // TODO pending the right glossary item
 }

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.mnemonic
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
@@ -33,12 +33,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MnemonicsViewModel @Inject constructor(
+class OffDeviceMnemonicsViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-) : StateViewModel<MnemonicsViewModel.State>(),
-    OneOffEventHandler<MnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<OffDeviceMnemonicsViewModel.State>(),
+    OneOffEventHandler<OffDeviceMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
 
@@ -59,7 +59,7 @@ class MnemonicsViewModel @Inject constructor(
                 )
 
                 _state.update { state ->
-                    state.copy(mnemonicFactorSources = state.mnemonicFactorSources.add(factorSourceCard))
+                    state.copy(offDeviceMnemonicFactorSources = state.offDeviceMnemonicFactorSources.add(factorSourceCard))
                 }
             }
             .flowOn(defaultDispatcher)
@@ -86,18 +86,18 @@ class MnemonicsViewModel @Inject constructor(
         )
     }
 
-    fun onMnemonicFactorSourceClick(factorSourceId: FactorSourceId) {
+    fun onOffDeviceMnemonicFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
-            sendEvent(Event.NavigateToMnemonicFactorSourceDetails(factorSourceId))
+            sendEvent(Event.NavigateToOffDeviceMnemonicFactorSourceDetails(factorSourceId))
         }
     }
 
     data class State(
-        val mnemonicFactorSources: PersistentList<FactorSourceCard> = persistentListOf(),
+        val offDeviceMnemonicFactorSources: PersistentList<FactorSourceCard> = persistentListOf(),
     ) : UiState
 
     sealed interface Event : OneOffEvent {
 
-        data class NavigateToMnemonicFactorSourceDetails(val factorSourceId: FactorSourceId) : Event
+        data class NavigateToOffDeviceMnemonicFactorSourceDetails(val factorSourceId: FactorSourceId) : Event
     }
 }

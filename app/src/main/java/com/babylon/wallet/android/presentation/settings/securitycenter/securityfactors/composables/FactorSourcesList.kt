@@ -120,7 +120,7 @@ fun FactorSourcesList(
                     GlossaryItem.arculus -> stringResource(R.string.infoLink_title_arculus)
                     GlossaryItem.ledgerNano -> stringResource(R.string.infoLink_title_ledgernano)
                     GlossaryItem.passwords -> stringResource(R.string.infoLink_title_passwords)
-                    GlossaryItem.mnemonic -> stringResource(R.string.infoLink_title_passphrases)
+                    GlossaryItem.offDeviceMnemonic -> stringResource(R.string.infoLink_title_passphrases)
                     else -> stringResource(R.string.empty)
                 },
                 onClick = {

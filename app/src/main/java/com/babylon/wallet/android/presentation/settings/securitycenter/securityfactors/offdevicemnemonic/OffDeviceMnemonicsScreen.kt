@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.mnemonic
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -34,10 +34,10 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun MnemonicsScreen(
-    viewModel: MnemonicsViewModel,
-    onNavigateToMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddMnemonic: () -> Unit,
+fun OffDeviceMnemonicsScreen(
+    viewModel: OffDeviceMnemonicsViewModel,
+    onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
+    onNavigateToAddOffDeviceMnemonic: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -46,28 +46,28 @@ fun MnemonicsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is MnemonicsViewModel.Event.NavigateToMnemonicFactorSourceDetails -> {
-                    onNavigateToMnemonicFactorSourceDetails(event.factorSourceId)
+                is OffDeviceMnemonicsViewModel.Event.NavigateToOffDeviceMnemonicFactorSourceDetails -> {
+                    onNavigateToOffDeviceMnemonicFactorSourceDetails(event.factorSourceId)
                 }
             }
         }
     }
 
-    MnemonicsContent(
-        mnemonicFactorSources = state.mnemonicFactorSources,
-        onMnemonicFactorSourceClick = viewModel::onMnemonicFactorSourceClick,
-        onAddMnemonicClick = onNavigateToAddMnemonic,
+    OffDeviceMnemonicsContent(
+        offDeviceMnemonicFactorSources = state.offDeviceMnemonicFactorSources,
+        onOffDeviceMnemonicFactorSourceClick = viewModel::onOffDeviceMnemonicFactorSourceClick,
+        onAddOffDeviceMnemonicClick = onNavigateToAddOffDeviceMnemonic,
         onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
 }
 
 @Composable
-private fun MnemonicsContent(
+private fun OffDeviceMnemonicsContent(
     modifier: Modifier = Modifier,
-    mnemonicFactorSources: PersistentList<FactorSourceCard>,
-    onMnemonicFactorSourceClick: (FactorSourceId) -> Unit,
-    onAddMnemonicClick: () -> Unit,
+    offDeviceMnemonicFactorSources: PersistentList<FactorSourceCard>,
+    onOffDeviceMnemonicFactorSourceClick: (FactorSourceId) -> Unit,
+    onAddOffDeviceMnemonicClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -90,12 +90,12 @@ private fun MnemonicsContent(
 
             FactorSourcesList(
                 mainFactorSource = null,
-                factorSources = mnemonicFactorSources,
+                factorSources = offDeviceMnemonicFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_passphraseDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_passphraseAdd,
-                glossaryItem = GlossaryItem.mnemonic,
-                onFactorSourceClick = onMnemonicFactorSourceClick,
-                onAddFactorSourceClick = onAddMnemonicClick,
+                glossaryItem = GlossaryItem.offDeviceMnemonic,
+                onFactorSourceClick = onOffDeviceMnemonicFactorSourceClick,
+                onAddFactorSourceClick = onAddOffDeviceMnemonicClick,
                 onInfoClick = onInfoClick
             )
         }
@@ -105,10 +105,10 @@ private fun MnemonicsContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-private fun MnemonicsScreenPreview() {
+private fun OffDeviceMnemonicsPreview() {
     RadixWalletTheme {
-        MnemonicsContent(
-            mnemonicFactorSources = persistentListOf(
+        OffDeviceMnemonicsContent(
+            offDeviceMnemonicFactorSources = persistentListOf(
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
@@ -152,8 +152,8 @@ private fun MnemonicsScreenPreview() {
                     hasHiddenEntities = false
                 )
             ),
-            onMnemonicFactorSourceClick = {},
-            onAddMnemonicClick = {},
+            onOffDeviceMnemonicFactorSourceClick = {},
+            onAddOffDeviceMnemonicClick = {},
             onBackClick = {},
             onInfoClick = {}
         )

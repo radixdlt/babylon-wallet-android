@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.mnemonic
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -10,22 +10,22 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
-private const val ROUTE_MNEMONICS_SCREEN = "route_mnemonics_screen"
+private const val ROUTE_OFF_DEVICE_MNEMONICS_SCREEN = "route_off_device_mnemonics_screen"
 
-fun NavController.mnemonics() {
-    navigate(ROUTE_MNEMONICS_SCREEN) {
+fun NavController.offDeviceMnemonics() {
+    navigate(ROUTE_OFF_DEVICE_MNEMONICS_SCREEN) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.mnemonics(
-    onNavigateToMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddMnemonic: () -> Unit,
+fun NavGraphBuilder.offDeviceMnemonics(
+    onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
+    onNavigateToOffDeviceAddMnemonic: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_MNEMONICS_SCREEN,
+        route = ROUTE_OFF_DEVICE_MNEMONICS_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -39,10 +39,10 @@ fun NavGraphBuilder.mnemonics(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        MnemonicsScreen(
+        OffDeviceMnemonicsScreen(
             viewModel = hiltViewModel(),
-            onNavigateToMnemonicFactorSourceDetails = onNavigateToMnemonicFactorSourceDetails,
-            onNavigateToAddMnemonic = onNavigateToAddMnemonic,
+            onNavigateToOffDeviceMnemonicFactorSourceDetails = onNavigateToOffDeviceMnemonicFactorSourceDetails,
+            onNavigateToAddOffDeviceMnemonic = onNavigateToOffDeviceAddMnemonic,
             onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )

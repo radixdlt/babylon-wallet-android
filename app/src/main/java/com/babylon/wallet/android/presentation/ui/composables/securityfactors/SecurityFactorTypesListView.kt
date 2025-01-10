@@ -106,7 +106,7 @@ val currentSecurityFactorTypeItems = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABL
         ),
         SecurityFactorCategory.Information to persistentSetOf(
             SecurityFactorsSettingsItem.Password,
-            SecurityFactorsSettingsItem.Mnemonic
+            SecurityFactorsSettingsItem.OffDeviceMnemonic
         )
     )
 } else {

@@ -17,7 +17,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.backup.ba
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ledgerDevices
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.mnemonic.mnemonics
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password.passwords
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactorTypes
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
@@ -104,8 +104,8 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
                         navController.arculusCards()
                     }
-                    SettingsItem.SecurityFactorsSettingsItem.Mnemonic -> {
-                        navController.mnemonics()
+                    SettingsItem.SecurityFactorsSettingsItem.OffDeviceMnemonic -> {
+                        navController.offDeviceMnemonics()
                     }
                     SettingsItem.SecurityFactorsSettingsItem.Password -> {
                         navController.passwords()
@@ -130,9 +130,9 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
-        mnemonics(
-            onNavigateToMnemonicFactorSourceDetails = { }, // TODO next task
-            onNavigateToAddMnemonic = { },
+        offDeviceMnemonics(
+            onNavigateToOffDeviceMnemonicFactorSourceDetails = { }, // TODO next task
+            onNavigateToOffDeviceAddMnemonic = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
