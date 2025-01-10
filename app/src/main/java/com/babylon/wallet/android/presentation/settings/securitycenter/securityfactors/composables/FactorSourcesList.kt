@@ -24,6 +24,7 @@ import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
@@ -32,9 +33,11 @@ fun FactorSourcesList(
     mainFactorSource: FactorSourceCard?,
     factorSources: PersistentList<FactorSourceCard>,
     @StringRes factorSourceDescriptionText: Int,
-    @StringRes addFactorSourceButtonTitle: Int,
+    @StringRes addFactorSourceButtonTitle: Int? = null,
+    glossaryItem: GlossaryItem,
+    addFactorSourceButtonContent: @Composable (() -> Unit)? = null,
     onFactorSourceClick: (FactorSourceId) -> Unit,
-    onAddFactorSourceClick: () -> Unit,
+    onAddFactorSourceClick: (() -> Unit)? = null,
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
     LazyColumn(
@@ -70,7 +73,7 @@ fun FactorSourcesList(
             }
         }
 
-        if (factorSources.isNotEmpty()) {
+        if (mainFactorSource != null || (factorSources.isNotEmpty() && factorSources.first().kind == FactorSourceKind.DEVICE)) {
             item {
                 Text(
                     text = stringResource(id = R.string.factorSources_list_others),
@@ -89,14 +92,21 @@ fun FactorSourcesList(
 
         item {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            RadixSecondaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(align = Alignment.CenterHorizontally),
-                text = stringResource(id = addFactorSourceButtonTitle),
-                onClick = onAddFactorSourceClick,
-                throttleClicks = true
-            )
+
+            addFactorSourceButtonContent?.invoke()
+                ?: onAddFactorSourceClick?.let {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(align = Alignment.CenterHorizontally),
+                        text = addFactorSourceButtonTitle?.let {
+                            stringResource(id = addFactorSourceButtonTitle)
+                        } ?: stringResource(id = R.string.empty),
+                        onClick = it,
+                        throttleClicks = true
+                    )
+                }
+
             InfoButton(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,9 +115,16 @@ fun FactorSourcesList(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingLarge
                     ),
-                text = "Learn about biometrics/PIN", // TODO
+                text = when (glossaryItem) {
+                    GlossaryItem.biometricsPIN -> stringResource(R.string.infoLink_title_biometricspin)
+                    GlossaryItem.arculus -> stringResource(R.string.infoLink_title_arculus)
+                    GlossaryItem.ledgerNano -> stringResource(R.string.infoLink_title_ledgernano)
+                    GlossaryItem.passwords -> stringResource(R.string.infoLink_title_passwords)
+                    GlossaryItem.mnemonic -> stringResource(R.string.infoLink_title_passphrases)
+                    else -> stringResource(R.string.empty)
+                },
                 onClick = {
-                    onInfoClick(GlossaryItem.biometricsPIN)
+                    onInfoClick(glossaryItem)
                 }
             )
         }
