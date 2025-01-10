@@ -89,7 +89,7 @@ sealed interface SettingsItem {
         data object LedgerNano : SecurityFactorsSettingsItem
         data object ArculusCard : SecurityFactorsSettingsItem
         data object Password : SecurityFactorsSettingsItem
-        data object Passphrase : SecurityFactorsSettingsItem
+        data object Mnemonic : SecurityFactorsSettingsItem
 
         @StringRes
         fun titleRes(): Int {
@@ -97,7 +97,7 @@ sealed interface SettingsItem {
                 is BiometricsPin -> R.string.factorSources_card_deviceTitle
                 LedgerNano -> R.string.factorSources_card_ledgerTitle
                 ArculusCard -> R.string.factorSources_card_arculusCardTitle
-                Passphrase -> R.string.factorSources_card_passphraseTitle
+                Mnemonic -> R.string.factorSources_card_passphraseTitle
                 Password -> R.string.factorSources_card_passwordTitle
             }
         }
@@ -108,7 +108,7 @@ sealed interface SettingsItem {
                 is BiometricsPin -> R.string.factorSources_card_deviceDescription
                 LedgerNano -> R.string.factorSources_card_ledgerDescription
                 ArculusCard -> R.string.factorSources_card_arculusCardDescription
-                Passphrase -> R.string.factorSources_card_passphraseDescription
+                Mnemonic -> R.string.factorSources_card_passphraseDescription
                 Password -> R.string.factorSources_card_passwordDescription
             }
         }
@@ -120,7 +120,7 @@ sealed interface SettingsItem {
                 LedgerNano -> DSR.ic_ledger_nano
                 ArculusCard -> DSR.ic_arculus_card
                 Password -> DSR.ic_password
-                Passphrase -> DSR.ic_passphrase
+                Mnemonic -> DSR.ic_passphrase
             }
         }
     }
