@@ -157,9 +157,9 @@ private fun BiometricsPinPreview() {
                         lastUsedOn = "Last year",
                         kind = FactorSourceKind.DEVICE,
                         messages = persistentListOf(),
-                        accounts = persistentListOf(Account.sampleMainnet()),
+                        accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = true // TODO fix the message
+                        hasHiddenEntities = true
                     )
                 )
             ),
