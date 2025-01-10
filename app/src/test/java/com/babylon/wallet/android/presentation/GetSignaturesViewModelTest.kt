@@ -275,7 +275,7 @@ class GetSignaturesViewModelTest {
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
                     isSigningInProgress = true,
-                    factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
+                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
                         factorSource = deviceFactorSource1.asGeneral()
                     )
                 ),
@@ -285,7 +285,7 @@ class GetSignaturesViewModelTest {
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
                     isSigningInProgress = false,
-                    factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
+                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
                         factorSource = deviceFactorSource1.asGeneral()
                     )
                 ),
@@ -324,7 +324,7 @@ class GetSignaturesViewModelTest {
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
                     isSigningInProgress = true,
-                    factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
+                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
                         factorSource = ledgerFactorSource1.asGeneral()
                     )
                 ),
@@ -335,7 +335,7 @@ class GetSignaturesViewModelTest {
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
                     isSigningInProgress = false,
-                    factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
+                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
                         factorSource = ledgerFactorSource1.asGeneral()
                     )
                 ),

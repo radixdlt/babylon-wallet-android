@@ -30,16 +30,7 @@ class SeedPhraseInputDelegate(
     }
 
     fun setSeedPhraseSize(size: Bip39WordCount) {
-        _state.update { state ->
-            state.copy(
-                seedPhraseWords = (0 until size.value.toInt()).map {
-                    SeedPhraseWord(
-                        it,
-                        lastWord = it == size.value.toInt() - 1
-                    )
-                }.toPersistentList()
-            )
-        }
+        _state.update { state -> state.setSeedPhraseSize(size = size) }
     }
 
     fun onWordSelected(index: Int, value: String) {
@@ -154,6 +145,15 @@ class SeedPhraseInputDelegate(
         fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = Mnemonic.init(seedPhraseWords.joinToString(separator = " ") { it.value }),
             passphrase = bip39Passphrase
+        )
+
+        fun setSeedPhraseSize(size: Bip39WordCount): State = copy(
+            seedPhraseWords = (0 until size.value.toInt()).map {
+                SeedPhraseWord(
+                    it,
+                    lastWord = it == size.value.toInt() - 1
+                )
+            }.toPersistentList()
         )
     }
 

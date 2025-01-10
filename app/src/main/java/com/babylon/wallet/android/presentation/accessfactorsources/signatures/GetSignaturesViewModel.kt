@@ -14,9 +14,11 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
 import com.radixdlt.sargon.extensions.asGeneral
@@ -49,7 +51,8 @@ class GetSignaturesViewModel @Inject constructor(
     private var signingJob: Job? = null
 
     override fun initialState(): State = State(
-        signPurpose = proxyInput.purpose
+        signPurpose = proxyInput.purpose,
+        factorSourceToSign = State.FactorSourcesToSign.Resolving(kind = proxyInput.kind)
     )
 
     init {
@@ -65,6 +68,14 @@ class GetSignaturesViewModel @Inject constructor(
         )
     }
 
+    fun onSeedPhraseWordChanged(wordIndex: Int, word: String) {
+
+    }
+
+    fun onPasswordTyped(password: String) {
+
+    }
+
     fun onRetry() {
         val factorSource = _state.value.factorSource ?: return
 
@@ -72,6 +83,10 @@ class GetSignaturesViewModel @Inject constructor(
         signingJob = viewModelScope.launch {
             sign(factorSource)
         }
+    }
+
+    fun onSkip() {
+
     }
 
     fun onMessageShown() {
@@ -93,7 +108,7 @@ class GetSignaturesViewModel @Inject constructor(
 
     private suspend fun sign(factorSource: FactorSource) {
         _state.update {
-            it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource))
+            it.copy(isSigningInProgress = true, factorSourceToSign = State.FactorSourcesToSign.Mono(factorSource))
         }
 
         signMono(
@@ -164,23 +179,32 @@ class GetSignaturesViewModel @Inject constructor(
 
     data class State(
         val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
-        val factorSourcesToSign: FactorSourcesToSign = FactorSourcesToSign.Resolving,
+        val factorSourceToSign: FactorSourcesToSign,
         val isSigningInProgress: Boolean = false,
-        val errorMessage: UiMessage.ErrorMessage? = null
+        val errorMessage: UiMessage.ErrorMessage? = null,
+        val seedPhraseInputState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
+        val passwordInput: String = ""
     ) : UiState {
 
-        val factorSource: FactorSource? = when (factorSourcesToSign) {
-            is FactorSourcesToSign.Mono -> factorSourcesToSign.factorSource
-            FactorSourcesToSign.Resolving -> null
+        val factorSource: FactorSource? = when (factorSourceToSign) {
+            is FactorSourcesToSign.Mono -> factorSourceToSign.factorSource
+            is FactorSourcesToSign.Resolving -> null
         }
 
         sealed interface FactorSourcesToSign {
 
-            data object Resolving : FactorSourcesToSign
+            val kind: FactorSourceKind
+
+            data class Resolving(
+                override val kind: FactorSourceKind
+            ) : FactorSourcesToSign
 
             data class Mono(
                 val factorSource: FactorSource
-            ) : FactorSourcesToSign
+            ) : FactorSourcesToSign {
+                override val kind: FactorSourceKind
+                    get() = factorSource.kind
+            }
         }
     }
 

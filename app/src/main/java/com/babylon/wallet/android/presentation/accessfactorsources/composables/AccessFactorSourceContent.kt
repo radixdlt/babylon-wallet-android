@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
@@ -63,9 +61,6 @@ import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
 import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.newArculusCardFactorSourceSample
-import com.radixdlt.sargon.newOffDeviceMnemonicFactorSourceSample
-import com.radixdlt.sargon.newPasswordFactorSourceSample
 import com.radixdlt.sargon.samples.sample
 
 @Composable
@@ -219,14 +214,14 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: OffDeviceMnemonicFactorSource?,
-    state: SeedPhraseInputDelegate.State,
+    seedPhraseInputState: SeedPhraseInputDelegate.State,
     canUseDifferentFactor: Boolean,
     onWordChanged: (Int, String) -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,
     onSkipClick: () -> Unit,
 ) {
     AccessFactorSourceContent(
-        modifier = modifier.verticalScroll(rememberScrollState()),
+        modifier = modifier,
         purpose = purpose,
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
@@ -235,8 +230,8 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                seedPhraseWords = state.seedPhraseWords,
-                bip39Passphrase = state.bip39Passphrase,
+                seedPhraseWords = seedPhraseInputState.seedPhraseWords,
+                bip39Passphrase = seedPhraseInputState.bip39Passphrase,
                 onWordChanged = onWordChanged,
                 onPassphraseChanged = {},
                 onFocusedWordIndexChanged = onFocusedWordIndexChanged,
@@ -462,7 +457,7 @@ fun Preview(
                     purpose = sample.first,
                     factorSource = factorSource.value,
                     canUseDifferentFactor = true,
-                    state = state,
+                    seedPhraseInputState = state,
                     onWordChanged = delegate::onWordChanged,
                     onFocusedWordIndexChanged = {},
                     onSkipClick = {},
