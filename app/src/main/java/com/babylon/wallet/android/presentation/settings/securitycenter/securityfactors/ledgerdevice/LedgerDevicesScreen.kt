@@ -1,19 +1,13 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,12 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -36,29 +26,36 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.radixdlt.sargon.FactorSource
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.hex
-import kotlinx.collections.immutable.ImmutableList
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sampleStokenet
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.sample
 
 @Composable
-fun LedgerHardwareWalletsScreen(
+fun LedgerDevicesScreen(
     modifier: Modifier = Modifier,
-    viewModel: LedgerHardwareWalletsViewModel,
+    viewModel: LedgerDevicesViewModel,
     addLedgerDeviceViewModel: AddLedgerDeviceViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
+    onNavigateToLedgerFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -92,6 +89,16 @@ fun LedgerHardwareWalletsScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is LedgerDevicesViewModel.Event.NavigateToLedgerFactorSourceDetails -> {
+                    onNavigateToLedgerFactorSourceDetails(event.factorSourceId)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
         addLinkConnectorViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is AddLinkConnectorViewModel.Event.Close -> {
@@ -105,20 +112,20 @@ fun LedgerHardwareWalletsScreen(
         }
     }
 
-    Box(
-        modifier = modifier
-    ) {
+    Box(modifier = modifier) {
         when (state.showContent) {
-            LedgerHardwareWalletsUiState.ShowContent.Details -> {
-                LedgerHardwareWalletsContent(
-                    ledgerDevices = state.ledgerDevices,
+            LedgerDevicesViewModel.State.ShowContent.Details -> {
+                LedgerDevicesContent(
+                    ledgerFactorSources = state.ledgerFactorSources,
+                    onLedgerFactorSourceClick = viewModel::onLedgerFactorSourceClick,
                     onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
-                    onBackClick = onBackClick,
-                    isNewLinkedConnectorConnected = state.isNewLinkedConnectorConnected
+                    isNewLinkedConnectorConnected = state.isNewLinkedConnectorConnected,
+                    onInfoClick = onInfoClick,
+                    onBackClick = onBackClick
                 )
             }
 
-            LedgerHardwareWalletsUiState.ShowContent.AddLedger -> {
+            LedgerDevicesViewModel.State.ShowContent.AddLedger -> {
                 AddLedgerDeviceScreen(
                     showContent = addLedgerDeviceState.showContent,
                     uiMessage = addLedgerDeviceState.uiMessage,
@@ -139,7 +146,7 @@ fun LedgerHardwareWalletsScreen(
                 )
             }
 
-            is LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector -> {
+            is LedgerDevicesViewModel.State.ShowContent.LinkNewConnector -> {
                 LinkConnectorScreen(
                     modifier = Modifier.fillMaxSize(),
                     onLinkConnectorClick = viewModel::onLinkConnectorClick,
@@ -147,7 +154,7 @@ fun LedgerHardwareWalletsScreen(
                 )
             }
 
-            is LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector -> {
+            is LedgerDevicesViewModel.State.ShowContent.AddLinkConnector -> {
                 AddLinkConnectorScreen(
                     modifier = Modifier,
                     state = addLinkConnectorState,
@@ -165,10 +172,12 @@ fun LedgerHardwareWalletsScreen(
 }
 
 @Composable
-private fun LedgerHardwareWalletsContent(
-    ledgerDevices: ImmutableList<FactorSource.Ledger>,
+private fun LedgerDevicesContent(
+    ledgerFactorSources: PersistentList<FactorSourceCard>,
     isNewLinkedConnectorConnected: Boolean,
+    onLedgerFactorSourceClick: (FactorSourceId) -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
@@ -176,7 +185,7 @@ private fun LedgerHardwareWalletsContent(
     Scaffold(
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.accountSecuritySettings_ledgerHardwareWallets_title),
+                title = stringResource(R.string.factorSources_card_ledgerTitle),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -188,101 +197,26 @@ private fun LedgerHardwareWalletsContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray4)
-            if (ledgerDevices.isNotEmpty()) {
-                LedgerDevicesListContent(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    ledgerDevices = ledgerDevices,
-                    isNewLinkedConnectorConnected = isNewLinkedConnectorConnected,
-                    onAddLedgerDeviceClick = onAddLedgerDeviceClick,
-                )
-            } else {
-                Text(
-                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth()
-                        .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectSmall)
-                        .padding(RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray2,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                RadixSecondaryButton(
-                    text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
-                    onClick = onAddLedgerDeviceClick,
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .imePadding(),
-                    isLoading = isNewLinkedConnectorConnected.not(),
-                    enabled = isNewLinkedConnectorConnected,
-                    throttleClicks = true
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun LedgerDevicesListContent(
-    modifier: Modifier = Modifier,
-    ledgerDevices: ImmutableList<FactorSource.Ledger>,
-    isNewLinkedConnectorConnected: Boolean,
-    onAddLedgerDeviceClick: () -> Unit,
-) {
-    LazyColumn(
-        modifier,
-        contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        item {
-            Text(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        }
-        items(
-            items = ledgerDevices,
-            key = { factorSource: FactorSource.Ledger ->
-                factorSource.value.id.body.hex
-            },
-            itemContent = { item ->
-                LedgerListItem(
-                    ledgerFactorSource = item,
-                    modifier = Modifier
-                        .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
-                        .fillMaxWidth()
-                        .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
-                        .padding(RadixTheme.dimensions.paddingLarge),
-
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-            }
-        )
-        item {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            RadixSecondaryButton(
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
-                onClick = onAddLedgerDeviceClick,
-                throttleClicks = true,
-                isLoading = isNewLinkedConnectorConnected.not(),
-                enabled = isNewLinkedConnectorConnected
+            FactorSourcesList(
+                mainFactorSource = null,
+                factorSources = ledgerFactorSources,
+                factorSourceDescriptionText = R.string.factorSources_card_ledgerDescription,
+                glossaryItem = GlossaryItem.ledgerNano,
+                addFactorSourceButtonContent = {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(align = Alignment.CenterHorizontally),
+                        text = stringResource(id = R.string.factorSources_list_ledgerAdd),
+                        onClick = onAddLedgerDeviceClick,
+                        throttleClicks = true,
+                        isLoading = isNewLinkedConnectorConnected.not(),
+                        enabled = isNewLinkedConnectorConnected
+                    )
+                },
+                onFactorSourceClick = onLedgerFactorSourceClick,
+                onInfoClick = onInfoClick
             )
         }
     }
@@ -291,26 +225,76 @@ private fun LedgerDevicesListContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LedgerHardwareWalletsScreenPreview() {
+fun LedgerDevicesScreenPreview() {
     RadixWalletTheme {
-        LedgerHardwareWalletsContent(
-            ledgerDevices = FactorSource.Ledger.sample.all.toPersistentList(),
+        LedgerDevicesContent(
+            ledgerFactorSources = persistentListOf(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "My Ledger",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(Account.sampleMainnet()),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                        Persona.sampleStokenet()
+                    ),
+                    hasHiddenEntities = true
+                ),
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "XXX Ledger",
+                    includeDescription = false,
+                    lastUsedOn = "Last year",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = true // TODO fix the message
+                ),
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "Gate13",
+                    includeDescription = false,
+                    lastUsedOn = "Last year",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(Account.sampleMainnet()),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false
+                )
+            ),
+            isNewLinkedConnectorConnected = true,
+            onLedgerFactorSourceClick = {},
             onAddLedgerDeviceClick = {},
-            onBackClick = {},
-            isNewLinkedConnectorConnected = true
+            onInfoClick = {},
+            onBackClick = {}
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LedgerHardwareWalletsScreenEmptyPreview() {
+fun LedgerDevicesEmptyScreenPreview() {
     RadixWalletTheme {
-        LedgerHardwareWalletsContent(
-            ledgerDevices = persistentListOf(),
+        LedgerDevicesContent(
+            ledgerFactorSources = persistentListOf(),
+            isNewLinkedConnectorConnected = true,
+            onLedgerFactorSourceClick = {},
             onAddLedgerDeviceClick = {},
-            onBackClick = {},
-            isNewLinkedConnectorConnected = true
+            onInfoClick = {},
+            onBackClick = {}
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
