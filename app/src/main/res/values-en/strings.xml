@@ -915,6 +915,7 @@ Code: %s</string>
   <string name="factorSources_list_arculusCardAdd">Add Arculus Card</string>
   <string name="factorSources_list_passwordAdd">Add New Password</string>
   <string name="factorSources_list_default">Default</string>
+  <string name="factorSources_list_change">Change</string>
   <string name="factorSources_list_others">Others</string>
   <string name="factorSources_list_seedPhraseWrittenDown">This seed phrase has been written down</string>
   <string name="factorSources_list_seedPhraseNotRecoverable">Write down seed phrase to make this factor recoverable</string>
@@ -932,6 +933,8 @@ Code: %s</string>
   <string name="factorSources_detail_seedPhraseLost">Seed Phrase Lost</string>
   <string name="factorSources_detail_enterSeedPhrase">Enter seed phrase to recover use of this factor</string>
   <string name="factorSources_detail_changePin">Change PIN</string>
+  <string name="factorSources_changeMain_title">Change Default Biometrics/PIN</string>
+  <string name="factorSources_changeMain_subtitle">Select the biometrics/PIN factor that will be automatically selected when you create a new Account or Persona.</string>
   <string name="customizeNetworkFees_normalMode_title">Customize Fees</string>
   <string name="customizeNetworkFees_feeBreakdownTitle">Estimated Transaction Fees</string>
   <string name="customizeNetworkFees_totalFee">Transaction Fee</string>
@@ -1476,7 +1479,7 @@ Code: %s</string>
   <string name="shieldSetupStatus_recommendedFactors">Choosing 2 factors will make your Shield more secure and reliable</string>
   <string name="shieldSetupStatus_invalidCombination">You cannot create a Shield with this combination of factors. **Read more**</string>
   <string name="shieldSetupStatus_authentication_atLeastOneFactor">You need to choose a factor to continue</string>
-  <string name="shieldSetupStatus_factorCannotBeUsedByItself">Cannot use this factor by itself</string>
+  <string name="shieldSetupStatus_factorCannotBeUsedByItself">Cannot use this factor type by itself</string>
   <string name="shieldWizardName_title">Name your Security Shield</string>
   <string name="shieldWizardName_subtitle">Give this Security Shield a name, so you can identify it later.</string>
   <string name="shieldWizardRecovery_step_title">Step 2 of 2</string>
