@@ -3,22 +3,15 @@ package com.babylon.wallet.android.presentation.account.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -29,15 +22,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
@@ -49,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsIte
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
@@ -113,38 +103,36 @@ fun AccountSettingsScreen(
     )
 
     if (state.isBottomSheetVisible) {
-        DefaultModalSheetLayout(
-            wrapContent = true,
-            enableImePadding = true,
-            sheetState = bottomSheetState,
-            sheetContent = {
-                when (state.bottomSheetContent) {
-                    State.BottomSheetContent.RenameAccount -> {
-                        RenameAccountSheet(
-                            accountNameChanged = state.accountNameChanged,
-                            onNewAccountNameChange = viewModel::onRenameAccountNameChange,
-                            isNewNameValid = state.isNewNameValid,
-                            isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
-                            onRenameAccountNameClick = {
-                                viewModel.onRenameAccountNameConfirm()
-                            },
-                            onClose = viewModel::onDismissBottomSheet
-                        )
-                    }
-
-                    State.BottomSheetContent.HideAccount -> {
+        when (state.bottomSheetContent) {
+            State.BottomSheetContent.HideAccount -> {
+                DefaultModalSheetLayout(
+                    wrapContent = true,
+                    enableImePadding = true,
+                    sheetState = bottomSheetState,
+                    sheetContent = {
                         HideAccountSheet(
                             onHideAccountClick = viewModel::onHideAccount,
                             onClose = viewModel::onDismissBottomSheet
                         )
-                    }
-
-                    State.BottomSheetContent.None -> {}
-                }
-            },
-            showDragHandle = true,
-            onDismissRequest = viewModel::onDismissBottomSheet
-        )
+                    },
+                    showDragHandle = true,
+                    onDismissRequest = viewModel::onDismissBottomSheet
+                )
+            }
+            State.BottomSheetContent.RenameAccount -> {
+                RenameBottomSheet(
+                    renameInput = state.renameAccountInput,
+                    titleRes = R.string.accountSettings_renameAccount_title,
+                    subtitleRes = R.string.accountSettings_renameAccount_subtitle,
+                    errorValidationMessageRes = R.string.error_accountLabel_missing,
+                    errorTooLongNameMessageRes = R.string.error_accountLabel_tooLong,
+                    onNameChange = viewModel::onRenameAccountNameChange,
+                    onUpdateNameClick = viewModel::onRenameAccountNameConfirm,
+                    onDismiss = viewModel::onDismissBottomSheet
+                )
+            }
+            State.BottomSheetContent.None -> { }
+        }
     }
 }
 
@@ -299,65 +287,6 @@ private fun AccountSettingsContent(
 }
 
 @Composable
-private fun RenameAccountSheet(
-    modifier: Modifier = Modifier,
-    accountNameChanged: String,
-    onNewAccountNameChange: (String) -> Unit,
-    isNewNameValid: Boolean,
-    isNewNameLengthMoreThanTheMaximum: Boolean,
-    onRenameAccountNameClick: () -> Unit,
-    onClose: () -> Unit
-) {
-    BottomSheet(
-        modifier = modifier,
-        onClose = onClose
-    ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.accountSettings_renameAccount_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.accountSettings_renameAccount_subtitle),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        RadixTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            onValueChanged = onNewAccountNameChange,
-            value = accountNameChanged,
-            singleLine = true,
-            error = if (isNewNameLengthMoreThanTheMaximum) {
-                stringResource(id = R.string.error_accountLabel_tooLong)
-            } else {
-                null
-            }
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
-                .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
-            text = stringResource(id = R.string.accountSettings_renameAccount_button),
-            onClick = {
-                onRenameAccountNameClick()
-            },
-            enabled = isNewNameValid
-        )
-    }
-}
-
-@Composable
 private fun HideAccountSheet(
     modifier: Modifier = Modifier,
     onHideAccountClick: () -> Unit,
@@ -371,34 +300,6 @@ private fun HideAccountSheet(
         onPositiveButtonClick = onHideAccountClick,
         onClose = onClose
     )
-}
-
-@Composable
-private fun BottomSheet(
-    modifier: Modifier = Modifier,
-    onClose: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        IconButton(
-            modifier = Modifier.padding(
-                start = RadixTheme.dimensions.paddingXXSmall,
-                top = RadixTheme.dimensions.paddingMedium
-            ),
-            onClick = onClose
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = null
-            )
-        }
-
-        content()
-    }
 }
 
 @UsesSampleValues
@@ -428,21 +329,6 @@ fun AccountSettingsPreview() {
             onDeleteAccount = {},
             isAccountNameUpdated = false,
             onSnackbarMessageShown = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RenameAccountSheetPreview() {
-    RadixWalletTheme {
-        RenameAccountSheet(
-            accountNameChanged = "updated",
-            isNewNameValid = true,
-            isNewNameLengthMoreThanTheMaximum = false,
-            onNewAccountNameChange = {},
-            onRenameAccountNameClick = {},
-            onClose = {}
         )
     }
 }
