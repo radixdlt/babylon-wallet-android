@@ -35,6 +35,7 @@ fun DefaultSettingsItem(
     modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit,
+    isErrorText: Boolean = false,
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
     infoView: @Composable (ColumnScope.() -> Unit)? = null,
     leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
@@ -86,7 +87,11 @@ fun DefaultSettingsItem(
             Text(
                 text = title,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = if (isErrorText) {
+                    RadixTheme.colors.red1
+                } else {
+                    RadixTheme.colors.gray1
+                }
             )
             subtitleView?.let { subtitle ->
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
@@ -133,6 +138,7 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
+    isErrorText: Boolean = false,
     warningView: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = {
@@ -147,12 +153,17 @@ fun DefaultSettingsItem(
         modifier = modifier,
         title = title,
         onClick = onClick,
+        isErrorText = isErrorText,
         subtitleView = subtitle?.let {
             {
                 Text(
                     text = it,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = if (isErrorText) {
+                        RadixTheme.colors.red1
+                    } else {
+                        RadixTheme.colors.gray1
+                    }
                 )
             }
         },
@@ -178,6 +189,7 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
+    isErrorText: Boolean = false,
     warnings: ImmutableList<String>? = null,
     @DrawableRes leadingIconRes: Int? = null,
     trailingIcon: @Composable (() -> Unit)? = {
@@ -194,6 +206,7 @@ fun DefaultSettingsItem(
         onClick = onClick,
         subtitle = subtitle,
         info = info,
+        isErrorText = isErrorText,
         warningView = if (warnings.isNullOrEmpty()) {
             null
         } else {
@@ -217,7 +230,11 @@ fun DefaultSettingsItem(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = it),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = if (isErrorText) {
+                        RadixTheme.colors.red1
+                    } else {
+                        RadixTheme.colors.gray1
+                    }
                 )
             }
         },
