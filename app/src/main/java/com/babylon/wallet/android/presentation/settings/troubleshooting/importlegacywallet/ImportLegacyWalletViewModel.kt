@@ -24,7 +24,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
-import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
+import com.babylon.wallet.android.utils.Constants.DISPLAY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
@@ -183,7 +183,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         olympiaAccountsToImport = data.accountData
                             .map {
                                 // truncate the name, max 30 chars
-                                it.copy(accountName = it.accountName.take(ENTITY_NAME_MAX_LENGTH))
+                                it.copy(accountName = it.accountName.take(DISPLAY_NAME_MAX_LENGTH))
                             }
                             .toPersistentList(),
                         importButtonEnabled = !allImported,

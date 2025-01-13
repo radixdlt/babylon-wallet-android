@@ -12,7 +12,7 @@ data class PersonaDisplayNameFieldWrapper(
             val valueTrimmed = value.trim()
             return when {
                 valueTrimmed.isEmpty() -> ValidationState.Empty
-                valueTrimmed.length > Constants.ENTITY_NAME_MAX_LENGTH -> ValidationState.TooLong
+                valueTrimmed.length > Constants.DISPLAY_NAME_MAX_LENGTH -> ValidationState.TooLong
                 else -> ValidationState.Valid
             }
         }
