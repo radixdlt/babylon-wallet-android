@@ -58,8 +58,13 @@ class OffDeviceMnemonicsViewModel @Inject constructor(
                         entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
                 )
 
+                // avoid duplication when a factor source is updated in the Factor Source Details screen
+                val updatedOffDeviceMnemonicFactorSources = _state.value.offDeviceMnemonicFactorSources
+                    .filterNot { it.id == factorSourceCard.id }
+                    .toMutableList()
+                updatedOffDeviceMnemonicFactorSources.add(factorSourceCard)
                 _state.update { state ->
-                    state.copy(offDeviceMnemonicFactorSources = state.offDeviceMnemonicFactorSources.add(factorSourceCard))
+                    state.copy(offDeviceMnemonicFactorSources = updatedOffDeviceMnemonicFactorSources.toPersistentList())
                 }
             }
             .flowOn(defaultDispatcher)

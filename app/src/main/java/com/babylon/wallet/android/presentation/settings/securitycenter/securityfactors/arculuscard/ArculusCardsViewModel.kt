@@ -58,8 +58,13 @@ class ArculusCardsViewModel @Inject constructor(
                         entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
                 )
 
+                // avoid duplication when a factor source is updated in the Factor Source Details screen
+                val updatedArculusFactorSources = _state.value.arculusFactorSources
+                    .filterNot { it.id == factorSourceCard.id }
+                    .toMutableList()
+                updatedArculusFactorSources.add(factorSourceCard)
                 _state.update { state ->
-                    state.copy(arculusFactorSources = state.arculusFactorSources.add(factorSourceCard))
+                    state.copy(arculusFactorSources = updatedArculusFactorSources.toPersistentList())
                 }
             }
             .flowOn(defaultDispatcher)

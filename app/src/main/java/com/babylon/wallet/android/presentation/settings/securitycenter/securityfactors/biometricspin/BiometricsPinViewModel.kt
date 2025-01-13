@@ -76,12 +76,13 @@ class BiometricsPinViewModel @Inject constructor(
                         state.copy(mainDeviceFactorSource = factorSourceCard)
                     }
                 } else {
+                    // avoid duplication when a factor source is updated in the Factor Source Details screen
+                    val updatedDeviceFactorSources = _state.value.deviceFactorSources
+                        .filterNot { it.id == factorSourceCard.id }
+                        .toMutableList()
+                    updatedDeviceFactorSources.add(factorSourceCard)
                     _state.update { state ->
-                        state.copy(
-                            deviceFactorSources = state.deviceFactorSources.add(
-                                factorSourceCard
-                            )
-                        )
+                        state.copy(deviceFactorSources = updatedDeviceFactorSources.toPersistentList())
                     }
                 }
             }
@@ -129,8 +130,7 @@ class BiometricsPinViewModel @Inject constructor(
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
 
         return if (isDeviceFactorSourceLinkedToAnyEntities) {
-            val deviceFactorSourceIntegrity =
-                entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
+            val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
             deviceFactorSourceIntegrity.toMessages().toPersistentList()
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
             // the integrity, but we can check if the user backed up the seed phrase
