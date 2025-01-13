@@ -132,7 +132,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         offDeviceMnemonics(
             onNavigateToOffDeviceMnemonicFactorSourceDetails = { }, // TODO next task
-            onNavigateToOffDeviceAddMnemonic = { },
+            onNavigateToAddOffDeviceMnemonic = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
