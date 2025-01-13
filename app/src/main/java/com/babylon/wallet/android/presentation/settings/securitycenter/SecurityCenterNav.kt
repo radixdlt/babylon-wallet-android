@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ledgerDevices
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password.passwords
@@ -114,32 +115,38 @@ fun NavGraphBuilder.securityCenterNavGraph(
             }
         )
         biometricsPin(
-            onNavigateToDeviceFactorSourceDetails = { }, // TODO next task
+            onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddBiometricPin = { }, // TODO next task
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )
         ledgerDevices(
-            onNavigateToLedgerFactorSourceDetails = { }, // TODO next task
+            onNavigateToLedgerFactorSourceDetails = { navController.factorSourceDetails(it) },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         arculusCards(
-            onNavigateToArculusFactorSourceDetails = { }, // TODO next task
+            onNavigateToArculusFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddArculusCard = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         offDeviceMnemonics(
-            onNavigateToOffDeviceMnemonicFactorSourceDetails = { }, // TODO next task
+            onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddOffDeviceMnemonic = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         passwords(
-            onNavigateToPasswordFactorSourceDetails = { }, // TODO next task
+            onNavigateToPasswordFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddPassword = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onBackClick = { navController.navigateUp() }
+        )
+        factorSourceDetails(
+            navigateToViewSeedPhrase = { factorSourceId ->
+                navController.revealSeedPhrase(factorSourceId = factorSourceId)
+            },
             onBackClick = { navController.navigateUp() }
         )
         seedPhrases( // TODO remove it later
