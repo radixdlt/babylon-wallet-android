@@ -517,8 +517,7 @@ private fun TransactionPreviewContent(
                 )
             },
             showDragHandle = true,
-            onDismissRequest = onBackClick,
-            windowInsets = WindowInsets.systemBars
+            onDismissRequest = onBackClick
         )
     }
 

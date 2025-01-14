@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -133,13 +134,14 @@ fun BottomSheetDialogWrapper(
     val draggableState = remember {
         AnchoredDraggableState(
             initialValue = DragState.Collapsed,
-            positionalThreshold = { distance: Float -> distance * 0.4f },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
-            animationSpec = tween(),
             anchors = DraggableAnchors {
                 DragState.Expanded at 0f
                 DragState.Collapsed at 0f
-            }
+            },
+            positionalThreshold = { distance: Float -> distance * 0.4f },
+            velocityThreshold = { with(density) { 100.dp.toPx() } },
+            snapAnimationSpec = tween(),
+            decayAnimationSpec = exponentialDecay(),
         )
     }
     val onDismissRequest = remember(isDismissible) {

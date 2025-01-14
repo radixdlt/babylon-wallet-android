@@ -74,7 +74,9 @@ fun FeePayerSelectionSheet(
     onDismiss: () -> Unit
 ) {
     DefaultModalSheetLayout(
-        windowInsets = WindowInsets.systemBars.exclude(WindowInsets.navigationBars),
+        windowInsets = {
+            WindowInsets.systemBars.exclude(WindowInsets.navigationBars)
+        },
         modifier = modifier.fillMaxSize(),
         sheetState = sheetState,
         enableImePadding = true,

@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -78,13 +79,14 @@ fun SlideToSignButton(
         val draggableState = remember {
             AnchoredDraggableState(
                 initialValue = ButtonSliderPosition.Start,
-                positionalThreshold = { distance: Float -> distance * swipeCompleteThreshold },
-                velocityThreshold = { with(density) { 100.dp.toPx() } },
-                animationSpec = tween(),
                 anchors = DraggableAnchors {
                     ButtonSliderPosition.Start at 0f
                     ButtonSliderPosition.End at maxWidthPx
-                }
+                },
+                positionalThreshold = { distance: Float -> distance * swipeCompleteThreshold },
+                velocityThreshold = { with(density) { 100.dp.toPx() } },
+                snapAnimationSpec = tween(),
+                decayAnimationSpec = exponentialDecay()
             )
         }
         // listen for complete swipe
