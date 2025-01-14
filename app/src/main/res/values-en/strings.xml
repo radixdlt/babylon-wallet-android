@@ -254,7 +254,7 @@
   <string name="gateways_addNewGateway_addGatewayButtonTitle">Add Gateway</string>
   <string name="gateways_addNewGateway_errorDuplicateURL">This gateway is already added</string>
   <string name="gateways_addNewGateway_errorNoGatewayFound">No gateway found at specified URL</string>
-  <string name="gateways_addNewGateway_establishingConnectionErrorMessage">There was an error establishing a connection</string>
+  <string name="gateways_addNewGateway_establishingConnectionErrorMessage">Error establishing connection</string>
   <string name="gateways_removeGatewayAlert_title">Remove Gateway</string>
   <string name="gateways_removeGatewayAlert_message">You will no longer be able to connect to this gateway.</string>
   <string name="authorizedDapps_title">Approved dApps</string>
