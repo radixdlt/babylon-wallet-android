@@ -95,13 +95,13 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         vm.onRenameAccountNameChange("new valid name")
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.isNewNameValid)
+            assert(item.renameAccountInput.isNameValid)
         }
         vm.onRenameAccountNameChange("new name very very very very very very very very very very very long")
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.isNewNameValid.not())
-            assert(item.isNewNameLengthMoreThanTheMaximum)
+            assert(item.renameAccountInput.isNameValid.not())
+            assert(item.renameAccountInput.isNameTooLong)
         }
     }
 
