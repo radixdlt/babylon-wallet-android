@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -71,22 +73,24 @@ fun SlideToSignButton(
     ) {
         var textPositionInRoot by remember { mutableStateOf(Offset.Zero) }
         val density = LocalDensity.current
-        val swipeCompleteThreshold = 0.7f
+        val swipeCompleteThreshold = 0.9f
         val indicatorSize = 48.dp
         val indicatorPadding = 2.dp
         val indicatorWidthPx = with(density) { indicatorSize.toPx() }
         val maxWidthPx = with(density) { maxWidth.toPx() - 2 * indicatorPadding.toPx() } - indicatorWidthPx
-        val draggableState = remember {
+
+        val decay = rememberSplineBasedDecay<Float>()
+        val draggableState = remember(maxWidthPx) {
             AnchoredDraggableState(
                 initialValue = ButtonSliderPosition.Start,
                 anchors = DraggableAnchors {
                     ButtonSliderPosition.Start at 0f
-                    ButtonSliderPosition.End at maxWidthPx
+                    ButtonSliderPosition.End at maxWidthPx * 2
                 },
                 positionalThreshold = { distance: Float -> distance * swipeCompleteThreshold },
                 velocityThreshold = { with(density) { 100.dp.toPx() } },
                 snapAnimationSpec = tween(),
-                decayAnimationSpec = splineBasedDecay(density)
+                decayAnimationSpec = decay
             )
         }
         // listen for complete swipe

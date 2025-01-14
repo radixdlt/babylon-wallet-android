@@ -171,7 +171,7 @@ fun BottomSheetDialogWrapper(
             draggableState.updateAnchors(
                 DraggableAnchors {
                     DragState.Expanded at 0f
-                    DragState.Collapsed at contentMaxHeight
+                    DragState.Collapsed at contentMaxHeight * 2
                 }
             )
             LaunchedEffect(draggableState) {
