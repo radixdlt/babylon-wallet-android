@@ -17,11 +17,14 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
+import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
+import com.radixdlt.sargon.OffDeviceMnemonicHint
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
@@ -117,7 +120,22 @@ class GetSignaturesViewModel @Inject constructor(
             return
         }
 
-        sign(factorSource)
+        val fs = if (factorSource is FactorSource.Device) {
+            FactorSource.OffDeviceMnemonic(
+                OffDeviceMnemonicFactorSource(
+                    id = factorSource.value.id,
+                    common = factorSource.value.common,
+                    hint = OffDeviceMnemonicHint(
+                        label = DisplayName("${factorSource.value.hint.label} as off device mnemonic"),
+                        wordCount = factorSource.value.hint.mnemonicWordCount
+                    )
+                )
+            )
+        } else {
+            factorSource
+        }
+
+        sign(fs)
     }
 
     private suspend fun sign(factorSource: FactorSource) {

@@ -1,17 +1,40 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeGestures
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
@@ -24,6 +47,7 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
@@ -34,6 +58,8 @@ import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun GetSignaturesDialog(
@@ -84,69 +110,155 @@ private fun GetSignaturesBottomSheetContent(
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
 ) {
-    BottomSheetDialogWrapper(
-        modifier = modifier,
-        heightFraction = 0.7f,
-        showDragHandle = true,
-        onDismiss = onDismiss
-    ) {
-        val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
-
-        val contentModifier = Modifier.verticalScroll(rememberScrollState())
-        when (state.factorSourceToSign.kind) {
-            FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
-                modifier = contentModifier,
-                purpose = purpose,
-                factorSource = (state.factorSource as? FactorSource.Device)?.value,
-                isAccessingFactor = state.isSigningInProgress,
-                canUseDifferentFactor = true,
-                onRetryClick = onRetryClick,
-                onSkipClick = onSkipClick
-            )
-            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
-                modifier = contentModifier,
-                purpose = purpose,
-                factorSource = (state.factorSource as? FactorSource.Ledger)?.value,
-                isAccessingFactor = state.isSigningInProgress,
-                canUseDifferentFactor = true,
-                onRetryClick = onRetryClick,
-                onSkipClick = onSkipClick
-            )
-            FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
-                modifier = contentModifier,
-                purpose = purpose,
-                factorSource = (state.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
-                seedPhraseInputState = state.seedPhraseInputState,
-                canUseDifferentFactor = true,
-                onWordChanged = onSeedPhraseWordChanged,
-                onFocusedWordIndexChanged = {},
-                onSkipClick = onSkipClick
-            )
-            FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
-                modifier = contentModifier,
-                purpose = purpose,
-                factorSource = (state.factorSource as? FactorSource.ArculusCard)?.value,
-                canUseDifferentFactor = true,
-                onSkipClick = onSkipClick
-            )
-            FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
-                modifier = contentModifier,
-                purpose = purpose,
-                factorSource = (state.factorSource as? FactorSource.Password)?.value,
-                typedPassword = state.passwordInput,
-                onPasswordTyped = onPasswordTyped,
-                canUseDifferentFactor = true,
-                onSkipClick = onSkipClick
-            )
-            FactorSourceKind.SECURITY_QUESTIONS -> TODO()
-            FactorSourceKind.TRUSTED_CONTACT -> TODO()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
         }
     }
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Red)
+    ) {
+        ModalBottomSheet(
+            modifier = modifier,
+            sheetState = sheetState,
+            contentWindowInsets = {
+                WindowInsets(0.dp)
+            },
+            content = {
+                val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
+
+                val contentModifier = Modifier.verticalScroll(rememberScrollState())
+
+                when (state.factorSourceToSign.kind) {
+                    FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
+                        modifier = contentModifier,
+                        purpose = purpose,
+                        factorSource = (state.factorSource as? FactorSource.Device)?.value,
+                        isAccessingFactor = state.isSigningInProgress,
+                        canUseDifferentFactor = true,
+                        onRetryClick = onRetryClick,
+                        onSkipClick = onSkipClick
+                    )
+
+                    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
+                        modifier = contentModifier,
+                        purpose = purpose,
+                        factorSource = (state.factorSource as? FactorSource.Ledger)?.value,
+                        isAccessingFactor = state.isSigningInProgress,
+                        canUseDifferentFactor = true,
+                        onRetryClick = onRetryClick,
+                        onSkipClick = onSkipClick
+                    )
+
+                    FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
+                        modifier = contentModifier,
+                        purpose = purpose,
+                        factorSource = (state.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
+                        seedPhraseInputState = state.seedPhraseInputState,
+                        canUseDifferentFactor = true,
+                        onWordChanged = onSeedPhraseWordChanged,
+                        onFocusedWordIndexChanged = {},
+                        onSkipClick = onSkipClick
+                    )
+
+                    FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
+                        modifier = contentModifier,
+                        purpose = purpose,
+                        factorSource = (state.factorSource as? FactorSource.ArculusCard)?.value,
+                        canUseDifferentFactor = true,
+                        onSkipClick = onSkipClick
+                    )
+
+                    FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
+                        modifier = contentModifier,
+                        purpose = purpose,
+                        factorSource = (state.factorSource as? FactorSource.Password)?.value,
+                        typedPassword = state.passwordInput,
+                        onPasswordTyped = onPasswordTyped,
+                        canUseDifferentFactor = true,
+                        onSkipClick = onSkipClick
+                    )
+
+                    FactorSourceKind.SECURITY_QUESTIONS -> TODO()
+                    FactorSourceKind.TRUSTED_CONTACT -> TODO()
+                }
+            },
+            onDismissRequest = onDismiss
+        )
+    }
+
+//    BottomSheetDialogWrapper(
+//        modifier = modifier,
+//        heightFraction = 0.7f,
+//        showDragHandle = true,
+//        onDismiss = onDismiss
+//    ) {
+//        val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
+//
+//        val contentModifier = Modifier
+//            .verticalScroll(rememberScrollState())
+//
+//        when (state.factorSourceToSign.kind) {
+//            FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
+//                modifier = contentModifier,
+//                purpose = purpose,
+//                factorSource = (state.factorSource as? FactorSource.Device)?.value,
+//                isAccessingFactor = state.isSigningInProgress,
+//                canUseDifferentFactor = true,
+//                onRetryClick = onRetryClick,
+//                onSkipClick = onSkipClick
+//            )
+//            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
+//                modifier = contentModifier,
+//                purpose = purpose,
+//                factorSource = (state.factorSource as? FactorSource.Ledger)?.value,
+//                isAccessingFactor = state.isSigningInProgress,
+//                canUseDifferentFactor = true,
+//                onRetryClick = onRetryClick,
+//                onSkipClick = onSkipClick
+//            )
+//            FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
+//                modifier = contentModifier,
+//                purpose = purpose,
+//                factorSource = (state.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
+//                seedPhraseInputState = state.seedPhraseInputState,
+//                canUseDifferentFactor = true,
+//                onWordChanged = onSeedPhraseWordChanged,
+//                onFocusedWordIndexChanged = {},
+//                onSkipClick = onSkipClick
+//            )
+//            FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
+//                modifier = contentModifier,
+//                purpose = purpose,
+//                factorSource = (state.factorSource as? FactorSource.ArculusCard)?.value,
+//                canUseDifferentFactor = true,
+//                onSkipClick = onSkipClick
+//            )
+//            FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
+//                modifier = contentModifier,
+//                purpose = purpose,
+//                factorSource = (state.factorSource as? FactorSource.Password)?.value,
+//                typedPassword = state.passwordInput,
+//                onPasswordTyped = onPasswordTyped,
+//                canUseDifferentFactor = true,
+//                onSkipClick = onSkipClick
+//            )
+//            FactorSourceKind.SECURITY_QUESTIONS -> TODO()
+//            FactorSourceKind.TRUSTED_CONTACT -> TODO()
+//        }
+//    }
 }
 
 private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
     Purpose.TransactionIntents,
     Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
+
     Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
 }
 
@@ -182,7 +294,7 @@ fun GetSignaturesPreview(
 }
 
 @UsesSampleValues
-private class GetSignaturesPreviewParameterProvider: PreviewParameterProvider<Pair<Purpose, FactorSource>> {
+private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<Purpose, FactorSource>> {
 
     private val samples: List<Pair<Purpose, FactorSource>>
 
