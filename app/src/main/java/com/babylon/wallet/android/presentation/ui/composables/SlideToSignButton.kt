@@ -71,14 +71,14 @@ fun SlideToSignButton(
     ) {
         var textPositionInRoot by remember { mutableStateOf(Offset.Zero) }
         val density = LocalDensity.current
-        val swipeCompleteThreshold = 0.9f
+        val swipeCompleteThreshold = 0.7f
         val indicatorSize = 48.dp
         val indicatorPadding = 2.dp
         val indicatorWidthPx = with(density) { indicatorSize.toPx() }
         val maxWidthPx = with(density) { maxWidth.toPx() - 2 * indicatorPadding.toPx() } - indicatorWidthPx
 
         val decay = rememberSplineBasedDecay<Float>()
-        val draggableState = remember(maxWidthPx) {
+        val draggableState = remember(maxWidthPx, decay) {
             AnchoredDraggableState(
                 initialValue = ButtonSliderPosition.Start,
                 anchors = DraggableAnchors {
