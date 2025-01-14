@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -28,7 +29,8 @@ import javax.inject.Inject
 class FactorSourceDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     getProfileUseCase: GetProfileUseCase,
-    private val sargonOsManager: SargonOsManager
+    private val sargonOsManager: SargonOsManager,
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase
 ) : StateViewModel<FactorSourceDetailsViewModel.State>(),
     OneOffEventHandler<FactorSourceDetailsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -113,8 +115,12 @@ class FactorSourceDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             val deviceFactorSource = currentFactorSource as? FactorSource.Device
             deviceFactorSource?.let {
-                sendEvent(Event.NavigateToSeedPhrase(factorSourceId = deviceFactorSource.value.id.asGeneral()))
-            } ?: sendEvent(Event.NavigateBack)
+                if (biometricsAuthenticateUseCase()) {
+                    sendEvent(Event.NavigateToSeedPhrase(factorSourceId = deviceFactorSource.value.id.asGeneral()))
+                } else {
+                    return@launch
+                }
+            }
         }
     }
 

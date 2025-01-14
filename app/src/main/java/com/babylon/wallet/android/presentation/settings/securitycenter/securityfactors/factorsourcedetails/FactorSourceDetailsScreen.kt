@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import kotlinx.coroutines.launch
 
 @Composable
 fun FactorSourceDetailsScreen(
@@ -88,15 +90,18 @@ private fun FactorSourceDetailsContent(
     onSnackbarMessageShown: () -> Unit,
     onBackClick: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val message = stringResource(R.string.linkedConnectors_renameConnector_successHud)
+    val snackBarMessage = stringResource(R.string.renameLabel_success)
     LaunchedEffect(isFactorSourceNameUpdated) {
         if (isFactorSourceNameUpdated) {
-            snackbarHostState.showSnackbar(
-                message = message,
-                duration = SnackbarDuration.Short,
-                withDismissAction = true
-            )
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = snackBarMessage,
+                    duration = SnackbarDuration.Short,
+                    withDismissAction = true
+                )
+            }
             onSnackbarMessageShown()
         }
     }
