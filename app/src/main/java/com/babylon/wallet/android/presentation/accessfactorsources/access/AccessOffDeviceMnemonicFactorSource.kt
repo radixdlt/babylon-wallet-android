@@ -8,8 +8,9 @@ import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 import kotlinx.coroutines.channels.Channel
 import rdx.works.core.sargon.signInteractorInput
+import javax.inject.Inject
 
-class AccessOffDeviceMnemonicFactorSource: AccessFactorSource<FactorSource.OffDeviceMnemonic> {
+class AccessOffDeviceMnemonicFactorSource @Inject constructor(): AccessFactorSource<FactorSource.OffDeviceMnemonic> {
 
     private val seedPhraseChannel = Channel<MnemonicWithPassphrase>()
 

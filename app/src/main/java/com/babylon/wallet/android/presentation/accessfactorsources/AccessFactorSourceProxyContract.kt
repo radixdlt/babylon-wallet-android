@@ -179,9 +179,13 @@ sealed interface AccessFactorSourcesOutput {
         ) : EntitiesWithSignatures
     }
 
-    data class SignOutput<ID : Signable.ID>(
-        val output: PerFactorOutcome<ID>
-    ) : AccessFactorSourcesOutput
+    sealed interface SignOutput<ID : Signable.ID>: AccessFactorSourcesOutput {
+        data class Completed<ID: Signable.ID>(
+            val outcome: PerFactorOutcome<ID>
+        ): SignOutput<ID>
+
+        data object Rejected: SignOutput<Signable.ID>
+    }
 
     data class Failure(
         val error: Throwable

@@ -75,10 +75,7 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     fun onDismiss() = viewModelScope.launch {
-        finishWithFailure(
-            factorSourceId = proxyInput.input.factorSourceId,
-            neglectFactorReason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED
-        )
+        skipSigning()
     }
 
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) {
@@ -98,8 +95,11 @@ class GetSignaturesViewModel @Inject constructor(
         }
     }
 
-    fun onSkip() {
-
+    fun onSkip() = viewModelScope.launch {
+        skipFactor(
+            factorSourceId = proxyInput.input.factorSourceId,
+            neglectFactorReason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED
+        )
     }
 
     fun onMessageShown() {
@@ -112,7 +112,8 @@ class GetSignaturesViewModel @Inject constructor(
         val factorSource = profile.factorSourceById(
             id = proxyInput.input.factorSourceId.asGeneral()
         ) ?: run {
-            finishWithFailure(proxyInput.input.factorSourceId, NeglectFactorReason.FAILURE)
+            // TODO show error
+
             return
         }
 
@@ -167,10 +168,10 @@ class GetSignaturesViewModel @Inject constructor(
 
     private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output = outcome))
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Completed(outcome = outcome))
     }
 
-    private suspend fun finishWithFailure(
+    private suspend fun skipFactor(
         factorSourceId: FactorSourceIdFromHash,
         neglectFactorReason: NeglectFactorReason
     ) {
@@ -178,7 +179,6 @@ class GetSignaturesViewModel @Inject constructor(
 
         // end the signing process and return the output (error)
         sendEvent(event = Event.Completed)
-
         val outcome = FactorOutcome.Neglected<Signable.ID>(
             factor = NeglectedFactor(
                 reason = neglectFactorReason,
@@ -186,13 +186,21 @@ class GetSignaturesViewModel @Inject constructor(
             )
         )
         accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.SignOutput(
-                output = PerFactorOutcome(
+            AccessFactorSourcesOutput.SignOutput.Completed(
+                outcome = PerFactorOutcome(
                     factorSourceId = factorSourceId,
                     outcome = outcome
                 )
             )
         )
+    }
+
+    private suspend fun skipSigning() {
+        signingJob?.cancel()
+
+        // end the signing process and return the output (error)
+        sendEvent(event = Event.Completed)
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Rejected)
     }
 
     data class State(

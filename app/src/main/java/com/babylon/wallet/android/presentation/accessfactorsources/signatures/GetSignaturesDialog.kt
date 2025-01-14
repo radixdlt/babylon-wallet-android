@@ -101,7 +101,7 @@ private fun GetSignaturesBottomSheetContent(
                 isAccessingFactor = state.isSigningInProgress,
                 canUseDifferentFactor = true,
                 onRetryClick = onRetryClick,
-                onSkipClick = {}
+                onSkipClick = onSkipClick
             )
             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
                 modifier = contentModifier,
@@ -110,7 +110,7 @@ private fun GetSignaturesBottomSheetContent(
                 isAccessingFactor = state.isSigningInProgress,
                 canUseDifferentFactor = true,
                 onRetryClick = onRetryClick,
-                onSkipClick = {}
+                onSkipClick = onSkipClick
             )
             FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
                 modifier = contentModifier,
