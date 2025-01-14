@@ -138,7 +138,7 @@ fun BottomSheetDialogWrapper(
                 DragState.Expanded at 0f
                 DragState.Collapsed at 0f
             },
-            positionalThreshold = { distance: Float -> distance * 0.4f },
+            positionalThreshold = { distance: Float -> distance * 0.9f },
             velocityThreshold = { with(density) { 100.dp.toPx() } },
             snapAnimationSpec = tween(),
             decayAnimationSpec = exponentialDecay(),
