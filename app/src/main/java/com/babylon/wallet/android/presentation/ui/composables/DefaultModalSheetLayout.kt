@@ -47,6 +47,7 @@ fun DefaultModalSheetLayout(
     ) {
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
+            // The sheet should expand until the status bar and banner
             modifier = Modifier.padding(WindowInsets.statusBarsAndBanner.asPaddingValues()),
             sheetState = sheetState,
             containerColor = containerColor,
