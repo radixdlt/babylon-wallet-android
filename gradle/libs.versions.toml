@@ -23,10 +23,7 @@ retrofit = "2.11.0"
 retrofitKoltinxConverter = "1.0.0"
 timber = "5.0.1"
 barcode = "17.2.0"
-cameraCore = "1.4.0-beta02"
-camera2 = "1.4.0-beta02"
-cameraLifecycle = "1.4.0-beta02"
-cameraView = "1.4.0-beta02"
+camera = "1.4.1"
 rootCheck = "0.1.0"
 room = "2.6.1"
 junit = "4.13.2"
@@ -117,10 +114,10 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 retrofitKoltinxConverter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKoltinxConverter" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 barcode = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcode" }
-cameraCore = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera2" }
-cameraLifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraLifecycle" }
-cameraView = { module = "androidx.camera:camera-view", version.ref = "cameraView" }
+cameraCore = { module = "androidx.camera:camera-core", version.ref = "camera" }
+camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }
+cameraLifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
+cameraView = { module = "androidx.camera:camera-view", version.ref = "camera" }
 rootCheck = { module = "com.scottyab:rootbeer-lib", version.ref = "rootCheck" }
 roomRuntime = { module = "androidx.room:room-runtime", version.ref = "room" }
 roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
