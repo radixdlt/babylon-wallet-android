@@ -13,8 +13,6 @@ import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.accountRecoveryScanSelection
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
@@ -78,14 +76,6 @@ fun NavGraphBuilder.troubleshootingNavGraph(
             },
             onBackClick = {
                 navController.popBackStack()
-            }
-        )
-        revealSeedPhrase(
-            onBackClick = {
-                navController.navigateUp()
-            },
-            onConfirmSeedPhraseClick = { factorSourceId, mnemonicSize ->
-                navController.confirmSeedPhrase(factorSourceId, mnemonicSize)
             }
         )
         resetWalletScreen(

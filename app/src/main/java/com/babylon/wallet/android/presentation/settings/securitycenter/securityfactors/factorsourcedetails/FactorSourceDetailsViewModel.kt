@@ -113,6 +113,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
 
     fun onViewSeedPhraseClick() {
         viewModelScope.launch {
+            // TODO if factor source is lost then navigate to restore mnemonic
             val deviceFactorSource = currentFactorSource as? FactorSource.Device
             deviceFactorSource?.let {
                 if (biometricsAuthenticateUseCase()) {
