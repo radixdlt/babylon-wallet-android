@@ -28,7 +28,7 @@ ext {
     compileSdk = 34
     targetSdk = 34
     internalVersionName = "babylon"
-    kotlinCompilerExtensionVersion = "1.5.8"  // Get version from catalog
+    kotlinCompilerExtensionVersion = "1.5.15"  // Get version from catalog
 }
 
 allprojects {
