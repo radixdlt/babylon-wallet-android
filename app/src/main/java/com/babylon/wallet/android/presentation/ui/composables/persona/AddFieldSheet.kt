@@ -98,7 +98,7 @@ fun AddFieldSheet(
                     onSelectionChanged = onSelectionChanged,
                     field = field,
                     modifier = Modifier
-                        .animateItemPlacement()
+                        .animateItem()
                         .throttleClickable {
                             onSelectionChanged(field.id, !field.selected)
                         }
