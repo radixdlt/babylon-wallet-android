@@ -7,8 +7,10 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.Threshold
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -47,7 +49,12 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     fun onNumberOfFactorsSelect(numberOfFactors: State.NumberOfFactors) {
         viewModelScope.launch {
-            securityShieldBuilderClient.setThreshold(numberOfFactors.toThreshold(_state.value.thresholdFactors.size))
+            securityShieldBuilderClient.setThreshold(
+                when (numberOfFactors) {
+                    State.NumberOfFactors.All -> Threshold.All
+                    is State.NumberOfFactors.Count -> Threshold.Specific(numberOfFactors.value.toUByte())
+                }
+            )
         }
     }
 
@@ -67,7 +74,7 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id)) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id), FactorListKind.THRESHOLD) }
     }
 
     fun onAddOverrideClick() {
@@ -113,13 +120,13 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id)) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id), FactorListKind.OVERRIDE) }
     }
 
     fun onRemoveAllOverrideFactorsClick() {
         viewModelScope.launch {
             val ids = _state.value.overrideFactors.map { it.id }
-            securityShieldBuilderClient.removeFactorSourcesFromPrimary(ids)
+            securityShieldBuilderClient.removeFactorSourcesFromPrimary(ids, FactorListKind.OVERRIDE)
         }
     }
 

@@ -3,11 +3,13 @@ package com.babylon.wallet.android.data.repository.securityshield
 import com.babylon.wallet.android.data.repository.securityshield.model.PrimaryRoleSelection
 import com.babylon.wallet.android.data.repository.securityshield.model.RecoveryRoleSelection
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilder
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
+import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
@@ -16,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
@@ -56,21 +59,17 @@ class SecurityShieldBuilderClient @Inject constructor(
     fun recoveryRoleSelection(): Flow<RecoveryRoleSelection> = recoveryRoleSelection
 
     suspend fun getSortedPrimaryThresholdFactorSources(): List<FactorSource> = withContext(dispatcher) {
-        securityShieldBuilder.sortedFactorSourcesForPrimaryThresholdSelection(allFactorSources.value)
+        securityShieldBuilder.sortedFactorSourcesForPrimaryThresholdSelection(allFactorSources.first())
     }
 
     suspend fun updatePrimaryRoleThresholdFactorSourceSelection(
         id: FactorSourceId,
         isSelected: Boolean
     ) = withContext(dispatcher) {
-        val thresholdFactorCount = (primaryRoleSelection.replayCache.firstOrNull()?.thresholdFactors?.size ?: 0).toUByte()
-
         if (isSelected) {
             executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryThreshold(id) }
-            executeMutatingFunction { securityShieldBuilder.setThreshold(thresholdFactorCount.inc()) }
         } else {
-            executeMutatingFunction { securityShieldBuilder.removeFactorFromPrimary(id) }
-            executeMutatingFunction { securityShieldBuilder.setThreshold(thresholdFactorCount.dec()) }
+            executeMutatingFunction { securityShieldBuilder.removeFactorFromPrimary(id, FactorListKind.THRESHOLD) }
         }
 
         onPrimaryRoleSelectionUpdate()
@@ -94,8 +93,8 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun removeFactorSourcesFromPrimary(ids: List<FactorSourceId>) = withContext(dispatcher) {
-        ids.forEach { id -> securityShieldBuilder.removeFactorFromPrimary(id) }
+    suspend fun removeFactorSourcesFromPrimary(ids: List<FactorSourceId>, factorListKind: FactorListKind) = withContext(dispatcher) {
+        ids.forEach { id -> securityShieldBuilder.removeFactorFromPrimary(id, factorListKind) }
         onPrimaryRoleSelectionUpdate()
     }
 
@@ -104,8 +103,8 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun setThreshold(threshold: Int) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.setThreshold(threshold.toUByte()) }
+    suspend fun setThreshold(threshold: Threshold) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.setThreshold(threshold) }
         onPrimaryRoleSelectionUpdate()
     }
 
@@ -146,7 +145,7 @@ class SecurityShieldBuilderClient @Inject constructor(
                 thresholdFactors = securityShieldBuilder.getPrimaryThresholdFactors().toFactorSources(),
                 overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
                 authenticationFactor = securityShieldBuilder.getAuthenticationSigningFactor()?.toFactorSource(),
-                primaryRoleStatus = securityShieldBuilder.selectedFactorSourcesForRoleStatus(RoleKind.PRIMARY),
+                primaryRoleStatus = securityShieldBuilder.selectedPrimaryThresholdFactorsStatus(),
                 shieldStatus = securityShieldBuilder.validate()?.also { Timber.w("Security shield builder invalid reason: $it") }
             )
         )

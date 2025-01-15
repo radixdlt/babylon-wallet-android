@@ -12,7 +12,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
+import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
+import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
@@ -106,17 +107,17 @@ class SelectFactorsViewModel @Inject constructor(
 
     data class State(
         val items: List<UiItem> = emptyList(),
-        val status: SelectedFactorSourcesForRoleStatus? = null,
+        val status: SelectedPrimaryThresholdFactorsStatus? = null,
         val message: UiMessage? = null
     ) : UiState {
 
-        val isButtonEnabled: Boolean = status == SelectedFactorSourcesForRoleStatus.OPTIMAL ||
-            status == SelectedFactorSourcesForRoleStatus.SUBOPTIMAL
+        val isButtonEnabled: Boolean = status == SelectedPrimaryThresholdFactorsStatus.Optimal ||
+            status == SelectedPrimaryThresholdFactorsStatus.Suboptimal
 
-        fun showPasswordWarning(categoryHeader: UiItem.CategoryHeader): Boolean =
-            categoryHeader.kind == FactorSourceKind.PASSWORD && items.any {
-                (it as? UiItem.Factor)?.card?.data?.kind == FactorSourceKind.PASSWORD && it.card.selected
-            } && status == SelectedFactorSourcesForRoleStatus.INVALID
+        fun cannotBeUsedByItself(categoryHeader: UiItem.CategoryHeader): Boolean =
+            (status as? SelectedPrimaryThresholdFactorsStatus.Invalid)?.let { status ->
+                (status.reason as? SelectedPrimaryThresholdFactorsStatusInvalidReason.CannotBeUsedAlone)?.factorSourceKind == categoryHeader.kind
+            } ?: false
 
         sealed interface UiItem {
 

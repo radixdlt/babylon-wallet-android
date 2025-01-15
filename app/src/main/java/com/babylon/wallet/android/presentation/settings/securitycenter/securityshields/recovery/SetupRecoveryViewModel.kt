@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -11,10 +12,12 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -22,7 +25,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SetupRecoveryViewModel @Inject constructor(
-    private val securityShieldBuilderClient: SecurityShieldBuilderClient
+    private val securityShieldBuilderClient: SecurityShieldBuilderClient,
+    private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SetupRecoveryViewModel.State>(),
     OneOffEventHandler<SetupRecoveryViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -180,12 +185,11 @@ class SetupRecoveryViewModel @Inject constructor(
     }
 
     fun onConfirmShieldNameClick() {
-        viewModelScope.launch {
+        viewModelScope.launch(defaultDispatcher) {
             val shieldName = requireNotNull(state.value.setShieldName?.name)
             val securityStructureOfFactorSourceIDs = securityShieldBuilderClient.buildShield(shieldName)
 
-            // TODO save shield to profile
-            Timber.w("Security structure: $securityStructureOfFactorSourceIDs")
+            sargonOsManager.sargonOs.addSecurityStructureOfFactorSourceIds(securityStructureOfFactorSourceIDs)
 
             sendEvent(Event.ShieldCreated)
         }
