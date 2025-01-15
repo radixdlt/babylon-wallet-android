@@ -198,7 +198,7 @@ class LedgerMessengerImpl @Inject constructor(
                     }
                 }
             }
-            .onFailure { throwable ->
+            .onFailure {
                 emit(Result.failure(RadixWalletException.LedgerCommunicationException.FailedToConnect))
             }
     }.first()
