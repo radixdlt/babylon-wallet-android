@@ -66,7 +66,8 @@ fun AddFieldSheet(
                 title = stringResource(id = R.string.editPersona_addAField_title),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1,
-                backIconType = BackIconType.Close
+                backIconType = BackIconType.Close,
+                windowInsets = WindowInsets.none
             )
             HorizontalDivider(color = RadixTheme.colors.gray4)
         }
