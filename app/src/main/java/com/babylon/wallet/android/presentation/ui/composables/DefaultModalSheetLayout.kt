@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -43,6 +44,7 @@ fun DefaultModalSheetLayout(
     ) {
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
+            modifier = Modifier.padding(WindowInsets.statusBarsAndBanner.asPaddingValues()),
             sheetState = sheetState,
             containerColor = containerColor,
             scrimColor = Color.Black.copy(alpha = 0.3f),
