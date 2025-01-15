@@ -61,7 +61,7 @@ fun LazyListScope.poolUnitsTab(
 
     itemsIndexed(
         items = assetsViewData.poolUnits,
-        key = { index, poolUnitItem -> poolUnitItem.resourceAddress.string }
+        key = { _, poolUnitItem -> poolUnitItem.resourceAddress.string }
     ) { index, poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier

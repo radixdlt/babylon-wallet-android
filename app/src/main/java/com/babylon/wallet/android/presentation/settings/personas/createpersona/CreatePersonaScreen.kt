@@ -322,7 +322,10 @@ private fun CreatePersonaContentList(
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .animateItemPlacement(),
+                    .animateItem(
+                        fadeInSpec = null,
+                        fadeOutSpec = null
+                    ),
                 label = stringResource(id = field.entry.value.kind.toDisplayResource()),
                 field = field.entry.value,
                 onValueChanged = {

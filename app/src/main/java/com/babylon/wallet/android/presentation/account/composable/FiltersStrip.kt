@@ -43,7 +43,10 @@ fun FiltersStrip(
         historyFilters?.transactionType?.let { transactionType ->
             item(key = transactionType.name) {
                 HistoryFilterTag(
-                    modifier = Modifier.animateItemPlacement(),
+                    modifier = Modifier.animateItem(
+                        fadeInSpec = null,
+                        fadeOutSpec = null
+                    ),
                     selected = true,
                     text = transactionType.label(),
                     leadingIcon = {
@@ -63,7 +66,10 @@ fun FiltersStrip(
                 }
 
                 HistoryFilterTag(
-                    modifier = Modifier.animateItemPlacement(),
+                    modifier = Modifier.animateItem(
+                        fadeInSpec = null,
+                        fadeOutSpec = null
+                    ),
                     selected = true,
                     text = name.ifEmpty { resource.address.formatted() },
                     onCloseClick = {
@@ -74,7 +80,10 @@ fun FiltersStrip(
         }
         historyFilters?.transactionClass?.let { txClass ->
             item(key = txClass.name) {
-                HistoryFilterTag(modifier = Modifier.animateItemPlacement(), selected = true, text = txClass.description(), onCloseClick = {
+                HistoryFilterTag(modifier = Modifier.animateItem(
+                    fadeInSpec = null,
+                    fadeOutSpec = null
+                ), selected = true, text = txClass.description(), onCloseClick = {
                     if (userInteractionEnabled) onTransactionClassFilterRemoved()
                 })
             }
