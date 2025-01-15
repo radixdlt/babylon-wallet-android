@@ -36,7 +36,10 @@ fun DefaultModalSheetLayout(
     sheetContent: @Composable () -> Unit,
     showDragHandle: Boolean = true,
     containerColor: Color = RadixTheme.colors.defaultBackground,
-    windowInsets: @Composable () -> WindowInsets = { BottomSheetDefaults.windowInsets },
+    windowInsets: @Composable () -> WindowInsets = {
+        // Defaults to insets at the bottom of the screen
+        BottomSheetDefaults.windowInsets
+    },
     onDismissRequest: () -> Unit,
 ) {
     BoxWithConstraints(
