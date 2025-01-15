@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -130,16 +131,18 @@ fun BottomSheetDialogWrapper(
     val interactionSource = remember { MutableInteractionSource() }
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    val draggableState = remember {
+    val decay = rememberSplineBasedDecay<Float>()
+    val draggableState = remember(decay) {
         AnchoredDraggableState(
             initialValue = DragState.Collapsed,
-            positionalThreshold = { distance: Float -> distance * 0.4f },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
-            animationSpec = tween(),
             anchors = DraggableAnchors {
                 DragState.Expanded at 0f
                 DragState.Collapsed at 0f
-            }
+            },
+            positionalThreshold = { distance: Float -> distance * 0.9f },
+            velocityThreshold = { with(density) { 100.dp.toPx() } },
+            snapAnimationSpec = tween(),
+            decayAnimationSpec = decay,
         )
     }
     val onDismissRequest = remember(isDismissible) {
@@ -169,7 +172,7 @@ fun BottomSheetDialogWrapper(
             draggableState.updateAnchors(
                 DraggableAnchors {
                     DragState.Expanded at 0f
-                    DragState.Collapsed at contentMaxHeight
+                    DragState.Collapsed at contentMaxHeight * 2
                 }
             )
             LaunchedEffect(draggableState) {

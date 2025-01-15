@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.IconButton
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -164,7 +164,7 @@ fun PersonaDataStringInput(
                                     interactionSource = remember {
                                         MutableInteractionSource()
                                     },
-                                    indication = rememberRipple(bounded = false),
+                                    indication = ripple(bounded = false),
                                     onClick = onDeleteField
                                 )
                                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
