@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi

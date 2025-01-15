@@ -80,12 +80,17 @@ fun FiltersStrip(
         }
         historyFilters?.transactionClass?.let { txClass ->
             item(key = txClass.name) {
-                HistoryFilterTag(modifier = Modifier.animateItem(
-                    fadeInSpec = null,
-                    fadeOutSpec = null
-                ), selected = true, text = txClass.description(), onCloseClick = {
-                    if (userInteractionEnabled) onTransactionClassFilterRemoved()
-                })
+                HistoryFilterTag(
+                    modifier = Modifier.animateItem(
+                        fadeInSpec = null,
+                        fadeOutSpec = null
+                    ),
+                    selected = true,
+                    text = txClass.description(),
+                    onCloseClick = {
+                        if (userInteractionEnabled) onTransactionClassFilterRemoved()
+                    }
+                )
             }
         }
     }
