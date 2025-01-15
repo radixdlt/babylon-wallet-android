@@ -1,10 +1,6 @@
 [versions]
 androidxCore = "1.13.1"
-androidx-lifecycle-runtime-ktx = "2.7.0"
-androidx-lifecycle-viewmodel-ktx = "2.7.0"
-lifecycleViewModelCompose = "2.7.0"
-lifecycelRuntimeCompose = "2.7.0"
-lifecycleProcess = "2.8.4"
+androidxLifecycle = "2.8.7"
 compose = "1.7.6"
 composeConstraintLayout = "1.1.0"
 composeActivity = "1.9.3"
@@ -74,10 +70,10 @@ markdown = "0.25.0"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
-lifecycleRuntimeKtx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle-runtime-ktx" }
-lifecycleViewmodelKtx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle-viewmodel-ktx" }
-lifecycleViewModelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewModelCompose" }
-lifecycelRuntimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycelRuntimeCompose" }
+lifecycleRuntimeKtx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
+lifecycleViewmodelKtx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
+lifecycleViewModelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+lifecycelRuntimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 composeUi = { module = "androidx.compose.ui:ui", version.ref = "compose" }
 composeRuntime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
 composeUiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
@@ -155,7 +151,7 @@ googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive",
 workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManagerRuntimeKtx" }
 androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
 androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
-lifeCycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
+lifeCycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidxLifecycle" }
 markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }
 
 [plugins]
