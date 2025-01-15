@@ -186,9 +186,6 @@ fun CreatePersonaContent(
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
-            windowInsets = {
-                WindowInsets.systemBars.exclude(WindowInsets.navigationBars)
-            },
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(

@@ -219,9 +219,6 @@ private fun PersonaEditContent(
 
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
-            windowInsets = {
-                WindowInsets.systemBars.exclude(WindowInsets.navigationBars)
-            },
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
