@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
@@ -124,6 +125,7 @@ private fun GetSignaturesBottomSheetContent(
                         backIconType = BackIconType.Close
                     )
                 },
+                containerColor = RadixTheme.colors.defaultBackground,
                 content = { padding ->
                     val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
 

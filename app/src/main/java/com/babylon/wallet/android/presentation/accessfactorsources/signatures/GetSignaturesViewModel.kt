@@ -54,7 +54,7 @@ class GetSignaturesViewModel @Inject constructor(
     private val accessDeviceFactorSource: AccessDeviceFactorSource,
     private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSource,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
-    private val getProfileUseCase: GetProfileUseCase
+    getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -74,6 +74,15 @@ class GetSignaturesViewModel @Inject constructor(
         signPurpose = proxyInput.purpose,
         accessState = accessDelegate.state.value,
     )
+
+    init {
+        accessDelegate
+            .state
+            .onEach { accessState ->
+                _state.update { it.copy(accessState = accessState) }
+            }
+            .launchIn(viewModelScope)
+    }
 
     private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
         is FactorSource.Device -> accessDeviceFactorSource.signMono(

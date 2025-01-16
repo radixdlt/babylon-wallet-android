@@ -44,11 +44,11 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.ProvingOwnership
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.SignatureRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.UpdatingFactorConfig
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
@@ -153,7 +153,7 @@ fun AccessPasswordFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: PasswordFactorSource?,
-    passwordState: State.PasswordState,
+    passwordState: AccessFactorSourceDelegate.State.PasswordState,
     onPasswordTyped: (String) -> Unit,
     canUseDifferentFactor: Boolean,
     onSkipClick: () -> Unit
@@ -223,7 +223,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: OffDeviceMnemonicFactorSource?,
-    seedPhraseInputState: State.SeedPhraseInputState,
+    seedPhraseInputState: AccessFactorSourceDelegate.State.SeedPhraseInputState,
     canUseDifferentFactor: Boolean,
     onWordChanged: (Int, String) -> Unit,
     onConfirmed: () -> Unit,
@@ -482,7 +482,7 @@ fun Preview(
                     purpose = sample.first,
                     factorSource = factorSource.value,
                     canUseDifferentFactor = true,
-                    passwordState = State.PasswordState(
+                    passwordState = AccessFactorSourceDelegate.State.PasswordState(
                         input = password,
                         isPasswordInvalidErrorVisible = false
                     ),
@@ -506,7 +506,7 @@ fun Preview(
                     purpose = sample.first,
                     factorSource = factorSource.value,
                     canUseDifferentFactor = true,
-                    seedPhraseInputState = State.SeedPhraseInputState(
+                    seedPhraseInputState = AccessFactorSourceDelegate.State.SeedPhraseInputState(
                         delegateState = state,
                         isSeedPhraseInvalidErrorVisible = true
                     ),
