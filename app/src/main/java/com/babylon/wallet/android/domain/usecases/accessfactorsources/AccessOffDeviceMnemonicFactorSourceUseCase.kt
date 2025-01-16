@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.access
+package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.common.seedphrase.toMnemonicWithPassphraseOrNull
@@ -17,7 +17,7 @@ import kotlinx.coroutines.channels.Channel
 import rdx.works.core.sargon.signInteractorInput
 import javax.inject.Inject
 
-class AccessOffDeviceMnemonicFactorSource @Inject constructor() : AccessFactorSource<FactorSource.OffDeviceMnemonic> {
+class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor() : AccessFactorSourceUseCase<FactorSource.OffDeviceMnemonic> {
 
     private val seedPhraseChannel = Channel<MnemonicWithPassphrase>()
 

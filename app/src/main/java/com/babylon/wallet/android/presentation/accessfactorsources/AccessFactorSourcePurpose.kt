@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.models
+package com.babylon.wallet.android.presentation.accessfactorsources
 
 enum class AccessFactorSourcePurpose {
     SignatureRequest,

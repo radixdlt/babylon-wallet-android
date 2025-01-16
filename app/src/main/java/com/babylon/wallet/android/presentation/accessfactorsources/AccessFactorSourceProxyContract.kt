@@ -166,16 +166,6 @@ sealed interface AccessFactorSourcesOutput {
         val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
-    sealed interface EntitiesWithSignatures : AccessFactorSourcesOutput {
-        data class Success(
-            val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
-        ) : EntitiesWithSignatures
-
-        data class Failure(
-            val error: AccessFactorSourceError.Fatal
-        ) : EntitiesWithSignatures
-    }
-
     sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
         data class Completed<ID : Signable.ID>(
             val outcome: PerFactorOutcome<ID>

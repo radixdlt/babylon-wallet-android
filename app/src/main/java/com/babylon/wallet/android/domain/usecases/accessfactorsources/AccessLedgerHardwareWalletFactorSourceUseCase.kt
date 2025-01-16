@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.access
+package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
@@ -15,10 +15,10 @@ import com.radixdlt.sargon.os.signing.Signable
 import rdx.works.core.UUIDGenerator
 import javax.inject.Inject
 
-class AccessLedgerHardwareWalletFactorSource @Inject constructor(
+class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
     private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
     private val ledgerMessenger: LedgerMessenger,
-) : AccessFactorSource<FactorSource.Ledger> {
+) : AccessFactorSourceUseCase<FactorSource.Ledger> {
 
     override suspend fun derivePublicKeys(
         factorSource: FactorSource.Ledger,

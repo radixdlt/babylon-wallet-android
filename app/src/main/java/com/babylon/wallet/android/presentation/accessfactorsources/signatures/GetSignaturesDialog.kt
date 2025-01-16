@@ -23,13 +23,13 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
-import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType

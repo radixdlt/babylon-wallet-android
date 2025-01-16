@@ -1,16 +1,14 @@
 package com.babylon.wallet.android.presentation
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessDeviceFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessLedgerHardwareWalletFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessOffDeviceMnemonicFactorSource
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountPath
@@ -172,9 +170,9 @@ class GetSignaturesViewModelTest {
 
 
     private val accessFactorSourcesIOHandler = mockk<AccessFactorSourcesIOHandler>()
-    private val accessDeviceFactorSource = mockk<AccessDeviceFactorSource>()
-    private val accessLedgerHardwareWalletFactorSource = mockk<AccessLedgerHardwareWalletFactorSource>()
-    private val accessOffDeviceMnemonicFactorSource = mockk<AccessOffDeviceMnemonicFactorSource>()
+    private val accessDeviceFactorSource = mockk<AccessDeviceFactorSourceUseCase>()
+    private val accessLedgerHardwareWalletFactorSource = mockk<AccessLedgerHardwareWalletFactorSourceUseCase>()
+    private val accessOffDeviceMnemonicFactorSource = mockk<AccessOffDeviceMnemonicFactorSourceUseCase>()
 
     private val signaturesPerInput: Map<PerFactorSourceInput<Signable.Payload, Signable.ID>, PerFactorOutcome<Signable.ID>> = mapOf(
         PerFactorSourceInput<Signable.Payload, Signable.ID>(

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.access
+package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
@@ -7,7 +7,7 @@ import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 
-interface AccessFactorSource<F : FactorSource> {
+interface AccessFactorSourceUseCase<F : FactorSource> {
 
     suspend fun derivePublicKeys(
         factorSource: F,

@@ -20,14 +20,15 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
-import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
@@ -53,6 +54,14 @@ fun DerivePublicKeysDialog(
 
     BackHandler {
         viewModel.onDismiss()
+    }
+
+    state.accessState.errorMessage?.let { errorMessage ->
+        BasicPromptAlertDialog(
+            finish = { viewModel.onMessageShown() },
+            messageText = errorMessage.getMessage(),
+            dismissText = null
+        )
     }
 
     LaunchedEffect(Unit) {

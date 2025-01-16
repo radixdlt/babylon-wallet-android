@@ -5,10 +5,10 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessDeviceFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessLedgerHardwareWalletFactorSource
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessOffDeviceMnemonicFactorSource
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -34,9 +34,9 @@ import javax.inject.Inject
 @HiltViewModel
 class GetSignaturesViewModel @Inject constructor(
     private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
-    private val accessDeviceFactorSource: AccessDeviceFactorSource,
-    private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSource,
-    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
+    private val accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
+    private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSourceUseCase,
+    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),

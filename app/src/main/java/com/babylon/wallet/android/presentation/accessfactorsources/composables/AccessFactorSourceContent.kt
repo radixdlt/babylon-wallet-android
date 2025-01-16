@@ -44,11 +44,11 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
-import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose
-import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.ProvingOwnership
-import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.SignatureRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.UpdatingFactorConfig
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.ProvingOwnership
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.SignatureRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.UpdatingFactorConfig
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm

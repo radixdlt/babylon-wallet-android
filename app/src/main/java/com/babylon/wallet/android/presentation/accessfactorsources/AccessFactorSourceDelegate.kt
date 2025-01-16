@@ -1,7 +1,8 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.access
+package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
@@ -34,7 +35,7 @@ class AccessFactorSourceDelegate(
     private val viewModelScope: CoroutineScope,
     private val id: FactorSourceId,
     private val getProfileUseCase: GetProfileUseCase,
-    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
+    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     private val defaultDispatcher: CoroutineDispatcher,
     private val onAccessCallback: suspend (FactorSource) -> Result<Unit>,
     private val onDismissCallback: suspend () -> Unit
