@@ -202,7 +202,7 @@ private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
 @UsesSampleValues
 @Preview
 @Composable
-fun GetSignaturesPreview(
+private fun GetSignaturesPreview(
     @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
 ) {
     RadixWalletPreviewTheme {
@@ -251,5 +251,4 @@ private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<P
 
     override val values: Sequence<Pair<Purpose, FactorSource>>
         get() = samples.asSequence()
-
 }

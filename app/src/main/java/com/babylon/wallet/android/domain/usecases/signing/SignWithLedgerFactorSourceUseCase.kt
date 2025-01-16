@@ -46,7 +46,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
      */
     suspend fun mono(
         ledgerFactorSource: FactorSource.Ledger,
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+        input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
     ): Result<PerFactorOutcome<Signable.ID>> {
         val hdSignatures = input.perTransaction.map { perTransaction ->
             when (val payload = perTransaction.payload) {
@@ -84,7 +84,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signTransaction(
-        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<out Signable.Payload>,
         payload: Signable.Payload.Transaction,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -112,7 +112,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signSubintent(
-        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<out Signable.Payload>,
         payload: Signable.Payload.Subintent,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -140,7 +140,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signAuth(
-        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<out Signable.Payload>,
         payload: Signable.Payload.Auth,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {

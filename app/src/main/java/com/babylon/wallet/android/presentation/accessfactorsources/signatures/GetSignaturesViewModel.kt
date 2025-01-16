@@ -1,8 +1,7 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
-import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -14,37 +13,21 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
-import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
-import com.radixdlt.sargon.CommonException.SecureStorageAccessException
-import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
-import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
-import com.radixdlt.sargon.OffDeviceMnemonicHint
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -54,18 +37,20 @@ class GetSignaturesViewModel @Inject constructor(
     private val accessDeviceFactorSource: AccessDeviceFactorSource,
     private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSource,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
-    @Suppress("UNCHECKED_CAST")
-    private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSign<Signable.Payload, Signable.ID>
+    private val proxyInput = accessFactorSourcesIOHandler.getInput()
+        as AccessFactorSourcesInput.ToSign<out Signable.Payload, out Signable.ID>
 
     private val accessDelegate = AccessFactorSourceDelegate(
         viewModelScope = viewModelScope,
         id = proxyInput.input.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback
     )

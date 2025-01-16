@@ -34,7 +34,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
      */
     suspend fun mono(
         deviceFactorSource: FactorSource.Device,
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+        input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
     ): Result<PerFactorOutcome<Signable.ID>> {
         if (!mnemonicRepository.mnemonicExist(key = deviceFactorSource.value.id.asGeneral())) {
             return Result.failure(

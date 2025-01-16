@@ -135,7 +135,6 @@ class SeedPhraseInputDelegate(
         private val isSeedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
 
-
         fun isInputComplete(): Boolean {
             if (isInputEmpty) return false
 

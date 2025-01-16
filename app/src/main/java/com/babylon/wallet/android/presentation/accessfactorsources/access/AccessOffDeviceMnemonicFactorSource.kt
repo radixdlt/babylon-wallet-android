@@ -5,6 +5,8 @@ import com.babylon.wallet.android.presentation.common.seedphrase.toMnemonicWithP
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.newFactorSourceIdFromHashFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
@@ -15,9 +17,16 @@ import kotlinx.coroutines.channels.Channel
 import rdx.works.core.sargon.signInteractorInput
 import javax.inject.Inject
 
-class AccessOffDeviceMnemonicFactorSource @Inject constructor(): AccessFactorSource<FactorSource.OffDeviceMnemonic> {
+class AccessOffDeviceMnemonicFactorSource @Inject constructor() : AccessFactorSource<FactorSource.OffDeviceMnemonic> {
 
     private val seedPhraseChannel = Channel<MnemonicWithPassphrase>()
+
+    override suspend fun derivePublicKeys(
+        factorSource: FactorSource.OffDeviceMnemonic,
+        input: KeyDerivationRequestPerFactorSource
+    ): Result<List<HierarchicalDeterministicFactorInstance>> {
+        TODO("Not yet implemented")
+    }
 
     suspend fun onSeedPhraseConfirmed(
         factorSourceId: FactorSourceIdFromHash,
@@ -40,7 +49,7 @@ class AccessOffDeviceMnemonicFactorSource @Inject constructor(): AccessFactorSou
 
     override suspend fun signMono(
         factorSource: FactorSource.OffDeviceMnemonic,
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+        input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
     ): Result<PerFactorOutcome<Signable.ID>> {
         val seedPhrase = seedPhraseChannel.receive()
 
@@ -55,8 +64,8 @@ class AccessOffDeviceMnemonicFactorSource @Inject constructor(): AccessFactorSou
     enum class SeedPhraseValidity {
         Valid,
         InvalidMnemonic,
-        DoesNotDeriveFactorSourceId;
 
+        DoesNotDeriveFactorSourceId;
         fun isIncorrect(): Boolean = this != Valid
     }
 }

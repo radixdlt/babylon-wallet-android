@@ -247,8 +247,8 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                 bip39Passphrase = "",
                 onWordChanged = onWordChanged,
                 onPassphraseChanged = {},
-                onFocusedWordIndexChanged = {
-                    focusedWordIndex = it
+                onFocusedWordIndexChanged = { index ->
+                    focusedWordIndex = index
                 },
                 showAdvancedMode = false,
                 initiallyFocusedIndex = 0
@@ -285,7 +285,6 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
         }
     )
 }
-
 
 @Composable
 private fun <F : FactorSource> AccessFactorSourceContent(
@@ -446,7 +445,7 @@ fun UnknownFactorSourcePreview() {
 @UsesSampleValues
 @Preview
 @Composable
-fun Preview(
+private fun Preview(
     @PreviewParameter(AccessFactorSourcePreviewParameterProvider::class) sample: Pair<AccessFactorSourcePurpose, FactorSource>
 ) {
     RadixWalletPreviewTheme {
@@ -521,7 +520,6 @@ fun Preview(
         }
     }
 }
-
 
 @UsesSampleValues
 class AccessFactorSourcePreviewParameterProvider : PreviewParameterProvider<Pair<AccessFactorSourcePurpose, FactorSource>> {

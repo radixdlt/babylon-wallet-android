@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
@@ -159,7 +158,7 @@ sealed interface AccessFactorSourcesOutput {
             val factorInstances: List<HierarchicalDeterministicFactorInstance>
         ) : DerivedPublicKeys
 
-        data object Rejected: DerivedPublicKeys
+        data object Rejected : DerivedPublicKeys
     }
 
     data class DerivedAccountsWithNextDerivationPath(
@@ -177,12 +176,12 @@ sealed interface AccessFactorSourcesOutput {
         ) : EntitiesWithSignatures
     }
 
-    sealed interface SignOutput<ID : Signable.ID>: AccessFactorSourcesOutput {
-        data class Completed<ID: Signable.ID>(
+    sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
+        data class Completed<ID : Signable.ID>(
             val outcome: PerFactorOutcome<ID>
-        ): SignOutput<ID>
+        ) : SignOutput<ID>
 
-        data object Rejected: SignOutput<Signable.ID>
+        data object Rejected : SignOutput<Signable.ID>
     }
 
     data class Failure(

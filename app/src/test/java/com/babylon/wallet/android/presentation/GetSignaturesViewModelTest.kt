@@ -7,6 +7,10 @@ import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessDeviceFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessLedgerHardwareWalletFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessOffDeviceMnemonicFactorSource
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountPath
@@ -56,6 +60,7 @@ import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -165,9 +170,11 @@ class GetSignaturesViewModelTest {
     private val ledgerFactorInstances =
         ownedFactorInstances.filter { it.factorInstance.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
 
-    private val signWithDeviceFactorSourceUseCaseMock = mockk<SignWithDeviceFactorSourceUseCase>()
-    private val signWithLedgerFactorSourceUseCaseMock = mockk<SignWithLedgerFactorSourceUseCase>()
+
     private val accessFactorSourcesIOHandler = mockk<AccessFactorSourcesIOHandler>()
+    private val accessDeviceFactorSource = mockk<AccessDeviceFactorSource>()
+    private val accessLedgerHardwareWalletFactorSource = mockk<AccessLedgerHardwareWalletFactorSource>()
+    private val accessOffDeviceMnemonicFactorSource = mockk<AccessOffDeviceMnemonicFactorSource>()
 
     private val signaturesPerInput: Map<PerFactorSourceInput<Signable.Payload, Signable.ID>, PerFactorOutcome<Signable.ID>> = mapOf(
         PerFactorSourceInput<Signable.Payload, Signable.ID>(
@@ -255,9 +262,12 @@ class GetSignaturesViewModelTest {
 
     @Test
     fun `when one device factor source is received, mono signing is resolved`() = testScope.runTest {
-        coEvery { signWithDeviceFactorSourceUseCaseMock.mono(any(), any()) } returns Result.success(
-            signaturesPerInput.values.first()
-        )
+        coEvery { accessDeviceFactorSource.signMono(any(), any()) } coAnswers {
+            delay(50)
+            Result.success(
+                signaturesPerInput.values.first()
+            )
+        }
 
         val input = AccessFactorSourcesInput.ToSign(
             purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
@@ -268,15 +278,12 @@ class GetSignaturesViewModelTest {
         val vm = initVM(input = input)
         vm.state.test {
             assertEquals(
-                GetSignaturesViewModel.State(signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents),
-                awaitItem()
-            )
-            assertEquals(
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    isSigningInProgress = true,
-                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
-                        factorSource = deviceFactorSource1.asGeneral()
+                    accessState = AccessFactorSourceDelegate.State(
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Resolving(
+                            id = deviceFactorSource1.id.asGeneral()
+                        )
                     )
                 ),
                 awaitItem()
@@ -284,18 +291,32 @@ class GetSignaturesViewModelTest {
             assertEquals(
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    isSigningInProgress = false,
-                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
-                        factorSource = deviceFactorSource1.asGeneral()
+                    accessState = AccessFactorSourceDelegate.State(
+                        isAccessInProgress = true,
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                            factorSource = deviceFactorSource1.asGeneral()
+                        )
                     )
                 ),
                 awaitItem()
             )
-
+            assertEquals(
+                GetSignaturesViewModel.State(
+                    signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
+                    accessState = AccessFactorSourceDelegate.State(
+                        isAccessInProgress = false,
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                            factorSource = deviceFactorSource1.asGeneral()
+                        )
+                    )
+                ),
+                awaitItem()
+            )
+            ensureAllEventsConsumed()
             coVerify {
                 accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.SignOutput(
-                        output = signaturesPerInput.values.toList()[0]
+                    AccessFactorSourcesOutput.SignOutput.Completed(
+                        outcome = signaturesPerInput.values.toList()[0]
                     )
                 )
             }
@@ -304,9 +325,10 @@ class GetSignaturesViewModelTest {
 
     @Test
     fun `when one ledger factor source is received, mono signing is resolved`() = testScope.runTest {
-        coEvery { signWithLedgerFactorSourceUseCaseMock.mono(any(), any()) } returns Result.success(
-            signaturesPerInput.values.toList()[2]
-        )
+        coEvery { accessLedgerHardwareWalletFactorSource.signMono(any(), any()) } coAnswers {
+            delay(50)
+            Result.success(signaturesPerInput.values.toList()[2])
+        }
         val input = AccessFactorSourcesInput.ToSign(
             purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
@@ -316,16 +338,12 @@ class GetSignaturesViewModelTest {
         val vm = initVM(input = input)
         vm.state.test {
             assertEquals(
-                GetSignaturesViewModel.State(signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents),
-                awaitItem()
-            )
-
-            assertEquals(
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    isSigningInProgress = true,
-                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
-                        factorSource = ledgerFactorSource1.asGeneral()
+                    accessState = AccessFactorSourceDelegate.State(
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Resolving(
+                            id = ledgerFactorSource1.id.asGeneral()
+                        )
                     )
                 ),
                 awaitItem()
@@ -334,9 +352,24 @@ class GetSignaturesViewModelTest {
             assertEquals(
                 GetSignaturesViewModel.State(
                     signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    isSigningInProgress = false,
-                    factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
-                        factorSource = ledgerFactorSource1.asGeneral()
+                    accessState = AccessFactorSourceDelegate.State(
+                        isAccessInProgress = true,
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                            factorSource = ledgerFactorSource1.asGeneral()
+                        )
+                    )
+                ),
+                awaitItem()
+            )
+
+            assertEquals(
+                GetSignaturesViewModel.State(
+                    signPurpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
+                    accessState = AccessFactorSourceDelegate.State(
+                        isAccessInProgress = false,
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                            factorSource = ledgerFactorSource1.asGeneral()
+                        )
                     )
                 ),
                 awaitItem()
@@ -344,22 +377,24 @@ class GetSignaturesViewModelTest {
 
             coVerify {
                 accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.SignOutput(
-                        output = signaturesPerInput.values.toList()[2]
+                    output = AccessFactorSourcesOutput.SignOutput.Completed(
+                        outcome = signaturesPerInput.values.toList()[2]
                     )
                 )
             }
         }
     }
 
-    private fun <SP : Signable.Payload, ID: Signable.ID> initVM(input: AccessFactorSourcesInput.ToSign<SP, ID>): GetSignaturesViewModel {
+    private fun <SP : Signable.Payload, ID : Signable.ID> initVM(input: AccessFactorSourcesInput.ToSign<SP, ID>): GetSignaturesViewModel {
         every { accessFactorSourcesIOHandler.getInput() } returns input
         coEvery { accessFactorSourcesIOHandler.setOutput(any()) } just Runs
 
         return GetSignaturesViewModel(
             accessFactorSourcesIOHandler = accessFactorSourcesIOHandler,
-            signWithDeviceFactorSourceUseCase = signWithDeviceFactorSourceUseCaseMock,
-            signWithLedgerFactorSourceUseCase = signWithLedgerFactorSourceUseCaseMock,
+            accessDeviceFactorSource = accessDeviceFactorSource,
+            accessLedgerHardwareWalletFactorSource = accessLedgerHardwareWalletFactorSource,
+            accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+            defaultDispatcher = testDispatcher,
             getProfileUseCase = GetProfileUseCase(
                 profileRepository = FakeProfileRepository(sampleProfile),
                 dispatcher = testDispatcher

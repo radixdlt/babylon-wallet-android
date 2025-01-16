@@ -2,23 +2,19 @@ package com.babylon.wallet.android.presentation.accessfactorsources.access
 
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
-import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
-import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
-import com.radixdlt.sargon.OffDeviceMnemonicHint
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isManualCancellation
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,18 +29,18 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 
+@Suppress("LongParameterList")
 class AccessFactorSourceDelegate(
     private val viewModelScope: CoroutineScope,
     private val id: FactorSourceId,
     private val getProfileUseCase: GetProfileUseCase,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
+    private val defaultDispatcher: CoroutineDispatcher,
     private val onAccessCallback: suspend (FactorSource) -> Result<Unit>,
     private val onDismissCallback: suspend () -> Unit
 ) {
 
-    private val _state: MutableStateFlow<State> = MutableStateFlow(
-        State(factorSourceToAccess = State.FactorSourcesToAccess.Resolving(id = id))
-    )
+    private val _state: MutableStateFlow<State> = MutableStateFlow(State(id = id))
     val state: StateFlow<State>
         get() = _state.asStateFlow()
 
@@ -133,23 +129,7 @@ class AccessFactorSourceDelegate(
             return
         }
 
-        // TODO remove
-        val fs = if (factorSource is FactorSource.Device) {
-            FactorSource.OffDeviceMnemonic(
-                OffDeviceMnemonicFactorSource(
-                    id = factorSource.value.id.copy(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC),
-                    common = factorSource.value.common,
-                    hint = OffDeviceMnemonicHint(
-                        label = DisplayName("${factorSource.value.hint.label} as off device mnemonic"),
-                        wordCount = factorSource.value.hint.mnemonicWordCount
-                    )
-                )
-            )
-        } else {
-            factorSource
-        }
-
-        access(fs)
+        access(factorSource)
     }
 
     private suspend fun access(factorSource: FactorSource) {
@@ -171,7 +151,7 @@ class AccessFactorSourceDelegate(
 
         onAccessCallback(factorSource)
             .onSuccess {
-                _state.update { it.copy(isAccessInProgress = false) }
+                _state.update { state -> state.copy(isAccessInProgress = false) }
             }.onFailure { error ->
                 val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
                     null
@@ -209,9 +189,8 @@ class AccessFactorSourceDelegate(
                     )
                 }
             }
-            .flowOn(Dispatchers.Default)
+            .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
-
     }
 
     data class State(
@@ -221,6 +200,10 @@ class AccessFactorSourceDelegate(
         val seedPhraseInputState: SeedPhraseInputState = SeedPhraseInputState(),
         val passwordState: PasswordState = PasswordState()
     ) : UiState {
+
+        constructor(id: FactorSourceId) : this(
+            factorSourceToAccess = FactorSourcesToAccess.Resolving(id = id)
+        )
 
         val factorSource: FactorSource? = when (factorSourceToAccess) {
             is FactorSourcesToAccess.Mono -> factorSourceToAccess.factorSource
@@ -255,16 +238,11 @@ class AccessFactorSourceDelegate(
         ) {
 
             val inputWords: ImmutableList<SeedPhraseWord> = delegateState.seedPhraseWords
-
         }
 
         data class PasswordState(
             val input: String = "",
             val isPasswordInvalidErrorVisible: Boolean = false
         )
-    }
-
-    sealed interface Event : OneOffEvent {
-        data object Completed : Event
     }
 }

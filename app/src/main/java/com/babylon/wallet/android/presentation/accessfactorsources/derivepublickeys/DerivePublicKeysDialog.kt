@@ -174,7 +174,6 @@ private fun DerivePublicKeysSheetContent(
     )
 }
 
-
 @UsesSampleValues
 @Preview
 @Composable

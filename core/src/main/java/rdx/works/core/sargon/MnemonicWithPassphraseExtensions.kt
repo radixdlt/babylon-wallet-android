@@ -7,9 +7,9 @@ import com.radixdlt.sargon.os.signing.HdSignatureInput
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 
-// TODO: Move to sargon
+// Move to sargon
 fun MnemonicWithPassphrase.signInteractorInput(
-    input: PerFactorSourceInput<Signable.Payload, Signable.ID>,
+    input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>,
 ) = input.perTransaction.map { perTransaction ->
     perTransaction.ownedFactorInstances.map { perFactorInstance ->
         val signatureWithPublicKey = sign(
