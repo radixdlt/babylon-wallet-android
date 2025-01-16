@@ -159,9 +159,7 @@ sealed interface AccessFactorSourcesOutput {
             val factorInstances: List<HierarchicalDeterministicFactorInstance>
         ) : DerivedPublicKeys
 
-        data class Failure(
-            val error: AccessFactorSourceError.Fatal
-        ) : DerivedPublicKeys
+        data object Rejected: DerivedPublicKeys
     }
 
     data class DerivedAccountsWithNextDerivationPath(

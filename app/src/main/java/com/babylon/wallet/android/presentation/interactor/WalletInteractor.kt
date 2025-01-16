@@ -31,6 +31,7 @@ class WalletInteractor(
                     request = it
                 )
             )
+
             when (result) {
                 is AccessFactorSourcesOutput.DerivedPublicKeys.Success -> {
                     KeyDerivationResponsePerFactorSource(
@@ -38,13 +39,14 @@ class WalletInteractor(
                         result.factorInstances
                     )
                 }
-
-                is AccessFactorSourcesOutput.DerivedPublicKeys.Failure -> {
-                    throw result.error.commonException
-                }
+                else -> throw CommonException.SigningRejected()
             }.also {
                 delay(delayPerFactorSource)
             }
+        }
+
+        if (request.perFactorSource.size == 1) {
+            delay(delayPerFactorSource)
         }
 
         return KeyDerivationResponse(perFactorSource = publicKeysPerFactorSource)
