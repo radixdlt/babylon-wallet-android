@@ -28,8 +28,7 @@ class WalletInteractor(
             val result = accessFactorSourcesProxy.derivePublicKeys(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKeys(
                     purpose = request.derivationPurpose,
-                    factorSourceId = it.factorSourceId,
-                    derivationPaths = it.derivationPaths
+                    request = it
                 )
             )
             when (result) {

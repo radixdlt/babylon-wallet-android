@@ -1,0 +1,270 @@
+package com.babylon.wallet.android.presentation.accessfactorsources.access
+
+import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
+import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.radixdlt.sargon.CommonException.SecureStorageAccessException
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
+import com.radixdlt.sargon.OffDeviceMnemonicHint
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.isManualCancellation
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.profile.domain.GetProfileUseCase
+
+class AccessFactorSourceDelegate(
+    private val viewModelScope: CoroutineScope,
+    private val id: FactorSourceId,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSource,
+    private val onAccessCallback: suspend (FactorSource) -> Result<Unit>,
+    private val onDismissCallback: suspend () -> Unit
+) {
+
+    private val _state: MutableStateFlow<State> = MutableStateFlow(
+        State(factorSourceToAccess = State.FactorSourcesToAccess.Resolving(id = id))
+    )
+    val state: StateFlow<State>
+        get() = _state.asStateFlow()
+
+    private var signingJob: Job? = null
+    private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
+
+    init {
+        signingJob = viewModelScope.launch {
+            resolveFactorSourcesAndAccess(id = id)
+        }
+
+        viewModelScope.launch {
+            seedPhraseInputDelegate.state.collect { delegateState ->
+                _state.update {
+                    it.copy(seedPhraseInputState = it.seedPhraseInputState.copy(delegateState = delegateState))
+                }
+            }
+        }
+    }
+
+    fun onDismiss() = viewModelScope.launch {
+        skipSigning()
+    }
+
+    fun onSeedPhraseWordChanged(wordIndex: Int, word: String) {
+        seedPhraseInputDelegate.onWordChanged(wordIndex, word)
+    }
+
+    fun onPasswordTyped(password: String) {
+        _state.update { it.copy(passwordState = it.passwordState.copy(input = password)) }
+    }
+
+    fun onRetry() {
+        val factorSource = _state.value.factorSource ?: return
+
+        signingJob?.cancel()
+        signingJob = viewModelScope.launch {
+            access(factorSource)
+        }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(errorMessage = null) }
+    }
+
+    fun onInputConfirmed() = viewModelScope.launch {
+        val factorSource = _state.value.factorSource ?: return@launch
+        when (factorSource) {
+            is FactorSource.OffDeviceMnemonic -> {
+                val validity = accessOffDeviceMnemonicFactorSource.onSeedPhraseConfirmed(
+                    factorSourceId = factorSource.value.id,
+                    words = _state.value.seedPhraseInputState.inputWords
+                )
+
+                _state.update {
+                    val isIncorrect = validity.isIncorrect()
+                    it.copy(
+                        seedPhraseInputState = it.seedPhraseInputState.copy(
+                            isSeedPhraseInvalidErrorVisible = isIncorrect,
+                            isConfirmButtonEnabled = !isIncorrect
+                        )
+                    )
+                }
+            }
+
+            is FactorSource.Password -> TODO()
+            is FactorSource.SecurityQuestions -> {}
+            else -> {
+                // The rest of the factor sources require no manual input
+            }
+        }
+    }
+
+    fun onCancelAccess() {
+        signingJob?.cancel()
+    }
+
+    private suspend fun resolveFactorSourcesAndAccess(id: FactorSourceId) {
+        val profile = getProfileUseCase()
+
+        val factorSource = profile.factorSourceById(
+            id = id
+        ) ?: run {
+            // TODO show error
+
+            return
+        }
+
+        // TODO remove
+        val fs = if (factorSource is FactorSource.Device) {
+            FactorSource.OffDeviceMnemonic(
+                OffDeviceMnemonicFactorSource(
+                    id = factorSource.value.id.copy(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC),
+                    common = factorSource.value.common,
+                    hint = OffDeviceMnemonicHint(
+                        label = DisplayName("${factorSource.value.hint.label} as off device mnemonic"),
+                        wordCount = factorSource.value.hint.mnemonicWordCount
+                    )
+                )
+            )
+        } else {
+            factorSource
+        }
+
+        access(fs)
+    }
+
+    private suspend fun access(factorSource: FactorSource) {
+        _state.update {
+            it.copy(
+                isAccessInProgress = true,
+                factorSourceToAccess = State.FactorSourcesToAccess.Mono(factorSource)
+            )
+        }
+
+        when (factorSource) {
+            is FactorSource.OffDeviceMnemonic -> setupSeedPhraseInput(factorSource)
+            is FactorSource.Password -> {}
+            is FactorSource.SecurityQuestions -> {}
+            else -> {
+                // The rest of the factor sources need no setup prior to access
+            }
+        }
+
+        onAccessCallback(factorSource)
+            .onSuccess {
+                _state.update { it.copy(isAccessInProgress = false) }
+            }.onFailure { error ->
+                val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
+                    null
+                } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
+                    null
+                } else {
+                    UiMessage.ErrorMessage(error)
+                }
+
+                _state.update { it.copy(isAccessInProgress = false, errorMessage = errorMessageToShow) }
+            }
+    }
+
+    private suspend fun skipSigning() {
+        signingJob?.cancel()
+        onDismissCallback()
+    }
+
+    private fun setupSeedPhraseInput(factorSource: FactorSource.OffDeviceMnemonic) {
+        // First set the input to the correct word count
+        seedPhraseInputDelegate.setSeedPhraseSize(factorSource.value.hint.wordCount)
+
+        // Then start observing the changes to the input, to enable/disable the confirm button
+        _state
+            .filter { it.factorSource is FactorSource.OffDeviceMnemonic }
+            .distinctUntilChanged { old, new -> old.seedPhraseInputState.delegateState == new.seedPhraseInputState.delegateState }
+            .onEach { newState ->
+                val isComplete = newState.seedPhraseInputState.delegateState.isInputComplete()
+                _state.update {
+                    it.copy(
+                        seedPhraseInputState = it.seedPhraseInputState.copy(
+                            isConfirmButtonEnabled = isComplete,
+                            isSeedPhraseInvalidErrorVisible = false
+                        )
+                    )
+                }
+            }
+            .flowOn(Dispatchers.Default)
+            .launchIn(viewModelScope)
+
+    }
+
+    data class State(
+        val factorSourceToAccess: FactorSourcesToAccess,
+        val isAccessInProgress: Boolean = false,
+        val errorMessage: UiMessage.ErrorMessage? = null,
+        val seedPhraseInputState: SeedPhraseInputState = SeedPhraseInputState(),
+        val passwordState: PasswordState = PasswordState()
+    ) : UiState {
+
+        val factorSource: FactorSource? = when (factorSourceToAccess) {
+            is FactorSourcesToAccess.Mono -> factorSourceToAccess.factorSource
+            is FactorSourcesToAccess.Resolving -> null
+        }
+
+        sealed interface FactorSourcesToAccess {
+
+            val id: FactorSourceId
+            val kind: FactorSourceKind
+                get() = when (val id = id) {
+                    is FactorSourceId.Address -> id.value.kind
+                    is FactorSourceId.Hash -> id.value.kind
+                }
+
+            data class Resolving(
+                override val id: FactorSourceId
+            ) : FactorSourcesToAccess
+
+            data class Mono(
+                val factorSource: FactorSource
+            ) : FactorSourcesToAccess {
+                override val id: FactorSourceId
+                    get() = factorSource.id
+            }
+        }
+
+        data class SeedPhraseInputState(
+            val delegateState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
+            val isSeedPhraseInvalidErrorVisible: Boolean = false,
+            val isConfirmButtonEnabled: Boolean = false
+        ) {
+
+            val inputWords: ImmutableList<SeedPhraseWord> = delegateState.seedPhraseWords
+
+        }
+
+        data class PasswordState(
+            val input: String = "",
+            val isPasswordInvalidErrorVisible: Boolean = false
+        )
+    }
+
+    sealed interface Event : OneOffEvent {
+        data object Completed : Event
+    }
+}

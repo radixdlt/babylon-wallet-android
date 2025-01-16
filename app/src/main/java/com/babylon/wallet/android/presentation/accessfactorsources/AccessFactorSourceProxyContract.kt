@@ -10,6 +10,7 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
@@ -99,8 +100,7 @@ sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKeys(
         val purpose: DerivationPurpose,
-        val factorSourceId: FactorSourceIdFromHash,
-        val derivationPaths: List<DerivationPath>
+        val request: KeyDerivationRequestPerFactorSource
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {

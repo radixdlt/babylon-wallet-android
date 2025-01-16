@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
+import com.babylon.wallet.android.presentation.accessfactorsources.access.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
@@ -59,7 +60,7 @@ fun GetSignaturesDialog(
         viewModel.onDismiss()
     }
 
-    state.errorMessage?.let { errorMessage ->
+    state.accessState.errorMessage?.let { errorMessage ->
         BasicPromptAlertDialog(
             finish = { viewModel.onMessageShown() },
             messageText = errorMessage.getMessage(),
@@ -107,6 +108,8 @@ private fun GetSignaturesBottomSheetContent(
         }
     }
 
+    val accessFactorSourceState = state.accessState
+
     DefaultModalSheetLayout(
         modifier = modifier.fillMaxSize(),
         onDismissRequest = onDismiss,
@@ -128,12 +131,12 @@ private fun GetSignaturesBottomSheetContent(
                         .padding(padding)
                         .verticalScroll(rememberScrollState())
 
-                    when (state.factorSourceToSign.kind) {
+                    when (accessFactorSourceState.factorSourceToAccess.kind) {
                         FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
                             modifier = contentModifier,
                             purpose = purpose,
-                            factorSource = (state.factorSource as? FactorSource.Device)?.value,
-                            isAccessingFactor = state.isSigningInProgress,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
+                            isAccessingFactor = accessFactorSourceState.isAccessInProgress,
                             canUseDifferentFactor = true,
                             onRetryClick = onRetryClick,
                             onSkipClick = onSkipClick
@@ -142,8 +145,8 @@ private fun GetSignaturesBottomSheetContent(
                         FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
                             modifier = contentModifier,
                             purpose = purpose,
-                            factorSource = (state.factorSource as? FactorSource.Ledger)?.value,
-                            isAccessingFactor = state.isSigningInProgress,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
+                            isAccessingFactor = accessFactorSourceState.isAccessInProgress,
                             canUseDifferentFactor = true,
                             onRetryClick = onRetryClick,
                             onSkipClick = onSkipClick
@@ -152,8 +155,8 @@ private fun GetSignaturesBottomSheetContent(
                         FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
                             modifier = contentModifier,
                             purpose = purpose,
-                            factorSource = (state.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
-                            seedPhraseInputState = state.seedPhraseInputState,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
+                            seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
                             canUseDifferentFactor = true,
                             onWordChanged = onSeedPhraseWordChanged,
                             onConfirmed = onInputConfirmed,
@@ -163,7 +166,7 @@ private fun GetSignaturesBottomSheetContent(
                         FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
                             modifier = contentModifier,
                             purpose = purpose,
-                            factorSource = (state.factorSource as? FactorSource.ArculusCard)?.value,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                             canUseDifferentFactor = true,
                             onSkipClick = onSkipClick
                         )
@@ -171,8 +174,8 @@ private fun GetSignaturesBottomSheetContent(
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
                             modifier = contentModifier,
                             purpose = purpose,
-                            factorSource = (state.factorSource as? FactorSource.Password)?.value,
-                            passwordState = state.passwordState,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
+                            passwordState = accessFactorSourceState.passwordState,
                             onPasswordTyped = onPasswordTyped,
                             canUseDifferentFactor = true,
                             onSkipClick = onSkipClick
@@ -204,12 +207,14 @@ fun GetSignaturesPreview(
         GetSignaturesBottomSheetContent(
             state = GetSignaturesViewModel.State(
                 signPurpose = sample.first,
-                factorSourceToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(factorSource = sample.second),
-                seedPhraseInputState = remember(sample.second) {
-                    GetSignaturesViewModel.State.SeedPhraseInputState(
-                        delegateState = SeedPhraseInputDelegate.State()
-                    )
-                }
+                accessState = AccessFactorSourceDelegate.State(
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(factorSource = sample.second),
+                    seedPhraseInputState = remember(sample.second) {
+                        AccessFactorSourceDelegate.State.SeedPhraseInputState(
+                            delegateState = SeedPhraseInputDelegate.State()
+                        )
+                    }
+                ),
             ),
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },

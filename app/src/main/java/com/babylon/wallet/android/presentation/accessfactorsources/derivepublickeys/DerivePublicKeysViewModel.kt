@@ -53,7 +53,7 @@ class DerivePublicKeysViewModel @Inject constructor(
         derivePublicKeyJob = viewModelScope.launch {
             input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToDerivePublicKeys
 
-            val factorSource = getProfileUseCase().factorSourceById(input.factorSourceId.asGeneral()) ?: run {
+            val factorSource = getProfileUseCase().factorSourceById(input.request.factorSourceId.asGeneral()) ?: run {
                 finishWithFailure(AccessFactorSourceError.Fatal(CommonException.SigningRejected()))
                 return@launch
             }
@@ -97,7 +97,7 @@ class DerivePublicKeysViewModel @Inject constructor(
         deviceFactorSource: DeviceFactorSource
     ): Result<List<HierarchicalDeterministicFactorInstance>> = biometricsHandler.askForBiometrics()
         .mapCatching {
-            input.derivationPaths.map { derivationPath ->
+            input.request.derivationPaths.map { derivationPath ->
                 publicKeyProvider.deriveHDPublicKeyForDeviceFactorSource(
                     deviceFactorSource = deviceFactorSource.asGeneral(),
                     derivationPath = derivationPath
@@ -113,7 +113,7 @@ class DerivePublicKeysViewModel @Inject constructor(
     private suspend fun derivePublicKeys(
         ledgerFactorSource: LedgerHardwareWalletFactorSource
     ): Result<List<HierarchicalDeterministicFactorInstance>> {
-        val factorInstances = input.derivationPaths.map { derivationPath ->
+        val factorInstances = input.request.derivationPaths.map { derivationPath ->
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
                 keyParameters = listOf(LedgerInteractionRequest.KeyParameters.from(derivationPath)),
@@ -148,7 +148,7 @@ class DerivePublicKeysViewModel @Inject constructor(
     private suspend fun finishWithSuccess(factorInstances: List<HierarchicalDeterministicFactorInstance>) {
         accessFactorSourcesIOHandler.setOutput(
             AccessFactorSourcesOutput.DerivedPublicKeys.Success(
-                factorSourceId = input.factorSourceId,
+                factorSourceId = input.request.factorSourceId,
                 factorInstances = factorInstances
             )
         )
