@@ -94,8 +94,9 @@ fun SeedPhraseInputForm(
             )
         }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         if (showAdvancedMode) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(

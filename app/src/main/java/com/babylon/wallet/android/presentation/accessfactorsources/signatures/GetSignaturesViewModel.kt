@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
@@ -32,7 +33,14 @@ import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.factorSourceById
@@ -61,19 +69,16 @@ class GetSignaturesViewModel @Inject constructor(
     )
 
     init {
-        viewModelScope.launch {
-            seedPhraseInputDelegate.state.collect { delegateState ->
-                _state.update { it.copy(seedPhraseInputState = delegateState) }
-
-                val seedPhrase = delegateState.validSeedPhraseOrNull()
-                if (seedPhrase != null) {
-                    accessOffDeviceMnemonicFactorSource.onSeedPhraseProvided(seedPhrase = seedPhrase)
-                }
-            }
-        }
-
         signingJob = viewModelScope.launch {
             resolveFactorSourcesAndSign()
+        }
+
+        viewModelScope.launch {
+            seedPhraseInputDelegate.state.collect { delegateState ->
+                _state.update {
+                    it.copy(seedPhraseInputState = it.seedPhraseInputState.copy(delegateState = delegateState))
+                }
+            }
         }
     }
 
@@ -86,7 +91,7 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     fun onPasswordTyped(password: String) {
-        _state.update { it.copy(passwordInput = password) }
+        _state.update { it.copy(passwordState = it.passwordState.copy(input = password)) }
     }
 
     fun onRetry() {
@@ -109,6 +114,31 @@ class GetSignaturesViewModel @Inject constructor(
         _state.update { it.copy(errorMessage = null) }
     }
 
+    fun onInputConfirmed() = viewModelScope.launch {
+        val factorSource = _state.value.factorSource ?: return@launch
+        when (factorSource) {
+            is FactorSource.OffDeviceMnemonic -> {
+                val validity = accessOffDeviceMnemonicFactorSource.onSeedPhraseConfirmed(
+                    factorSourceId = factorSource.value.id,
+                    words = _state.value.seedPhraseInputState.inputWords
+                )
+
+                _state.update {
+                    val isIncorrect = validity.isIncorrect()
+                    it.copy(seedPhraseInputState = it.seedPhraseInputState.copy(
+                        isSeedPhraseInvalidErrorVisible = isIncorrect,
+                        isConfirmButtonEnabled = !isIncorrect
+                    ))
+                }
+            }
+            is FactorSource.Password -> TODO()
+            is FactorSource.SecurityQuestions -> {}
+            else -> {
+                // The rest of the factor sources require no manual input
+            }
+        }
+    }
+
     private suspend fun resolveFactorSourcesAndSign() {
         val profile = getProfileUseCase()
 
@@ -123,7 +153,7 @@ class GetSignaturesViewModel @Inject constructor(
         val fs = if (factorSource is FactorSource.Device) {
             FactorSource.OffDeviceMnemonic(
                 OffDeviceMnemonicFactorSource(
-                    id = factorSource.value.id,
+                    id = factorSource.value.id.copy(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC),
                     common = factorSource.value.common,
                     hint = OffDeviceMnemonicHint(
                         label = DisplayName("${factorSource.value.hint.label} as off device mnemonic"),
@@ -139,15 +169,14 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     private suspend fun sign(factorSource: FactorSource) {
+        if (factorSource is FactorSource.OffDeviceMnemonic) {
+            setupSeedPhraseInput(factorSource)
+        }
+
         _state.update {
             it.copy(
                 isSigningInProgress = true,
-                factorSourceToSign = State.FactorSourcesToSign.Mono(factorSource),
-                seedPhraseInputState = if (factorSource is FactorSource.OffDeviceMnemonic) {
-                    it.seedPhraseInputState.setSeedPhraseSize(factorSource.value.hint.wordCount)
-                } else {
-                    it.seedPhraseInputState
-                }
+                factorSourceToSign = State.FactorSourcesToSign.Mono(factorSource)
             )
         }
 
@@ -156,15 +185,18 @@ class GetSignaturesViewModel @Inject constructor(
                 factorSource = factorSource,
                 input = proxyInput.input
             )
+
             is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
                 factorSource = factorSource,
                 input = proxyInput.input
             )
+
             is FactorSource.ArculusCard -> TODO()
             is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
                 factorSource = factorSource,
                 input = proxyInput.input
             )
+
             is FactorSource.Password -> TODO()
             is FactorSource.SecurityQuestions -> error("Signing with ${factorSource.value.kind} is not supported yet")
             is FactorSource.TrustedContact -> error("Signing with ${factorSource.value.kind} is not supported yet")
@@ -221,13 +253,37 @@ class GetSignaturesViewModel @Inject constructor(
         accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Rejected)
     }
 
+    private fun setupSeedPhraseInput(factorSource: FactorSource.OffDeviceMnemonic) {
+        // First set the input to the correct word count
+        seedPhraseInputDelegate.setSeedPhraseSize(factorSource.value.hint.wordCount)
+
+        // Then start observing the changes to the input, to enable/disable the confirm button
+        state
+            .filter { it.factorSource is FactorSource.OffDeviceMnemonic }
+            .distinctUntilChanged { old, new -> old.seedPhraseInputState.delegateState == new.seedPhraseInputState.delegateState }
+            .onEach { newState ->
+                val isComplete = newState.seedPhraseInputState.delegateState.isInputComplete()
+                _state.update {
+                    it.copy(
+                        seedPhraseInputState = it.seedPhraseInputState.copy(
+                            isConfirmButtonEnabled = isComplete,
+                            isSeedPhraseInvalidErrorVisible = false
+                        )
+                    )
+                }
+            }
+            .flowOn(Dispatchers.Default)
+            .launchIn(viewModelScope)
+
+    }
+
     data class State(
         val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
         val factorSourceToSign: FactorSourcesToSign,
         val isSigningInProgress: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null,
-        val seedPhraseInputState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
-        val passwordInput: String = ""
+        val seedPhraseInputState: SeedPhraseInputState = SeedPhraseInputState(),
+        val passwordState: PasswordState = PasswordState()
     ) : UiState {
 
         val factorSource: FactorSource? = when (factorSourceToSign) {
@@ -250,6 +306,21 @@ class GetSignaturesViewModel @Inject constructor(
                     get() = factorSource.kind
             }
         }
+
+        data class SeedPhraseInputState(
+            val delegateState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
+            val isSeedPhraseInvalidErrorVisible: Boolean = false,
+            val isConfirmButtonEnabled: Boolean = false
+        ) {
+
+            val inputWords: ImmutableList<SeedPhraseWord> = delegateState.seedPhraseWords
+
+        }
+
+        data class PasswordState(
+            val input: String = "",
+            val isPasswordInvalidErrorVisible: Boolean = false
+        )
     }
 
     sealed interface Event : OneOffEvent {

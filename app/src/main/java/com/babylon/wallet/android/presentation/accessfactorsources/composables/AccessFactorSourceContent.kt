@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.composables
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -39,6 +40,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.LabelType
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -46,9 +48,11 @@ import com.babylon.wallet.android.presentation.accessfactorsources.models.Access
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.ProvingOwnership
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.SignatureRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.models.AccessFactorSourcePurpose.UpdatingFactorConfig
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.formattedSpans
@@ -149,7 +153,7 @@ fun AccessPasswordFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: PasswordFactorSource?,
-    typedPassword: String,
+    passwordState: State.PasswordState,
     onPasswordTyped: (String) -> Unit,
     canUseDifferentFactor: Boolean,
     onSkipClick: () -> Unit
@@ -165,8 +169,13 @@ fun AccessPasswordFactorSourceContent(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                     .padding(bottom = RadixTheme.dimensions.paddingLarge),
-                value = typedPassword,
+                value = passwordState.input,
                 onValueChanged = onPasswordTyped,
+                error = if (passwordState.isPasswordInvalidErrorVisible) {
+                    stringResource(R.string.factorSourceActions_password_incorrect)
+                } else {
+                    null
+                },
                 leftLabel = LabelType.Default(value = stringResource(R.string.factorSources_card_passwordTitle)),
                 trailingIcon = {
                     IconButton(
@@ -196,7 +205,7 @@ fun AccessPasswordFactorSourceContent(
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done,
                     capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
+                    autoCorrectEnabled = false,
                     keyboardType = KeyboardType.Password
                 ),
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
@@ -214,10 +223,10 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: OffDeviceMnemonicFactorSource?,
-    seedPhraseInputState: SeedPhraseInputDelegate.State,
+    seedPhraseInputState: State.SeedPhraseInputState,
     canUseDifferentFactor: Boolean,
     onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
+    onConfirmed: () -> Unit,
     onSkipClick: () -> Unit,
 ) {
     AccessFactorSourceContent(
@@ -226,17 +235,48 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
         factorActions = {
+            var focusedWordIndex by remember {
+                mutableStateOf<Int?>(null)
+            }
+
             SeedPhraseInputForm(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                seedPhraseWords = seedPhraseInputState.seedPhraseWords,
-                bip39Passphrase = seedPhraseInputState.bip39Passphrase,
+                seedPhraseWords = seedPhraseInputState.inputWords,
+                bip39Passphrase = "",
                 onWordChanged = onWordChanged,
                 onPassphraseChanged = {},
-                onFocusedWordIndexChanged = onFocusedWordIndexChanged,
+                onFocusedWordIndexChanged = {
+                    focusedWordIndex = it
+                },
                 showAdvancedMode = false,
                 initiallyFocusedIndex = 0
+            )
+
+            AnimatedVisibility(
+                visible = seedPhraseInputState.isSeedPhraseInvalidErrorVisible
+            ) {
+                WarningText(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    text = AnnotatedString(
+                        text = stringResource(R.string.factorSourceActions_offDeviceMnemonic_incorrect)
+                    ),
+                    contentColor = RadixTheme.colors.red1,
+                    textStyle = RadixTheme.typography.body2HighImportance
+                )
+            }
+
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                text = "Confirm",
+                enabled = seedPhraseInputState.isConfirmButtonEnabled,
+                onClick = onConfirmed
             )
 
             if (canUseDifferentFactor) {
@@ -256,13 +296,13 @@ private fun <F : FactorSource> AccessFactorSourceContent(
     factorActions: @Composable ColumnScope.(F) -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxWidth()
     ) {
         Icon(
             modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                .size(80.dp),
+                .size(81.dp),
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
             ),
@@ -273,7 +313,9 @@ private fun <F : FactorSource> AccessFactorSourceContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
         Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = when (purpose) {
                 SignatureRequest -> stringResource(R.string.factorSourceActions_signature_title)
                 ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
@@ -287,7 +329,9 @@ private fun <F : FactorSource> AccessFactorSourceContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = factorSourceKind.message(purpose),
             color = RadixTheme.colors.gray1,
             style = RadixTheme.typography.body1Regular,
@@ -304,7 +348,9 @@ private fun <F : FactorSource> AccessFactorSourceContent(
         }
         if (card != null) {
             FactorSourceCardView(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 item = card
             )
 
@@ -436,7 +482,10 @@ fun Preview(
                     purpose = sample.first,
                     factorSource = factorSource.value,
                     canUseDifferentFactor = true,
-                    typedPassword = password,
+                    passwordState = State.PasswordState(
+                        input = password,
+                        isPasswordInvalidErrorVisible = false
+                    ),
                     onPasswordTyped = {
                         password = it
                     },
@@ -457,9 +506,12 @@ fun Preview(
                     purpose = sample.first,
                     factorSource = factorSource.value,
                     canUseDifferentFactor = true,
-                    seedPhraseInputState = state,
+                    seedPhraseInputState = State.SeedPhraseInputState(
+                        delegateState = state,
+                        isSeedPhraseInvalidErrorVisible = true
+                    ),
                     onWordChanged = delegate::onWordChanged,
-                    onFocusedWordIndexChanged = {},
+                    onConfirmed = {},
                     onSkipClick = {},
                 )
             }
@@ -481,7 +533,7 @@ class AccessFactorSourcePreviewParameterProvider : PreviewParameterProvider<Pair
             DeviceFactorSource.sample().asGeneral(),
             LedgerHardwareWalletFactorSource.sample().asGeneral(),
             ArculusCardFactorSource.sample().asGeneral(),
-            OffDeviceMnemonicFactorSource.sample().asGeneral(),
+            OffDeviceMnemonicFactorSource.sample.other().asGeneral(),
             PasswordFactorSource.sample().asGeneral()
         )
 

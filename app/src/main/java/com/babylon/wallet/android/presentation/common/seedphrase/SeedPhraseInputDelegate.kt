@@ -30,7 +30,16 @@ class SeedPhraseInputDelegate(
     }
 
     fun setSeedPhraseSize(size: Bip39WordCount) {
-        _state.update { state -> state.setSeedPhraseSize(size = size) }
+        _state.update { state ->
+            state.copy(
+                seedPhraseWords = (0 until size.value.toInt()).map {
+                    SeedPhraseWord(
+                        it,
+                        lastWord = it == size.value.toInt() - 1
+                    )
+                }.toPersistentList()
+            )
+        }
     }
 
     fun onWordSelected(index: Int, value: String) {
@@ -126,6 +135,13 @@ class SeedPhraseInputDelegate(
         private val isSeedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
 
+
+        fun isInputComplete(): Boolean {
+            if (isInputEmpty) return false
+
+            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid }
+        }
+
         fun shouldDisplayInvalidSeedPhraseWarning(): Boolean {
             if (isInputEmpty) {
                 return false
@@ -137,39 +153,12 @@ class SeedPhraseInputDelegate(
             if (isInputEmpty) {
                 return false
             }
-            return isSeedPhraseInputValid && wordsIntoMnemonic().getOrNull() != null
+            return isSeedPhraseInputValid && seedPhraseWords.toMnemonic().getOrNull() != null
         }
 
-        fun validSeedPhraseOrNull(): MnemonicWithPassphrase? {
-            if (isInputEmpty || !isSeedPhraseInputValid) {
-                return null
-            }
-
-            return wordsIntoMnemonic().map {
-                MnemonicWithPassphrase(
-                    mnemonic = it,
-                    passphrase = bip39Passphrase
-                )
-            }.getOrNull()
-        }
-
-        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = wordsIntoMnemonic().getOrThrow(),
-            passphrase = bip39Passphrase
-        )
-
-        fun setSeedPhraseSize(size: Bip39WordCount): State = copy(
-            seedPhraseWords = (0 until size.value.toInt()).map {
-                SeedPhraseWord(
-                    it,
-                    lastWord = it == size.value.toInt() - 1
-                )
-            }.toPersistentList()
-        )
-
-        private fun wordsIntoMnemonic(): Result<Mnemonic> = runCatching {
-            Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
-        }
+        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = seedPhraseWords
+            .toMnemonicWithPassphrase(passphrase = bip39Passphrase)
+            .getOrThrow()
     }
 
     override fun initialState(): State {
@@ -180,3 +169,18 @@ class SeedPhraseInputDelegate(
         private const val DEBOUNCE_DELAY_MS = 75L
     }
 }
+
+fun List<SeedPhraseWord>.toMnemonic(): Result<Mnemonic> = runCatching {
+    Mnemonic.init(phrase = joinToString(separator = " ") { it.value })
+}
+
+fun List<SeedPhraseWord>.toMnemonicWithPassphrase(passphrase: String = ""): Result<MnemonicWithPassphrase> = toMnemonic()
+    .mapCatching { mnemonic ->
+        MnemonicWithPassphrase(
+            mnemonic = mnemonic,
+            passphrase = passphrase
+        )
+    }
+
+fun List<SeedPhraseWord>.toMnemonicWithPassphraseOrNull(passphrase: String = ""): MnemonicWithPassphrase? =
+    toMnemonicWithPassphrase(passphrase = passphrase).getOrNull()

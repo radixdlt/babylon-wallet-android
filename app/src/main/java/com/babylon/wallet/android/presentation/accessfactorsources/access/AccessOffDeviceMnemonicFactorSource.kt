@@ -1,7 +1,12 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.access
 
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.babylon.wallet.android.presentation.common.seedphrase.toMnemonicWithPassphraseOrNull
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.newFactorSourceIdFromHashFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
@@ -14,10 +19,23 @@ class AccessOffDeviceMnemonicFactorSource @Inject constructor(): AccessFactorSou
 
     private val seedPhraseChannel = Channel<MnemonicWithPassphrase>()
 
-    suspend fun onSeedPhraseProvided(
-        seedPhrase: MnemonicWithPassphrase
-    ) {
-        seedPhraseChannel.send(seedPhrase)
+    suspend fun onSeedPhraseConfirmed(
+        factorSourceId: FactorSourceIdFromHash,
+        words: List<SeedPhraseWord>
+    ): SeedPhraseValidity {
+        val seedPhrase = words.toMnemonicWithPassphraseOrNull() ?: return SeedPhraseValidity.InvalidMnemonic
+
+        val generatedId = newFactorSourceIdFromHashFromMnemonicWithPassphrase(
+            factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
+            mnemonicWithPassphrase = seedPhrase
+        )
+
+        return if (generatedId != factorSourceId) {
+            SeedPhraseValidity.DoesNotDeriveFactorSourceId
+        } else {
+            seedPhraseChannel.send(seedPhrase)
+            SeedPhraseValidity.Valid
+        }
     }
 
     override suspend fun signMono(
@@ -32,5 +50,13 @@ class AccessOffDeviceMnemonicFactorSource @Inject constructor(): AccessFactorSou
                 outcome = FactorOutcome.Signed(seedPhrase.signInteractorInput(input = input))
             )
         )
+    }
+
+    enum class SeedPhraseValidity {
+        Valid,
+        InvalidMnemonic,
+        DoesNotDeriveFactorSourceId;
+
+        fun isIncorrect(): Boolean = this != Valid
     }
 }

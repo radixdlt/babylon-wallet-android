@@ -19,8 +19,7 @@ fun NavGraphBuilder.getSignatures(
         route = ROUTE_GET_SIGNATURES,
         dialogProperties = DialogProperties(
             dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
+            usePlatformDefaultWidth = false
         )
     ) {
         GetSignaturesDialog(
