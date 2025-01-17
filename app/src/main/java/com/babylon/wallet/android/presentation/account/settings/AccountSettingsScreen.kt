@@ -121,6 +121,7 @@ fun AccountSettingsScreen(
             }
             State.BottomSheetContent.RenameAccount -> {
                 RenameBottomSheet(
+                    sheetState = bottomSheetState,
                     renameInput = state.renameAccountInput,
                     titleRes = R.string.accountSettings_renameAccount_title,
                     subtitleRes = R.string.accountSettings_renameAccount_subtitle,
@@ -128,7 +129,7 @@ fun AccountSettingsScreen(
                     errorTooLongNameMessageRes = R.string.error_accountLabel_tooLong,
                     onNameChange = viewModel::onRenameAccountNameChange,
                     onUpdateNameClick = viewModel::onRenameAccountNameConfirm,
-                    onDismiss = viewModel::onDismissBottomSheet
+                    onDismiss = viewModel::onDismissBottomSheet,
                 )
             }
             State.BottomSheetContent.None -> { }

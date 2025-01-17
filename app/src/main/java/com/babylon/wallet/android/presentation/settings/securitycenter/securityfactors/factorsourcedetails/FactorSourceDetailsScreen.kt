@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,10 +30,12 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FactorSourceDetailsScreen(
     viewModel: FactorSourceDetailsViewModel,
@@ -49,6 +53,13 @@ fun FactorSourceDetailsScreen(
         }
     }
 
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    SyncSheetState(
+        sheetState = bottomSheetState,
+        isSheetVisible = state.isRenameBottomSheetVisible,
+        onSheetClosed = viewModel::onRenameFactorSourceDismissed
+    )
+
     FactorSourceDetailsContent(
         factorSourceName = state.factorSourceName,
         factorSourceKind = state.factorSourceKind,
@@ -64,6 +75,7 @@ fun FactorSourceDetailsScreen(
 
     if (state.isRenameBottomSheetVisible) {
         RenameBottomSheet(
+            sheetState = bottomSheetState,
             renameInput = state.renameFactorSourceInput,
             titleRes = R.string.renameLabel_factorSource_title,
             subtitleRes = R.string.renameLabel_factorSource_subtitle,
@@ -71,7 +83,7 @@ fun FactorSourceDetailsScreen(
             errorTooLongNameMessageRes = R.string.renameLabel_factorSource_tooLong,
             onNameChange = viewModel::onRenameFactorSourceChanged,
             onUpdateNameClick = viewModel::onRenameFactorSourceUpdateClick,
-            onDismiss = viewModel::onRenameFactorSourceDismissed
+            onDismiss = viewModel::onRenameFactorSourceDismissed,
         )
     }
 }

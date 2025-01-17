@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -52,6 +55,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinkedConnectorsScreen(
     viewModel: LinkedConnectorsViewModel,
@@ -62,6 +66,7 @@ fun LinkedConnectorsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -77,6 +82,15 @@ fun LinkedConnectorsScreen(
             }
         }
     }
+
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    SyncSheetState(
+        sheetState = bottomSheetState,
+        isSheetVisible = state.renameLinkConnectorItem != null,
+        onSheetClosed = {
+            viewModel.setRenameConnectorSheetVisible(false)
+        }
+    )
 
     if (state.showAddLinkConnectorScreen) {
         AddLinkConnectorScreen(
@@ -105,13 +119,14 @@ fun LinkedConnectorsScreen(
 
         state.renameLinkConnectorItem?.let {
             RenameBottomSheet(
+                sheetState = bottomSheetState,
                 renameInput = it,
                 titleRes = R.string.linkedConnectors_renameConnector_title,
                 subtitleRes = R.string.linkedConnectors_renameConnector_subtitle,
                 errorValidationMessageRes = R.string.linkedConnectors_renameConnector_errorEmpty,
                 onNameChange = viewModel::onNewConnectorNameChanged,
                 onUpdateNameClick = viewModel::onUpdateConnectorNameClick,
-                onDismiss = { viewModel.setRenameConnectorSheetVisible(false) }
+                onDismiss = { viewModel.setRenameConnectorSheetVisible(false) },
             )
         }
     }
