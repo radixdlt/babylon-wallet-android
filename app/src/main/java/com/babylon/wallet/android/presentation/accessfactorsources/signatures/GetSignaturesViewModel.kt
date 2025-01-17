@@ -2,9 +2,11 @@ package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -37,6 +39,8 @@ class GetSignaturesViewModel @Inject constructor(
     private val accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
     private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSourceUseCase,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+    private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
+    private val accessPasswordFactorSourceUseCase: AccessPasswordFactorSourceUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
@@ -81,13 +85,19 @@ class GetSignaturesViewModel @Inject constructor(
             input = proxyInput.input
         )
 
-        is FactorSource.ArculusCard -> TODO()
+        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        )
         is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
             factorSource = factorSource,
             input = proxyInput.input
         )
 
-        is FactorSource.Password -> TODO()
+        is FactorSource.Password -> accessPasswordFactorSourceUseCase.signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        )
         is FactorSource.SecurityQuestions -> error("Signing with ${factorSource.value.kind} is not supported yet")
         is FactorSource.TrustedContact -> error("Signing with ${factorSource.value.kind} is not supported yet")
     }.map { perFactorOutcome ->

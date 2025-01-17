@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources.derivepublic
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -9,6 +10,7 @@ import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDevi
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -34,6 +36,8 @@ class DerivePublicKeysViewModel @Inject constructor(
     private val accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
     private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSourceUseCase,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+    private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
+    private val accessPasswordFactorSourceUseCase: AccessPasswordFactorSourceUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     getProfileUseCase: GetProfileUseCase,
 ) : StateViewModel<DerivePublicKeysViewModel.State>(),
@@ -86,12 +90,18 @@ class DerivePublicKeysViewModel @Inject constructor(
             factorSource = factorSource,
             input = proxyInput.request
         )
-        is FactorSource.ArculusCard -> TODO()
+        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.derivePublicKeys(
+            factorSource = factorSource,
+            input = proxyInput.request
+        )
         is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.derivePublicKeys(
             factorSource = factorSource,
             input = proxyInput.request
         )
-        is FactorSource.Password -> TODO()
+        is FactorSource.Password -> accessPasswordFactorSourceUseCase.derivePublicKeys(
+            factorSource = factorSource,
+            input = proxyInput.request
+        )
         is FactorSource.SecurityQuestions -> error("Deriving keys with ${factorSource.value.kind} is not supported yet")
         is FactorSource.TrustedContact -> error("Deriving keys with ${factorSource.value.kind} is not supported yet")
     }.mapCatching { factorInstances ->
