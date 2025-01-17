@@ -14,9 +14,12 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.Rest
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ledgerHardwareWalletsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactors
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ledgerDevices
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password.passwords
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactorTypes
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
@@ -64,7 +67,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.securityShieldOnboardingScreen()
                 },
                 onSecurityFactorsClick = {
-                    navController.securityFactors()
+                    navController.securityFactorTypes()
                 },
                 onBackupConfigurationClick = {
                     navController.backupScreen()
@@ -84,54 +87,67 @@ fun NavGraphBuilder.securityCenterNavGraph(
         ) {
             navController.popBackStack()
         }
-        securityFactors(
+        securityFactorTypes(
             onBackClick = {
                 navController.popBackStack()
             },
-            onSecurityFactorSettingItemClick = { item ->
+            onSecurityFactorTypeClick = { item ->
                 when (item) {
-                    is SettingsItem.SecurityFactorsSettingsItem.LedgerNano -> {
-                        navController.ledgerHardwareWalletsScreen()
-                    }
-
                     is SettingsItem.SecurityFactorsSettingsItem.BiometricsPin -> {
                         navController.biometricsPin()
                     }
 
-                    SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
-                        // TODO
+                    is SettingsItem.SecurityFactorsSettingsItem.LedgerNano -> {
+                        navController.ledgerDevices()
                     }
-                    SettingsItem.SecurityFactorsSettingsItem.Passphrase -> {
-                        // TODO
+
+                    SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
+                        navController.arculusCards()
+                    }
+                    SettingsItem.SecurityFactorsSettingsItem.OffDeviceMnemonic -> {
+                        navController.offDeviceMnemonics()
                     }
                     SettingsItem.SecurityFactorsSettingsItem.Password -> {
-                        // TODO
+                        navController.passwords()
                     }
                 }
             }
         )
         biometricsPin(
-            onBackClick = { navController.popBackStack() },
-            onNavigateToDeviceFactorSourceDetails = {}, // TODO next task
+            onNavigateToDeviceFactorSourceDetails = { }, // TODO next task
             onNavigateToAddBiometricPin = { }, // TODO next task
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            }
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onBackClick = { navController.popBackStack() }
         )
-        seedPhrases(
+        ledgerDevices(
+            onNavigateToLedgerFactorSourceDetails = { }, // TODO next task
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onBackClick = { navController.navigateUp() }
+        )
+        arculusCards(
+            onNavigateToArculusFactorSourceDetails = { }, // TODO next task
+            onNavigateToAddArculusCard = { },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onBackClick = { navController.navigateUp() }
+        )
+        offDeviceMnemonics(
+            onNavigateToOffDeviceMnemonicFactorSourceDetails = { }, // TODO next task
+            onNavigateToOffDeviceAddMnemonic = { },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onBackClick = { navController.navigateUp() }
+        )
+        passwords(
+            onNavigateToPasswordFactorSourceDetails = { }, // TODO next task
+            onNavigateToAddPassword = { },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onBackClick = { navController.navigateUp() }
+        )
+        seedPhrases( // TODO remove it later
             onBackClick = { navController.popBackStack() },
             onNavigateToRecoverMnemonic = {
                 navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
             },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it) }
-        )
-        ledgerHardwareWalletsScreen(
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            },
-            onBackClick = {
-                navController.navigateUp()
-            }
         )
         securityShieldsNavGraph(navController)
     }

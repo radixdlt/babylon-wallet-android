@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -10,22 +10,21 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
-private const val ROUTE_BIOMETRICS_PIN_SCREEN = "route_biometrics_pin_screen"
+private const val ROUTE = "ledger_hardware_wallets_route"
 
-fun NavController.biometricsPin() {
-    navigate(ROUTE_BIOMETRICS_PIN_SCREEN) {
+fun NavController.ledgerDevices() {
+    navigate(ROUTE) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.biometricsPin(
-    onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddBiometricPin: () -> Unit,
+fun NavGraphBuilder.ledgerDevices(
+    onNavigateToLedgerFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_BIOMETRICS_PIN_SCREEN,
+        route = ROUTE,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -39,10 +38,11 @@ fun NavGraphBuilder.biometricsPin(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        BiometricsPinScreen(
+        LedgerDevicesScreen(
             viewModel = hiltViewModel(),
-            onNavigateToDeviceFactorSourceDetails = onNavigateToDeviceFactorSourceDetails,
-            onNavigateToAddBiometricPin = onNavigateToAddBiometricPin,
+            onNavigateToLedgerFactorSourceDetails = onNavigateToLedgerFactorSourceDetails,
+            addLedgerDeviceViewModel = hiltViewModel(),
+            addLinkConnectorViewModel = hiltViewModel(),
             onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )

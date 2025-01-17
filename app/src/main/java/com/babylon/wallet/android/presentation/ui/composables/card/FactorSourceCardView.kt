@@ -230,40 +230,40 @@ private fun LinkedEntitiesView(
     personas: PersistentList<Persona>,
     hasHiddenEntities: Boolean
 ) {
-    if (accounts.isEmpty() && personas.isEmpty()) {
+    if (accounts.isEmpty() && personas.isEmpty() && !hasHiddenEntities) {
         return
     }
 
     val accountsText = when {
-        accounts.isEmpty() -> null
+        accounts.isEmpty() -> stringResource(id = R.string.factorSources_card_accountPlural, 0)
         accounts.size == 1 -> stringResource(id = R.string.factorSources_card_accountSingular)
         else -> stringResource(id = R.string.factorSources_card_accountPlural, accounts.size)
     }
     val personasText = when {
-        personas.isEmpty() -> null
+        personas.isEmpty() -> stringResource(id = R.string.factorSources_card_personaPlural, 0)
         personas.size == 1 -> stringResource(id = R.string.factorSources_card_personaSingular)
         else -> stringResource(id = R.string.factorSources_card_personaPlural, personas.size)
     }
     val linkedText = if (hasHiddenEntities) {
         when {
-            accountsText != null && personasText != null -> stringResource(
+            accounts.isNotEmpty() && personas.isNotEmpty() -> stringResource(
                 id = R.string.factorSources_card_linkedAccountsAndPersonasSomeHidden,
                 accountsText,
                 personasText
             )
-            accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, accountsText)
-            personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, personasText)
-            else -> ""
+            accounts.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, accountsText)
+            personas.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, personasText)
+            else -> stringResource(id = R.string.factorSources_card_linkedAccountsAndPersonasSomeHidden, accountsText, personasText)
         }
     } else {
         when {
-            accountsText != null && personasText != null -> stringResource(
+            accounts.isNotEmpty() && personas.isNotEmpty() -> stringResource(
                 id = R.string.factorSources_card_linkedAccountsAndPersonas,
                 accountsText,
                 personasText
             )
-            accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
-            personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
+            accounts.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
+            personas.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
             else -> ""
         }
     }
@@ -502,6 +502,37 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 accounts = persistentListOf(
                     Account.sampleMainnet()
                 ),
+                personas = persistentListOf(),
+                hasHiddenEntities = true
+            ),
+            FactorSourceCard(
+                id = FactorSourceId.Hash.init(
+                    kind = FactorSourceKind.DEVICE,
+                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                ),
+                name = "My Phone",
+                includeDescription = false,
+                lastUsedOn = "Today",
+                kind = FactorSourceKind.DEVICE,
+                messages = persistentListOf(),
+                accounts = persistentListOf(Account.sampleMainnet()),
+                personas = persistentListOf(
+                    Persona.sampleMainnet(),
+                    Persona.sampleStokenet()
+                ),
+                hasHiddenEntities = false
+            ),
+            FactorSourceCard(
+                id = FactorSourceId.Hash.init(
+                    kind = FactorSourceKind.DEVICE,
+                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                ),
+                name = "My Phone",
+                includeDescription = false,
+                lastUsedOn = "Yesterday",
+                kind = FactorSourceKind.DEVICE,
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
                 personas = persistentListOf(),
                 hasHiddenEntities = true
             )

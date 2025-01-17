@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -10,22 +10,22 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
-private const val ROUTE_BIOMETRICS_PIN_SCREEN = "route_biometrics_pin_screen"
+private const val ROUTE_PASSWORDS_SCREEN = "route_passwords_screen"
 
-fun NavController.biometricsPin() {
-    navigate(ROUTE_BIOMETRICS_PIN_SCREEN) {
+fun NavController.passwords() {
+    navigate(ROUTE_PASSWORDS_SCREEN) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.biometricsPin(
-    onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddBiometricPin: () -> Unit,
+fun NavGraphBuilder.passwords(
+    onNavigateToPasswordFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
+    onNavigateToAddPassword: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_BIOMETRICS_PIN_SCREEN,
+        route = ROUTE_PASSWORDS_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -39,10 +39,10 @@ fun NavGraphBuilder.biometricsPin(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        BiometricsPinScreen(
+        PasswordsScreen(
             viewModel = hiltViewModel(),
-            onNavigateToDeviceFactorSourceDetails = onNavigateToDeviceFactorSourceDetails,
-            onNavigateToAddBiometricPin = onNavigateToAddBiometricPin,
+            onNavigateToPasswordFactorSourceDetails = onNavigateToPasswordFactorSourceDetails,
+            onNavigateToAddPassword = onNavigateToAddPassword,
             onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )

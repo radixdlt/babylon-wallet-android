@@ -30,7 +30,7 @@ fun SecurityFactorTypesListView(
     modifier: Modifier = Modifier,
     isDescriptionVisible: Boolean = false,
     securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
-    onSecurityFactorSettingItemClick: (SecurityFactorsSettingsItem) -> Unit
+    onSecurityFactorTypeItemClick: (SecurityFactorsSettingsItem) -> Unit
 ) {
     LazyColumn(
         modifier = modifier.background(color = RadixTheme.colors.gray5)
@@ -71,7 +71,7 @@ fun SecurityFactorTypesListView(
                     subtitle = stringResource(id = securityFactorsItem.subtitleRes()),
                     leadingIconRes = securityFactorsItem.getIcon(),
                     onClick = {
-                        onSecurityFactorSettingItemClick(securityFactorsItem)
+                        onSecurityFactorTypeItemClick(securityFactorsItem)
                     },
                     warnings = if (securityFactorsItem is SecurityFactorsSettingsItem.BiometricsPin) {
                         getSecurityWarnings(securityFactorsSettingsItem = securityFactorsItem)
@@ -106,7 +106,7 @@ val currentSecurityFactorTypeItems = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABL
         ),
         SecurityFactorCategory.Information to persistentSetOf(
             SecurityFactorsSettingsItem.Password,
-            SecurityFactorsSettingsItem.Passphrase
+            SecurityFactorsSettingsItem.OffDeviceMnemonic
         )
     )
 } else {
@@ -124,7 +124,7 @@ private fun SecurityFactorTypesListPreview() {
     RadixWalletTheme {
         SecurityFactorTypesListView(
             securityFactorSettingItems = currentSecurityFactorTypeItems,
-            onSecurityFactorSettingItemClick = {}
+            onSecurityFactorTypeItemClick = {}
         )
     }
 }
