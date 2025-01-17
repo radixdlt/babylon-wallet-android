@@ -7,7 +7,7 @@ import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 
-interface AccessFactorSourceUseCase<F : FactorSource> {
+interface AccessFactorSource<F : FactorSource> {
 
     suspend fun derivePublicKeys(
         factorSource: F,

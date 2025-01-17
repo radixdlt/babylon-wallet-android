@@ -20,19 +20,16 @@ import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 import rdx.works.core.sargon.signInteractorInput
-import rdx.works.core.sargon.updateLastUsed
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 
 class AccessDeviceFactorSourceUseCase @Inject constructor(
     private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val mnemonicRepository: MnemonicRepository,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val profileRepository: ProfileRepository,
-) : AccessFactorSourceUseCase<FactorSource.Device> {
+    private val updateFactorSourceLastUsedUseCase: UpdateFactorSourceLastUsedUseCase
+) : AccessFactorSource<FactorSource.Device> {
 
     override suspend fun derivePublicKeys(
         factorSource: FactorSource.Device,
@@ -45,6 +42,8 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
                     publicKey = mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
                 )
             }
+        }.onSuccess {
+            updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
         }
 
     override suspend fun signMono(
@@ -57,8 +56,7 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
                 outcome = FactorOutcome.Signed(mnemonic.signInteractorInput(input))
             )
         }.onSuccess {
-            val updatedProfile = getProfileUseCase().updateLastUsed(factorSource.id)
-            profileRepository.saveProfile(updatedProfile)
+            updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
         }
 
 

@@ -2,13 +2,13 @@ package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
-import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -52,7 +52,8 @@ class GetSignaturesViewModel @Inject constructor(
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
-        onDismissCallback = this::onDismissCallback
+        onDismissCallback = this::onDismissCallback,
+        onFailCallback = this::onFailCallback
     )
 
     override fun initialState(): State = State(
@@ -94,9 +95,25 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     private suspend fun onDismissCallback() {
-        // end the signing process and return the output (error)
+        // end the signing process and return the output (reject)
         sendEvent(event = Event.Completed)
         accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Rejected)
+    }
+
+    private suspend fun onFailCallback() {
+        // end the signing process and return the output (error)
+        sendEvent(event = Event.Completed)
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Completed(
+            outcome = PerFactorOutcome(
+                factorSourceId = proxyInput.input.factorSourceId,
+                outcome = FactorOutcome.Neglected(
+                    factor = NeglectedFactor(
+                        reason = NeglectFactorReason.FAILURE,
+                        factor = proxyInput.input.factorSourceId
+                    )
+                )
+            )
+        ))
     }
 
     fun onDismiss() = accessDelegate.onDismiss()

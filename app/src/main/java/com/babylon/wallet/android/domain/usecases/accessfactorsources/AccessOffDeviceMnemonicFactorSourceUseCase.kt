@@ -8,6 +8,8 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.derivePublicKeys
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.newFactorSourceIdFromHashFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
@@ -15,18 +17,14 @@ import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 import kotlinx.coroutines.channels.Channel
 import rdx.works.core.sargon.signInteractorInput
+import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 
-class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor() : AccessFactorSourceUseCase<FactorSource.OffDeviceMnemonic> {
+class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
+    private val updateFactorSourceLastUsedUseCase: UpdateFactorSourceLastUsedUseCase
+) : AccessFactorSource<FactorSource.OffDeviceMnemonic> {
 
     private val seedPhraseChannel = Channel<MnemonicWithPassphrase>()
-
-    override suspend fun derivePublicKeys(
-        factorSource: FactorSource.OffDeviceMnemonic,
-        input: KeyDerivationRequestPerFactorSource
-    ): Result<List<HierarchicalDeterministicFactorInstance>> {
-        TODO("Not yet implemented")
-    }
 
     suspend fun onSeedPhraseConfirmed(
         factorSourceId: FactorSourceIdFromHash,
@@ -47,16 +45,36 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor() : AccessF
         }
     }
 
+    override suspend fun derivePublicKeys(
+        factorSource: FactorSource.OffDeviceMnemonic,
+        input: KeyDerivationRequestPerFactorSource
+    ): Result<List<HierarchicalDeterministicFactorInstance>> {
+        val seedPhrase = seedPhraseChannel.receive()
+        val hdInstances = seedPhrase.derivePublicKeys(input.derivationPaths).map {
+            HierarchicalDeterministicFactorInstance(
+                factorSourceId = factorSource.value.id,
+                publicKey = it
+            )
+        }
+
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+
+        return Result.success(hdInstances)
+    }
+
     override suspend fun signMono(
         factorSource: FactorSource.OffDeviceMnemonic,
         input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
     ): Result<PerFactorOutcome<Signable.ID>> {
         val seedPhrase = seedPhraseChannel.receive()
+        val outcome = FactorOutcome.Signed(seedPhrase.signInteractorInput(input = input))
+
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
 
         return Result.success(
             PerFactorOutcome(
                 factorSourceId = input.factorSourceId,
-                outcome = FactorOutcome.Signed(seedPhrase.signInteractorInput(input = input))
+                outcome = outcome
             )
         )
     }

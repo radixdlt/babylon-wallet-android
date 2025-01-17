@@ -38,7 +38,8 @@ class AccessFactorSourceDelegate(
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     private val defaultDispatcher: CoroutineDispatcher,
     private val onAccessCallback: suspend (FactorSource) -> Result<Unit>,
-    private val onDismissCallback: suspend () -> Unit
+    private val onDismissCallback: suspend () -> Unit,
+    private val onFailCallback: suspend () -> Unit,
 ) {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State(id = id))
@@ -125,8 +126,7 @@ class AccessFactorSourceDelegate(
         val factorSource = profile.factorSourceById(
             id = id
         ) ?: run {
-            // TODO show error
-
+            onFailCallback()
             return
         }
 

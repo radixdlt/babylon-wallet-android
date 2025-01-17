@@ -15,6 +15,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.kind
@@ -47,7 +48,8 @@ class DerivePublicKeysViewModel @Inject constructor(
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
-        onDismissCallback = this::onDismissCallback
+        onDismissCallback = this::onDismissCallback,
+        onFailCallback = this::onDismissCallback
     )
 
     override fun initialState(): State = State(
