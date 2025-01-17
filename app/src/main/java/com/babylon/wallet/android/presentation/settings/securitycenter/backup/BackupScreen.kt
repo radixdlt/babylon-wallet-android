@@ -700,7 +700,7 @@ private fun EncryptSheet(
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next,
                     capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
+                    autoCorrectEnabled = false,
                     keyboardType = KeyboardType.Password
                 ),
                 visualTransformation = if (state.isPasswordRevealed) VisualTransformation.None else PasswordVisualTransformation()

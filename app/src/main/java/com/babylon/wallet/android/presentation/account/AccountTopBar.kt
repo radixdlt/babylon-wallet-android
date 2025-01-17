@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R
@@ -40,6 +41,7 @@ import com.radixdlt.sargon.Address
  * TODO
  * Not removing this for now as it might be used when we propery revisit collapsing toolbar scrolling with MotionLayout
  */
+@OptIn(ExperimentalMotionApi::class)
 @Composable
 fun AccountTopBar(
     modifier: Modifier = Modifier,
