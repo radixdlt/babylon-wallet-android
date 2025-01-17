@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -14,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -33,7 +33,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChooseFactorSourceBottomSheet(
     modifier: Modifier = Modifier,
@@ -85,7 +84,6 @@ fun ChooseFactorSourceBottomSheet(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ChooseFactorSourceContent(
     modifier: Modifier = Modifier,
@@ -111,13 +109,13 @@ private fun ChooseFactorSourceContent(
         } else {
             Icons.AutoMirrored.Filled.ArrowBack
         },
-        title = when (state.pages[pagerState.currentPage]) { // TODO strings
-            State.Page.SelectFactorSourceType -> "Select Factor Type"
-            State.Page.BiometricsPin -> "Biometrics"
-            State.Page.LedgerNano -> "Ledger nano"
-            State.Page.ArculusCard -> "Arculus card"
-            State.Page.Password -> "Password"
-            State.Page.Passphrase -> "Passphrase"
+        title = when (state.pages[pagerState.currentPage]) {
+            State.Page.SelectFactorSourceType -> stringResource(R.string.securityFactors_selectFactor_title)
+            State.Page.BiometricsPin -> stringResource(R.string.factorSources_card_deviceTitle)
+            State.Page.LedgerNano -> stringResource(R.string.factorSources_card_ledgerTitle)
+            State.Page.ArculusCard -> stringResource(R.string.factorSources_card_arculusCardTitle)
+            State.Page.Password -> stringResource(R.string.factorSources_card_passwordTitle)
+            State.Page.Passphrase -> stringResource(R.string.factorSources_card_passphraseTitle)
         },
         isDismissible = false,
         onHeaderBackIconClick = onSheetBackClick,
@@ -199,7 +197,6 @@ private fun ChooseFactorSourceContent(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
 @UsesSampleValues
@@ -225,7 +222,6 @@ private fun ChooseFactorSourceBottomSheetPreview() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
 @UsesSampleValues
