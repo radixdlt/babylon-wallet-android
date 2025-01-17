@@ -190,11 +190,20 @@ class AccessFactorSourceDelegate(
 
     data class State(
         val factorSourceToAccess: FactorSourcesToAccess,
-        val isAccessInProgress: Boolean = false,
+        private val isAccessInProgress: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null,
         val seedPhraseInputState: SeedPhraseInputState = SeedPhraseInputState(),
         val passwordState: PasswordState = PasswordState()
     ) : UiState {
+
+        private val allowRetryWhenAccessInProgress = when (factorSourceToAccess.kind) {
+            // We can click on retry when a request is in progress for ledger devices.
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> true
+            else -> false
+        }
+
+        val isRetryEnabled: Boolean
+            get() = !isAccessInProgress || allowRetryWhenAccessInProgress
 
         constructor(id: FactorSourceId) : this(
             factorSourceToAccess = FactorSourcesToAccess.Resolving(id = id)

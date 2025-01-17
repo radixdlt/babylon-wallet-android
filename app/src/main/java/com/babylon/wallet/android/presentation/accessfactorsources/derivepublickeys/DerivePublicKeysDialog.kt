@@ -129,7 +129,7 @@ private fun DerivePublicKeysSheetContent(
                             modifier = contentModifier,
                             purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
-                            isAccessingFactor = accessFactorSourceState.isAccessInProgress,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                             canUseDifferentFactor = false,
                             onRetryClick = onRetryClick,
                             onSkipClick = {}
@@ -139,7 +139,7 @@ private fun DerivePublicKeysSheetContent(
                             modifier = contentModifier,
                             purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
-                            isAccessingFactor = accessFactorSourceState.isAccessInProgress,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                             canUseDifferentFactor = false,
                             onRetryClick = onRetryClick,
                             onSkipClick = {}

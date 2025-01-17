@@ -138,7 +138,7 @@ private fun GetSignaturesBottomSheetContent(
                             modifier = contentModifier,
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
-                            isAccessingFactor = accessFactorSourceState.isAccessInProgress,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                             canUseDifferentFactor = true,
                             onRetryClick = onRetryClick,
                             onSkipClick = onSkipClick
@@ -148,7 +148,7 @@ private fun GetSignaturesBottomSheetContent(
                             modifier = contentModifier,
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
-                            isAccessingFactor = accessFactorSourceState.isAccessInProgress,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                             canUseDifferentFactor = true,
                             onRetryClick = onRetryClick,
                             onSkipClick = onSkipClick

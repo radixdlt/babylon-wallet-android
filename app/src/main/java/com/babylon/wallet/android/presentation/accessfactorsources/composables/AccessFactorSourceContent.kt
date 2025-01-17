@@ -72,7 +72,7 @@ fun AccessDeviceFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: DeviceFactorSource?,
-    isAccessingFactor: Boolean,
+    isRetryEnabled: Boolean,
     canUseDifferentFactor: Boolean,
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
@@ -86,7 +86,7 @@ fun AccessDeviceFactorSourceContent(
             RetryButton(
                 modifier = Modifier
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                isEnabled = !isAccessingFactor,
+                isEnabled = isRetryEnabled,
                 onClick = onRetryClick
             )
 
@@ -102,7 +102,7 @@ fun AccessLedgerHardwareWalletFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: LedgerHardwareWalletFactorSource?,
-    isAccessingFactor: Boolean,
+    isRetryEnabled: Boolean,
     canUseDifferentFactor: Boolean,
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
@@ -116,7 +116,7 @@ fun AccessLedgerHardwareWalletFactorSourceContent(
             RetryButton(
                 modifier = Modifier
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                isEnabled = !isAccessingFactor,
+                isEnabled = isRetryEnabled,
                 onClick = onRetryClick
             )
 
@@ -434,7 +434,7 @@ fun UnknownFactorSourcePreview() {
         AccessDeviceFactorSourceContent(
             purpose = SignatureRequest,
             factorSource = null,
-            isAccessingFactor = false,
+            isRetryEnabled = false,
             canUseDifferentFactor = false,
             onSkipClick = {},
             onRetryClick = {}
@@ -453,7 +453,7 @@ private fun Preview(
             is FactorSource.Device -> AccessDeviceFactorSourceContent(
                 purpose = sample.first,
                 factorSource = factorSource.value,
-                isAccessingFactor = false,
+                isRetryEnabled = false,
                 canUseDifferentFactor = true,
                 onSkipClick = {},
                 onRetryClick = {}
@@ -462,7 +462,7 @@ private fun Preview(
             is FactorSource.Ledger -> AccessLedgerHardwareWalletFactorSourceContent(
                 purpose = sample.first,
                 factorSource = factorSource.value,
-                isAccessingFactor = false,
+                isRetryEnabled = false,
                 canUseDifferentFactor = true,
                 onSkipClick = {},
                 onRetryClick = {}
