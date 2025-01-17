@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation
 
 import app.cash.turbine.test
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -9,6 +10,7 @@ import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDevi
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountPath
@@ -173,6 +175,8 @@ class GetSignaturesViewModelTest {
     private val accessDeviceFactorSource = mockk<AccessDeviceFactorSourceUseCase>()
     private val accessLedgerHardwareWalletFactorSource = mockk<AccessLedgerHardwareWalletFactorSourceUseCase>()
     private val accessOffDeviceMnemonicFactorSource = mockk<AccessOffDeviceMnemonicFactorSourceUseCase>()
+    private val accessArculusFactorSourceUseCase = mockk<AccessArculusFactorSourceUseCase>()
+    private val accessPasswordFactorSourceUseCase = mockk<AccessPasswordFactorSourceUseCase>()
 
     private val signaturesPerInput: Map<PerFactorSourceInput<Signable.Payload, Signable.ID>, PerFactorOutcome<Signable.ID>> = mapOf(
         PerFactorSourceInput<Signable.Payload, Signable.ID>(
@@ -392,6 +396,8 @@ class GetSignaturesViewModelTest {
             accessDeviceFactorSource = accessDeviceFactorSource,
             accessLedgerHardwareWalletFactorSource = accessLedgerHardwareWalletFactorSource,
             accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+            accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
+            accessPasswordFactorSourceUseCase = accessPasswordFactorSourceUseCase,
             defaultDispatcher = testDispatcher,
             getProfileUseCase = GetProfileUseCase(
                 profileRepository = FakeProfileRepository(sampleProfile),

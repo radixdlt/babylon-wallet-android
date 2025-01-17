@@ -174,8 +174,8 @@ private fun DerivePublicKeysSheetContent(
                             onSkipClick = {}
                         )
 
-                        FactorSourceKind.SECURITY_QUESTIONS -> TODO()
-                        FactorSourceKind.TRUSTED_CONTACT -> TODO()
+                        FactorSourceKind.SECURITY_QUESTIONS -> {}
+                        FactorSourceKind.TRUSTED_CONTACT -> {}
                     }
                 }
             )
