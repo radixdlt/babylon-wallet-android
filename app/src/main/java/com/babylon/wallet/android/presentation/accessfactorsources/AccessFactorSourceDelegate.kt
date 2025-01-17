@@ -108,8 +108,7 @@ class AccessFactorSourceDelegate(
                 }
             }
 
-            is FactorSource.Password -> TODO()
-            is FactorSource.SecurityQuestions -> {}
+            is FactorSource.Password -> TODO("Future implementation")
             else -> {
                 // The rest of the factor sources require no manual input
             }
@@ -141,13 +140,8 @@ class AccessFactorSourceDelegate(
             )
         }
 
-        when (factorSource) {
-            is FactorSource.OffDeviceMnemonic -> setupSeedPhraseInput(factorSource)
-            is FactorSource.Password -> {}
-            is FactorSource.SecurityQuestions -> {}
-            else -> {
-                // The rest of the factor sources need no setup prior to access
-            }
+        if (factorSource is FactorSource.OffDeviceMnemonic) {
+            setupSeedPhraseInput(factorSource)
         }
 
         onAccessCallback(factorSource)
