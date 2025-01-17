@@ -96,6 +96,8 @@ private fun ChooseFactorSourceContent(
     onSheetBackClick: () -> Unit,
     onSheetCloseClick: () -> Unit
 ) {
+    // TODO this will be replaced with the DefaultModalSheetLayout only when this bug is really fixed.
+    // https://issuetracker.google.com/issues/278216859
     BottomSheetDialogWrapper(
         modifier = modifier,
         addScrim = true,
