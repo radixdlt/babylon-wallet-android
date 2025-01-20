@@ -6,7 +6,6 @@ import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
-import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OffDeviceMnemonicHint
@@ -25,15 +24,12 @@ import com.radixdlt.sargon.os.signing.Signable
 import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -49,6 +45,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
     @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun testOnSeedPhraseConfirmedValid() = runTest {
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } returns Unit
         val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
         val offDeviceMnemonicFs = newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase(
             mwp = mnemonicWithPassphrase,
@@ -134,7 +131,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
     @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun testDerivePublicKeys() = runTest {
-        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } just Runs
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } returns Unit
         val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
         val offDeviceMnemonicFs = newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase(
             mwp = mnemonicWithPassphrase,
@@ -182,7 +179,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
     @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun testSignMono() = runTest {
-        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } just Runs
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } returns Unit
         val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
         val offDeviceMnemonicFs = newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase(
             mwp = mnemonicWithPassphrase,

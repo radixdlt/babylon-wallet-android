@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -26,12 +27,12 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -53,7 +54,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DerivePublicKeysDialog(
-    modifier: Modifier = Modifier, viewModel: DerivePublicKeysViewModel, onDismiss: () -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: DerivePublicKeysViewModel,
+    onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -63,7 +66,9 @@ fun DerivePublicKeysDialog(
 
     state.accessState.errorMessage?.let { errorMessage ->
         BasicPromptAlertDialog(
-            finish = { viewModel.onMessageShown() }, messageText = errorMessage.getMessage(), dismissText = null
+            finish = { viewModel.onMessageShown() },
+            messageText = errorMessage.getMessage(),
+            dismissText = null
         )
     }
 
@@ -107,28 +112,33 @@ private fun DerivePublicKeysSheetContent(
 
     val accessFactorSourceState = state.accessState
     val isSeedPhraseSuggestionsVisible = accessFactorSourceState.seedPhraseInputState.delegateState.rememberSuggestionsVisibilityState()
-    val focusedWordIndex = remember {
+    var focusedWordIndex by remember {
         mutableStateOf<Int?>(null)
     }
 
     DefaultModalSheetLayout(modifier = modifier.fillMaxSize(), onDismissRequest = onDismiss, sheetState = sheetState, sheetContent = {
         Scaffold(topBar = {
             RadixCenteredTopAppBar(
-                windowInsets = WindowInsets.none, title = "", onBackClick = onDismiss, backIconType = BackIconType.Close
+                windowInsets = WindowInsets.none,
+                title = "",
+                onBackClick = onDismiss,
+                backIconType = BackIconType.Close
             )
         }, bottomBar = {
             if (isSeedPhraseSuggestionsVisible) {
-                SeedPhraseSuggestions(modifier = Modifier
-                    .imePadding()
-                    .fillMaxWidth()
-                    .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
-                    .padding(RadixTheme.dimensions.paddingSmall),
+                SeedPhraseSuggestions(
+                    modifier = Modifier
+                        .imePadding()
+                        .fillMaxWidth()
+                        .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
+                        .padding(RadixTheme.dimensions.paddingSmall),
                     wordAutocompleteCandidates = accessFactorSourceState.seedPhraseInputState.delegateState.wordAutocompleteCandidates,
                     onCandidateClick = { candidate ->
-                        focusedWordIndex.value?.let { index ->
+                        focusedWordIndex?.let { index ->
                             onSeedPhraseWordChanged(index, candidate)
                         }
-                    })
+                    }
+                )
             }
         }, containerColor = RadixTheme.colors.defaultBackground, content = { padding ->
             val contentModifier = Modifier
@@ -136,45 +146,57 @@ private fun DerivePublicKeysSheetContent(
                 .verticalScroll(rememberScrollState())
 
             when (accessFactorSourceState.factorSourceToAccess.kind) {
-                FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(modifier = contentModifier,
+                FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
+                    modifier = contentModifier,
                     purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
                     isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                     canUseDifferentFactor = false,
                     onRetryClick = onRetryClick,
-                    onSkipClick = {})
+                    onSkipClick = {}
+                )
 
-                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(modifier = contentModifier,
+                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
+                    modifier = contentModifier,
                     purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
                     isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                     canUseDifferentFactor = false,
                     onRetryClick = onRetryClick,
-                    onSkipClick = {})
+                    onSkipClick = {}
+                )
 
-                FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(modifier = contentModifier,
+                FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
+                    modifier = contentModifier,
                     purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                     seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
                     canUseDifferentFactor = false,
                     onWordChanged = onSeedPhraseWordChanged,
                     onConfirmed = onInputConfirmed,
-                    focusedWordIndex = focusedWordIndex,
-                    onSkipClick = {})
+                    onFocusedWordChanged = {
+                        focusedWordIndex = it
+                    },
+                    onSkipClick = {}
+                )
 
-                FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(modifier = contentModifier,
+                FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
+                    modifier = contentModifier,
                     purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                     canUseDifferentFactor = false,
-                    onSkipClick = {})
+                    onSkipClick = {}
+                )
 
-                FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(modifier = contentModifier,
+                FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
+                    modifier = contentModifier,
                     purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
                     passwordState = accessFactorSourceState.passwordState,
                     onPasswordTyped = onPasswordTyped,
                     canUseDifferentFactor = false,
-                    onSkipClick = {})
+                    onSkipClick = {}
+                )
 
                 FactorSourceKind.SECURITY_QUESTIONS -> {}
                 FactorSourceKind.TRUSTED_CONTACT -> {}
@@ -190,13 +212,20 @@ private fun DerivePublicKeyPreview(
     @PreviewParameter(DerivePublicKeysPreviewParameterProvider::class) factorSource: FactorSource
 ) {
     RadixWalletTheme {
-        DerivePublicKeysSheetContent(state = DerivePublicKeysViewModel.State(
-            accessState = AccessFactorSourceDelegate.State(
-                factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
-                    factorSource = factorSource
+        DerivePublicKeysSheetContent(
+            state = DerivePublicKeysViewModel.State(
+                accessState = AccessFactorSourceDelegate.State(
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                        factorSource = factorSource
+                    )
                 )
-            )
-        ), onDismiss = {}, onSeedPhraseWordChanged = { _, _ -> }, onPasswordTyped = {}, onRetryClick = {}, onInputConfirmed = {})
+            ),
+            onDismiss = {},
+            onSeedPhraseWordChanged = { _, _ -> },
+            onPasswordTyped = {},
+            onRetryClick = {},
+            onInputConfirmed = {}
+        )
     }
 }
 

@@ -21,8 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -119,10 +119,9 @@ private fun GetSignaturesBottomSheetContent(
     val accessFactorSourceState = state.accessState
 
     val isSeedPhraseSuggestionsVisible = accessFactorSourceState.seedPhraseInputState.delegateState.rememberSuggestionsVisibilityState()
-    val focusedWordIndex = remember {
+    var focusedWordIndex by remember {
         mutableStateOf<Int?>(null)
     }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     DefaultModalSheetLayout(
         modifier = modifier.fillMaxSize(),
@@ -147,17 +146,13 @@ private fun GetSignaturesBottomSheetContent(
                                 .fillMaxWidth()
                                 .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                                 .padding(RadixTheme.dimensions.paddingSmall),
-                            wordAutocompleteCandidates =
-                                accessFactorSourceState.seedPhraseInputState.delegateState.wordAutocompleteCandidates,
+                            wordAutocompleteCandidates = accessFactorSourceState
+                                .seedPhraseInputState
+                                .delegateState
+                                .wordAutocompleteCandidates,
                             onCandidateClick = { candidate ->
-                                focusedWordIndex.value?.let { index ->
+                                focusedWordIndex?.let { index ->
                                     onSeedPhraseWordChanged(index, candidate)
-
-                                    if (focusedWordIndex.value != accessFactorSourceState.seedPhraseInputState.delegateState.seedPhraseWords.lastIndex) {
-                                        focusedWordIndex.value = index + 1
-                                    } else {
-                                        keyboardController?.hide()
-                                    }
                                 }
                             }
                         )
@@ -198,8 +193,10 @@ private fun GetSignaturesBottomSheetContent(
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                             seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
                             canUseDifferentFactor = true,
-                            focusedWordIndex = focusedWordIndex,
                             onWordChanged = onSeedPhraseWordChanged,
+                            onFocusedWordChanged = {
+                                focusedWordIndex = it
+                            },
                             onConfirmed = onInputConfirmed,
                             onSkipClick = onSkipClick
                         )

@@ -59,7 +59,6 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
             updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
         }
 
-
     private suspend fun readMnemonic(factorSourceId: FactorSourceIdFromHash): Result<MnemonicWithPassphrase> {
         if (!mnemonicRepository.mnemonicExist(key = factorSourceId.asGeneral())) {
             return Result.failure(CommonException.UnableToLoadMnemonicFromSecureStorage(badValue = factorSourceId.body.hex))

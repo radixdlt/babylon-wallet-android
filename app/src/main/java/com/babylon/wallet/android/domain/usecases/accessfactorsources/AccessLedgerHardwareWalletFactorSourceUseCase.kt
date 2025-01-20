@@ -32,9 +32,7 @@ import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.init
-import rdx.works.core.sargon.updateLastUsed
 import rdx.works.core.then
-import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 

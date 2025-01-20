@@ -415,7 +415,6 @@ private fun ImportLegacyWalletContent(
     }
 }
 
-
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,

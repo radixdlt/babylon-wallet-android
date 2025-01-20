@@ -6,7 +6,6 @@ import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
-import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 
 class AccessArculusFactorSourceUseCase @Inject constructor() : AccessFactorSource<FactorSource.ArculusCard> {

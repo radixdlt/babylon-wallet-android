@@ -113,17 +113,19 @@ class GetSignaturesViewModel @Inject constructor(
     private suspend fun onFailCallback() {
         // end the signing process and return the output (error)
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Completed(
-            outcome = PerFactorOutcome(
-                factorSourceId = proxyInput.input.factorSourceId,
-                outcome = FactorOutcome.Neglected(
-                    factor = NeglectedFactor(
-                        reason = NeglectFactorReason.FAILURE,
-                        factor = proxyInput.input.factorSourceId
+        accessFactorSourcesIOHandler.setOutput(
+            AccessFactorSourcesOutput.SignOutput.Completed(
+                outcome = PerFactorOutcome(
+                    factorSourceId = proxyInput.input.factorSourceId,
+                    outcome = FactorOutcome.Neglected(
+                        factor = NeglectedFactor(
+                            reason = NeglectFactorReason.FAILURE,
+                            factor = proxyInput.input.factorSourceId
+                        )
                     )
                 )
             )
-        ))
+        )
     }
 
     fun onDismiss() = accessDelegate.onDismiss()

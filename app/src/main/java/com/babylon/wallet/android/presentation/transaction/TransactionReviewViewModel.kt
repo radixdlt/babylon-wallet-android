@@ -405,8 +405,8 @@ class TransactionReviewViewModel @Inject constructor(
 
             val sheetHeightPercent: Float
                 get() = when (this) {
-                    is SigningFailed -> 0.8f
-                    else -> 0.9f
+                    is SigningFailed -> HEIGHT_80_PERCENT
+                    else -> HEIGHT_90_PERCENT
                 }
 
             data object None : Sheet
@@ -453,6 +453,11 @@ class TransactionReviewViewModel @Inject constructor(
             val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
             val fee: String
         )
+
+        companion object {
+            private const val HEIGHT_80_PERCENT = 0.8f
+            private const val HEIGHT_90_PERCENT = 0.9f
+        }
     }
 
     sealed interface Event : OneOffEvent {

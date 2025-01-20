@@ -15,5 +15,4 @@ class UpdateFactorSourceLastUsedUseCase @Inject constructor(
         val profile = profileRepository.profile.first()
         profileRepository.saveProfile(profile.updateLastUsed(factorSourceId))
     }
-
 }

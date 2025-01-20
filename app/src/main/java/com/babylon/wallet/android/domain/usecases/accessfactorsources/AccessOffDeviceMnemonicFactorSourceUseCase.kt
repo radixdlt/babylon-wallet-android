@@ -11,7 +11,6 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.derivePublicKeys
 import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.newFactorSourceIdFromHashFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
