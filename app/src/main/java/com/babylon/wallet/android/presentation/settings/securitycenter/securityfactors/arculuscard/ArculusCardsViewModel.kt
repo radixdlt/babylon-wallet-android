@@ -27,7 +27,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -43,32 +43,41 @@ class ArculusCardsViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
+        @Suppress("OPT_IN_USAGE")
         getFactorSourcesOfTypeUseCase<FactorSource.ArculusCard>()
-            .map { arculusFactorSource ->
-                val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                    factorSource = FactorSource.ArculusCard(arculusFactorSource.value),
-                    profileToCheck = ProfileToCheck.Current
-                )
+            .mapLatest { arculusFactorSources ->
+                resetArculusFactorSourceList()
 
-                val factorSourceCard = arculusFactorSource.value.toFactorSourceCard(
-                    messages = persistentListOf(),
-                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                )
+                arculusFactorSources.map { arculusFactorSource ->
+                    val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
+                        factorSource = FactorSource.ArculusCard(arculusFactorSource.value),
+                        profileToCheck = ProfileToCheck.Current
+                    )
 
-                // avoid duplication when a factor source is updated in the Factor Source Details screen
-                val updatedArculusFactorSources = _state.value.arculusFactorSources
-                    .filterNot { it.id == factorSourceCard.id }
-                    .toMutableList()
-                updatedArculusFactorSources.add(factorSourceCard)
-                _state.update { state ->
-                    state.copy(arculusFactorSources = updatedArculusFactorSources.toPersistentList())
+                    val factorSourceCard = arculusFactorSource.value.toFactorSourceCard(
+                        messages = persistentListOf(),
+                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                    )
+
+                    // avoid duplication when a factor source is updated in the Factor Source Details screen
+                    val updatedArculusFactorSources = _state.value.arculusFactorSources
+                        .filterNot { it.id == factorSourceCard.id }
+                        .toMutableList()
+                    updatedArculusFactorSources.add(factorSourceCard)
+                    _state.update { state ->
+                        state.copy(arculusFactorSources = updatedArculusFactorSources.toPersistentList())
+                    }
                 }
             }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
+    }
+
+    private fun resetArculusFactorSourceList() {
+        _state.update { state -> state.copy(arculusFactorSources = persistentListOf()) }
     }
 
     private fun ArculusCardFactorSource.toFactorSourceCard(

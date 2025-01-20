@@ -32,7 +32,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
@@ -50,44 +50,55 @@ class BiometricsPinViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
+        @Suppress("OPT_IN_USAGE")
         getFactorSourcesOfTypeUseCase<FactorSource.Device>()
-            .map { deviceFactorSource ->
-                val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                    factorSource = FactorSource.Device(deviceFactorSource.value),
-                    profileToCheck = ProfileToCheck.Current
-                )
+            .mapLatest { deviceFactorSources ->
+                resetDeviceFactorSourceList()
 
-                val securityMessages = getSecurityPromptsForDeviceFactorSource(
-                    deviceFactorSourceId = deviceFactorSource.id,
-                    entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
-                )
+                deviceFactorSources.map { deviceFactorSource ->
+                    val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
+                        factorSource = FactorSource.Device(deviceFactorSource.value),
+                        profileToCheck = ProfileToCheck.Current
+                    )
 
-                val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
-                    messages = securityMessages,
-                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                )
+                    val securityMessages = getSecurityPromptsForDeviceFactorSource(
+                        deviceFactorSourceId = deviceFactorSource.id,
+                        entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                    )
 
-                val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
-                if (isMainDeviceFactorSource) {
-                    _state.update { state ->
-                        state.copy(mainDeviceFactorSource = factorSourceCard)
-                    }
-                } else {
-                    // avoid duplication when a factor source is updated in the Factor Source Details screen
-                    val updatedDeviceFactorSources = _state.value.deviceFactorSources
-                        .filterNot { it.id == factorSourceCard.id }
-                        .toMutableList()
-                    updatedDeviceFactorSources.add(factorSourceCard)
-                    _state.update { state ->
-                        state.copy(deviceFactorSources = updatedDeviceFactorSources.toPersistentList())
+                    val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
+                        messages = securityMessages,
+                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                    )
+
+                    val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
+                    if (isMainDeviceFactorSource) {
+                        _state.update { state ->
+                            state.copy(mainDeviceFactorSource = factorSourceCard)
+                        }
+                    } else {
+                        _state.update { state ->
+                            state.copy(
+                                otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
+                            )
+                        }
                     }
                 }
             }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
+    }
+
+    private fun resetDeviceFactorSourceList() {
+        _state.update { state ->
+            state.copy(
+                mainDeviceFactorSource = null,
+                otherDeviceFactorSources = persistentListOf()
+            )
+        }
     }
 
     fun onDeviceFactorSourceClick(factorSourceId: FactorSourceId) {

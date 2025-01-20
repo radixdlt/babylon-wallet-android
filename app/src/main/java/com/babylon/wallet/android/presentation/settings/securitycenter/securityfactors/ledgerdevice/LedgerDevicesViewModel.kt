@@ -30,7 +30,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -48,32 +48,41 @@ class LedgerDevicesViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
+        @Suppress("OPT_IN_USAGE")
         getFactorSourcesOfTypeUseCase<FactorSource.Ledger>()
-            .map { ledgerFactorSource ->
-                val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                    factorSource = FactorSource.Ledger(ledgerFactorSource.value),
-                    profileToCheck = ProfileToCheck.Current
-                )
+            .mapLatest { ledgerFactorSources ->
+                resetLedgerFactorSourceList()
 
-                val factorSourceCard = ledgerFactorSource.value.toFactorSourceCard(
-                    messages = persistentListOf(),
-                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                )
+                ledgerFactorSources.map { ledgerFactorSource ->
+                    val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
+                        factorSource = FactorSource.Ledger(ledgerFactorSource.value),
+                        profileToCheck = ProfileToCheck.Current
+                    )
 
-                // avoid duplication when a factor source is updated in the Factor Source Details screen
-                val updatedLedgerFactorSources = _state.value.ledgerFactorSources
-                    .filterNot { it.id == factorSourceCard.id }
-                    .toMutableList()
-                updatedLedgerFactorSources.add(factorSourceCard)
-                _state.update { state ->
-                    state.copy(ledgerFactorSources = updatedLedgerFactorSources.toPersistentList())
+                    val factorSourceCard = ledgerFactorSource.value.toFactorSourceCard(
+                        messages = persistentListOf(),
+                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                    )
+
+                    // avoid duplication when a factor source is updated in the Factor Source Details screen
+                    val updatedLedgerFactorSources = _state.value.ledgerFactorSources
+                        .filterNot { it.id == factorSourceCard.id }
+                        .toMutableList()
+                    updatedLedgerFactorSources.add(factorSourceCard)
+                    _state.update { state ->
+                        state.copy(ledgerFactorSources = updatedLedgerFactorSources.toPersistentList())
+                    }
                 }
             }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
+    }
+
+    private fun resetLedgerFactorSourceList() {
+        _state.update { state -> state.copy(ledgerFactorSources = persistentListOf()) }
     }
 
     private fun LedgerHardwareWalletFactorSource.toFactorSourceCard(
