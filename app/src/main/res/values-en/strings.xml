@@ -903,15 +903,15 @@ Code: %s</string>
   <string name="factorSources_card_deviceDescription">Use phone biometrics/PIN to approve</string>
   <string name="factorSources_card_ledgerTitle">Ledger Nano</string>
   <string name="factorSources_card_ledgerDescription">Connect via USB to approve</string>
-  <string name="factorSources_card_passphraseTitle">Mnemonic</string>
-  <string name="factorSources_card_passphraseDescription">Enter a seed phrase to approve</string>
+  <string name="factorSources_card_offDeviceMnemonicTitle">Mnemonic</string>
+  <string name="factorSources_card_offDeviceMnemonicDescription">Enter a seed phrase to approve</string>
   <string name="factorSources_card_arculusCardTitle">Arculus Card</string>
   <string name="factorSources_card_arculusCardDescription">Tap to your phone to approve</string>
   <string name="factorSources_card_passwordTitle">Password</string>
   <string name="factorSources_card_passwordDescription">Enter a decentralized password to approve</string>
   <string name="factorSources_list_deviceAdd">Add Biometrics/PIN</string>
   <string name="factorSources_list_ledgerAdd">Add New Ledger Nano</string>
-  <string name="factorSources_list_passphraseAdd">Add New Passphrase</string>
+  <string name="factorSources_list_offDeviceMnemonicAdd">Add New Passphrase</string>
   <string name="factorSources_list_arculusCardAdd">Add Arculus Card</string>
   <string name="factorSources_list_passwordAdd">Add New Password</string>
   <string name="factorSources_list_default">Default</string>
@@ -1453,7 +1453,7 @@ Code: %s</string>
   <string name="shieldSetupPrepareFactors_addHardwareFactor_noDeviceButton">I don’t have a hardware device</string>
   <string name="shieldSetupPrepareFactors_addAnotherFactor_title">Add Another Factor</string>
   <string name="shieldSetupPrepareFactors_addAnotherFactor_subtitle">You need to add **1 more factor** to begin building your Shield.</string>
-  <string name="shieldSetupPrepareFactors_addAnotherFactor_passphraseHint">Choosing a mnemonic is only recommended for advanced users</string>
+  <string name="shieldSetupPrepareFactors_addAnotherFactor_offDeviceMnemonicHint">Choosing a mnemonic is only recommended for advanced users</string>
   <string name="shieldSetupPrepareFactors_addAnotherFactor_button">Add Factor</string>
   <string name="shieldSetupPrepareFactors_completion_title">Your Factors are Ready</string>
   <string name="shieldSetupPrepareFactors_completion_subtitleTop">Now let’s build your Shield.</string>
