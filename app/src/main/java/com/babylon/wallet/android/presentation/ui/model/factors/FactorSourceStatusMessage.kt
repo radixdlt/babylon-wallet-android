@@ -22,7 +22,7 @@ sealed interface FactorSourceStatusMessage {
     @Composable
     fun getMessage(): StatusMessage = when (this) {
         is PassphraseHint -> StatusMessage(
-            message = stringResource(id = R.string.shieldSetupPrepareFactors_addAnotherFactor_passphraseHint),
+            message = stringResource(id = R.string.shieldSetupPrepareFactors_addAnotherFactor_offDeviceMnemonicHint),
             type = StatusMessage.Type.WARNING
         )
         SecurityPrompt.RecoveryRequired -> StatusMessage(

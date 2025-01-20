@@ -368,7 +368,7 @@ fun FactorSourceKind.title(): String {
         id = when (this) {
             FactorSourceKind.DEVICE -> R.string.factorSources_card_deviceTitle
             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> R.string.factorSources_card_ledgerTitle
-            FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_passphraseTitle
+            FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_offDeviceMnemonicTitle
             FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_card_arculusCardTitle
             FactorSourceKind.PASSWORD -> R.string.factorSources_card_passwordTitle
             FactorSourceKind.TRUSTED_CONTACT,
@@ -383,7 +383,7 @@ fun FactorSourceKind.subtitle(): String {
         id = when (this) {
             FactorSourceKind.DEVICE -> R.string.factorSources_card_deviceDescription
             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> R.string.factorSources_card_ledgerDescription
-            FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_passphraseDescription
+            FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_offDeviceMnemonicDescription
             FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_card_arculusCardDescription
             FactorSourceKind.PASSWORD -> R.string.factorSources_card_passwordDescription
             FactorSourceKind.TRUSTED_CONTACT,

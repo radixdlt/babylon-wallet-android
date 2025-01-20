@@ -97,7 +97,7 @@ sealed interface SettingsItem {
                 is BiometricsPin -> R.string.factorSources_card_deviceTitle
                 LedgerNano -> R.string.factorSources_card_ledgerTitle
                 ArculusCard -> R.string.factorSources_card_arculusCardTitle
-                Passphrase -> R.string.factorSources_card_passphraseTitle
+                Passphrase -> R.string.factorSources_card_offDeviceMnemonicTitle
                 Password -> R.string.factorSources_card_passwordTitle
             }
         }
@@ -108,7 +108,7 @@ sealed interface SettingsItem {
                 is BiometricsPin -> R.string.factorSources_card_deviceDescription
                 LedgerNano -> R.string.factorSources_card_ledgerDescription
                 ArculusCard -> R.string.factorSources_card_arculusCardDescription
-                Passphrase -> R.string.factorSources_card_passphraseDescription
+                Passphrase -> R.string.factorSources_card_offDeviceMnemonicDescription
                 Password -> R.string.factorSources_card_passwordDescription
             }
         }
