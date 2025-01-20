@@ -187,8 +187,8 @@ private fun ChooseFactorSourceContent(
                 State.Page.Passphrase -> {
                     SelectableFactorSourcesListView(
                         factorSources = state.selectableFactorSources[FactorSourceKind.OFF_DEVICE_MNEMONIC] ?: persistentListOf(),
-                        factorSourceDescriptionText = R.string.factorSources_card_passphraseDescription,
-                        addFactorSourceButtonTitle = R.string.factorSources_list_passphraseAdd,
+                        factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
+                        addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
                         onFactorSourceSelect = onFactorSourceSelect,
                         onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.OFF_DEVICE_MNEMONIC) },
                         onContinueClick = onContinueClick

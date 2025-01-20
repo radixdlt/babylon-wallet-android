@@ -465,7 +465,7 @@ private fun AuthenticationFactorView(
                     bottom = RadixTheme.dimensions.paddingSemiLarge
                 ),
                 message = StatusMessage(
-                    message = stringResource(id = R.string.shieldSetupStatus_authentication_atLeastOneFactor),
+                    message = stringResource(id = R.string.shieldSetupStatus_roles_atLeastOneFactor),
                     type = StatusMessage.Type.WARNING
                 )
             )

@@ -23,7 +23,7 @@ fun ShieldSetupStatusView(
         is SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
+                message = stringResource(id = R.string.shieldSetupStatus_roles_atLeastOneFactor),
                 type = StatusMessage.Type.WARNING
             )
         )
