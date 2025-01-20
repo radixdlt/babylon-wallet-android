@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -129,7 +128,6 @@ class MainViewModel @Inject constructor(
                 } else {
                     false
                 }
-                Log.e("TAGTAG", "Profile state: $profileState")
 
                 _state.update {
                     State(

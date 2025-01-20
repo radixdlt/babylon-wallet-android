@@ -116,7 +116,8 @@ class SelectFactorsViewModel @Inject constructor(
 
         fun cannotBeUsedByItself(categoryHeader: UiItem.CategoryHeader): Boolean =
             (status as? SelectedPrimaryThresholdFactorsStatus.Invalid)?.let { status ->
-                (status.reason as? SelectedPrimaryThresholdFactorsStatusInvalidReason.CannotBeUsedAlone)?.factorSourceKind == categoryHeader.kind
+                val cannotBeUsedAlone = (status.reason as? SelectedPrimaryThresholdFactorsStatusInvalidReason.CannotBeUsedAlone)
+                cannotBeUsedAlone?.factorSourceKind == categoryHeader.kind
             } ?: false
 
         sealed interface UiItem {

@@ -6,10 +6,10 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilder
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.Threshold
+import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
@@ -128,8 +128,8 @@ class SecurityShieldBuilderClient @Inject constructor(
         onRecoveryRoleSelectionUpdate()
     }
 
-    suspend fun setNumberOfDaysUntilAutoConfirm(days: Int) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.setNumberOfDaysUntilAutoConfirm(days.toUShort()) }
+    suspend fun setTimePeriodUntilAutoConfirm(timePeriod: TimePeriod) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.setTimePeriodUntilAutoConfirm(timePeriod) }
         onRecoveryRoleSelectionUpdate()
     }
 
@@ -141,7 +141,8 @@ class SecurityShieldBuilderClient @Inject constructor(
     private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
-                threshold = securityShieldBuilder.getPrimaryThreshold().toInt(),
+                threshold = securityShieldBuilder.getPrimaryThreshold(),
+                thresholdValues = securityShieldBuilder.getPrimaryThresholdValues(),
                 thresholdFactors = securityShieldBuilder.getPrimaryThresholdFactors().toFactorSources(),
                 overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
                 authenticationFactor = securityShieldBuilder.getAuthenticationSigningFactor()?.toFactorSource(),
@@ -156,7 +157,7 @@ class SecurityShieldBuilderClient @Inject constructor(
             RecoveryRoleSelection(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
                 confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
-                numberOfDaysUntilAutoConfirm = securityShieldBuilder.getNumberOfDaysUntilAutoConfirm().toInt(),
+                timePeriodUntilAutoConfirm = securityShieldBuilder.getTimePeriodUntilAutoConfirm(),
                 shieldStatus = securityShieldBuilder.validate()?.also { Timber.w("Security shield builder invalid reason: $it") }
             )
         )
