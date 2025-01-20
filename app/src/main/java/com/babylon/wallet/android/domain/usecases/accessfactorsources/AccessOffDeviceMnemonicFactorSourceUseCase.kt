@@ -9,6 +9,7 @@ import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.derivePublicKeys
+import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.newFactorSourceIdFromHashFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
@@ -32,10 +33,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
     ): SeedPhraseValidity {
         val seedPhrase = words.toMnemonicWithPassphraseOrNull() ?: return SeedPhraseValidity.InvalidMnemonic
 
-        val generatedId = newFactorSourceIdFromHashFromMnemonicWithPassphrase(
-            factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-            mnemonicWithPassphrase = seedPhrase
-        )
+        val generatedId = seedPhrase.factorSourceId(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC)
 
         return if (generatedId != factorSourceId) {
             SeedPhraseValidity.DoesNotDeriveFactorSourceId
