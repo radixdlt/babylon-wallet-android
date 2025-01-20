@@ -1515,7 +1515,7 @@ Code: %s</string>
   <string name="shieldWizardRegularAccess_title">Regular Access</string>
   <string name="shieldWizardRegularAccess_subtitle">Factors required to withdraw assets from Accounts.</string>
   <string name="shieldWizardRegularAccess_combination_label">OR</string>
-  <string name="shieldWizardRegularAccess_thresholdDescription_title">You\'ll need to use %s of the following:</string>
+  <string name="shieldWizardRegularAccess_thresholdDescription_title">You\'ll need to use **%s** of the following</string>
   <string name="shieldWizardRegularAccess_thresholdDescription_selection">**%s**</string>
   <string name="shieldWizardRegularAccess_thresholdDescription_all">All</string>
   <string name="shieldWizardRegularAccess_override_title">Override (advanced)</string>
