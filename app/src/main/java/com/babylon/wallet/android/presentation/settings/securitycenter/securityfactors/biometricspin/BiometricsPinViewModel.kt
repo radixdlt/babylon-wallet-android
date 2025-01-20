@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -25,8 +26,10 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
@@ -36,6 +39,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -107,6 +111,38 @@ class BiometricsPinViewModel @Inject constructor(
         }
     }
 
+    fun onChangeMainDeviceFactorSourceClick() {
+        _state.update { state -> state.copy(isMainDeviceFactorSourceBottomSheetVisible = true) }
+    }
+
+    fun onDeviceFactorSourceSelect(factorSourceCard: FactorSourceCard) {
+        _state.update { it.copy(selectedDeviceFactorSourceId = factorSourceCard.id) }
+    }
+
+    fun onConfirmChangeMainDeviceFactorSource() {
+        viewModelScope.launch {
+            _state.update { state -> state.copy(isChangingMainDeviceFactorSourceInProgress = true) }
+            _state.value.selectedDeviceFactorSourceId?.let {
+                runCatching {
+                    sargonOsManager.sargonOs.setMainFactorSource(factorSourceId = it)
+                }.onFailure { error ->
+                    Timber.e("Failed to set main device factor source: $error")
+                }
+            }
+            _state.update { state -> state.copy(isChangingMainDeviceFactorSourceInProgress = false) }
+            onDismissMainDeviceFactorSourceBottomSheet()
+        }
+    }
+
+    fun onDismissMainDeviceFactorSourceBottomSheet() {
+        _state.update { state ->
+            state.copy(
+                isMainDeviceFactorSourceBottomSheetVisible = false,
+                selectedDeviceFactorSourceId = null
+            )
+        }
+    }
+
     private fun DeviceFactorSource.toFactorSourceCard(
         includeDescription: Boolean = false,
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
@@ -168,8 +204,22 @@ class BiometricsPinViewModel @Inject constructor(
 
     data class State(
         val mainDeviceFactorSource: FactorSourceCard? = null,
-        val deviceFactorSources: PersistentList<FactorSourceCard> = persistentListOf(),
-    ) : UiState
+        val otherDeviceFactorSources: PersistentList<FactorSourceCard> = persistentListOf(),
+        val isMainDeviceFactorSourceBottomSheetVisible: Boolean = false,
+        val isChangingMainDeviceFactorSourceInProgress: Boolean = false,
+        val selectedDeviceFactorSourceId: FactorSourceId? = null,
+    ) : UiState {
+
+        val isContinueButtonEnabled: Boolean
+            get() = selectableDeviceFactorIds.any { it.selected }
+
+        val selectableDeviceFactorIds: ImmutableList<Selectable<FactorSourceCard>> = otherDeviceFactorSources.map {
+            Selectable(
+                data = it,
+                selected = selectedDeviceFactorSourceId == it.id
+            )
+        }.toImmutableList()
+    }
 
     sealed interface Event : OneOffEvent {
 
