@@ -21,12 +21,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SecurityFactorsViewModel @Inject constructor(
+class SecurityFactorTypesViewModel @Inject constructor(
     getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
     @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
-) : StateViewModel<SecurityFactorsViewModel.State>() {
+) : StateViewModel<SecurityFactorTypesViewModel.State>() {
 
-    override fun initialState(): State = State(securityFactorSettingItems = currentSecurityFactorTypeItems)
+    override fun initialState(): State = State(securityFactorTypeSettingItems = currentSecurityFactorTypeItems)
 
     init {
         viewModelScope.launch {
@@ -44,11 +44,11 @@ class SecurityFactorsViewModel @Inject constructor(
                             )
                         )
                         _state.update {
-                            it.copy(securityFactorSettingItems = updatedSecurityFactorsSettings)
+                            it.copy(securityFactorTypeSettingItems = updatedSecurityFactorsSettings)
                         }
                     } else {
                         _state.update {
-                            it.copy(securityFactorSettingItems = currentSecurityFactorTypeItems)
+                            it.copy(securityFactorTypeSettingItems = currentSecurityFactorTypeItems)
                         }
                     }
                 }
@@ -56,6 +56,6 @@ class SecurityFactorsViewModel @Inject constructor(
     }
 
     data class State(
-        val securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>
+        val securityFactorTypeSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>
     ) : UiState
 }

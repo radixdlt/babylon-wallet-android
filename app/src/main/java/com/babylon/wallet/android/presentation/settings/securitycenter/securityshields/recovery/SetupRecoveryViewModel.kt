@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -11,18 +12,24 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.TimePeriod
+import com.radixdlt.sargon.TimePeriodUnit
+import com.radixdlt.sargon.extensions.values
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class SetupRecoveryViewModel @Inject constructor(
-    private val securityShieldBuilderClient: SecurityShieldBuilderClient
+    private val securityShieldBuilderClient: SecurityShieldBuilderClient,
+    private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SetupRecoveryViewModel.State>(),
     OneOffEventHandler<SetupRecoveryViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -97,17 +104,7 @@ class SetupRecoveryViewModel @Inject constructor(
                             startRecoveryFactors = selection.startRecoveryFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             confirmationFactors = selection.confirmationFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             status = selection.shieldStatus,
-                            fallbackPeriod = if (selection.numberOfDaysUntilAutoConfirm % DAYS_IN_A_WEEK == 0) {
-                                State.FallbackPeriod(
-                                    value = selection.numberOfDaysUntilAutoConfirm / DAYS_IN_A_WEEK,
-                                    unit = State.FallbackPeriod.Unit.WEEKS
-                                )
-                            } else {
-                                State.FallbackPeriod(
-                                    value = selection.numberOfDaysUntilAutoConfirm,
-                                    unit = State.FallbackPeriod.Unit.DAYS
-                                )
-                            },
+                            fallbackPeriod = selection.timePeriodUntilAutoConfirm,
                             selectFallbackPeriod = null,
                             selectFactor = null
                         )
@@ -120,10 +117,10 @@ class SetupRecoveryViewModel @Inject constructor(
         _state.update { state ->
             state.copy(
                 selectFallbackPeriod = State.SelectFallbackPeriod(
-                    currentValue = requireNotNull(state.fallbackPeriod).value,
+                    currentValue = requireNotNull(state.fallbackPeriod).value.toInt(),
                     currentUnit = state.fallbackPeriod.unit,
-                    values = state.fallbackPeriod.unit.possibleValues,
-                    units = State.FallbackPeriod.Unit.entries.toPersistentList()
+                    values = state.fallbackPeriod.unit.values.toPersistentList(),
+                    units = TimePeriodUnit.entries.toPersistentList()
                 )
             )
         }
@@ -132,7 +129,13 @@ class SetupRecoveryViewModel @Inject constructor(
     fun onSetFallbackPeriodClick() {
         viewModelScope.launch {
             val fallbackPeriod = requireNotNull(state.value.selectFallbackPeriod)
-            securityShieldBuilderClient.setNumberOfDaysUntilAutoConfirm(fallbackPeriod.currentUnit.toDays(fallbackPeriod.currentValue))
+
+            securityShieldBuilderClient.setTimePeriodUntilAutoConfirm(
+                TimePeriod(
+                    value = fallbackPeriod.currentValue.toUShort(),
+                    unit = fallbackPeriod.currentUnit
+                )
+            )
         }
     }
 
@@ -150,13 +153,13 @@ class SetupRecoveryViewModel @Inject constructor(
         }
     }
 
-    fun onFallbackPeriodUnitChange(unit: State.FallbackPeriod.Unit) {
+    fun onFallbackPeriodUnitChange(unit: TimePeriodUnit) {
         _state.update { state ->
-            val newValues = unit.possibleValues
+            val newValues = unit.values
             state.copy(
                 selectFallbackPeriod = state.selectFallbackPeriod?.copy(
                     currentUnit = unit,
-                    values = newValues,
+                    values = newValues.toPersistentList(),
                     currentValue = if (state.selectFallbackPeriod.currentValue in newValues) {
                         state.selectFallbackPeriod.currentValue
                     } else {
@@ -180,12 +183,12 @@ class SetupRecoveryViewModel @Inject constructor(
     }
 
     fun onConfirmShieldNameClick() {
-        viewModelScope.launch {
+        viewModelScope.launch(defaultDispatcher) {
             val shieldName = requireNotNull(state.value.setShieldName?.name)
             val securityStructureOfFactorSourceIDs = securityShieldBuilderClient.buildShield(shieldName)
 
-            // TODO save shield to profile
-            Timber.w("Security structure: $securityStructureOfFactorSourceIDs")
+            // TODO handle errors and false return
+            sargonOsManager.sargonOs.addSecurityStructureOfFactorSourceIds(securityStructureOfFactorSourceIDs)
 
             sendEvent(Event.ShieldCreated)
         }
@@ -195,7 +198,7 @@ class SetupRecoveryViewModel @Inject constructor(
         val status: SecurityShieldBuilderInvalidReason? = null,
         val startRecoveryFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val confirmationFactors: PersistentList<FactorSourceCard> = persistentListOf(),
-        val fallbackPeriod: FallbackPeriod? = null,
+        val fallbackPeriod: TimePeriod? = null,
         val selectFallbackPeriod: SelectFallbackPeriod? = null,
         val selectFactor: SelectFactor? = null,
         val setShieldName: SetShieldName? = null
@@ -216,29 +219,10 @@ class SetupRecoveryViewModel @Inject constructor(
 
         data class SelectFallbackPeriod(
             val currentValue: Int,
-            val currentUnit: FallbackPeriod.Unit,
+            val currentUnit: TimePeriodUnit,
             val values: PersistentList<Int>,
-            val units: PersistentList<FallbackPeriod.Unit>
+            val units: PersistentList<TimePeriodUnit>
         )
-
-        data class FallbackPeriod(
-            val value: Int,
-            val unit: Unit
-        ) {
-
-            enum class Unit(
-                val possibleValues: PersistentList<Int>
-            ) {
-
-                DAYS(FALLBACK_PERIOD_DAYS),
-                WEEKS(FALLBACK_PERIOD_WEEKS);
-
-                fun toDays(value: Int): Int = when (this) {
-                    DAYS -> value
-                    WEEKS -> value * DAYS_IN_A_WEEK
-                }
-            }
-        }
 
         data class SetShieldName(
             val name: String
@@ -251,12 +235,5 @@ class SetupRecoveryViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
 
         data object ShieldCreated : Event
-    }
-
-    companion object {
-
-        private const val DAYS_IN_A_WEEK = 7
-        private val FALLBACK_PERIOD_DAYS = (1 until 15).toPersistentList()
-        private val FALLBACK_PERIOD_WEEKS = (1 until 5).toPersistentList()
     }
 }

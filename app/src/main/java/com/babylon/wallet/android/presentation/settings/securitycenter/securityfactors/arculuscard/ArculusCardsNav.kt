@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -10,22 +10,22 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
-private const val ROUTE_BIOMETRICS_PIN_SCREEN = "route_biometrics_pin_screen"
+private const val ROUTE_ARCULUS_CARDS_SCREEN = "route_arculus_cards_screen"
 
-fun NavController.biometricsPin() {
-    navigate(ROUTE_BIOMETRICS_PIN_SCREEN) {
+fun NavController.arculusCards() {
+    navigate(ROUTE_ARCULUS_CARDS_SCREEN) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.biometricsPin(
-    onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddBiometricPin: () -> Unit,
+fun NavGraphBuilder.arculusCards(
+    onNavigateToArculusFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
+    onNavigateToAddArculusCard: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_BIOMETRICS_PIN_SCREEN,
+        route = ROUTE_ARCULUS_CARDS_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -39,10 +39,10 @@ fun NavGraphBuilder.biometricsPin(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        BiometricsPinScreen(
+        ArculusCardsScreen(
             viewModel = hiltViewModel(),
-            onNavigateToDeviceFactorSourceDetails = onNavigateToDeviceFactorSourceDetails,
-            onNavigateToAddBiometricPin = onNavigateToAddBiometricPin,
+            onNavigateToArculusFactorSourceDetails = onNavigateToArculusFactorSourceDetails,
+            onNavigateToAddArculusCard = onNavigateToAddArculusCard,
             onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )

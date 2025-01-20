@@ -40,7 +40,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun BiometricsPinScreen(
     viewModel: BiometricsPinViewModel,
     onBackClick: () -> Unit,
-    onNavigateToDeviceFactorSourceDetails: () -> Unit,
+    onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToAddBiometricPin: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -49,8 +49,8 @@ fun BiometricsPinScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                BiometricsPinViewModel.Event.NavigateToDeviceFactorSourceDetails -> {
-                    onNavigateToDeviceFactorSourceDetails()
+                is BiometricsPinViewModel.Event.NavigateToDeviceFactorSourceDetails -> {
+                    onNavigateToDeviceFactorSourceDetails(event.factorSourceId)
                 }
             }
         }
@@ -96,6 +96,7 @@ private fun BiometricsPinContent(
                 factorSources = state.deviceFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
+                glossaryItem = GlossaryItem.biometricsPIN,
                 onFactorSourceClick = onDeviceFactorSourceClick,
                 onAddFactorSourceClick = onAddBiometricsPinClick,
                 onInfoClick = onInfoClick
@@ -121,9 +122,7 @@ private fun BiometricsPinPreview() {
                     lastUsedOn = "Today",
                     kind = FactorSourceKind.DEVICE,
                     messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
-                    accounts = persistentListOf(
-                        Account.sampleMainnet()
-                    ),
+                    accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
@@ -141,13 +140,25 @@ private fun BiometricsPinPreview() {
                         lastUsedOn = "Today",
                         kind = FactorSourceKind.DEVICE,
                         messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
-                        accounts = persistentListOf(
-                            Account.sampleMainnet()
-                        ),
+                        accounts = persistentListOf(Account.sampleMainnet()),
                         personas = persistentListOf(
                             Persona.sampleMainnet(),
                             Persona.sampleStokenet()
                         ),
+                        hasHiddenEntities = true
+                    ),
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "XXX phone",
+                        includeDescription = false,
+                        lastUsedOn = "Last year",
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
                         hasHiddenEntities = true
                     )
                 )

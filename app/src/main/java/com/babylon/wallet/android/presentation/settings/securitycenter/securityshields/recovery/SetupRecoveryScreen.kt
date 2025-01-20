@@ -68,8 +68,11 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.TimePeriod
+import com.radixdlt.sargon.TimePeriodUnit
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.values
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -133,7 +136,7 @@ private fun SetupRecoveryContent(
     onRemoveConfirmRecoveryFactor: (FactorSourceCard) -> Unit,
     onFallbackPeriodClick: () -> Unit,
     onFallbackPeriodValueChange: (Int) -> Unit,
-    onFallbackPeriodUnitChange: (SetupRecoveryViewModel.State.FallbackPeriod.Unit) -> Unit,
+    onFallbackPeriodUnitChange: (TimePeriodUnit) -> Unit,
     onSetFallbackPeriodClick: () -> Unit,
     onDismissFallbackPeriod: () -> Unit,
     onShieldNameChange: (String) -> Unit,
@@ -347,7 +350,7 @@ private fun FactorsView(
 @Composable
 private fun EmergencyFallbackView(
     modifier: Modifier = Modifier,
-    period: SetupRecoveryViewModel.State.FallbackPeriod,
+    period: TimePeriod,
     onInfoClick: (GlossaryItem) -> Unit,
     onNumberOfDaysClick: () -> Unit
 ) {
@@ -450,7 +453,7 @@ private fun EmergencyFallbackView(
 private fun SelectFallbackPeriodSheet(
     selectFallbackPeriod: SetupRecoveryViewModel.State.SelectFallbackPeriod,
     onValueChange: (Int) -> Unit,
-    onUnitChange: (SetupRecoveryViewModel.State.FallbackPeriod.Unit) -> Unit,
+    onUnitChange: (TimePeriodUnit) -> Unit,
     onSetClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -592,14 +595,18 @@ private fun SetShieldNameSheet(
 }
 
 @Composable
-private fun SetupRecoveryViewModel.State.FallbackPeriod.title(): String = "$value ${unit.displayName(value == 1)}"
+private fun TimePeriod.title(): String = "$value ${unit.displayName(value.toInt() == 1)}"
 
 @Composable
-private fun SetupRecoveryViewModel.State.FallbackPeriod.Unit.displayName(isSingular: Boolean): String = when (this) {
-    SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS -> stringResource(
+private fun TimePeriodUnit.displayName(isSingular: Boolean): String = when (this) {
+    TimePeriodUnit.DAYS -> stringResource(
         id = if (isSingular) R.string.shieldWizardRecovery_fallback_day_label else R.string.shieldWizardRecovery_fallback_days_label
     )
-    SetupRecoveryViewModel.State.FallbackPeriod.Unit.WEEKS -> stringResource(
+    TimePeriodUnit.WEEKS -> stringResource(
+        id = if (isSingular) R.string.shieldWizardRecovery_fallback_week_label else R.string.shieldWizardRecovery_fallback_weeks_label
+    )
+    TimePeriodUnit.YEARS -> stringResource(
+        // TODO sergiu replace with years key
         id = if (isSingular) R.string.shieldWizardRecovery_fallback_week_label else R.string.shieldWizardRecovery_fallback_weeks_label
     )
 }
@@ -698,17 +705,14 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         hasHiddenEntities = false
                     )
                 ),
-                fallbackPeriod = SetupRecoveryViewModel.State.FallbackPeriod(
-                    value = 10,
-                    unit = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS
-                )
+                fallbackPeriod = TimePeriod.sample()
             ),
             SetupRecoveryViewModel.State(
                 selectFallbackPeriod = SetupRecoveryViewModel.State.SelectFallbackPeriod(
                     currentValue = 10,
-                    currentUnit = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS,
-                    values = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS.possibleValues,
-                    units = SetupRecoveryViewModel.State.FallbackPeriod.Unit.entries.toPersistentList()
+                    currentUnit = TimePeriodUnit.DAYS,
+                    values = TimePeriodUnit.DAYS.values.toPersistentList(),
+                    units = TimePeriodUnit.entries.toPersistentList()
                 )
             ),
             SetupRecoveryViewModel.State(

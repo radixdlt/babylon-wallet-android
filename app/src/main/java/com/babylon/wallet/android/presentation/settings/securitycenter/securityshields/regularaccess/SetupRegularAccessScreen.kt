@@ -65,6 +65,7 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
@@ -84,9 +85,9 @@ fun SetupRegularAccessScreen(
         state = state,
         onDismiss = onDismiss,
         onInfoClick = onInfoClick,
-        onNumberOfFactorsClick = viewModel::onNumberOfFactorsClick,
-        onNumberOfFactorsSelect = viewModel::onNumberOfFactorsSelect,
-        onNumberOfFactorsDismiss = viewModel::onNumberOfFactorsSelectionDismiss,
+        onNumberOfFactorsClick = viewModel::onThresholdClick,
+        onNumberOfFactorsSelect = viewModel::onThresholdSelect,
+        onNumberOfFactorsDismiss = viewModel::onThresholdSelectionDismiss,
         onAddFactorClick = viewModel::onAddThresholdFactorClick,
         onRemoveFactorClick = viewModel::onRemoveThresholdFactorClick,
         onAddOverrideClick = viewModel::onAddOverrideClick,
@@ -114,7 +115,7 @@ private fun SetupRegularAccessContent(
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onNumberOfFactorsClick: () -> Unit,
-    onNumberOfFactorsSelect: (SetupRegularAccessViewModel.State.NumberOfFactors) -> Unit,
+    onNumberOfFactorsSelect: (Threshold) -> Unit,
     onNumberOfFactorsDismiss: () -> Unit,
     onAddFactorClick: () -> Unit,
     onRemoveFactorClick: (FactorSourceCard) -> Unit,
@@ -183,7 +184,7 @@ private fun SetupRegularAccessContent(
                 }
 
                 ThresholdFactorsView(
-                    numberOfFactors = state.numberOfFactors,
+                    numberOfFactors = state.threshold,
                     factors = state.thresholdFactors,
                     onNumberOfFactorsClick = onNumberOfFactorsClick,
                     onAddFactorClick = onAddFactorClick,
@@ -214,9 +215,9 @@ private fun SetupRegularAccessContent(
         }
     }
 
-    state.selectNumberOfFactors?.let {
+    state.selectThreshold?.let {
         SelectNumberOfFactorsSheet(
-            selectNumberOfFactors = it,
+            selectThreshold = it,
             onSelect = onNumberOfFactorsSelect,
             onDismiss = onNumberOfFactorsDismiss
         )
@@ -346,7 +347,7 @@ private fun OverrideFactorsView(
 @Composable
 private fun ThresholdFactorsView(
     modifier: Modifier = Modifier,
-    numberOfFactors: SetupRegularAccessViewModel.State.NumberOfFactors,
+    numberOfFactors: Threshold,
     factors: PersistentList<FactorSourceCard>,
     onNumberOfFactorsClick: () -> Unit,
     onAddFactorClick: () -> Unit,
@@ -417,17 +418,15 @@ private fun ThresholdFactorsView(
 
 @Composable
 private fun NumberOfFactorsView(
-    numberOfFactors: SetupRegularAccessViewModel.State.NumberOfFactors
+    threshold: Threshold
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = when (numberOfFactors) {
-                SetupRegularAccessViewModel.State.NumberOfFactors.All -> stringResource(
-                    id = R.string.shieldWizardRegularAccess_thresholdDescription_all
-                )
-                is SetupRegularAccessViewModel.State.NumberOfFactors.Count -> numberOfFactors.value.toString()
+            text = when (threshold) {
+                Threshold.All -> stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_all)
+                is Threshold.Specific -> threshold.v1.toString()
             },
             style = RadixTheme.typography.body2Link,
             color = RadixTheme.colors.blue2
@@ -489,8 +488,8 @@ private fun AuthenticationFactorView(
 
 @Composable
 private fun SelectNumberOfFactorsSheet(
-    selectNumberOfFactors: SetupRegularAccessViewModel.State.SelectNumberOfFactors,
-    onSelect: (SetupRegularAccessViewModel.State.NumberOfFactors) -> Unit,
+    selectThreshold: SetupRegularAccessViewModel.State.SelectThreshold,
+    onSelect: (Threshold) -> Unit,
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
@@ -515,21 +514,19 @@ private fun SelectNumberOfFactorsSheet(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
-            var selectedItem by remember(selectNumberOfFactors.current) { mutableStateOf(selectNumberOfFactors.current) }
+            var selectedItem by remember(selectThreshold.current) { mutableStateOf(selectThreshold.current) }
 
             ListItemPicker(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                items = selectNumberOfFactors.items,
+                items = selectThreshold.items,
                 selectedValue = selectedItem,
                 onValueChange = {
                     selectedItem = it
                 },
                 label = { item ->
                     when (item) {
-                        SetupRegularAccessViewModel.State.NumberOfFactors.All -> stringResource(
-                            id = R.string.shieldWizardRegularAccess_setThreshold_all
-                        )
-                        is SetupRegularAccessViewModel.State.NumberOfFactors.Count -> item.value.toString()
+                        Threshold.All -> stringResource(id = R.string.shieldWizardRegularAccess_setThreshold_all)
+                        is Threshold.Specific -> item.v1.toString()
                     }
                 }
             )
@@ -654,15 +651,15 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                 ),
             ),
             SetupRegularAccessViewModel.State(
-                selectNumberOfFactors = SetupRegularAccessViewModel.State.SelectNumberOfFactors(
-                    current = SetupRegularAccessViewModel.State.NumberOfFactors.All,
+                selectThreshold = SetupRegularAccessViewModel.State.SelectThreshold(
+                    current = Threshold.All,
                     items = persistentListOf(
-                        SetupRegularAccessViewModel.State.NumberOfFactors.All,
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(1)
+                        Threshold.All,
+                        Threshold.Specific(2.toUByte()),
+                        Threshold.Specific(1.toUByte())
                     )
                 ),
-                numberOfFactors = SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
+                threshold = Threshold.Specific(2.toUByte()),
                 status = SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor()
             )
         )

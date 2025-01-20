@@ -31,26 +31,26 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
 
 @Composable
-fun SecurityFactorsScreen(
+fun SecurityFactorTypesScreen(
     modifier: Modifier = Modifier,
-    viewModel: SecurityFactorsViewModel,
-    onSecurityFactorSettingItemClick: (SecurityFactorsSettingsItem) -> Unit,
+    viewModel: SecurityFactorTypesViewModel,
+    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    SecurityFactorsContent(
+    SecurityFactorTypesContent(
         modifier = modifier.fillMaxSize(),
-        securityFactorSettingItems = state.securityFactorSettingItems,
-        onSecurityFactorSettingItemClick = onSecurityFactorSettingItemClick,
+        securityFactorTypeSettingItems = state.securityFactorTypeSettingItems,
+        onSecurityFactorTypeClick = onSecurityFactorTypeClick,
         onBackClick = onBackClick,
     )
 }
 
 @Composable
-private fun SecurityFactorsContent(
+private fun SecurityFactorTypesContent(
     modifier: Modifier = Modifier,
-    securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
-    onSecurityFactorSettingItemClick: (SecurityFactorsSettingsItem) -> Unit,
+    securityFactorTypeSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
+    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
     onBackClick: () -> Unit,
 ) {
     Scaffold(
@@ -71,8 +71,8 @@ private fun SecurityFactorsContent(
                 .padding(padding)
                 .fillMaxSize(),
             isDescriptionVisible = true,
-            securityFactorSettingItems = securityFactorSettingItems,
-            onSecurityFactorSettingItemClick = onSecurityFactorSettingItemClick
+            securityFactorSettingItems = securityFactorTypeSettingItems,
+            onSecurityFactorTypeItemClick = onSecurityFactorTypeClick
         )
     }
 }
@@ -98,12 +98,12 @@ fun getSecurityWarnings(securityFactorsSettingsItem: SecurityFactorsSettingsItem
 
 @Preview(showBackground = true)
 @Composable
-private fun SecurityFactorsPreview() {
+private fun SecurityFactorTypesPreview() {
     RadixWalletTheme {
-        SecurityFactorsContent(
+        SecurityFactorTypesContent(
             modifier = Modifier,
-            securityFactorSettingItems = currentSecurityFactorTypeItems,
-            onSecurityFactorSettingItemClick = {},
+            securityFactorTypeSettingItems = currentSecurityFactorTypeItems,
+            onSecurityFactorTypeClick = {},
             onBackClick = {}
         )
     }
@@ -111,11 +111,11 @@ private fun SecurityFactorsPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun SecurityFactorsWithSecurityProblemsPreview() {
+private fun SecurityFactorTypesWithSecurityProblemsPreview() {
     RadixWalletTheme {
-        SecurityFactorsContent(
+        SecurityFactorTypesContent(
             modifier = Modifier,
-            securityFactorSettingItems = persistentMapOf(
+            securityFactorTypeSettingItems = persistentMapOf(
                 SecurityFactorCategory.Own to persistentSetOf(
                     SecurityFactorsSettingsItem.BiometricsPin(
                         securityProblems = setOf(
@@ -133,7 +133,7 @@ private fun SecurityFactorsWithSecurityProblemsPreview() {
                     SecurityFactorsSettingsItem.LedgerNano
                 )
             ),
-            onSecurityFactorSettingItemClick = {},
+            onSecurityFactorTypeClick = {},
             onBackClick = {}
         )
     }
