@@ -7,12 +7,15 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.Threshold
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,31 +31,26 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    fun onNumberOfFactorsClick() {
-        val factorCount = _state.value.thresholdFactors.size
-
-        _state.update {
-            it.copy(
-                selectNumberOfFactors = State.SelectNumberOfFactors(
-                    current = it.numberOfFactors,
-                    items = (
-                        listOf(State.NumberOfFactors.All) + (factorCount - 1 downTo 1)
-                            .map { value -> State.NumberOfFactors.Count(value) }
-                        )
-                        .toPersistentList()
-                )
-            )
-        }
-    }
-
-    fun onNumberOfFactorsSelect(numberOfFactors: State.NumberOfFactors) {
+    fun onThresholdClick() {
         viewModelScope.launch {
-            securityShieldBuilderClient.setThreshold(numberOfFactors.toThreshold(_state.value.thresholdFactors.size))
+            _state.update {
+                it.copy(
+                    selectThreshold = State.SelectThreshold(
+                        current = it.threshold,
+                        items = securityShieldBuilderClient.primaryRoleSelection().first().thresholdValues
+                            .toPersistentList()
+                    )
+                )
+            }
         }
     }
 
-    fun onNumberOfFactorsSelectionDismiss() {
-        _state.update { it.copy(selectNumberOfFactors = null) }
+    fun onThresholdSelect(threshold: Threshold) {
+        viewModelScope.launch { securityShieldBuilderClient.setThreshold(threshold) }
+    }
+
+    fun onThresholdSelectionDismiss() {
+        _state.update { it.copy(selectThreshold = null) }
     }
 
     fun onAddThresholdFactorClick() {
@@ -67,7 +65,7 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id)) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id), FactorListKind.THRESHOLD) }
     }
 
     fun onAddOverrideClick() {
@@ -113,13 +111,13 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id)) }
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id), FactorListKind.OVERRIDE) }
     }
 
     fun onRemoveAllOverrideFactorsClick() {
         viewModelScope.launch {
             val ids = _state.value.overrideFactors.map { it.id }
-            securityShieldBuilderClient.removeFactorSourcesFromPrimary(ids)
+            securityShieldBuilderClient.removeFactorSourcesFromPrimary(ids, FactorListKind.OVERRIDE)
         }
     }
 
@@ -133,8 +131,8 @@ class SetupRegularAccessViewModel @Inject constructor(
                             overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             authenticationFactor = selection.authenticationFactor?.toCompactInstanceCard(true),
                             status = selection.shieldStatus,
-                            numberOfFactors = State.NumberOfFactors.fromThreshold(selection.threshold, selection.thresholdFactors.size),
-                            selectNumberOfFactors = null,
+                            threshold = selection.threshold,
+                            selectThreshold = null,
                             selectFactor = null
                         )
                     }
@@ -144,8 +142,8 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     data class State(
         val status: SecurityShieldBuilderInvalidReason? = null,
-        val numberOfFactors: NumberOfFactors = NumberOfFactors.All,
-        val selectNumberOfFactors: SelectNumberOfFactors? = null,
+        val threshold: Threshold = Threshold.All,
+        val selectThreshold: SelectThreshold? = null,
         val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val overrideFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val authenticationFactor: FactorSourceCard? = null,
@@ -165,31 +163,9 @@ class SetupRegularAccessViewModel @Inject constructor(
             }
         }
 
-        data class SelectNumberOfFactors(
-            val current: NumberOfFactors,
-            val items: PersistentList<NumberOfFactors>
+        data class SelectThreshold(
+            val current: Threshold,
+            val items: PersistentList<Threshold>
         )
-
-        sealed interface NumberOfFactors {
-
-            data object All : NumberOfFactors
-
-            data class Count(
-                val value: Int
-            ) : NumberOfFactors
-
-            fun toThreshold(factorCount: Int): Int = when (this) {
-                is All -> factorCount
-                is Count -> value
-            }
-
-            companion object {
-
-                fun fromThreshold(threshold: Int, factorCount: Int): NumberOfFactors = when {
-                    threshold == factorCount -> All
-                    else -> Count(threshold)
-                }
-            }
-        }
     }
 }

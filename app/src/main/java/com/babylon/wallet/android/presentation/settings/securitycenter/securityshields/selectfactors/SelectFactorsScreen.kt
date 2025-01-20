@@ -47,7 +47,9 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
+import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
+import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
@@ -160,7 +162,7 @@ private fun SelectFactorsContent(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXLarge),
                         item = item,
                         message = stringResource(id = R.string.shieldSetupStatus_factorCannotBeUsedByItself)
-                            .takeIf { state.showPasswordWarning(item) }
+                            .takeIf { state.cannotBeUsedByItself(item) }
                     )
                     is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
@@ -209,25 +211,25 @@ private fun CategoryHeaderView(
 @Composable
 private fun StatusView(
     modifier: Modifier = Modifier,
-    status: SelectedFactorSourcesForRoleStatus,
+    status: SelectedPrimaryThresholdFactorsStatus,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     when (status) {
-        SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessageText(
+        SelectedPrimaryThresholdFactorsStatus.Suboptimal -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
                 message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
                 type = StatusMessage.Type.WARNING
             )
         )
-        SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessageText(
+        SelectedPrimaryThresholdFactorsStatus.Insufficient -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
                 message = stringResource(id = R.string.shieldSetupStatus_transactions_atLeastOneFactor),
                 type = StatusMessage.Type.ERROR
             )
         )
-        SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessageText(
+        is SelectedPrimaryThresholdFactorsStatus.Invalid -> StatusMessageText(
             modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
             message = StatusMessage(
                 message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
@@ -240,7 +242,7 @@ private fun StatusView(
                 type = StatusMessage.Type.ERROR
             )
         )
-        SelectedFactorSourcesForRoleStatus.OPTIMAL -> return
+        SelectedPrimaryThresholdFactorsStatus.Optimal -> return
     }
 }
 
@@ -354,7 +356,11 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         get() = sequenceOf(
             SelectFactorsViewModel.State(
                 items = items,
-                status = SelectedFactorSourcesForRoleStatus.INVALID
+                status = SelectedPrimaryThresholdFactorsStatus.Invalid(
+                    reason = SelectedPrimaryThresholdFactorsStatusInvalidReason.Other(
+                        underlying = SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor()
+                    )
+                )
             )
         )
 }
