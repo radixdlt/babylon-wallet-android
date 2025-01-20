@@ -14,6 +14,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -225,6 +226,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
     factorSource: OffDeviceMnemonicFactorSource?,
     seedPhraseInputState: AccessFactorSourceDelegate.State.SeedPhraseInputState,
     canUseDifferentFactor: Boolean,
+    focusedWordIndex: MutableState<Int?>,
     onWordChanged: (Int, String) -> Unit,
     onConfirmed: () -> Unit,
     onSkipClick: () -> Unit,
@@ -235,10 +237,6 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
         factorActions = {
-            var focusedWordIndex by remember {
-                mutableStateOf<Int?>(null)
-            }
-
             SeedPhraseInputForm(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -248,7 +246,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                 onWordChanged = onWordChanged,
                 onPassphraseChanged = {},
                 onFocusedWordIndexChanged = { index ->
-                    focusedWordIndex = index
+                    focusedWordIndex.value = index
                 },
                 showAdvancedMode = false,
                 initiallyFocusedIndex = 0
@@ -509,6 +507,7 @@ private fun Preview(
                         delegateState = state,
                         isSeedPhraseInvalidErrorVisible = true
                     ),
+                    focusedWordIndex = remember { mutableStateOf(null) },
                     onWordChanged = delegate::onWordChanged,
                     onConfirmed = {},
                     onSkipClick = {},

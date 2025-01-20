@@ -5,6 +5,9 @@ package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,27 +18,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
+import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
@@ -111,9 +118,16 @@ private fun GetSignaturesBottomSheetContent(
 
     val accessFactorSourceState = state.accessState
 
+    val isSeedPhraseSuggestionsVisible = accessFactorSourceState.seedPhraseInputState.delegateState.rememberSuggestionsVisibilityState()
+    val focusedWordIndex = remember {
+        mutableStateOf<Int?>(null)
+    }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     DefaultModalSheetLayout(
         modifier = modifier.fillMaxSize(),
         onDismissRequest = onDismiss,
+        heightFraction = 0.8f,
         sheetState = sheetState,
         sheetContent = {
             Scaffold(
@@ -124,6 +138,30 @@ private fun GetSignaturesBottomSheetContent(
                         onBackClick = onDismiss,
                         backIconType = BackIconType.Close
                     )
+                },
+                bottomBar = {
+                    if (isSeedPhraseSuggestionsVisible) {
+                        SeedPhraseSuggestions(
+                            modifier = Modifier
+                                .imePadding()
+                                .fillMaxWidth()
+                                .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
+                                .padding(RadixTheme.dimensions.paddingSmall),
+                            wordAutocompleteCandidates =
+                                accessFactorSourceState.seedPhraseInputState.delegateState.wordAutocompleteCandidates,
+                            onCandidateClick = { candidate ->
+                                focusedWordIndex.value?.let { index ->
+                                    onSeedPhraseWordChanged(index, candidate)
+
+                                    if (focusedWordIndex.value != accessFactorSourceState.seedPhraseInputState.delegateState.seedPhraseWords.lastIndex) {
+                                        focusedWordIndex.value = index + 1
+                                    } else {
+                                        keyboardController?.hide()
+                                    }
+                                }
+                            }
+                        )
+                    }
                 },
                 containerColor = RadixTheme.colors.defaultBackground,
                 content = { padding ->
@@ -160,6 +198,7 @@ private fun GetSignaturesBottomSheetContent(
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                             seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
                             canUseDifferentFactor = true,
+                            focusedWordIndex = focusedWordIndex,
                             onWordChanged = onSeedPhraseWordChanged,
                             onConfirmed = onInputConfirmed,
                             onSkipClick = onSkipClick

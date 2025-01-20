@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
@@ -148,6 +149,7 @@ private fun RestoreMnemonicsContent(
     var focusedWordIndex by remember {
         mutableStateOf<Int?>(null)
     }
+    val isSuggestionsVisible = state.seedPhraseState.rememberSuggestionsVisibilityState()
 
     Scaffold(
         modifier = modifier,
@@ -159,7 +161,7 @@ private fun RestoreMnemonicsContent(
             )
         },
         bottomBar = {
-            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities && isSuggestionsVisible(state = state)) {
+            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities && isSuggestionsVisible) {
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
@@ -250,7 +252,7 @@ private fun RestoreMnemonicsContent(
             AnimatedVisibility(
                 modifier = Modifier.keyboardVisiblePadding(
                     padding = padding,
-                    bottom = if (isSuggestionsVisible(state)) {
+                    bottom = if (isSuggestionsVisible) {
                         RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                     } else {
                         RadixTheme.dimensions.paddingDefault
@@ -445,11 +447,6 @@ private fun SeedPhraseView(
             )
         }
     }
-}
-
-@Composable
-private fun isSuggestionsVisible(state: RestoreMnemonicsViewModel.State): Boolean {
-    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
 @UsesSampleValues
