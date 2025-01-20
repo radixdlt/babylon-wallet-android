@@ -75,7 +75,7 @@ private fun OffDeviceMnemonicsContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.factorSources_card_passphraseTitle),
+                title = stringResource(R.string.factorSources_card_offDeviceMnemonicTitle),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -91,8 +91,8 @@ private fun OffDeviceMnemonicsContent(
             FactorSourcesList(
                 mainFactorSource = null,
                 factorSources = offDeviceMnemonicFactorSources,
-                factorSourceDescriptionText = R.string.factorSources_card_passphraseDescription,
-                addFactorSourceButtonTitle = R.string.factorSources_list_passphraseAdd,
+                factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
+                addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
                 glossaryItem = GlossaryItem.offDeviceMnemonic,
                 onFactorSourceClick = onOffDeviceMnemonicFactorSourceClick,
                 onAddFactorSourceClick = onAddOffDeviceMnemonicClick,
