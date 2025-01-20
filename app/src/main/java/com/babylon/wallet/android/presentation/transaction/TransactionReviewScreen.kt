@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
+import com.babylon.wallet.android.presentation.transaction.composables.SigningFailedSheet
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionExpirationInfo
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
@@ -121,7 +122,7 @@ fun TransactionReviewScreen(
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
-        onApproveTransaction = viewModel::onApproveTransaction,
+        onApproveTransaction = viewModel::onSignAndSubmitTransaction,
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
@@ -148,6 +149,8 @@ fun TransactionReviewScreen(
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning,
+        onFailedSigningRestart = viewModel::onFailedSigningRestart,
+        onFailedSigningCancel = viewModel::onFailedSigningCancel,
         onInfoClick = onInfoClick
     )
 }
@@ -185,6 +188,8 @@ private fun TransactionPreviewContent(
     onViewAdvancedModeClick: () -> Unit,
     dismissTransactionErrorDialog: () -> Unit,
     onAcknowledgeRawTransactionWarning: () -> Unit,
+    onFailedSigningRestart: () -> Unit,
+    onFailedSigningCancel: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
@@ -496,6 +501,7 @@ private fun TransactionPreviewContent(
         DefaultModalSheetLayout(
             modifier = modifier.fillMaxSize(),
             sheetState = modalBottomSheetState,
+            heightFraction = state.sheetState.sheetHeightPercent,
             enableImePadding = true,
             sheetContent = {
                 BottomSheetContent(
@@ -511,6 +517,8 @@ private fun TransactionPreviewContent(
                     onTipPercentageChanged = onTipPercentageChanged,
                     onViewDefaultModeClick = onViewDefaultModeClick,
                     onViewAdvancedModeClick = onViewAdvancedModeClick,
+                    onFailedSigningRestart = onFailedSigningRestart,
+                    onFailedSigningCancel = onFailedSigningCancel,
                     onInfoClick = onInfoClick
                 )
             },
@@ -556,6 +564,8 @@ private fun BottomSheetContent(
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
+    onFailedSigningRestart: () -> Unit,
+    onFailedSigningCancel: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     when (sheetState) {
@@ -595,6 +605,14 @@ private fun BottomSheetContent(
             )
         }
 
+        is State.Sheet.SigningFailed -> {
+            SigningFailedSheet(
+                modifier = modifier,
+                onDismiss = onCloseBottomSheetClick,
+                onRestartSigning = onFailedSigningRestart,
+                onCancelTransaction = onFailedSigningCancel
+            )
+        }
         is State.Sheet.None -> {}
     }
 }
@@ -635,6 +653,8 @@ private fun TransactionPreviewContentPreview(
             dismissTransactionErrorDialog = {},
             onAcknowledgeRawTransactionWarning = {},
             onFeePayerSelectionDismiss = {},
+            onFailedSigningRestart = {},
+            onFailedSigningCancel = {},
             onInfoClick = {}
         )
     }

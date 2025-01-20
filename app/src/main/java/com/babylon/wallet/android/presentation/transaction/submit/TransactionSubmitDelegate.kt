@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.presentation.transaction.submit
 
+import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
@@ -17,6 +19,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummarizedManifest
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
@@ -46,7 +49,11 @@ import kotlin.time.Duration.Companion.seconds
 
 interface TransactionSubmitDelegate {
 
-    fun onApproveTransaction()
+    fun onSignAndSubmitTransaction()
+
+    fun onRestartSignAndSubmitTransaction()
+
+    fun onSigningCanceled()
 }
 
 @Suppress("LongParameterList")
@@ -70,7 +77,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
     var oneOffEventHandler: OneOffEventHandler<TransactionReviewViewModel.Event>? = null
 
-    override fun onApproveTransaction() {
+    override fun onSignAndSubmitTransaction() {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
 
@@ -99,6 +106,18 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 }.onFailure { error ->
                     handleSignAndSubmitFailure(error)
                 }
+        }
+    }
+
+    override fun onRestartSignAndSubmitTransaction() {
+        _state.update { it.copy(sheetState = Sheet.None) }
+        onSignAndSubmitTransaction()
+    }
+
+    override fun onSigningCanceled() {
+        _state.update { it.copy(sheetState = Sheet.None) }
+        viewModelScope.launch {
+            onDismiss(exception = DappRequestException.RejectedByUser)
         }
     }
 
@@ -254,6 +273,11 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             // When signing is rejected we just need to stop the submit process. User can retry.
             is CommonException.SigningRejected -> {
                 _state.update { it.copy(isSubmitting = false) }
+            }
+
+            // When signing failed due to many factor sources were skipped, the user must see the appropriate modal
+            is CommonException.SigningFailedTooManyFactorSourcesNeglected -> {
+                _state.update { it.copy(isSubmitting = false, sheetState = TransactionReviewViewModel.State.Sheet.SigningFailed) }
             }
 
             // Errors that need to be reported both to the user and back to the dApp. The user cannot recover.
