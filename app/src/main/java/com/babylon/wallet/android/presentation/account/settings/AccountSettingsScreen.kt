@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -105,18 +106,10 @@ fun AccountSettingsScreen(
     if (state.isBottomSheetVisible) {
         when (state.bottomSheetContent) {
             State.BottomSheetContent.HideAccount -> {
-                DefaultModalSheetLayout(
-                    wrapContent = true,
-                    enableImePadding = true,
+                HideAccountSheet(
                     sheetState = bottomSheetState,
-                    sheetContent = {
-                        HideAccountSheet(
-                            onHideAccountClick = viewModel::onHideAccount,
-                            onClose = viewModel::onDismissBottomSheet
-                        )
-                    },
-                    showDragHandle = true,
-                    onDismissRequest = viewModel::onDismissBottomSheet
+                    onHideAccountClick = viewModel::onHideAccount,
+                    onDismiss = viewModel::onDismissBottomSheet
                 )
             }
             State.BottomSheetContent.RenameAccount -> {
@@ -287,19 +280,30 @@ private fun AccountSettingsContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HideAccountSheet(
     modifier: Modifier = Modifier,
+    sheetState: SheetState,
     onHideAccountClick: () -> Unit,
-    onClose: () -> Unit
+    onDismiss: () -> Unit,
 ) {
-    HideResourceSheetContent(
-        modifier = modifier,
-        title = stringResource(id = R.string.accountSettings_hideThisAccount),
-        description = stringResource(id = R.string.accountSettings_hideAccount_message),
-        positiveButton = stringResource(id = R.string.accountSettings_hideAccount_button),
-        onPositiveButtonClick = onHideAccountClick,
-        onClose = onClose
+    DefaultModalSheetLayout(
+        wrapContent = true,
+        enableImePadding = true,
+        sheetState = sheetState,
+        sheetContent = {
+            HideResourceSheetContent(
+                modifier = modifier,
+                title = stringResource(id = R.string.accountSettings_hideThisAccount),
+                description = stringResource(id = R.string.accountSettings_hideAccount_message),
+                positiveButton = stringResource(id = R.string.accountSettings_hideAccount_button),
+                onPositiveButtonClick = onHideAccountClick,
+                onClose = onDismiss
+            )
+        },
+        showDragHandle = true,
+        onDismissRequest = onDismiss
     )
 }
 
@@ -334,13 +338,15 @@ fun AccountSettingsPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun HideAccountSheetPreview() {
     RadixWalletTheme {
         HideAccountSheet(
+            sheetState = rememberModalBottomSheetState(),
             onHideAccountClick = {},
-            onClose = {}
+            onDismiss = {}
         )
     }
 }
