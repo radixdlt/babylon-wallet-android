@@ -40,7 +40,7 @@ fun SigningFailedSheet(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(
-                R.string.transactionReview_signingTransactionFailure_title
+                R.string.transactionRecovery_transaction_title
             ),
             style = RadixTheme.typography.title,
             textAlign = TextAlign.Center
@@ -50,7 +50,7 @@ fun SigningFailedSheet(
 
         Text(
             modifier = Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = stringResource(R.string.transactionReview_signingTransactionFailure_message),
+            text = stringResource(R.string.transactionRecovery_transaction_message),
             style = RadixTheme.typography.body1Header,
             textAlign = TextAlign.Center
         )
@@ -58,7 +58,7 @@ fun SigningFailedSheet(
         Spacer(modifier = Modifier.weight(1f))
 
         RadixBottomBar(
-            text = stringResource(R.string.transactionReview_signingTransactionFailure_restart),
+            text = stringResource(R.string.transactionRecovery_transaction_restart),
             onClick = onRestartSigning,
             insets = WindowInsets.none,
             additionalBottomContent = {
@@ -67,7 +67,7 @@ fun SigningFailedSheet(
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(top = RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(R.string.transactionReview_signingTransactionFailure_cancel),
+                    text = stringResource(R.string.transactionRecovery_transaction_cancel),
                     onClick = onCancelTransaction
                 )
             }
