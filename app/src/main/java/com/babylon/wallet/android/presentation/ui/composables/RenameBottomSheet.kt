@@ -29,7 +29,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.utils.Constants.DISPLAY_NAME_MAX_LENGTH
+import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,10 +150,10 @@ open class RenameInput(
 ) {
 
     val isNameValid: Boolean
-        get() = name.isNotBlank() && name.count() <= DISPLAY_NAME_MAX_LENGTH
+        get() = name.isNotBlank() && name.count() <= entityNameMaxLength
 
     val isNameTooLong: Boolean
-        get() = name.count() > DISPLAY_NAME_MAX_LENGTH
+        get() = name.count() > entityNameMaxLength
 }
 
 @Preview(showBackground = true)
