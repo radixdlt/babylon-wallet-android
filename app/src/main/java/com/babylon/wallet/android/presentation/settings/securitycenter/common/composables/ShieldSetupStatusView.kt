@@ -19,7 +19,7 @@ fun ShieldSetupStatusView(
     status: SecurityShieldBuilderStatus,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
-    //TODO sergiu proper handling
+    // TODO sergiu proper handling
     when (status) {
         is SecurityShieldBuilderStatus.Invalid -> StatusMessageText(
             modifier = modifier,
@@ -31,7 +31,7 @@ fun ShieldSetupStatusView(
         is SecurityShieldBuilderStatus.Weak -> StatusMessageText(
             modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
             message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
+                message = stringResource(id = R.string.shieldSetupStatus_unsafeCombination).formattedSpans(
                     boldStyle = SpanStyle(
                         color = RadixTheme.colors.blue2,
                         fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,

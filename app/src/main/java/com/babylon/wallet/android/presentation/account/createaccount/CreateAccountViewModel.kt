@@ -16,13 +16,13 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.extensions.SharedConstants
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
@@ -77,8 +77,9 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountNameChange(accountName: String) {
         savedStateHandle[ACCOUNT_NAME] = accountName
-        savedStateHandle[IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX] = accountName.count() > ENTITY_NAME_MAX_LENGTH
-        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ENTITY_NAME_MAX_LENGTH
+        savedStateHandle[IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX] = accountName.count() > SharedConstants.entityNameMaxLength
+        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() &&
+            accountName.count() <= SharedConstants.entityNameMaxLength
     }
 
     fun onAccountCreateClick(isWithLedger: Boolean) {

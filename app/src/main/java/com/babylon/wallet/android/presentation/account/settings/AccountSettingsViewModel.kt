@@ -14,12 +14,11 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.Event
+import com.radixdlt.sargon.extensions.SharedConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -115,8 +114,8 @@ class AccountSettingsViewModel @Inject constructor(
         _state.update { accountPreferenceUiState ->
             accountPreferenceUiState.copy(
                 accountNameChanged = accountNameChanged,
-                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= ENTITY_NAME_MAX_LENGTH,
-                isNewNameLengthMoreThanTheMaximum = accountNameChanged.count() > ENTITY_NAME_MAX_LENGTH
+                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= SharedConstants.entityNameMaxLength,
+                isNewNameLengthMoreThanTheMaximum = accountNameChanged.count() > SharedConstants.entityNameMaxLength
             )
         }
     }

@@ -11,34 +11,25 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -47,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
@@ -61,8 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
@@ -86,7 +74,7 @@ fun SetupRecoveryScreen(
     viewModel: SetupRecoveryViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onShieldCreated: () -> Unit
+    toNameSetup: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -103,11 +91,7 @@ fun SetupRecoveryScreen(
         onFallbackPeriodUnitChange = viewModel::onFallbackPeriodUnitChange,
         onSetFallbackPeriodClick = viewModel::onSetFallbackPeriodClick,
         onDismissFallbackPeriod = viewModel::onDismissFallbackPeriod,
-        onShieldNameChange = viewModel::onShieldNameChange,
-        onDismissSetShieldName = viewModel::onDismissSetShieldName,
-        onConfirmShieldNameClick = viewModel::onConfirmShieldNameClick,
-        onMessageShown = viewModel::onMessageShown,
-        onContinueClick = viewModel::onContinueClick
+        onContinueClick = toNameSetup
     )
 
     state.selectFactor?.let { selectFactor ->
@@ -122,7 +106,7 @@ fun SetupRecoveryScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                SetupRecoveryViewModel.Event.ShieldCreated -> onShieldCreated()
+                SetupRecoveryViewModel.Event.ToNameSetup -> toNameSetup()
             }
         }
     }
@@ -143,20 +127,8 @@ private fun SetupRecoveryContent(
     onFallbackPeriodUnitChange: (TimePeriodUnit) -> Unit,
     onSetFallbackPeriodClick: () -> Unit,
     onDismissFallbackPeriod: () -> Unit,
-    onShieldNameChange: (String) -> Unit,
-    onDismissSetShieldName: () -> Unit,
-    onConfirmShieldNameClick: () -> Unit,
-    onMessageShown: () -> Unit,
     onContinueClick: () -> Unit
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    SnackbarUIMessage(
-        message = state.message,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -171,12 +143,6 @@ private fun SetupRecoveryContent(
                 onClick = onContinueClick,
                 text = stringResource(R.string.common_continue),
                 enabled = state.isButtonEnabled
-            )
-        },
-        snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.white
@@ -280,15 +246,6 @@ private fun SetupRecoveryContent(
             onUnitChange = onFallbackPeriodUnitChange,
             onSetClick = onSetFallbackPeriodClick,
             onDismiss = onDismissFallbackPeriod
-        )
-    }
-
-    if (state.setShieldName != null) {
-        SetShieldNameSheet(
-            input = state.setShieldName,
-            onNameChange = onShieldNameChange,
-            onConfirmClick = onConfirmShieldNameClick,
-            onDismiss = onDismissSetShieldName
         )
     }
 }
@@ -527,7 +484,7 @@ private fun SelectFallbackPeriodSheet(
                     items = selectFallbackPeriod.units,
                     selectedValue = selectFallbackPeriod.currentUnit,
                     onValueChange = onUnitChange,
-                    label = { item -> item.displayName(false) },
+                    label = { item -> item.displayName() },
                     contentAlignment = Alignment.CenterStart,
                     contentPadding = PaddingValues(start = RadixTheme.dimensions.paddingSemiLarge)
                 )
@@ -544,90 +501,27 @@ private fun SelectFallbackPeriodSheet(
 }
 
 @Composable
-private fun SetShieldNameSheet(
-    input: SetupRecoveryViewModel.State.SetShieldName,
-    onNameChange: (String) -> Unit,
-    onConfirmClick: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    val inputFocusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(Unit) {
-        inputFocusRequester.requestFocus()
-    }
-
-    BottomSheetDialogWrapper(
-        addScrim = true,
-        showDragHandle = true,
-        onDismiss = onDismiss
-    ) {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                text = stringResource(id = R.string.shieldWizardName_title),
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = stringResource(id = R.string.shieldWizardName_subtitle),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-            RadixTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
-                    .focusRequester(focusRequester = inputFocusRequester),
-                onValueChanged = onNameChange,
-                keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
-                value = input.name,
-                singleLine = true,
-                hintColor = RadixTheme.colors.gray2
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+private fun TimePeriod.title(): String {
+    val value = value.toInt()
+    val isSingular = value == 1
+    return when (unit) {
+        TimePeriodUnit.DAYS -> if (isSingular) {
+            stringResource(id = R.string.shieldWizardRecovery_fallback_day_period)
+        } else {
+            stringResource(id = R.string.shieldWizardRecovery_fallback_days_period, value)
         }
-
-        RadixBottomBar(
-            onClick = onConfirmClick,
-            text = stringResource(R.string.common_confirm),
-            insets = WindowInsets.navigationBars.union(WindowInsets.ime),
-            enabled = input.isButtonEnabled
-        )
+        TimePeriodUnit.WEEKS -> if (isSingular) {
+            stringResource(id = R.string.shieldWizardRecovery_fallback_week_period)
+        } else {
+            stringResource(id = R.string.shieldWizardRecovery_fallback_weeks_period, value)
+        }
     }
 }
 
 @Composable
-private fun TimePeriod.title(): String = "$value ${unit.displayName(value.toInt() == 1)}"
-
-@Composable
-private fun TimePeriodUnit.displayName(isSingular: Boolean): String = when (this) {
-    TimePeriodUnit.DAYS -> stringResource(
-        id = if (isSingular) R.string.shieldWizardRecovery_fallback_day_label else R.string.shieldWizardRecovery_fallback_days_label
-    )
-    TimePeriodUnit.WEEKS -> stringResource(
-        id = if (isSingular) R.string.shieldWizardRecovery_fallback_week_label else R.string.shieldWizardRecovery_fallback_weeks_label
-    )
-    TimePeriodUnit.YEARS -> stringResource(
-        // TODO sergiu replace with years key
-        id = if (isSingular) R.string.shieldWizardRecovery_fallback_week_label else R.string.shieldWizardRecovery_fallback_weeks_label
-    )
+private fun TimePeriodUnit.displayName(): String = when (this) {
+    TimePeriodUnit.DAYS -> stringResource(id = R.string.shieldWizardRecovery_fallback_days_label)
+    TimePeriodUnit.WEEKS -> stringResource(id = R.string.shieldWizardRecovery_fallback_weeks_label)
 }
 
 @Composable
@@ -650,10 +544,6 @@ private fun SetupRecoveryPreview(
             onFallbackPeriodUnitChange = {},
             onSetFallbackPeriodClick = {},
             onDismissFallbackPeriod = {},
-            onShieldNameChange = {},
-            onDismissSetShieldName = {},
-            onConfirmShieldNameClick = {},
-            onMessageShown = {},
             onContinueClick = {}
         )
     }
@@ -733,11 +623,6 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                     currentUnit = TimePeriodUnit.DAYS,
                     values = TimePeriodUnit.DAYS.values.toPersistentList(),
                     units = TimePeriodUnit.entries.toPersistentList()
-                )
-            ),
-            SetupRecoveryViewModel.State(
-                setShieldName = SetupRecoveryViewModel.State.SetShieldName(
-                    name = ""
                 )
             )
         )

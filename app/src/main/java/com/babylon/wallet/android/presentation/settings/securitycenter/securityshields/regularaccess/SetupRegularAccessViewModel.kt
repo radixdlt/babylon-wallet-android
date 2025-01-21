@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -160,7 +159,7 @@ class SetupRegularAccessViewModel @Inject constructor(
         val selectFactor: SelectFactor? = null
     ) : UiState {
 
-        val isButtonEnabled = status !is SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor
+        val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
 
         data class SelectFactor(
             val purpose: Purpose,

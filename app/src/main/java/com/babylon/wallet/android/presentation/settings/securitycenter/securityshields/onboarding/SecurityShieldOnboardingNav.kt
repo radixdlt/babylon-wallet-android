@@ -8,16 +8,16 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactorsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactors
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
 
 const val ROUTE_SECURITY_SHIELD_ONBOARDING = "security_shield_onboarding"
 
-fun NavController.securityShieldOnboardingScreen() {
+fun NavController.securityShieldOnboarding() {
     navigate(ROUTE_SECURITY_SHIELD_ONBOARDING)
 }
 
-fun NavGraphBuilder.securityShieldOnboardingScreen(
+fun NavGraphBuilder.securityShieldOnboarding(
     navController: NavController
 ) {
     composable(
@@ -31,8 +31,8 @@ fun NavGraphBuilder.securityShieldOnboardingScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            onSelectFactors = { navController.selectFactorsScreen() },
-            onSetupFactors = { navController.prepareFactorsScreen() }
+            onSelectFactors = { navController.selectFactors() },
+            onSetupFactors = { navController.prepareFactors() }
         )
     }
 }

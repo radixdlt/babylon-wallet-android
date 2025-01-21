@@ -234,6 +234,7 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
     GlossaryItem.offDeviceMnemonic -> stringResource(id = R.string.infoLink_glossary_passphrases)
     GlossaryItem.emergencyFallback -> "" // TODO crowdin
+    GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 
 @Composable

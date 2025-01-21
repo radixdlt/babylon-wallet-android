@@ -60,7 +60,6 @@ import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewS
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
-import com.babylon.wallet.android.utils.annotatedParts
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -368,18 +367,12 @@ private fun ThresholdFactorsView(
 
             Text(
                 text = buildAnnotatedString {
-                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title)
-                    val annotatedPart = text.annotatedParts().firstOrNull()
-
-                    if (annotatedPart != null) {
-                        val parts = text.split(annotatedPart)
-                        append(parts[0])
-                        appendInlineContent(id = inlineContentKey)
-                        append(parts[1])
-                    } else {
-                        append(text)
-                        appendInlineContent(id = inlineContentKey)
-                    }
+                    val annotatedPart = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_selection)
+                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title, annotatedPart)
+                    val parts = text.split(annotatedPart)
+                    append(parts.getOrNull(0).orEmpty())
+                    appendInlineContent(id = inlineContentKey)
+                    append(parts.getOrNull(1).orEmpty())
                 },
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,

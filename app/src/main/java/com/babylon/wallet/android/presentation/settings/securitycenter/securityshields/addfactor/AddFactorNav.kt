@@ -10,7 +10,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReadyScreen
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
 
 const val ROUTE_ADD_FACTOR = "add_factor"
 
@@ -45,7 +46,7 @@ fun NavController.addAnyFactor() {
     navigate("$ROUTE_ADD_FACTOR?$ARG_MODE=${AddFactorScreenArgs.Mode.ANY}")
 }
 
-fun NavGraphBuilder.addFactorScreen(
+fun NavGraphBuilder.addFactor(
     navController: NavController
 ) {
     composable(
@@ -65,9 +66,10 @@ fun NavGraphBuilder.addFactorScreen(
         AddFactorScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             toFactorSetup = { kind ->
                 // TODO navigate to specific factor setup screen based on the kind
-                navController.factorsReadyScreen()
+                navController.factorsReady()
             }
         )
     }

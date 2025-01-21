@@ -9,13 +9,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addFactorScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReadyScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addFactor
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboarding
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactors
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.setupRecoveryScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccessScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactorsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
 
 const val ROUTE_SECURITY_SHIELDS = "security_shields"
 const val ROUTE_SECURITY_SHIELDS_GRAPH = "security_shields_graph"
@@ -29,17 +29,17 @@ fun NavGraphBuilder.securityShieldsNavGraph(
     ) {
         securityShieldsScreen(navController)
 
-        securityShieldOnboardingScreen(navController)
+        securityShieldOnboarding(navController)
 
-        prepareFactorsScreen(navController)
+        prepareFactors(navController)
 
-        addFactorScreen(navController)
+        addFactor(navController)
 
-        factorsReadyScreen(navController)
+        factorsReady(navController)
 
-        selectFactorsScreen(navController)
+        selectFactors(navController)
 
-        regularAccessScreen(navController)
+        regularAccess(navController)
 
         setupRecoveryScreen(navController)
     }
@@ -62,7 +62,7 @@ fun NavGraphBuilder.securityShieldsScreen(
         SecurityShieldsScreen(
             viewModel = hiltViewModel(),
             onBackClick = { navController.navigateUp() },
-            onCreateShieldClick = { navController.securityShieldOnboardingScreen() }
+            onCreateShieldClick = { navController.securityShieldOnboarding() }
         )
     }
 }

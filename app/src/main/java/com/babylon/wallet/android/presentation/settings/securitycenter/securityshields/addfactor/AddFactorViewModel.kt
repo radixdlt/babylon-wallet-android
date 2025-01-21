@@ -41,10 +41,6 @@ class AddFactorViewModel @Inject constructor(
         _state.update { state -> state.copy(message = null) }
     }
 
-    fun onNoHardwareClick() {
-        // TODO show exit flow pop up when the design is ready
-    }
-
     data class State(
         val mode: Mode,
         val message: UiMessage? = null,
