@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -9,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
+import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -18,11 +20,13 @@ import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,7 +34,8 @@ class FactorSourceDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<FactorSourceDetailsViewModel.State>(),
     OneOffEventHandler<FactorSourceDetailsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -85,10 +90,14 @@ class FactorSourceDetailsViewModel @Inject constructor(
                 )
             }
             currentFactorSource?.let {
-                sargonOsManager.sargonOs.updateFactorSourceName(
-                    factorSource = it,
-                    name = state.value.renameFactorSourceInput.name
-                )
+                sargonOsManager.callSafely(defaultDispatcher) {
+                    updateFactorSourceName(
+                        factorSource = it,
+                        name = state.value.renameFactorSourceInput.name
+                    )
+                }.onFailure { error ->
+                    Timber.e("Failed to rename factor source: $error")
+                }
             }
             _state.update { state ->
                 state.copy(

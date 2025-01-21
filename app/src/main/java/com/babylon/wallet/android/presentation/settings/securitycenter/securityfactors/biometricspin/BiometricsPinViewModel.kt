@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DeviceFactorSource
@@ -122,9 +123,9 @@ class BiometricsPinViewModel @Inject constructor(
     fun onConfirmChangeMainDeviceFactorSource() {
         viewModelScope.launch {
             _state.update { state -> state.copy(isChangingMainDeviceFactorSourceInProgress = true) }
-            _state.value.selectedDeviceFactorSourceId?.let {
-                runCatching {
-                    sargonOsManager.sargonOs.setMainFactorSource(factorSourceId = it)
+            _state.value.selectedDeviceFactorSourceId?.let { id ->
+                sargonOsManager.callSafely(defaultDispatcher) {
+                    setMainFactorSource(factorSourceId = id)
                 }.onFailure { error ->
                     Timber.e("Failed to set main device factor source: $error")
                 }
