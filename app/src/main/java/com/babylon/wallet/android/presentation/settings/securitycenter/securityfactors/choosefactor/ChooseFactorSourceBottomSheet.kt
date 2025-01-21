@@ -117,7 +117,7 @@ private fun ChooseFactorSourceContent(
             State.Page.LedgerNano -> stringResource(R.string.factorSources_card_ledgerTitle)
             State.Page.ArculusCard -> stringResource(R.string.factorSources_card_arculusCardTitle)
             State.Page.Password -> stringResource(R.string.factorSources_card_passwordTitle)
-            State.Page.Passphrase -> stringResource(R.string.factorSources_card_passphraseTitle)
+            State.Page.Passphrase -> stringResource(R.string.factorSources_card_offDeviceMnemonicTitle)
         },
         isDismissible = false,
         onHeaderBackIconClick = onSheetBackClick,
