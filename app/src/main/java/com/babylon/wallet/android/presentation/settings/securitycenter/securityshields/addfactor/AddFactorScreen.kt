@@ -106,7 +106,7 @@ private fun AddFactorContent(
                 additionalBottomContent = if (state.isModeHardwareOnly) {
                     {
                         RadixTextButton(
-                            text = stringResource(id = R.string.shieldSetupPrepareFactors_addHardwareFactor_noDeviceButton),
+                            text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
                             onClick = onNoHardwareClick
                         )
                     }
