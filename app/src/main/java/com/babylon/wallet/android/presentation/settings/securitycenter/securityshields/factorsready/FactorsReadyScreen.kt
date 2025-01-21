@@ -76,7 +76,7 @@ private fun FactorsReadyContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
 
             Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,

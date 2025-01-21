@@ -7,11 +7,12 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
 import com.radixdlt.sargon.extensions.values
@@ -187,24 +188,32 @@ class SetupRecoveryViewModel @Inject constructor(
             val shieldName = requireNotNull(state.value.setShieldName?.name)
             val securityStructureOfFactorSourceIDs = securityShieldBuilderClient.buildShield(shieldName)
 
-            // TODO handle errors and false return
-            sargonOsManager.sargonOs.addSecurityStructureOfFactorSourceIds(securityStructureOfFactorSourceIDs)
-
-            sendEvent(Event.ShieldCreated)
+            runCatching {
+                sargonOsManager.sargonOs.addSecurityStructureOfFactorSourceIds(securityStructureOfFactorSourceIDs)
+            }.onSuccess {
+                sendEvent(Event.ShieldCreated)
+            }.onFailure {
+                _state.update { state -> state.copy(message = UiMessage.ErrorMessage(it)) }
+            }
         }
     }
 
+    fun onMessageShown() {
+        _state.update { state -> state.copy(message = null) }
+    }
+
     data class State(
-        val status: SecurityShieldBuilderInvalidReason? = null,
+        val status: SecurityShieldBuilderStatus? = null,
         val startRecoveryFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val confirmationFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val fallbackPeriod: TimePeriod? = null,
         val selectFallbackPeriod: SelectFallbackPeriod? = null,
         val selectFactor: SelectFactor? = null,
-        val setShieldName: SetShieldName? = null
+        val setShieldName: SetShieldName? = null,
+        val message: UiMessage? = null
     ) : UiState {
 
-        val isButtonEnabled = status == null
+        val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
 
         data class SelectFactor(
             val purpose: Purpose,

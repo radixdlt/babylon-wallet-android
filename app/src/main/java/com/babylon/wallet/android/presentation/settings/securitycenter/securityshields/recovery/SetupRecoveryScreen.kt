@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +61,8 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
@@ -103,6 +106,7 @@ fun SetupRecoveryScreen(
         onShieldNameChange = viewModel::onShieldNameChange,
         onDismissSetShieldName = viewModel::onDismissSetShieldName,
         onConfirmShieldNameClick = viewModel::onConfirmShieldNameClick,
+        onMessageShown = viewModel::onMessageShown,
         onContinueClick = viewModel::onContinueClick
     )
 
@@ -142,8 +146,17 @@ private fun SetupRecoveryContent(
     onShieldNameChange: (String) -> Unit,
     onDismissSetShieldName: () -> Unit,
     onConfirmShieldNameClick: () -> Unit,
+    onMessageShown: () -> Unit,
     onContinueClick: () -> Unit
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = state.message,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -158,6 +171,12 @@ private fun SetupRecoveryContent(
                 onClick = onContinueClick,
                 text = stringResource(R.string.common_continue),
                 enabled = state.isButtonEnabled
+            )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.white
@@ -634,6 +653,7 @@ private fun SetupRecoveryPreview(
             onShieldNameChange = {},
             onDismissSetShieldName = {},
             onConfirmShieldNameClick = {},
+            onMessageShown = {},
             onContinueClick = {}
         )
     }

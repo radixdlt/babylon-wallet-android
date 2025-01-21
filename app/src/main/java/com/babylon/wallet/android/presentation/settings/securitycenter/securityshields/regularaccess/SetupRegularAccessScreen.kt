@@ -64,7 +64,8 @@ import com.babylon.wallet.android.utils.annotatedParts
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
+import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
@@ -138,7 +139,8 @@ private fun SetupRegularAccessContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
-                text = stringResource(R.string.common_continue)
+                text = stringResource(R.string.common_continue),
+                enabled = state.isButtonEnabled
             )
         },
         containerColor = RadixTheme.colors.white
@@ -660,7 +662,14 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     )
                 ),
                 threshold = Threshold.Specific(2.toUByte()),
-                status = SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor()
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = true,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = false,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
+                )
             )
         )
 }
