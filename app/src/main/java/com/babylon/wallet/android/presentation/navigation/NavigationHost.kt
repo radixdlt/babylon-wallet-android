@@ -76,8 +76,6 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
@@ -210,11 +208,6 @@ fun NavigationHost(
                 navController.recoveryScanComplete()
             }
         )
-        confirmSeedPhrase(onMnemonicBackedUp = {
-            navController.popBackStack(ROUTE_REVEAL_SEED_PHRASE, inclusive = true)
-        }, onDismiss = {
-            navController.popBackStack()
-        })
         main(
             mainUiState = state,
             onMenuClick = {

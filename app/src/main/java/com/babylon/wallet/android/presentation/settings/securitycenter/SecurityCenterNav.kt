@@ -16,6 +16,10 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.confirm.confirmSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal.ROUTE_REVEAL_SEED_PHRASE
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal.revealSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ledgerDevices
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password.passwords
@@ -23,8 +27,6 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.seedPhrases
 
 const val ROUTE_SECURITY_CENTER_SCREEN = "settings_security_center_screen"
 const val ROUTE_SECURITY_CENTER_GRAPH = "settings_security_center_graph"
@@ -104,9 +106,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
                         navController.arculusCards()
                     }
+
                     SettingsItem.SecurityFactorsSettingsItem.OffDeviceMnemonic -> {
                         navController.offDeviceMnemonics()
                     }
+
                     SettingsItem.SecurityFactorsSettingsItem.Password -> {
                         navController.passwords()
                     }
@@ -114,40 +118,55 @@ fun NavGraphBuilder.securityCenterNavGraph(
             }
         )
         biometricsPin(
-            onNavigateToDeviceFactorSourceDetails = { }, // TODO next task
+            onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddBiometricPin = { }, // TODO next task
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )
         ledgerDevices(
-            onNavigateToLedgerFactorSourceDetails = { }, // TODO next task
+            onNavigateToLedgerFactorSourceDetails = { navController.factorSourceDetails(it) },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         arculusCards(
-            onNavigateToArculusFactorSourceDetails = { }, // TODO next task
+            onNavigateToArculusFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddArculusCard = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         offDeviceMnemonics(
-            onNavigateToOffDeviceMnemonicFactorSourceDetails = { }, // TODO next task
-            onNavigateToOffDeviceAddMnemonic = { },
+            onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },
+            onNavigateToAddOffDeviceMnemonic = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         passwords(
-            onNavigateToPasswordFactorSourceDetails = { }, // TODO next task
+            onNavigateToPasswordFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddPassword = { },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
-        seedPhrases( // TODO remove it later
-            onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
+        factorSourceDetails(
+            navigateToViewSeedPhrase = { factorSourceId ->
+                navController.revealSeedPhrase(factorSourceId = factorSourceId)
             },
-            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it) }
+            onBackClick = { navController.navigateUp() }
+        )
+        revealSeedPhrase(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onConfirmSeedPhraseClick = { factorSourceId, mnemonicSize ->
+                navController.confirmSeedPhrase(factorSourceId, mnemonicSize)
+            }
+        )
+        confirmSeedPhrase(
+            onMnemonicBackedUp = {
+                navController.popBackStack(ROUTE_REVEAL_SEED_PHRASE, inclusive = true)
+            },
+            onDismiss = {
+                navController.popBackStack()
+            }
         )
         securityShieldsNavGraph(navController)
     }

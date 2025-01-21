@@ -58,8 +58,13 @@ class PasswordsViewModel @Inject constructor(
                         entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
                 )
 
+                // avoid duplication when a factor source is updated in the Factor Source Details screen
+                val updatedPasswordFactorSources = _state.value.passwordFactorSources
+                    .filterNot { it.id == factorSourceCard.id }
+                    .toMutableList()
+                updatedPasswordFactorSources.add(factorSourceCard)
                 _state.update { state ->
-                    state.copy(passwordFactorSources = state.passwordFactorSources.add(factorSourceCard))
+                    state.copy(passwordFactorSources = updatedPasswordFactorSources.toPersistentList())
                 }
             }
             .flowOn(defaultDispatcher)

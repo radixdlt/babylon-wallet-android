@@ -57,7 +57,7 @@ class PersonaEditableImpl : PersonaEditable {
                 currentFields = currentFields,
                 fieldsToAdd = fieldsToAdd,
                 personaDisplayName = PersonaDisplayNameFieldWrapper(
-                    persona?.displayName?.value.orEmpty().take(Constants.ENTITY_NAME_MAX_LENGTH)
+                    persona?.displayName?.value.orEmpty().take(Constants.DISPLAY_NAME_MAX_LENGTH)
                 )
             )
         }

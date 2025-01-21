@@ -20,7 +20,7 @@ fun NavController.offDeviceMnemonics() {
 
 fun NavGraphBuilder.offDeviceMnemonics(
     onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToOffDeviceAddMnemonic: () -> Unit,
+    onNavigateToAddOffDeviceMnemonic: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -42,7 +42,7 @@ fun NavGraphBuilder.offDeviceMnemonics(
         OffDeviceMnemonicsScreen(
             viewModel = hiltViewModel(),
             onNavigateToOffDeviceMnemonicFactorSourceDetails = onNavigateToOffDeviceMnemonicFactorSourceDetails,
-            onNavigateToAddOffDeviceMnemonic = onNavigateToOffDeviceAddMnemonic,
+            onNavigateToAddOffDeviceMnemonic = onNavigateToAddOffDeviceMnemonic,
             onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )

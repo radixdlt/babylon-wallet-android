@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.confirm
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
@@ -43,15 +43,15 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.sargon.sample
 
 @Composable
-fun ConfirmMnemonicScreen(
-    viewModel: ConfirmMnemonicViewModel,
+fun ConfirmSeedPhraseScreen(
+    viewModel: ConfirmSeedPhraseViewModel,
     onMnemonicBackedUp: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
-    ConfirmMnemonicContent(
+    ConfirmSeedPhraseContent(
         state = state,
         onBackClick = onDismiss,
         onSubmitClick = {
@@ -68,16 +68,16 @@ fun ConfirmMnemonicScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                ConfirmMnemonicViewModel.Event.MnemonicBackedUp -> onMnemonicBackedUp()
+                ConfirmSeedPhraseViewModel.Event.MnemonicBackedUp -> onMnemonicBackedUp()
             }
         }
     }
 }
 
 @Composable
-private fun ConfirmMnemonicContent(
+private fun ConfirmSeedPhraseContent(
     modifier: Modifier = Modifier,
-    state: ConfirmMnemonicViewModel.State,
+    state: ConfirmSeedPhraseViewModel.State,
     onBackClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
@@ -129,7 +129,7 @@ private fun ConfirmMnemonicContent(
 @Composable
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
-    state: ConfirmMnemonicViewModel.State,
+    state: ConfirmSeedPhraseViewModel.State,
     onWordChanged: (Int, String) -> Unit
 ) {
     SecureScreen()
@@ -170,10 +170,10 @@ private fun SeedPhraseView(
 @UsesSampleValues
 @Preview
 @Composable
-fun ConfirmMnemonicContentPreview() {
+fun ConfirmSeedPhrasePreview() {
     RadixWalletTheme {
-        ConfirmMnemonicContent(
-            state = ConfirmMnemonicViewModel.State(
+        ConfirmSeedPhraseContent(
+            state = ConfirmSeedPhraseViewModel.State(
                 factorSource = FactorSource.Device.sample()
             ),
             onBackClick = {},

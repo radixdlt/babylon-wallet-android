@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.confirm
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -24,14 +24,14 @@ import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 @HiltViewModel
-class ConfirmMnemonicViewModel @Inject constructor(
+class ConfirmSeedPhraseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
     private val appEventBus: AppEventBus
-) : StateViewModel<ConfirmMnemonicViewModel.State>(),
-    OneOffEventHandler<ConfirmMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<ConfirmSeedPhraseViewModel.State>(),
+    OneOffEventHandler<ConfirmSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = ConfirmSeedPhraseArgs(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseVerificationDelegate(viewModelScope)

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -36,10 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -75,37 +71,6 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BottomSheetWrapper(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    onDismissRequest: () -> Unit,
-    bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    // TODO update dependency when this issue is resolved
-    // https://issuetracker.google.com/issues/268432129
-    ModalBottomSheet(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        onDismissRequest = onDismissRequest,
-        shape = RadixTheme.shapes.roundedRectTopDefault,
-        dragHandle = {
-            BottomDialogHeader(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                title = title,
-                onDismissRequest = onDismissRequest
-            )
-        }
-    ) {
-        content()
-    }
-}
 
 /**
  * use this if you want AlertDialog style usage, like BasicPromptAlertDialog - not using new route

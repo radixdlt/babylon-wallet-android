@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.confirm
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -17,14 +17,14 @@ import com.radixdlt.sargon.extensions.toJson
 
 private const val ARGS_FACTOR_SOURCE_ID = "factorSourceId"
 private const val ARGS_MNEMONIC_SIZE = "mnemonicSize"
-private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}" +
+private const val ROUTE = "confirm_seed_phrase?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}" +
     "&$ARGS_MNEMONIC_SIZE={$ARGS_MNEMONIC_SIZE}"
 
 fun NavController.confirmSeedPhrase(
     factorSourceId: FactorSourceId.Hash,
     mnemonicSize: Int
 ) {
-    navigate(route = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID=${factorSourceId.toJson()}&$ARGS_MNEMONIC_SIZE=$mnemonicSize")
+    navigate(route = "confirm_seed_phrase?$ARGS_FACTOR_SOURCE_ID=${factorSourceId.toJson()}&$ARGS_MNEMONIC_SIZE=$mnemonicSize")
 }
 
 internal class ConfirmSeedPhraseArgs(
@@ -71,7 +71,7 @@ fun NavGraphBuilder.confirmSeedPhrase(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        ConfirmMnemonicScreen(
+        ConfirmSeedPhraseScreen(
             viewModel = hiltViewModel(),
             onMnemonicBackedUp = onMnemonicBackedUp,
             onDismiss = onDismiss

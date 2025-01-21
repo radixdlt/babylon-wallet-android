@@ -63,8 +63,13 @@ class LedgerDevicesViewModel @Inject constructor(
                         entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
                 )
 
+                // avoid duplication when a factor source is updated in the Factor Source Details screen
+                val updatedLedgerFactorSources = _state.value.ledgerFactorSources
+                    .filterNot { it.id == factorSourceCard.id }
+                    .toMutableList()
+                updatedLedgerFactorSources.add(factorSourceCard)
                 _state.update { state ->
-                    state.copy(ledgerFactorSources = state.ledgerFactorSources.add(factorSourceCard))
+                    state.copy(ledgerFactorSources = updatedLedgerFactorSources.toPersistentList())
                 }
             }
             .flowOn(defaultDispatcher)
