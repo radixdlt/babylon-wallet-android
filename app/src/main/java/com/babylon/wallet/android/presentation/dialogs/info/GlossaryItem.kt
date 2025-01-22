@@ -41,4 +41,5 @@ enum class GlossaryItem {
     ledgerNano, // TODO pending the right glossary item
     passwords, // TODO pending the right glossary item
     offDeviceMnemonic, // TODO pending the right glossary item
+    nohardwaredevice, // TODO pending the right glossary item
 }

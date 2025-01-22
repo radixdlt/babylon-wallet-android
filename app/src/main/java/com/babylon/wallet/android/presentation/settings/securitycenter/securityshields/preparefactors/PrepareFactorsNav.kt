@@ -13,11 +13,11 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 
 const val ROUTE_PREPARE_FACTORS = "prepare_factors"
 
-fun NavController.prepareFactorsScreen() {
+fun NavController.prepareFactors() {
     navigate(ROUTE_PREPARE_FACTORS)
 }
 
-fun NavGraphBuilder.prepareFactorsScreen(
+fun NavGraphBuilder.prepareFactors(
     navController: NavController
 ) {
     composable(

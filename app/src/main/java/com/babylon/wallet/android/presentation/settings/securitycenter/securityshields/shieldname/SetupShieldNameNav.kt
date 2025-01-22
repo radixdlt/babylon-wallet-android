@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldname
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -7,30 +7,31 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
 
-const val ROUTE_SELECT_FACTORS = "select_factors"
+const val ROUTE_SETUP_SHIELD_NAME = "setup_shield_name"
 
-fun NavController.selectFactors() {
-    navigate(ROUTE_SELECT_FACTORS)
+fun NavController.setupShieldName() {
+    navigate(ROUTE_SETUP_SHIELD_NAME)
 }
 
-fun NavGraphBuilder.selectFactors(
+fun NavGraphBuilder.setupShieldName(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_SELECT_FACTORS,
+        route = ROUTE_SETUP_SHIELD_NAME,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        SelectFactorsScreen(
+        SetupShieldNameScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            toRegularAccess = { navController.regularAccess() }
+            onShieldCreated = {
+                navController.popBackStack(ROUTE_SECURITY_SHIELDS_GRAPH, true)
+                // TODO navigate to shield created screen
+            }
         )
     }
 }

@@ -47,7 +47,7 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -358,7 +358,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                 items = items,
                 status = SelectedPrimaryThresholdFactorsStatus.Invalid(
                     reason = SelectedPrimaryThresholdFactorsStatusInvalidReason.Other(
-                        underlying = SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor()
+                        underlying = SecurityShieldBuilderRuleViolation.PrimaryRoleMustHaveAtLeastOneFactor()
                     )
                 )
             )

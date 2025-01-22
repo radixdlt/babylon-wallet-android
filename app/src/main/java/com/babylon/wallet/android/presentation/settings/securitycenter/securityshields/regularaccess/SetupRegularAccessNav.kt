@@ -12,11 +12,11 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 
 const val ROUTE_SETUP_REGULAR_ACCESS = "setup_regular_access"
 
-fun NavController.regularAccessScreen() {
+fun NavController.regularAccess() {
     navigate(ROUTE_SETUP_REGULAR_ACCESS)
 }
 
-fun NavGraphBuilder.regularAccessScreen(
+fun NavGraphBuilder.regularAccess(
     navController: NavController
 ) {
     composable(

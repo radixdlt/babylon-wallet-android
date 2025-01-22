@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -11,25 +10,21 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
 import com.radixdlt.sargon.extensions.values
-import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SetupRecoveryViewModel @Inject constructor(
-    private val securityShieldBuilderClient: SecurityShieldBuilderClient,
-    private val sargonOsManager: SargonOsManager,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    private val securityShieldBuilderClient: SecurityShieldBuilderClient
 ) : StateViewModel<SetupRecoveryViewModel.State>(),
     OneOffEventHandler<SetupRecoveryViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -85,14 +80,6 @@ class SetupRecoveryViewModel @Inject constructor(
 
     fun onDismissSelectFactor() {
         _state.update { state -> state.copy(selectFactor = null) }
-    }
-
-    fun onContinueClick() {
-        _state.update { state ->
-            state.copy(
-                setShieldName = State.SetShieldName(name = "")
-            )
-        }
     }
 
     private fun initSelection() {
@@ -170,41 +157,16 @@ class SetupRecoveryViewModel @Inject constructor(
         }
     }
 
-    fun onShieldNameChange(value: String) {
-        _state.update { state ->
-            state.copy(
-                setShieldName = state.setShieldName?.copy(name = value)
-            )
-        }
-    }
-
-    fun onDismissSetShieldName() {
-        _state.update { state -> state.copy(setShieldName = null) }
-    }
-
-    fun onConfirmShieldNameClick() {
-        viewModelScope.launch(defaultDispatcher) {
-            val shieldName = requireNotNull(state.value.setShieldName?.name)
-            val securityStructureOfFactorSourceIDs = securityShieldBuilderClient.buildShield(shieldName)
-
-            // TODO handle errors and false return
-            sargonOsManager.sargonOs.addSecurityStructureOfFactorSourceIds(securityStructureOfFactorSourceIDs)
-
-            sendEvent(Event.ShieldCreated)
-        }
-    }
-
     data class State(
-        val status: SecurityShieldBuilderInvalidReason? = null,
+        val status: SecurityShieldBuilderStatus? = null,
         val startRecoveryFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val confirmationFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val fallbackPeriod: TimePeriod? = null,
         val selectFallbackPeriod: SelectFallbackPeriod? = null,
-        val selectFactor: SelectFactor? = null,
-        val setShieldName: SetShieldName? = null
+        val selectFactor: SelectFactor? = null
     ) : UiState {
 
-        val isButtonEnabled = status == null
+        val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
 
         data class SelectFactor(
             val purpose: Purpose,
@@ -223,17 +185,10 @@ class SetupRecoveryViewModel @Inject constructor(
             val values: PersistentList<Int>,
             val units: PersistentList<TimePeriodUnit>
         )
-
-        data class SetShieldName(
-            val name: String
-        ) {
-
-            val isButtonEnabled = name.isNotBlank()
-        }
     }
 
     sealed interface Event : OneOffEvent {
 
-        data object ShieldCreated : Event
+        data object ToNameSetup : Event
     }
 }

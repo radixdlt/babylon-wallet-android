@@ -147,7 +147,7 @@ class SecurityShieldBuilderClient @Inject constructor(
                 overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
                 authenticationFactor = securityShieldBuilder.getAuthenticationSigningFactor()?.toFactorSource(),
                 primaryRoleStatus = securityShieldBuilder.selectedPrimaryThresholdFactorsStatus(),
-                shieldStatus = securityShieldBuilder.validate()?.also { Timber.w("Security shield builder invalid reason: $it") }
+                shieldStatus = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
             )
         )
     }
@@ -158,7 +158,7 @@ class SecurityShieldBuilderClient @Inject constructor(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
                 confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
                 timePeriodUntilAutoConfirm = securityShieldBuilder.getTimePeriodUntilAutoConfirm(),
-                shieldStatus = securityShieldBuilder.validate()?.also { Timber.w("Security shield builder invalid reason: $it") }
+                shieldStatus = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
             )
         )
     }

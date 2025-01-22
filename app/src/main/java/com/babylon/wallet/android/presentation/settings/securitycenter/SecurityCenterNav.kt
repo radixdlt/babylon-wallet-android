@@ -24,7 +24,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password.passwords
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactorTypes
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboarding
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
 
@@ -66,7 +66,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.securityShieldsScreen()
                 },
                 toSecurityShieldsOnboarding = {
-                    navController.securityShieldOnboardingScreen()
+                    navController.securityShieldOnboarding()
                 },
                 onSecurityFactorsClick = {
                     navController.securityFactorTypes()

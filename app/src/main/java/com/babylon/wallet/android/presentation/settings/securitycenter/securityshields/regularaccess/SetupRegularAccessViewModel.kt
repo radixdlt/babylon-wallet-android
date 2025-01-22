@@ -9,7 +9,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.Threshold
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -33,12 +33,20 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     fun onThresholdClick() {
         viewModelScope.launch {
+            val selection = securityShieldBuilderClient.primaryRoleSelection().first()
+            if (selection.thresholdValues.isEmpty()) {
+                return@launch
+            }
+
             _state.update {
                 it.copy(
                     selectThreshold = State.SelectThreshold(
-                        current = it.threshold,
-                        items = securityShieldBuilderClient.primaryRoleSelection().first().thresholdValues
-                            .toPersistentList()
+                        current = if (selection.threshold in selection.thresholdValues) {
+                            selection.threshold
+                        } else {
+                            selection.thresholdValues.first()
+                        },
+                        items = selection.thresholdValues.toPersistentList()
                     )
                 )
             }
@@ -141,7 +149,7 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     data class State(
-        val status: SecurityShieldBuilderInvalidReason? = null,
+        val status: SecurityShieldBuilderStatus? = null,
         val threshold: Threshold = Threshold.All,
         val selectThreshold: SelectThreshold? = null,
         val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
@@ -150,6 +158,8 @@ class SetupRegularAccessViewModel @Inject constructor(
         val message: UiMessage? = null,
         val selectFactor: SelectFactor? = null
     ) : UiState {
+
+        val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
 
         data class SelectFactor(
             val purpose: Purpose,
