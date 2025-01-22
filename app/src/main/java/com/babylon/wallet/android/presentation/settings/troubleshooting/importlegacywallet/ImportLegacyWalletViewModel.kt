@@ -28,7 +28,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.extensions.SharedConstants
+import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.string
@@ -183,7 +183,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         olympiaAccountsToImport = data.accountData
                             .map {
                                 // truncate the name, max 30 chars
-                                it.copy(accountName = it.accountName.take(SharedConstants.entityNameMaxLength.toInt()))
+                                it.copy(accountName = it.accountName.take(entityNameMaxLength.toInt()))
                             }
                             .toPersistentList(),
                         importButtonEnabled = !allImported,

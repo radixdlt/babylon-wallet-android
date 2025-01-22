@@ -154,7 +154,7 @@ private fun DeviceContent(
         textAlign = TextAlign.Center,
         text = when (signPurpose) {
             Purpose.TransactionIntents,
-            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_device_messageSignature)
+            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_device_signMessage)
             Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_device_message)
         }
     )
@@ -172,7 +172,7 @@ private fun LedgerContent(
     ) {
         val stringRes = when (signPurpose) {
             Purpose.TransactionIntents,
-            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
+            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_ledger_signMessage)
             Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_ledger_message)
         }
         Text(

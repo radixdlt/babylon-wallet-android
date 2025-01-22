@@ -178,7 +178,11 @@ internal class MnemonicWordVisualTransformation : VisualTransformation {
                     append("\u2022")
                 }
             },
-            offsetMapping = OffsetMapping.Identity
+            offsetMapping = object : OffsetMapping {
+                override fun originalToTransformed(offset: Int): Int = 0
+
+                override fun transformedToOriginal(offset: Int): Int = 0
+            }
         )
     }
 

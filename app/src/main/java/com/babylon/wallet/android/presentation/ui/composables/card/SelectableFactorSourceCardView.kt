@@ -1,9 +1,14 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -12,15 +17,18 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
@@ -113,6 +121,34 @@ fun RemovableFactorSourceCard(
 }
 
 @Composable
+fun SimpleSelectableSingleChoiceFactorSourceCard(
+    modifier: Modifier = Modifier,
+    item: Selectable<FactorSourceCard>,
+    onSelect: (FactorSourceCard) -> Unit
+) {
+    CardContainer(
+        modifier = Modifier
+    ) {
+        SimpleFactorCardView(
+            modifier = modifier
+                .background(
+                    color = RadixTheme.colors.white,
+                    shape = RadixTheme.shapes.roundedRectMedium
+                )
+                .noIndicationClickable { onSelect(item.data) },
+            iconRes = item.data.kind.iconRes(),
+            title = item.data.name,
+            endContent = {
+                RadioButtonSelectorView(
+                    isSelected = item.selected,
+                    onSelectedChange = { onSelect(item.data) }
+                )
+            }
+        )
+    }
+}
+
+@Composable
 fun SimpleSelectableMultiChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
     @DrawableRes iconRes: Int,
@@ -160,6 +196,25 @@ private fun CheckboxSelectorView(
         )
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+    }
+}
+
+@Composable
+private fun CardContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .defaultCardShadow(elevation = 6.dp)
+            .clip(RadixTheme.shapes.roundedRectMedium)
+            .fillMaxWidth()
+            .background(
+                color = RadixTheme.colors.white,
+                shape = RadixTheme.shapes.roundedRectDefault
+            )
+    ) {
+        content()
     }
 }
 
@@ -222,7 +277,35 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
 @Composable
 @Preview
 @UsesSampleValues
-private fun SimpleSelectableFactorSourceCardPreview() {
+private fun SimpleSelectableSingleChoiceFactorSourceCardPreview() {
+    RadixWalletPreviewTheme {
+        SimpleSelectableSingleChoiceFactorSourceCard(
+            item = Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "My Phone",
+                    includeDescription = true,
+                    lastUsedOn = null,
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false
+                ),
+                selected = true
+            ),
+            onSelect = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SimpleSelectableMultiChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         SimpleSelectableMultiChoiceFactorSourceCard(
             iconRes = FactorSourceKind.DEVICE.iconRes(),

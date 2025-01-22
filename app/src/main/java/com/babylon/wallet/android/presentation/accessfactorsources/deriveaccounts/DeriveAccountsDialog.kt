@@ -118,7 +118,7 @@ private fun DeriveAccountsBottomSheetContent(
                 ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
+                        text = stringResource(id = R.string.factorSourceActions_device_deriveAccountsMessage)
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixTextButton(
@@ -131,7 +131,7 @@ private fun DeriveAccountsBottomSheetContent(
                 is ShowContentForFactorSource.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
+                        text = stringResource(id = R.string.factorSourceActions_ledger_deriveAccountsMessage)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                         textAlign = TextAlign.Center
                     )

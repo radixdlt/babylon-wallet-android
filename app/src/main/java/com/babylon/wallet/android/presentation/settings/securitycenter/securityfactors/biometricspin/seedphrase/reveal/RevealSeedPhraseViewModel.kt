@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -74,7 +74,10 @@ class RevealSeedPhraseViewModel @Inject constructor(
     fun showConfirmSeedPhraseDialog() {
         _state.update { state ->
             state.copy(
-                showConfirmSeedPhraseDialogState = ConfirmSeedPhraseDialogState.Shown(args.factorSourceId, _state.value.mnemonicSize)
+                showConfirmSeedPhraseDialogState = ConfirmSeedPhraseDialogState.Shown(
+                    args.factorSourceId,
+                    _state.value.mnemonicSize
+                )
             )
         }
     }
