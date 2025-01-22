@@ -5,9 +5,9 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.isValid
 import com.babylon.wallet.android.presentation.model.sortOrderInt
-import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaDataEntryId
+import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -57,7 +57,7 @@ class PersonaEditableImpl : PersonaEditable {
                 currentFields = currentFields,
                 fieldsToAdd = fieldsToAdd,
                 personaDisplayName = PersonaDisplayNameFieldWrapper(
-                    persona?.displayName?.value.orEmpty().take(Constants.DISPLAY_NAME_MAX_LENGTH)
+                    persona?.displayName?.value.orEmpty().take(entityNameMaxLength.toInt())
                 )
             )
         }

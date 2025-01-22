@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
@@ -27,9 +28,10 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,32 +45,44 @@ class OffDeviceMnemonicsViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
+        @Suppress("OPT_IN_USAGE")
         getFactorSourcesOfTypeUseCase<FactorSource.OffDeviceMnemonic>()
-            .map { offDeviceMnemonic ->
-                val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                    factorSource = FactorSource.OffDeviceMnemonic(offDeviceMnemonic.value),
-                    profileToCheck = ProfileToCheck.Current
-                )
+            .mapLatest { offDeviceMnemonics ->
+                resetOffDeviceMnemonicFactorSourceList()
 
-                val factorSourceCard = offDeviceMnemonic.value.toFactorSourceCard(
-                    messages = persistentListOf(),
-                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                )
-
-                // avoid duplication when a factor source is updated in the Factor Source Details screen
-                val updatedOffDeviceMnemonicFactorSources = _state.value.offDeviceMnemonicFactorSources
-                    .filterNot { it.id == factorSourceCard.id }
-                    .toMutableList()
-                updatedOffDeviceMnemonicFactorSources.add(factorSourceCard)
-                _state.update { state ->
-                    state.copy(offDeviceMnemonicFactorSources = updatedOffDeviceMnemonicFactorSources.toPersistentList())
+                offDeviceMnemonics.map { offDeviceMnemonic ->
+                    sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
+                        entitiesLinkedToFactorSource(
+                            factorSource = FactorSource.OffDeviceMnemonic(offDeviceMnemonic.value),
+                            profileToCheck = ProfileToCheck.Current
+                        )
+                    }.onSuccess { entitiesLinkedToOffDeviceMnemonicFactorSource ->
+                        val factorSourceCard = offDeviceMnemonic.value.toFactorSourceCard(
+                            messages = persistentListOf(),
+                            accounts = entitiesLinkedToOffDeviceMnemonicFactorSource.accounts.toPersistentList(),
+                            personas = entitiesLinkedToOffDeviceMnemonicFactorSource.personas.toPersistentList(),
+                            hasHiddenEntities = entitiesLinkedToOffDeviceMnemonicFactorSource.hiddenAccounts.isNotEmpty() ||
+                                entitiesLinkedToOffDeviceMnemonicFactorSource.hiddenPersonas.isNotEmpty()
+                        )
+                        // avoid duplication when a factor source is updated in the Factor Source Details screen
+                        val updatedOffDeviceMnemonicFactorSources = _state.value.offDeviceMnemonicFactorSources
+                            .filterNot { it.id == factorSourceCard.id }
+                            .toMutableList()
+                        updatedOffDeviceMnemonicFactorSources.add(factorSourceCard)
+                        _state.update { state ->
+                            state.copy(offDeviceMnemonicFactorSources = updatedOffDeviceMnemonicFactorSources.toPersistentList())
+                        }
+                    }.onFailure { error ->
+                        Timber.e("Failed to find linked entities: $error")
+                    }
                 }
             }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
+    }
+
+    private fun resetOffDeviceMnemonicFactorSourceList() {
+        _state.update { state -> state.copy(offDeviceMnemonicFactorSources = persistentListOf()) }
     }
 
     private fun OffDeviceMnemonicFactorSource.toFactorSourceCard(

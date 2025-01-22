@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 
 suspend fun <T> SargonOsManager.callSafely(
     dispatcher: CoroutineDispatcher,
-    block: SargonOs.() -> T
+    block: suspend SargonOs.() -> T
 ): Result<T> = withContext(dispatcher) {
     runCatching { sargonOs.block() }
 }

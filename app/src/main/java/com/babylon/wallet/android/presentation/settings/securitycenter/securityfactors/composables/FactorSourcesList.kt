@@ -4,7 +4,9 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
@@ -38,6 +41,7 @@ fun FactorSourcesList(
     addFactorSourceButtonContent: @Composable (() -> Unit)? = null,
     onFactorSourceClick: (FactorSourceId) -> Unit,
     onAddFactorSourceClick: (() -> Unit)? = null,
+    onChangeMainFactorSourceClick: () -> Unit = {},
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
     LazyColumn(
@@ -49,7 +53,7 @@ fun FactorSourcesList(
             Text(
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingDefault,
-                    bottom = RadixTheme.dimensions.paddingLarge
+                    bottom = RadixTheme.dimensions.paddingSemiLarge
                 ),
                 text = stringResource(id = factorSourceDescriptionText),
                 style = RadixTheme.typography.body1HighImportance,
@@ -58,12 +62,31 @@ fun FactorSourcesList(
         }
         mainFactorSource?.let {
             item {
-                Text(
-                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.factorSources_list_default),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
+                if (factorSources.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.factorSources_list_default),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                        Spacer(Modifier.weight(1f).fillMaxHeight())
+                        RadixTextButton(
+                            text = stringResource(R.string.factorSources_list_change),
+                            onClick = onChangeMainFactorSourceClick
+                        )
+                    }
+                } else {
+                    Text(
+                        modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.factorSources_list_default),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                }
+
                 FactorSourceCardView(
                     modifier = Modifier
                         .padding(bottom = RadixTheme.dimensions.paddingMedium)
