@@ -1091,7 +1091,8 @@ Code: %s</string>
 **Derivation may take up to a minute.**</string>
   <string name="factorSourceActions_ledger_message">Use your **Ledger Nano**. Make sure it’s connected to a computer with a linked Radix Connector browser extension.</string>
   <string name="factorSourceActions_ledger_deriveKeysMessage">Use your **Ledger Nano**. Make sure it’s connected to a computer with a linked Radix Connector browser extension. **This may take up to a minute.**</string>
-  <string name="factorSourceActions_arculus_signMessage">Tap and hold this **Arculus Card** to your phone.</string>
+  <string name="factorSourceActions_arculus_signMessage">Tap and hold this **Arculus Card** to your phone to sign.</string>
+  <string name="factorSourceActions_arculus_message">Tap and hold this **Arculus Card** to your phone.</string>
   <string name="factorSourceActions_arculus_deriveKeysMessage">Tap and hold this **Arculus Card** to your phone. **This may take up to a minute.**</string>
   <string name="factorSourceActions_password_signMessage">Enter this **password** to sign</string>
   <string name="factorSourceActions_password_message">Enter this **password**</string>
