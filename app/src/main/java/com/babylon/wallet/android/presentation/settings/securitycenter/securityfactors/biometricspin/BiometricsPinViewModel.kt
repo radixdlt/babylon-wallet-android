@@ -60,7 +60,7 @@ class BiometricsPinViewModel @Inject constructor(
             .mapLatest { deviceFactorSources ->
                 resetDeviceFactorSourceList()
 
-                deviceFactorSources.map { deviceFactorSource ->
+                deviceFactorSources.forEach { deviceFactorSource ->
                     val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
                         factorSource = FactorSource.Device(deviceFactorSource.value),
                         profileToCheck = ProfileToCheck.Current

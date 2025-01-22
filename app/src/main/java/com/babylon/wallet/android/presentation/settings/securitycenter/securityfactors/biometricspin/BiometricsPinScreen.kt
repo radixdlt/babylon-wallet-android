@@ -91,7 +91,6 @@ fun BiometricsPinScreen(
         sheetState = bottomSheetState,
         isSheetVisible = state.isMainDeviceFactorSourceBottomSheetVisible,
         onSheetClosed = viewModel::onDismissMainDeviceFactorSourceBottomSheet
-
     )
 
     if (state.isMainDeviceFactorSourceBottomSheetVisible) {
