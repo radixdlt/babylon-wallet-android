@@ -1080,14 +1080,26 @@ Code: %s</string>
   <string name="factorSourceActions_deriveAccounts_title">Deriving Accounts</string>
   <string name="factorSourceActions_proveOwnership_title">Proving Ownership</string>
   <string name="factorSourceActions_encryptMessage_title">Encrypting Message</string>
+  <string name="factorSourceActions_updatingFactorConfig_title">Updating Factor Config</string>
   <string name="factorSourceActions_createKey_title">Creating Key</string>
-  <string name="factorSourceActions_device_messageSignature">Authenticate to your phone to sign.</string>
-  <string name="factorSourceActions_device_message">Authenticate to your phone to complete using your phone\'s signing key.</string>
-  <string name="factorSourceActions_ledger_messageSignature">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
+  <string name="factorSourceActions_device_deriveAccountsMessage">Authenticate to your phone to sign.</string>
+  <string name="factorSourceActions_device_signMessage">Use your phone’s biometrics or PIN to sign</string>
+  <string name="factorSourceActions_device_message">Use your phone’s biometrics or PIN</string>
+  <string name="factorSourceActions_ledger_signMessage">Use your **Ledger Nano** to sign. Make sure it’s connected to a computer with a linked Radix Connector browser extension.
 **Complete signing on the device.**</string>
-  <string name="factorSourceActions_ledger_messageDeriveAccounts">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
+  <string name="factorSourceActions_ledger_deriveAccountsMessage">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
 **Derivation may take up to a minute.**</string>
-  <string name="factorSourceActions_ledger_message">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.</string>
+  <string name="factorSourceActions_ledger_message">Use your **Ledger Nano**. Make sure it’s connected to a computer with a linked Radix Connector browser extension.</string>
+  <string name="factorSourceActions_ledger_deriveKeysMessage">Use your **Ledger Nano**. Make sure it’s connected to a computer with a linked Radix Connector browser extension. **This may take up to a minute.**</string>
+  <string name="factorSourceActions_arculus_signMessage">Tap and hold this **Arculus Card** to your phone.</string>
+  <string name="factorSourceActions_arculus_deriveKeysMessage">Tap and hold this **Arculus Card** to your phone. **This may take up to a minute.**</string>
+  <string name="factorSourceActions_password_signMessage">Enter this **password** to sign</string>
+  <string name="factorSourceActions_password_message">Enter this **password**</string>
+  <string name="factorSourceActions_password_incorrect">Incorrect password</string>
+  <string name="factorSourceActions_offDeviceMnemonic_signMessage">Enter this **mnemonic** to sign</string>
+  <string name="factorSourceActions_offDeviceMnemonic_message">Enter this **mnemonic**</string>
+  <string name="factorSourceActions_offDeviceMnemonic_incorrect">Incorrect mnemonic</string>
+  <string name="factorSourceActions_useDifferentFactor">Use a different factor</string>
   <string name="securityCenter_title">Security Center</string>
   <string name="securityCenter_subtitle">Decentralized security settings that give you total control over your wallet’s protection.</string>
   <string name="securityCenter_goodState_heading">Your wallet is recoverable</string>
@@ -1515,7 +1527,7 @@ Code: %s</string>
   <string name="shieldWizardRegularAccess_title">Regular Access</string>
   <string name="shieldWizardRegularAccess_subtitle">Factors required to withdraw assets from Accounts.</string>
   <string name="shieldWizardRegularAccess_combination_label">OR</string>
-  <string name="shieldWizardRegularAccess_thresholdDescription_title">You\'ll need to use **%s** of the following</string>
+  <string name="shieldWizardRegularAccess_thresholdDescription_title">You\'ll need to use %s of the following:</string>
   <string name="shieldWizardRegularAccess_thresholdDescription_selection">**%s**</string>
   <string name="shieldWizardRegularAccess_thresholdDescription_all">All</string>
   <string name="shieldWizardRegularAccess_override_title">Override (advanced)</string>
@@ -1526,4 +1538,8 @@ Code: %s</string>
   <string name="shieldWizardRegularAccess_setThreshold_title">Set the number of factors required to sign</string>
   <string name="shieldWizardRegularAccess_setThreshold_all">All (Recommended)</string>
   <string name="shieldWizardRegularAccess_setThreshold_button">Set</string>
+  <string name="transactionRecovery_transaction_title">Cannot Sign Transaction</string>
+  <string name="transactionRecovery_transaction_message">You’ve skipped too many factors and cannot sign the transaction. You can restart the signing process, or cancel it.</string>
+  <string name="transactionRecovery_transaction_restart">Restart Signing</string>
+  <string name="transactionRecovery_transaction_cancel">Cancel Transaction</string>
 </resources>

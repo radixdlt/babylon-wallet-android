@@ -132,7 +132,7 @@ private fun DerivePublicKeyBottomSheetContent(
                 DerivePublicKeyUiState.ContentType.ForDeviceAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature),
+                        text = stringResource(id = R.string.factorSourceActions_device_signMessage),
                         textAlign = TextAlign.Center
                     )
                 }
