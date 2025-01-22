@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ArculusCardFactorSource
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,26 +51,29 @@ class ArculusCardsViewModel @Inject constructor(
                 resetArculusFactorSourceList()
 
                 arculusFactorSources.map { arculusFactorSource ->
-                    val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                        factorSource = FactorSource.ArculusCard(arculusFactorSource.value),
-                        profileToCheck = ProfileToCheck.Current
-                    )
-
-                    val factorSourceCard = arculusFactorSource.value.toFactorSourceCard(
-                        messages = persistentListOf(),
-                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                    )
-
-                    // avoid duplication when a factor source is updated in the Factor Source Details screen
-                    val updatedArculusFactorSources = _state.value.arculusFactorSources
-                        .filterNot { it.id == factorSourceCard.id }
-                        .toMutableList()
-                    updatedArculusFactorSources.add(factorSourceCard)
-                    _state.update { state ->
-                        state.copy(arculusFactorSources = updatedArculusFactorSources.toPersistentList())
+                    sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
+                        entitiesLinkedToFactorSource(
+                            factorSource = FactorSource.ArculusCard(arculusFactorSource.value),
+                            profileToCheck = ProfileToCheck.Current
+                        )
+                    }.onSuccess { entitiesLinkedToArculusFactorSource ->
+                        val factorSourceCard = arculusFactorSource.value.toFactorSourceCard(
+                            messages = persistentListOf(),
+                            accounts = entitiesLinkedToArculusFactorSource.accounts.toPersistentList(),
+                            personas = entitiesLinkedToArculusFactorSource.personas.toPersistentList(),
+                            hasHiddenEntities = entitiesLinkedToArculusFactorSource.hiddenAccounts.isNotEmpty() ||
+                                entitiesLinkedToArculusFactorSource.hiddenPersonas.isNotEmpty()
+                        )
+                        // avoid duplication when a factor source is updated in the Factor Source Details screen
+                        val updatedArculusFactorSources = _state.value.arculusFactorSources
+                            .filterNot { it.id == factorSourceCard.id }
+                            .toMutableList()
+                        updatedArculusFactorSources.add(factorSourceCard)
+                        _state.update { state ->
+                            state.copy(arculusFactorSources = updatedArculusFactorSources.toPersistentList())
+                        }
+                    }.onFailure { error ->
+                        Timber.e("Failed to find linked entities: $error")
                     }
                 }
             }

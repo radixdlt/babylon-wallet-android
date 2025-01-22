@@ -61,35 +61,40 @@ class BiometricsPinViewModel @Inject constructor(
                 resetDeviceFactorSourceList()
 
                 deviceFactorSources.forEach { deviceFactorSource ->
-                    val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                        factorSource = FactorSource.Device(deviceFactorSource.value),
-                        profileToCheck = ProfileToCheck.Current
-                    )
+                    sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
+                        entitiesLinkedToFactorSource(
+                            factorSource = FactorSource.Device(deviceFactorSource.value),
+                            profileToCheck = ProfileToCheck.Current
+                        )
+                    }.onSuccess { entitiesLinkedToDeviceFactorSource ->
+                        val securityMessages = getSecurityPromptsForDeviceFactorSource(
+                            deviceFactorSourceId = deviceFactorSource.id,
+                            entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                        )
 
-                    val securityMessages = getSecurityPromptsForDeviceFactorSource(
-                        deviceFactorSourceId = deviceFactorSource.id,
-                        entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
-                    )
+                        val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
+                            messages = securityMessages,
+                            accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                            personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                            hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                                entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                        )
 
-                    val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
-                        messages = securityMessages,
-                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                    )
-
-                    val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
-                    if (isMainDeviceFactorSource) {
-                        _state.update { state ->
-                            state.copy(mainDeviceFactorSource = factorSourceCard)
+                        val isMainDeviceFactorSource =
+                            deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
+                        if (isMainDeviceFactorSource) {
+                            _state.update { state ->
+                                state.copy(mainDeviceFactorSource = factorSourceCard)
+                            }
+                        } else {
+                            _state.update { state ->
+                                state.copy(
+                                    otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
+                                )
+                            }
                         }
-                    } else {
-                        _state.update { state ->
-                            state.copy(
-                                otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
-                            )
-                        }
+                    }.onFailure { error ->
+                        Timber.e("Failed to find linked entities: $error")
                     }
                 }
             }
@@ -178,7 +183,8 @@ class BiometricsPinViewModel @Inject constructor(
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
 
         return if (isDeviceFactorSourceLinkedToAnyEntities) {
-            val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
+            val deviceFactorSourceIntegrity =
+                entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
             deviceFactorSourceIntegrity.toMessages().toPersistentList()
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
             // the integrity, but we can check if the user backed up the seed phrase
