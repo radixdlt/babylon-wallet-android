@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.usecases.signing
+package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
@@ -7,6 +7,9 @@ import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
@@ -26,54 +29,74 @@ import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
-import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.init
-import rdx.works.core.sargon.updateLastUsed
 import rdx.works.core.then
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
+import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 
-class SignWithLedgerFactorSourceUseCase @Inject constructor(
+class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,
-    private val profileRepository: ProfileRepository
-) {
+    private val updateFactorSourceLastUsedUseCase: UpdateFactorSourceLastUsedUseCase
+) : AccessFactorSource<FactorSource.Ledger> {
 
-    /**
-     * Guarantees to return a `RadixWalletException.LedgerCommunicationException` in case of an error.
-     */
-    suspend fun mono(
-        ledgerFactorSource: FactorSource.Ledger,
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
+    override suspend fun derivePublicKeys(
+        factorSource: FactorSource.Ledger,
+        input: KeyDerivationRequestPerFactorSource
+    ): Result<List<HierarchicalDeterministicFactorInstance>> {
+        val factorInstances = input.derivationPaths.map { derivationPath ->
+            ledgerMessenger.sendDerivePublicKeyRequest(
+                interactionId = UUIDGenerator.uuid().toString(),
+                keyParameters = listOf(LedgerInteractionRequest.KeyParameters.from(derivationPath)),
+                ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = factorSource)
+            ).map { derivePublicKeyResponse ->
+                HierarchicalDeterministicFactorInstance(
+                    factorSourceId = factorSource.value.id,
+                    publicKey = HierarchicalDeterministicPublicKey(
+                        publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex),
+                        derivationPath = derivationPath
+                    )
+                )
+            }.getOrElse {
+                return Result.failure(it)
+            }
+        }
+
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+
+        return Result.success(factorInstances)
+    }
+
+    override suspend fun signMono(
+        factorSource: FactorSource.Ledger,
+        input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
     ): Result<PerFactorOutcome<Signable.ID>> {
         val hdSignatures = input.perTransaction.map { perTransaction ->
             when (val payload = perTransaction.payload) {
                 is Signable.Payload.Transaction -> signTransaction(
                     inputPerTransaction = perTransaction,
                     payload = payload,
-                    ledgerFactorSource = ledgerFactorSource
+                    ledgerFactorSource = factorSource
                 )
 
                 is Signable.Payload.Subintent -> signSubintent(
                     inputPerTransaction = perTransaction,
                     payload = payload,
-                    ledgerFactorSource = ledgerFactorSource
+                    ledgerFactorSource = factorSource
                 )
 
                 is Signable.Payload.Auth -> signAuth(
                     inputPerTransaction = perTransaction,
                     payload = payload,
-                    ledgerFactorSource = ledgerFactorSource
+                    ledgerFactorSource = factorSource
                 )
             }.getOrElse { error ->
                 return Result.failure(error)
             }
         }.flatten()
 
-        val profile = profileRepository.profile.first()
-        profileRepository.saveProfile(profile.updateLastUsed(ledgerFactorSource.id))
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
 
         return Result.success(
             PerFactorOutcome(
@@ -84,7 +107,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signTransaction(
-        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<out Signable.Payload>,
         payload: Signable.Payload.Transaction,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -112,7 +135,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signSubintent(
-        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<out Signable.Payload>,
         payload: Signable.Payload.Subintent,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {
@@ -140,7 +163,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     }
 
     private suspend fun signAuth(
-        inputPerTransaction: TransactionSignRequestInput<Signable.Payload>,
+        inputPerTransaction: TransactionSignRequestInput<out Signable.Payload>,
         payload: Signable.Payload.Auth,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<List<HdSignature<Signable.ID>>> {

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.interactor
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.KeyDerivationRequest
 import com.radixdlt.sargon.KeyDerivationResponse
@@ -27,10 +28,10 @@ class WalletInteractor(
             val result = accessFactorSourcesProxy.derivePublicKeys(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKeys(
                     purpose = request.derivationPurpose,
-                    factorSourceId = it.factorSourceId,
-                    derivationPaths = it.derivationPaths
+                    request = it
                 )
             )
+
             when (result) {
                 is AccessFactorSourcesOutput.DerivedPublicKeys.Success -> {
                     KeyDerivationResponsePerFactorSource(
@@ -38,13 +39,14 @@ class WalletInteractor(
                         result.factorInstances
                     )
                 }
-
-                is AccessFactorSourcesOutput.DerivedPublicKeys.Failure -> {
-                    throw result.error.commonException
-                }
+                else -> throw CommonException.SigningRejected()
             }.also {
                 delay(delayPerFactorSource)
             }
+        }
+
+        if (request.perFactorSource.size == 1) {
+            delay(delayPerFactorSource)
         }
 
         return KeyDerivationResponse(perFactorSource = publicKeysPerFactorSource)
@@ -58,13 +60,22 @@ class WalletInteractor(
                     kind = input.factorSourceId.kind,
                     input = input.into()
                 )
-            ).output.intoSargon()
+            )
+
+            val outcome = when (output) {
+                is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
+                else -> throw CommonException.SigningRejected()
+            }
 
             if (index != request.perFactorSource.lastIndex) {
                 delay(delayPerFactorSource)
             }
 
-            output
+            outcome
+        }
+
+        if (request.perFactorSource.size == 1) {
+            delay(delayPerFactorSource)
         }
 
         return SignResponseOfAuthIntentHash(
@@ -80,13 +91,22 @@ class WalletInteractor(
                     kind = input.factorSourceId.kind,
                     input = input.into()
                 )
-            ).output.intoSargon()
+            )
+
+            val outcome = when (output) {
+                is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
+                else -> throw CommonException.SigningRejected()
+            }
 
             if (index != request.perFactorSource.lastIndex) {
                 delay(delayPerFactorSource)
             }
 
-            output
+            outcome
+        }
+
+        if (request.perFactorSource.size == 1) {
+            delay(delayPerFactorSource)
         }
 
         return SignResponseOfSubintentHash(
@@ -102,13 +122,22 @@ class WalletInteractor(
                     kind = input.factorSourceId.kind,
                     input = input.into()
                 )
-            ).output.intoSargon()
+            )
+
+            val outcome = when (output) {
+                is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
+                else -> throw CommonException.SigningRejected()
+            }
 
             if (index != request.perFactorSource.lastIndex) {
                 delay(delayPerFactorSource)
             }
 
-            output
+            outcome
+        }
+
+        if (request.perFactorSource.size == 1) {
+            delay(delayPerFactorSource)
         }
 
         return SignResponseOfTransactionIntentHash(

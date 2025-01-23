@@ -1,10 +1,13 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
-import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
-import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -12,176 +15,165 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class GetSignaturesViewModel @Inject constructor(
     private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
-    private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
-    private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
-    private val getProfileUseCase: GetProfileUseCase
+    private val accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
+    private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSourceUseCase,
+    private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+    private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
+    private val accessPasswordFactorSourceUseCase: AccessPasswordFactorSourceUseCase,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
-    @Suppress("UNCHECKED_CAST")
-    private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSign<Signable.Payload, Signable.ID>
+    private val proxyInput = accessFactorSourcesIOHandler.getInput()
+        as AccessFactorSourcesInput.ToSign<out Signable.Payload, out Signable.ID>
 
-    private var signingJob: Job? = null
+    private val accessDelegate = AccessFactorSourceDelegate(
+        viewModelScope = viewModelScope,
+        id = proxyInput.input.factorSourceId.asGeneral(),
+        getProfileUseCase = getProfileUseCase,
+        accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        defaultDispatcher = defaultDispatcher,
+        onAccessCallback = this::onAccess,
+        onDismissCallback = this::onDismissCallback,
+        onFailCallback = this::onFailCallback
+    )
 
     override fun initialState(): State = State(
-        signPurpose = proxyInput.purpose
+        signPurpose = proxyInput.purpose,
+        accessState = accessDelegate.state.value,
     )
 
     init {
-        signingJob = viewModelScope.launch {
-            resolveFactorSourcesAndSign()
-        }
+        accessDelegate
+            .state
+            .onEach { accessState ->
+                _state.update { it.copy(accessState = accessState) }
+            }
+            .launchIn(viewModelScope)
     }
 
-    fun onDismiss() = viewModelScope.launch {
-        finishWithFailure(
-            factorSourceId = proxyInput.input.factorSourceId,
-            neglectFactorReason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED
-        )
-    }
-
-    fun onRetry() {
-        val factorSource = _state.value.factorSource ?: return
-
-        signingJob?.cancel()
-        signingJob = viewModelScope.launch {
-            sign(factorSource)
-        }
-    }
-
-    fun onMessageShown() {
-        _state.update { it.copy(errorMessage = null) }
-    }
-
-    private suspend fun resolveFactorSourcesAndSign() {
-        val profile = getProfileUseCase()
-
-        val factorSource = profile.factorSourceById(
-            id = proxyInput.input.factorSourceId.asGeneral()
-        ) ?: run {
-            finishWithFailure(proxyInput.input.factorSourceId, NeglectFactorReason.FAILURE)
-            return
-        }
-
-        sign(factorSource)
-    }
-
-    private suspend fun sign(factorSource: FactorSource) {
-        _state.update {
-            it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource))
-        }
-
-        signMono(
+    private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
+        is FactorSource.Device -> accessDeviceFactorSource.signMono(
             factorSource = factorSource,
             input = proxyInput.input
-        ).onSuccess { perFactorOutcome ->
-            _state.update { it.copy(isSigningInProgress = false) }
-            finishWithSuccess(perFactorOutcome)
-        }.onFailure { error ->
-            val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
-                null
-            } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
-                null
-            } else {
-                UiMessage.ErrorMessage(error)
-            }
-
-            _state.update { it.copy(isSigningInProgress = false, errorMessage = errorMessageToShow) }
-        }
-    }
-
-    private suspend fun signMono(
-        factorSource: FactorSource,
-        input: PerFactorSourceInput<Signable.Payload, Signable.ID>
-    ): Result<PerFactorOutcome<Signable.ID>> = when (factorSource) {
-        is FactorSource.Device -> signWithDeviceFactorSourceUseCase.mono(
-            deviceFactorSource = factorSource,
-            input = input
         )
 
-        is FactorSource.Ledger -> signWithLedgerFactorSourceUseCase.mono(
-            ledgerFactorSource = factorSource,
-            input = input
+        is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
         )
 
-        else -> error("Signing with ${factorSource.kind} is not yet supported")
+        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        )
+        is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        )
+
+        is FactorSource.Password -> accessPasswordFactorSourceUseCase.signMono(
+            factorSource = factorSource,
+            input = proxyInput.input
+        )
+        is FactorSource.SecurityQuestions -> error("Signing with ${factorSource.value.kind} is not supported yet")
+        is FactorSource.TrustedContact -> error("Signing with ${factorSource.value.kind} is not supported yet")
+    }.map { perFactorOutcome ->
+        finishWithSuccess(perFactorOutcome)
     }
 
-    private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
+    private suspend fun onDismissCallback() {
+        // end the signing process and return the output (reject)
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output = outcome))
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Rejected)
     }
 
-    private suspend fun finishWithFailure(
-        factorSourceId: FactorSourceIdFromHash,
-        neglectFactorReason: NeglectFactorReason
-    ) {
-        signingJob?.cancel()
+    private suspend fun onFailCallback() {
+        // end the signing process and return the output (error)
+        sendEvent(event = Event.Completed)
+        accessFactorSourcesIOHandler.setOutput(
+            AccessFactorSourcesOutput.SignOutput.Completed(
+                outcome = PerFactorOutcome(
+                    factorSourceId = proxyInput.input.factorSourceId,
+                    outcome = FactorOutcome.Neglected(
+                        factor = NeglectedFactor(
+                            reason = NeglectFactorReason.FAILURE,
+                            factor = proxyInput.input.factorSourceId
+                        )
+                    )
+                )
+            )
+        )
+    }
+
+    fun onDismiss() = accessDelegate.onDismiss()
+
+    fun onSeedPhraseWordChanged(wordIndex: Int, word: String) = accessDelegate.onSeedPhraseWordChanged(wordIndex, word)
+
+    fun onPasswordTyped(password: String) = accessDelegate.onPasswordTyped(password)
+
+    fun onRetry() = accessDelegate.onRetry()
+
+    fun onMessageShown() = accessDelegate.onMessageShown()
+
+    fun onInputConfirmed() = accessDelegate.onInputConfirmed()
+
+    fun onSkip() = viewModelScope.launch {
+        accessDelegate.onCancelAccess()
 
         // end the signing process and return the output (error)
         sendEvent(event = Event.Completed)
-
         val outcome = FactorOutcome.Neglected<Signable.ID>(
             factor = NeglectedFactor(
-                reason = neglectFactorReason,
-                factor = factorSourceId
+                reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED,
+                factor = proxyInput.input.factorSourceId
             )
         )
         accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.SignOutput(
-                output = PerFactorOutcome(
-                    factorSourceId = factorSourceId,
+            AccessFactorSourcesOutput.SignOutput.Completed(
+                outcome = PerFactorOutcome(
+                    factorSourceId = proxyInput.input.factorSourceId,
                     outcome = outcome
                 )
             )
         )
     }
 
+    private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
+        sendEvent(event = Event.Completed)
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Completed(outcome = outcome))
+    }
+
     data class State(
         val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
-        val factorSourcesToSign: FactorSourcesToSign = FactorSourcesToSign.Resolving,
-        val isSigningInProgress: Boolean = false,
-        val errorMessage: UiMessage.ErrorMessage? = null
+        val accessState: AccessFactorSourceDelegate.State
     ) : UiState {
 
-        val factorSource: FactorSource? = when (factorSourcesToSign) {
-            is FactorSourcesToSign.Mono -> factorSourcesToSign.factorSource
-            FactorSourcesToSign.Resolving -> null
-        }
-
-        sealed interface FactorSourcesToSign {
-
-            data object Resolving : FactorSourcesToSign
-
-            data class Mono(
-                val factorSource: FactorSource
-            ) : FactorSourcesToSign
-        }
+        val canSkipFactor: Boolean
+            get() = signPurpose == AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents ||
+                signPurpose == AccessFactorSourcesInput.ToSign.Purpose.SubIntents
     }
 
     sealed interface Event : OneOffEvent {

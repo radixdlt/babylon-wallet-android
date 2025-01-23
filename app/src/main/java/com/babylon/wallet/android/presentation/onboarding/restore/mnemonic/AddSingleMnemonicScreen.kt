@@ -51,9 +51,9 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
-import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -124,6 +124,8 @@ private fun AddSingleMnemonicsContent(
         mutableStateOf<Int?>(null)
     }
 
+    val isSuggestionsVisible = state.seedPhraseState.rememberSuggestionsVisibilityState()
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -134,7 +136,7 @@ private fun AddSingleMnemonicsContent(
             )
         },
         bottomBar = {
-            if (isSuggestionsVisible(state = state)) {
+            if (isSuggestionsVisible) {
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
@@ -176,7 +178,7 @@ private fun AddSingleMnemonicsContent(
             modifier = Modifier
                 .keyboardVisiblePadding(
                     padding = padding,
-                    bottom = if (isSuggestionsVisible(state)) {
+                    bottom = if (isSuggestionsVisible) {
                         RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                     } else {
                         RadixTheme.dimensions.paddingDefault
@@ -323,11 +325,6 @@ private fun SeedPhraseView(
             )
         }
     }
-}
-
-@Composable
-private fun isSuggestionsVisible(state: AddSingleMnemonicViewModel.State): Boolean {
-    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
 @Preview

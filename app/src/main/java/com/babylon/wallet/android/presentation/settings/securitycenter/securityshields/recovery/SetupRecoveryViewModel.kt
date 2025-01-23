@@ -7,8 +7,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.TimePeriod
@@ -88,8 +88,12 @@ class SetupRecoveryViewModel @Inject constructor(
                 .collect { selection ->
                     _state.update { state ->
                         state.copy(
-                            startRecoveryFactors = selection.startRecoveryFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                            confirmationFactors = selection.confirmationFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            startRecoveryFactors = selection.startRecoveryFactors.map {
+                                it.toFactorSourceCard(includeDescription = true, includeLastUsedOn = false)
+                            }.toPersistentList(),
+                            confirmationFactors = selection.confirmationFactors.map {
+                                it.toFactorSourceCard(includeDescription = true, includeLastUsedOn = false)
+                            }.toPersistentList(),
                             status = selection.shieldStatus,
                             fallbackPeriod = selection.timePeriodUntilAutoConfirm,
                             selectFallbackPeriod = null,

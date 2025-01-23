@@ -284,6 +284,14 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(showRawTransactionWarning = false) }
     }
 
+    fun onFailedSigningRestart() {
+        submit.onRestartSignAndSubmitTransaction()
+    }
+
+    fun onFailedSigningCancel() {
+        submit.onSigningCanceled()
+    }
+
     data class Data(
         private val txRequest: TransactionRequest? = null,
         private val txSummary: Summary? = null,
@@ -393,7 +401,13 @@ class TransactionReviewViewModel @Inject constructor(
             data class Some(val dApp: DApp?) : ProposingDApp
         }
 
-        interface Sheet {
+        sealed interface Sheet {
+
+            val sheetHeightPercent: Float
+                get() = when (this) {
+                    is SigningFailed -> HEIGHT_80_PERCENT
+                    else -> HEIGHT_90_PERCENT
+                }
 
             data object None : Sheet
 
@@ -430,6 +444,8 @@ class TransactionReviewViewModel @Inject constructor(
             data class UnknownAddresses(
                 val unknownAddresses: ImmutableList<Address>
             ) : Sheet
+
+            data object SigningFailed : Sheet
         }
 
         data class SelectFeePayerInput(
@@ -437,6 +453,11 @@ class TransactionReviewViewModel @Inject constructor(
             val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
             val fee: String
         )
+
+        companion object {
+            private const val HEIGHT_80_PERCENT = 0.8f
+            private const val HEIGHT_90_PERCENT = 0.9f
+        }
     }
 
     sealed interface Event : OneOffEvent {

@@ -135,6 +135,12 @@ class SeedPhraseInputDelegate(
         private val isSeedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
 
+        fun isInputComplete(): Boolean {
+            if (isInputEmpty) return false
+
+            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid }
+        }
+
         fun shouldDisplayInvalidSeedPhraseWarning(): Boolean {
             if (isInputEmpty) {
                 return false
@@ -146,15 +152,12 @@ class SeedPhraseInputDelegate(
             if (isInputEmpty) {
                 return false
             }
-            return isSeedPhraseInputValid && runCatching {
-                Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
-            }.getOrNull() != null
+            return isSeedPhraseInputValid && seedPhraseWords.toMnemonic().getOrNull() != null
         }
 
-        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = Mnemonic.init(seedPhraseWords.joinToString(separator = " ") { it.value }),
-            passphrase = bip39Passphrase
-        )
+        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = seedPhraseWords
+            .toMnemonicWithPassphrase(passphrase = bip39Passphrase)
+            .getOrThrow()
     }
 
     override fun initialState(): State {
@@ -165,3 +168,18 @@ class SeedPhraseInputDelegate(
         private const val DEBOUNCE_DELAY_MS = 75L
     }
 }
+
+fun List<SeedPhraseWord>.toMnemonic(): Result<Mnemonic> = runCatching {
+    Mnemonic.init(phrase = joinToString(separator = " ") { it.value })
+}
+
+fun List<SeedPhraseWord>.toMnemonicWithPassphrase(passphrase: String = ""): Result<MnemonicWithPassphrase> = toMnemonic()
+    .mapCatching { mnemonic ->
+        MnemonicWithPassphrase(
+            mnemonic = mnemonic,
+            passphrase = passphrase
+        )
+    }
+
+fun List<SeedPhraseWord>.toMnemonicWithPassphraseOrNull(passphrase: String = ""): MnemonicWithPassphrase? =
+    toMnemonicWithPassphrase(passphrase = passphrase).getOrNull()

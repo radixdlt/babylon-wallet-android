@@ -534,7 +534,9 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     is FactorSource.TrustedContact -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
-                    is FactorSource.Password -> error("Password factor source is not yet supported.")
+                    is FactorSource.Password -> factorSource.value.copy(
+                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
+                    ).asGeneral()
                 }
             }
         ).asList()

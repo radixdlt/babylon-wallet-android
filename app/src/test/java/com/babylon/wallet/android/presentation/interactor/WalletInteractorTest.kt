@@ -96,8 +96,10 @@ class WalletInteractorTest {
             proxy.derivePublicKeys(
                 AccessFactorSourcesInput.ToDerivePublicKeys(
                     purpose = DerivationPurpose.CREATING_NEW_ACCOUNT,
-                    factorSourceId = factorSource.id,
-                    derivationPaths = derivationPaths
+                    request = KeyDerivationRequestPerFactorSource(
+                        factorSourceId = factorSource.id,
+                        derivationPaths = derivationPaths
+                    )
                 )
             )
         } returns AccessFactorSourcesOutput.DerivedPublicKeys.Success(
@@ -168,8 +170,8 @@ class WalletInteractorTest {
                     purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents
                 )
             )
-        } returns AccessFactorSourcesOutput.SignOutput(
-            output = PerFactorOutcome(
+        } returns AccessFactorSourcesOutput.SignOutput.Completed(
+            outcome = PerFactorOutcome(
                 factorSourceId = device.id,
                 outcome = FactorOutcome.Signed(
                     producedSignatures = expectedSignatures.map { entry ->
@@ -265,8 +267,8 @@ class WalletInteractorTest {
                     purpose = AccessFactorSourcesInput.ToSign.Purpose.SubIntents
                 )
             )
-        } returns AccessFactorSourcesOutput.SignOutput(
-            output = PerFactorOutcome(
+        } returns AccessFactorSourcesOutput.SignOutput.Completed(
+            outcome = PerFactorOutcome(
                 factorSourceId = device.id,
                 outcome = FactorOutcome.Signed(
                     producedSignatures = expectedSignatures.map { entry ->
@@ -362,8 +364,8 @@ class WalletInteractorTest {
                     purpose = AccessFactorSourcesInput.ToSign.Purpose.AuthIntents
                 )
             )
-        } returns AccessFactorSourcesOutput.SignOutput(
-            output = PerFactorOutcome(
+        } returns AccessFactorSourcesOutput.SignOutput.Completed(
+            outcome = PerFactorOutcome(
                 factorSourceId = device.id,
                 outcome = FactorOutcome.Signed(
                     producedSignatures = expectedSignatures.map { entry ->

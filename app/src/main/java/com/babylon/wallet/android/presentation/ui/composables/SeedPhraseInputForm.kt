@@ -35,8 +35,10 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.MockUiProvider
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
@@ -94,8 +96,9 @@ fun SeedPhraseInputForm(
             )
         }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         if (showAdvancedMode) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(
@@ -132,6 +135,16 @@ fun SeedPhraseSuggestions(
             )
         }
     }
+}
+
+@Composable
+fun SeedPhraseInputDelegate.State.rememberSuggestionsVisibilityState(): Boolean {
+    val suggestionsExist = remember(this) {
+        wordAutocompleteCandidates.isNotEmpty()
+    }
+
+    val isKeyboardVisible = isKeyboardVisible()
+    return suggestionsExist && isKeyboardVisible
 }
 
 @Composable

@@ -1,44 +1,60 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
-import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
-import com.babylon.wallet.android.utils.formattedSpans
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
+import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
+import com.babylon.wallet.android.presentation.ui.none
+import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
+import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
+import kotlinx.coroutines.launch
 
 @Composable
 fun GetSignaturesDialog(
@@ -52,7 +68,7 @@ fun GetSignaturesDialog(
         viewModel.onDismiss()
     }
 
-    state.errorMessage?.let { errorMessage ->
+    state.accessState.errorMessage?.let { errorMessage ->
         BasicPromptAlertDialog(
             finish = { viewModel.onMessageShown() },
             messageText = errorMessage.getMessage(),
@@ -71,156 +87,204 @@ fun GetSignaturesDialog(
     GetSignaturesBottomSheetContent(
         modifier = modifier,
         state = state,
+        onInputConfirmed = viewModel::onInputConfirmed,
         onDismiss = viewModel::onDismiss,
-        onRetryClick = viewModel::onRetry
+        onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
+        onPasswordTyped = viewModel::onPasswordTyped,
+        onRetryClick = viewModel::onRetry,
+        onSkipClick = viewModel::onSkip
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GetSignaturesBottomSheetContent(
     modifier: Modifier = Modifier,
     state: GetSignaturesViewModel.State,
+    onSeedPhraseWordChanged: (Int, String) -> Unit,
+    onPasswordTyped: (String) -> Unit,
+    onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
-    onRetryClick: () -> Unit
+    onRetryClick: () -> Unit,
+    onSkipClick: () -> Unit
 ) {
-    BottomSheetDialogWrapper(
-        modifier = modifier,
-        heightFraction = 0.7f,
-        centerContent = true,
-        onDismiss = onDismiss
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                .background(RadixTheme.colors.defaultBackground),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                modifier = Modifier.size(80.dp),
-                painter = painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
-                ),
-                contentDescription = null,
-                tint = RadixTheme.colors.gray3
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            Text(
-                style = RadixTheme.typography.title,
-                text = when (state.signPurpose) {
-                    Purpose.TransactionIntents,
-                    Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_signature_title)
-                    Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_proveOwnership_title)
-                }
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-            when (val factorSourcesToSign = state.factorSourcesToSign) {
-                is GetSignaturesViewModel.State.FactorSourcesToSign.Resolving -> {}
-                is GetSignaturesViewModel.State.FactorSourcesToSign.Mono -> {
-                    when (factorSourcesToSign.factorSource) {
-                        is FactorSource.Ledger -> LedgerContent(
-                            signPurpose = state.signPurpose,
-                            factorSource = factorSourcesToSign.factorSource
-                        )
-                        is FactorSource.Device -> DeviceContent(signPurpose = state.signPurpose)
-                        else -> {
-                            // Not yet handled
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-            RadixTextButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.common_retry),
-                enabled = !state.isSigningInProgress,
-                onClick = onRetryClick
-            )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
         }
     }
-}
 
-@Composable
-private fun DeviceContent(
-    modifier: Modifier = Modifier,
-    signPurpose: Purpose
-) {
-    Text(
-        modifier = modifier,
-        style = RadixTheme.typography.body1Regular,
-        textAlign = TextAlign.Center,
-        text = when (signPurpose) {
-            Purpose.TransactionIntents,
-            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_device_signMessage)
-            Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_device_message)
+    val accessFactorSourceState = state.accessState
+
+    val isSeedPhraseSuggestionsVisible = accessFactorSourceState.seedPhraseInputState.delegateState.rememberSuggestionsVisibilityState()
+    var focusedWordIndex by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    DefaultModalSheetLayout(
+        modifier = modifier.fillMaxSize(),
+        onDismissRequest = onDismiss,
+        heightFraction = 0.8f,
+        sheetState = sheetState,
+        sheetContent = {
+            Scaffold(
+                topBar = {
+                    RadixCenteredTopAppBar(
+                        windowInsets = WindowInsets.none,
+                        title = "",
+                        onBackClick = onDismiss,
+                        backIconType = BackIconType.Close
+                    )
+                },
+                bottomBar = {
+                    if (isSeedPhraseSuggestionsVisible) {
+                        SeedPhraseSuggestions(
+                            modifier = Modifier
+                                .imePadding()
+                                .fillMaxWidth()
+                                .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
+                                .padding(RadixTheme.dimensions.paddingSmall),
+                            wordAutocompleteCandidates = accessFactorSourceState
+                                .seedPhraseInputState
+                                .delegateState
+                                .wordAutocompleteCandidates,
+                            onCandidateClick = { candidate ->
+                                focusedWordIndex?.let { index ->
+                                    onSeedPhraseWordChanged(index, candidate)
+                                }
+                            }
+                        )
+                    }
+                },
+                containerColor = RadixTheme.colors.defaultBackground,
+                content = { padding ->
+                    val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
+
+                    val contentModifier = Modifier
+                        .padding(padding)
+                        .verticalScroll(rememberScrollState())
+
+                    when (accessFactorSourceState.factorSourceToAccess.kind) {
+                        FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
+                            canUseDifferentFactor = state.canSkipFactor,
+                            onRetryClick = onRetryClick,
+                            onSkipClick = onSkipClick
+                        )
+
+                        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
+                            canUseDifferentFactor = state.canSkipFactor,
+                            onRetryClick = onRetryClick,
+                            onSkipClick = onSkipClick
+                        )
+
+                        FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
+                            seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
+                            canUseDifferentFactor = state.canSkipFactor,
+                            onWordChanged = onSeedPhraseWordChanged,
+                            onFocusedWordChanged = {
+                                focusedWordIndex = it
+                            },
+                            onConfirmed = onInputConfirmed,
+                            onSkipClick = onSkipClick
+                        )
+
+                        FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            canUseDifferentFactor = state.canSkipFactor,
+                            onSkipClick = onSkipClick
+                        )
+
+                        FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
+                            passwordState = accessFactorSourceState.passwordState,
+                            onPasswordTyped = onPasswordTyped,
+                            canUseDifferentFactor = state.canSkipFactor,
+                            onSkipClick = onSkipClick
+                        )
+
+                        FactorSourceKind.SECURITY_QUESTIONS -> {}
+                        FactorSourceKind.TRUSTED_CONTACT -> {}
+                    }
+                }
+            )
         }
     )
 }
 
-@Composable
-private fun LedgerContent(
-    modifier: Modifier = Modifier,
-    signPurpose: Purpose,
-    factorSource: FactorSource.Ledger
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val stringRes = when (signPurpose) {
-            Purpose.TransactionIntents,
-            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_ledger_signMessage)
-            Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_ledger_message)
-        }
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringRes.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        RoundLedgerItem(
-            ledgerName = factorSource.value.hint.label
-        )
-    }
+private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
+    Purpose.TransactionIntents,
+    Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
+
+    Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
 }
 
 @UsesSampleValues
-@Preview(showBackground = false)
+@Preview
 @Composable
-fun GetSignaturesForSigningTransactionWithMonoDevicePreview() {
+private fun GetSignaturesPreview(
+    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+) {
     RadixWalletPreviewTheme {
         GetSignaturesBottomSheetContent(
             state = GetSignaturesViewModel.State(
-                signPurpose = Purpose.TransactionIntents,
-                factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
-                    factorSource = DeviceFactorSource.sample().asGeneral()
-                )
+                signPurpose = sample.first,
+                accessState = AccessFactorSourceDelegate.State(
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(factorSource = sample.second),
+                    seedPhraseInputState = remember(sample.second) {
+                        AccessFactorSourceDelegate.State.SeedPhraseInputState(
+                            delegateState = SeedPhraseInputDelegate.State()
+                        )
+                    }
+                ),
             ),
             onDismiss = {},
-            onRetryClick = {}
+            onSeedPhraseWordChanged = { _, _ -> },
+            onPasswordTyped = {},
+            onRetryClick = {},
+            onInputConfirmed = {},
+            onSkipClick = {}
         )
     }
 }
 
 @UsesSampleValues
-@Preview(showBackground = false)
-@Composable
-fun GetSignaturesForSigningTransactionWithMonoLedgerPreview() {
-    RadixWalletTheme {
-        GetSignaturesBottomSheetContent(
-            state = GetSignaturesViewModel.State(
-                signPurpose = Purpose.TransactionIntents,
-                factorSourcesToSign = GetSignaturesViewModel.State.FactorSourcesToSign.Mono(
-                    factorSource = LedgerHardwareWalletFactorSource.sample().asGeneral()
-                )
-            ),
-            onDismiss = {},
-            onRetryClick = {}
+private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<Purpose, FactorSource>> {
+
+    private val samples: List<Pair<Purpose, FactorSource>>
+
+    init {
+        val factorSources = listOf(
+            DeviceFactorSource.sample().asGeneral(),
+            LedgerHardwareWalletFactorSource.sample().asGeneral(),
+            ArculusCardFactorSource.sample().asGeneral(),
+            OffDeviceMnemonicFactorSource.sample().asGeneral(),
+            PasswordFactorSource.sample().asGeneral()
         )
+
+        samples = Purpose.entries.flatMap { purpose ->
+            factorSources.map { factorSource ->
+                purpose to factorSource
+            }
+        }
     }
+
+    override val values: Sequence<Pair<Purpose, FactorSource>>
+        get() = samples.asSequence()
 }
