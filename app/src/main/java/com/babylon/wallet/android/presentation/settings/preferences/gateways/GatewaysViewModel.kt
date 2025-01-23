@@ -12,7 +12,6 @@ import com.babylon.wallet.android.utils.isValidUrl
 import com.babylon.wallet.android.utils.sanitizeAndValidateGatewayUrl
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.all
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isWellKnown

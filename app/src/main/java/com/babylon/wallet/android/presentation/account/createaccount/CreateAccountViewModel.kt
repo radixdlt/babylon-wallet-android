@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.account.createaccount
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
-import com.babylon.wallet.android.domain.usecases.SyncAccountThirdPartyDepositsWithLedger
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
+import com.babylon.wallet.android.domain.usecases.SyncAccountThirdPartyDepositsWithLedger
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler

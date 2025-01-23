@@ -62,15 +62,12 @@ sealed interface AppEvent {
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {
 
-        sealed interface SelectLedgerOutcome: AccessFactorSources {
+        sealed interface SelectLedgerOutcome : AccessFactorSources {
 
             data class Selected(val ledgerFactorSource: FactorSource.Ledger) : SelectLedgerOutcome
 
-            data object Rejected: SelectLedgerOutcome
-
+            data object Rejected : SelectLedgerOutcome
         }
-
-        data object DerivePublicKey : AccessFactorSources
 
         data object DerivePublicKeys : AccessFactorSources
 

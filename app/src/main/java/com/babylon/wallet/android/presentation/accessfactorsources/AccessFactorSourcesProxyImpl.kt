@@ -20,20 +20,6 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     // used only when recovering accounts from onboarding (reDeriveAccounts)
     private var tempMnemonicWithPassphrase: MnemonicWithPassphrase? = null
 
-    override suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.HDPublicKey> {
-        input = accessFactorSourcesInput
-        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKey)
-        val result = _output.first()
-
-        return if (result is AccessFactorSourcesOutput.Failure) {
-            Result.failure(result.error)
-        } else {
-            Result.success(result as AccessFactorSourcesOutput.HDPublicKey)
-        }
-    }
-
     override suspend fun derivePublicKeys(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
     ): AccessFactorSourcesOutput.DerivedPublicKeys {

@@ -56,7 +56,6 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.forNetwork
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow

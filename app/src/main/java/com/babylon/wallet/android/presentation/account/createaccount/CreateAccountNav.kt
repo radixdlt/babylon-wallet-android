@@ -25,8 +25,8 @@ import com.radixdlt.sargon.extensions.init
 private const val ARG_NETWORK_ID_TO_SWITCH = "arg_network_id_to_switch"
 
 const val ROUTE_CREATE_ACCOUNT = "create_account_route" +
-        "?$ARG_REQUEST_SOURCE={$ARG_REQUEST_SOURCE}" +
-        "&$ARG_NETWORK_ID_TO_SWITCH={$ARG_NETWORK_ID_TO_SWITCH}"
+    "?$ARG_REQUEST_SOURCE={$ARG_REQUEST_SOURCE}" +
+    "&$ARG_NETWORK_ID_TO_SWITCH={$ARG_NETWORK_ID_TO_SWITCH}"
 
 internal class CreateAccountNavArgs(
     val requestSource: CreateAccountRequestSource?,
@@ -46,8 +46,8 @@ fun NavController.createAccountScreen(
     popToRoute: String? = null
 ) {
     val route = "create_account_route" +
-            "?$ARG_REQUEST_SOURCE=$requestSource" +
-            "&$ARG_NETWORK_ID_TO_SWITCH=${networkIdToSwitch?.discriminant?.toByte()}"
+        "?$ARG_REQUEST_SOURCE=$requestSource" +
+        "&$ARG_NETWORK_ID_TO_SWITCH=${networkIdToSwitch?.discriminant?.toByte()}"
 
     navigate(route = route) {
         if (requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled) {

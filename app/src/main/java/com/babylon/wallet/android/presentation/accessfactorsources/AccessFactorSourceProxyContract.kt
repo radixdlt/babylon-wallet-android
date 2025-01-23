@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DerivationPurpose
-import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
@@ -11,7 +10,6 @@ import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
@@ -25,10 +23,6 @@ import com.radixdlt.sargon.os.signing.Signable
  *
  */
 interface AccessFactorSourcesProxy {
-
-    suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.HDPublicKey>
 
     suspend fun derivePublicKeys(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
@@ -85,15 +79,6 @@ interface AccessFactorSourcesIOHandler {
  *
  */
 sealed interface AccessFactorSourcesInput {
-
-    data class ToDerivePublicKey(
-        val entityKind: EntityKind,
-        val forNetworkId: NetworkId,
-        val factorSource: FactorSource,
-        // Need this information only when a new profile is created, meaning that biometrics have been provided
-        // No need to ask the user for authentication again.
-        val isBiometricsProvided: Boolean
-    ) : AccessFactorSourcesInput
 
     data class ToDerivePublicKeys(
         val purpose: DerivationPurpose,

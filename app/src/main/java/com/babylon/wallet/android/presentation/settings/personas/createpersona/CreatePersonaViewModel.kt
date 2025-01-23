@@ -110,7 +110,7 @@ class CreatePersonaViewModel @Inject constructor(
             }
     }
 
-    sealed interface Event: OneOffEvent {
-        data object NavigateToCompletion: Event
+    sealed interface Event : OneOffEvent {
+        data object NavigateToCompletion : Event
     }
 }
