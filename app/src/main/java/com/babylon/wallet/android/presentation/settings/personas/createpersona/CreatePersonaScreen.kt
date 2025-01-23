@@ -50,7 +50,6 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
-import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -90,15 +89,11 @@ fun CreatePersonaScreen(
         onBackClick = onBackClick,
     )
 
-    LaunchedEffect(state.shouldNavigateToCompletion) {
-        if (state.shouldNavigateToCompletion) {
-            viewModel.onNavigationEventHandled()
-            onContinueClick()
-        }
-    }
-    if (state.isNoMnemonicErrorVisible) {
-        NoMnemonicAlertDialog {
-            viewModel.dismissNoMnemonicError()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                CreatePersonaViewModel.Event.NavigateToCompletion -> onContinueClick()
+            }
         }
     }
 }
@@ -107,7 +102,7 @@ fun CreatePersonaScreen(
 @Composable
 fun CreatePersonaContent(
     modifier: Modifier,
-    state: CreatePersonaViewModel.CreatePersonaUiState,
+    state: CreatePersonaViewModel.State,
     onPersonaNameChange: (String) -> Unit,
     onPersonaCreateClick: () -> Unit,
     onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
@@ -150,6 +145,7 @@ fun CreatePersonaContent(
             RadixBottomBar(
                 onClick = onPersonaCreateClick,
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
+                isLoading = state.isPersonaCreating,
                 enabled = state.isContinueButtonEnabled,
                 insets = WindowInsets.navigationBars.union(WindowInsets.ime)
             )
@@ -361,7 +357,7 @@ private fun CreatePersonaContentList(
 fun CreateAccountContentPreview() {
     RadixWalletTheme {
         CreatePersonaContent(
-            state = CreatePersonaViewModel.CreatePersonaUiState(
+            state = CreatePersonaViewModel.State(
                 currentFields = persistentListOf(),
                 fieldsToAdd = persistentListOf(),
                 personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),

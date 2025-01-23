@@ -1,8 +1,9 @@
 package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -11,35 +12,32 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
-import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.EntityKind
-import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.persona.CreatePersonaUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
-    private val createPersonaUseCase: CreatePersonaUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val appEventBus: AppEventBus
-) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
+    private val sargonOsManager: SargonOsManager,
+    private val preferencesManager: PreferencesManager,
+) : StateViewModel<CreatePersonaViewModel.State>(),
+    OneOffEventHandler<CreatePersonaViewModel.Event> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
-    override fun initialState(): CreatePersonaUiState = CreatePersonaUiState()
+    override fun initialState(): State = State()
 
     private var accessFactorSourcesJob: Job? = null
 
@@ -62,43 +60,28 @@ class CreatePersonaViewModel @Inject constructor(
     fun onPersonaCreateClick() {
         accessFactorSourcesJob?.cancel()
         accessFactorSourcesJob = viewModelScope.launch {
-            val displayName = DisplayName(_state.value.personaDisplayName.value.trim())
+            _state.update { it.copy(isPersonaCreating = true) }
             val personaData = _state.value.currentFields.toPersonaData()
-            val factorSource = getProfileUseCase().mainBabylonFactorSource ?: return@launch
-            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
-                    entityKind = EntityKind.PERSONA,
-                    forNetworkId = getProfileUseCase().currentGateway.network.id,
-                    factorSource = factorSource,
-                    isBiometricsProvided = false
-                )
-            ).mapCatching { hdPublicKey ->
-                createPersonaUseCase(
-                    displayName = displayName,
-                    personaData = personaData,
-                    factorSourceId = factorSource.value.id.asGeneral(),
-                    hdPublicKey = hdPublicKey.value
+            val profile = getProfileUseCase()
+            val networkId = profile.currentGateway.network.id
+            val isFirstPersonaAboutToBeCreated = profile.activePersonasOnCurrentNetwork.isEmpty()
+
+            runCatching {
+                sargonOsManager.sargonOs.createAndSaveNewPersonaWithBdfs(
+                    networkId = networkId,
+                    name = DisplayName.init(_state.value.personaDisplayName.value.trim()),
+                    personaData = personaData
                 )
             }.onSuccess {
-                _state.update { state -> state.copy(shouldNavigateToCompletion = true) }
-            }.onFailure { error ->
-                when (error) {
-                    is ProfileException.SecureStorageAccess -> {
-                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                    }
-
-                    is ProfileException.NoMnemonic -> {
-                        _state.update {
-                            it.copy(
-                                isNoMnemonicErrorVisible = true
-                            )
-                        }
-                    }
-
-                    else -> {
-                        Timber.d(error)
-                    }
+                if (isFirstPersonaAboutToBeCreated) {
+                    preferencesManager.markFirstPersonaCreated()
                 }
+
+                _state.update { state -> state.copy(isPersonaCreating = false) }
+                sendEvent(Event.NavigateToCompletion)
+            }.onFailure { error ->
+                Timber.w(error)
+                _state.update { state -> state.copy(isPersonaCreating = false) }
             }
         }
     }
@@ -111,28 +94,23 @@ class CreatePersonaViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onNavigationEventHandled() {
-        _state.update { it.copy(shouldNavigateToCompletion = false) }
-    }
-
-    fun dismissNoMnemonicError() {
-        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
-    }
-
-    data class CreatePersonaUiState(
+    data class State(
         val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
         val anyFieldSelected: Boolean = false,
         val isAddFieldBottomSheetVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val isNoMnemonicErrorVisible: Boolean = false,
-        val shouldNavigateToCompletion: Boolean = false
+        val isPersonaCreating: Boolean = false,
     ) : UiState {
         val isContinueButtonEnabled: Boolean
             get() {
                 val valid = currentFields.all { it.isValid == true } && personaDisplayName.isValid
                 return valid
             }
+    }
+
+    sealed interface Event: OneOffEvent {
+        data object NavigateToCompletion: Event
     }
 }
