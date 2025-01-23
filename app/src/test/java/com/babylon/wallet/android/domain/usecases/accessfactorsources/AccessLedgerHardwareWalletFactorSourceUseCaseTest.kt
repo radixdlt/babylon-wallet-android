@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -24,6 +23,7 @@ import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.bip32CanonicalString
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
@@ -214,10 +214,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = any(),
                 keyParameters = listOf(
-                    LedgerInteractionRequest.KeyParameters(
-                        curve = Curve.Curve25519,
-                        derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.string
-                    )
+                    LedgerInteractionRequest.KeyParameters.from(ownedFactorInstance.factorInstance.publicKey.derivationPath)
                 ),
                 ledgerDevice = any()
             )
@@ -228,7 +225,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                     LedgerResponse.DerivedPublicKey(
                         curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                         publicKeyHex = expectedHDPublicKey.publicKey.hex,
-                        derivationPath = expectedHDPublicKey.derivationPath.string
+                        derivationPath = expectedHDPublicKey.derivationPath.bip32CanonicalString
                     )
                 )
             )
@@ -281,7 +278,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                         derivedPublicKey = LedgerResponse.DerivedPublicKey(
                             curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                             publicKeyHex = signature.publicKey.hex,
-                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.string
+                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32CanonicalString
                         ),
                         signature = signature.signature.bytes.hex
                     )
@@ -348,7 +345,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                         derivedPublicKey = LedgerResponse.DerivedPublicKey(
                             curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                             publicKeyHex = signature.publicKey.hex,
-                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.string
+                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32CanonicalString
                         ),
                         signature = signature.signature.bytes.hex
                     )
@@ -417,7 +414,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                         derivedPublicKey = LedgerResponse.DerivedPublicKey(
                             curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                             publicKeyHex = signature.publicKey.hex,
-                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.string
+                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32CanonicalString
                         ),
                         signature = signature.signature.bytes.hex
                     )

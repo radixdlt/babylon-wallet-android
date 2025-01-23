@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.accessfactorsources.derivepublic
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -21,7 +20,6 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -191,7 +189,7 @@ class DerivePublicKeyViewModel @Inject constructor(
         )
         ledgerMessenger.sendDerivePublicKeyRequest(
             interactionId = UUIDGenerator.uuid().toString(),
-            keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.string)),
+            keyParameters = listOf(LedgerInteractionRequest.KeyParameters.from(derivationPath)),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = ledgerFactorSource)
         ).onSuccess { derivePublicKeyResponse ->
             val hdPublicKey = HierarchicalDeterministicPublicKey(
