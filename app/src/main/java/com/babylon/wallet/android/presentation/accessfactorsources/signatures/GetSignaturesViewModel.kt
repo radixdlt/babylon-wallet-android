@@ -169,7 +169,12 @@ class GetSignaturesViewModel @Inject constructor(
     data class State(
         val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
         val accessState: AccessFactorSourceDelegate.State
-    ) : UiState
+    ) : UiState {
+
+        val canSkipFactor: Boolean
+            get() = signPurpose == AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents ||
+                    signPurpose == AccessFactorSourcesInput.ToSign.Purpose.SubIntents
+    }
 
     sealed interface Event : OneOffEvent {
         data object Completed : Event

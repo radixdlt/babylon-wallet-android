@@ -172,7 +172,7 @@ private fun GetSignaturesBottomSheetContent(
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
                             isRetryEnabled = accessFactorSourceState.isRetryEnabled,
-                            canUseDifferentFactor = true,
+                            canUseDifferentFactor = state.canSkipFactor,
                             onRetryClick = onRetryClick,
                             onSkipClick = onSkipClick
                         )
@@ -182,7 +182,7 @@ private fun GetSignaturesBottomSheetContent(
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
                             isRetryEnabled = accessFactorSourceState.isRetryEnabled,
-                            canUseDifferentFactor = true,
+                            canUseDifferentFactor = state.canSkipFactor,
                             onRetryClick = onRetryClick,
                             onSkipClick = onSkipClick
                         )
@@ -192,7 +192,7 @@ private fun GetSignaturesBottomSheetContent(
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                             seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
-                            canUseDifferentFactor = true,
+                            canUseDifferentFactor = state.canSkipFactor,
                             onWordChanged = onSeedPhraseWordChanged,
                             onFocusedWordChanged = {
                                 focusedWordIndex = it
@@ -205,7 +205,7 @@ private fun GetSignaturesBottomSheetContent(
                             modifier = contentModifier,
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
-                            canUseDifferentFactor = true,
+                            canUseDifferentFactor = state.canSkipFactor,
                             onSkipClick = onSkipClick
                         )
 
@@ -215,7 +215,7 @@ private fun GetSignaturesBottomSheetContent(
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
                             passwordState = accessFactorSourceState.passwordState,
                             onPasswordTyped = onPasswordTyped,
-                            canUseDifferentFactor = true,
+                            canUseDifferentFactor = state.canSkipFactor,
                             onSkipClick = onSkipClick
                         )
 
