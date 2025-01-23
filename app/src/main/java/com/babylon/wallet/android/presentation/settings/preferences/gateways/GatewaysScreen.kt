@@ -66,7 +66,7 @@ import kotlinx.coroutines.flow.flow
 fun GatewaysScreen(
     modifier: Modifier = Modifier,
     viewModel: GatewaysViewModel,
-    onCreateProfile: (Url, NetworkId) -> Unit,
+    onCreateAccount: (NetworkId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit,
 ) {
@@ -78,7 +78,7 @@ fun GatewaysScreen(
         onGatewayClick = viewModel::onGatewayClick,
         onAddGatewayClick = { viewModel.setAddGatewaySheetVisible(true) },
         oneOffEvent = viewModel.oneOffEvent,
-        onCreateProfile = onCreateProfile,
+        onCreateAccount = onCreateAccount,
         onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
@@ -101,15 +101,15 @@ private fun GatewaysContent(
     onGatewayClick: (Gateway) -> Unit,
     onAddGatewayClick: () -> Unit,
     oneOffEvent: Flow<GatewaysViewModel.Event>,
-    onCreateProfile: (Url, NetworkId) -> Unit,
+    onCreateAccount: (NetworkId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect {
             when (it) {
-                is GatewaysViewModel.Event.CreateProfileOnNetwork -> {
-                    onCreateProfile(it.newUrl, it.networkId)
+                is GatewaysViewModel.Event.CreateAccountOnNetwork -> {
+                    onCreateAccount(it.networkId)
                 }
             }
         }
@@ -399,7 +399,7 @@ private fun GatewaysScreenPreview() {
             onDeleteGateway = {},
             onGatewayClick = {},
             oneOffEvent = flow { },
-            onCreateProfile = { _, _ -> },
+            onCreateAccount = {},
             onInfoClick = {},
             onBackClick = {},
         )

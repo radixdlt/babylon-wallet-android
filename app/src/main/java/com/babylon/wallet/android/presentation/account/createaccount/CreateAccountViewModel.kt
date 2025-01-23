@@ -3,9 +3,8 @@ package com.babylon.wallet.android.presentation.account.createaccount
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
-import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
+import com.babylon.wallet.android.domain.usecases.SyncAccountThirdPartyDepositsWithLedger
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -20,37 +19,35 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.EntityKind
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
-import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isManualCancellation
-import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.updateThirdPartyDepositSettings
+import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 @Suppress("LongParameterList", "TooManyFunctions")
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val createAccountUseCase: CreateAccountUseCase,
+    private val syncAccountThirdPartyDepositsWithLedger: SyncAccountThirdPartyDepositsWithLedger,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val getProfileUseCase: GetProfileUseCase,
     private val deleteWalletUseCase: DeleteWalletUseCase,
@@ -69,8 +66,6 @@ class CreateAccountViewModel @Inject constructor(
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
     val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
 
-    private var accessFactorSourcesJob: Job? = null
-
     override fun initialState(): CreateAccountUiState = CreateAccountUiState(
         isFirstAccount = args.requestSource?.isFirstTime() == true
     )
@@ -83,22 +78,44 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean) {
         viewModelScope.launch {
+            _state.update { it.copy(loading = true) }
+
             if (shouldCreateWallet()) {
-                createWallet().onSuccess {
-                    // Since we choose to create a new profile, this is the time
-                    // we discard the data copied from the cloud backup, since they represent
-                    // a previous instance.
-                    discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
-                    accessFactorSourceForAccountCreation(
-                        isWithLedger = isWithLedger,
-                        walletJustCreated = true
+                createWallet()
+                    .then {
+                        // Since we choose to create a new profile, this is the time
+                        // we discard the data copied from the cloud backup, since they represent
+                        // a previous instance.
+                        discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
+                        resolveFactorSourceAndCreateAccount(isWithLedger = isWithLedger)
+                    }
+            } else {
+                resolveFactorSourceAndCreateAccount(isWithLedger = isWithLedger)
+            }.onSuccess { account ->
+                if (args.networkIdToSwitch != null) {
+                    switchNetworkUseCase(networkId = args.networkIdToSwitch)
+                }
+
+                syncAccountThirdPartyDepositsWithLedger(account = account)
+                checkAndHandleFirstTimeAccountCreationExtras()
+
+                _state.update {
+                    it.copy(
+                        loading = false,
+                        accountId = account.address.string,
+                        accountName = account.displayName.value
                     )
                 }
-            } else {
-                accessFactorSourceForAccountCreation(
-                    isWithLedger = isWithLedger,
-                    walletJustCreated = false
+
+                sendEvent(
+                    CreateAccountEvent.Complete(
+                        accountId = account.address,
+                        requestSource = args.requestSource
+                    )
                 )
+            }.onFailure { error ->
+                Timber.w(error)
+                _state.update { it.copy(loading = false) }
             }
         }
     }
@@ -128,46 +145,32 @@ class CreateAccountViewModel @Inject constructor(
         }
     }
 
-    // when called the access factor source bottom sheet dialog is presented
-    private fun accessFactorSourceForAccountCreation(
-        isWithLedger: Boolean,
-        walletJustCreated: Boolean
-    ) {
-        accessFactorSourcesJob?.cancel()
-        accessFactorSourcesJob = viewModelScope.launch {
-            val selectedFactorSource = if (isWithLedger) { // then get the selected ledger device
-                sendEvent(CreateAccountEvent.AddLedgerDevice)
-                appEventBus.events
-                    .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
-                    .first()
-                    .ledgerFactorSource
-            } else {
-                getProfileUseCase().mainBabylonFactorSource ?: return@launch
-            }
+    private suspend fun resolveFactorSourceAndCreateAccount(isWithLedger: Boolean): Result<Account> {
+        val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
 
-            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
-                    entityKind = EntityKind.ACCOUNT,
-                    forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
-                    factorSource = selectedFactorSource,
-                    isBiometricsProvided = walletJustCreated
+        val nonMainFactorSource = if (isWithLedger) {
+            sendEvent(CreateAccountEvent.AddLedgerDevice)
+            appEventBus.events
+                .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
+                .first()
+                .ledgerFactorSource
+        } else {
+            null
+        }
+
+        val name = DisplayName.init(accountName.value.trim())
+        return runCatching {
+            if (nonMainFactorSource != null) {
+                sargonOsManager.sargonOs.createAndSaveNewAccountWithFactorSource(
+                    factorSource = nonMainFactorSource,
+                    networkId = networkId,
+                    name = name
                 )
-            ).mapCatching {
-                val factorSourceId = when (selectedFactorSource) {
-                    is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
-                    is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
-                    else -> error("FactorSourceKind ${selectedFactorSource.kind} not supported.")
-                }
-
-                handleAccountCreation { nameOfAccount ->
-                    createAccountUseCase(
-                        displayName = DisplayName(nameOfAccount),
-                        factorSourceId = factorSourceId,
-                        hdPublicKey = it.value
-                    )
-                }
-            }.onFailure { throwable ->
-                handleAccountCreationError(throwable)
+            } else {
+                sargonOsManager.sargonOs.createAndSaveNewAccountWithBdfs(
+                    networkId = networkId,
+                    name = name
+                )
             }
         }
     }
@@ -208,8 +211,8 @@ class CreateAccountViewModel @Inject constructor(
     ) {
         _state.update { it.copy(loading = true) }
         val accountName = accountName.value.trim()
-        if (args.networkIdToSwitch != null && args.networkUrl != null) {
-            switchNetworkUseCase(args.networkUrl)
+        if (args.networkIdToSwitch != null) {
+            switchNetworkUseCase(args.networkIdToSwitch)
         }
         val account = accountProvider(accountName)
         val accountId = account.address
