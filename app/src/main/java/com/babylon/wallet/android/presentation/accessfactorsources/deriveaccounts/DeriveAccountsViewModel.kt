@@ -258,7 +258,7 @@ class DeriveAccountsViewModel @Inject constructor(
                     },
                     ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = factorSource)
                 ).mapCatching { derivePublicKeyResponse ->
-                    derivePublicKeyResponse.publicKeysHex.map { derived ->
+                    derivePublicKeyResponse.publicKeys.map { derived ->
                         HierarchicalDeterministicPublicKey(
                             publicKey = PublicKey.init(derived.publicKeyHex),
                             derivationPath = derivationPaths.first { it.bip32CanonicalString == derived.derivationPath }

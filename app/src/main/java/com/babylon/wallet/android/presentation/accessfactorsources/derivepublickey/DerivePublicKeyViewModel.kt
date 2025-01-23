@@ -193,7 +193,7 @@ class DerivePublicKeyViewModel @Inject constructor(
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = ledgerFactorSource)
         ).onSuccess { derivePublicKeyResponse ->
             val hdPublicKey = HierarchicalDeterministicPublicKey(
-                publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex),
+                publicKey = PublicKey.init(derivePublicKeyResponse.publicKeys.first().publicKeyHex),
                 derivationPath = derivationPath
             )
             accessFactorSourcesIOHandler.setOutput(HDPublicKey(hdPublicKey))

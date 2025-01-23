@@ -221,7 +221,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
         } returns Result.success(
             LedgerResponse.DerivePublicKeyResponse(
                 interactionId = "",
-                publicKeysHex = listOf(
+                publicKeys = listOf(
                     LedgerResponse.DerivedPublicKey(
                         curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                         publicKeyHex = expectedHDPublicKey.publicKey.hex,

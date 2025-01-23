@@ -127,7 +127,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     ) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
-        val derivedKeys = derivePublicKeyResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
+        val derivedKeys = derivePublicKeyResponse.publicKeys.map { it.publicKeyHex }.toSet()
         val verifiedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey.hex) }
         if (verifiedAccounts.isEmpty()) {
             _state.update {
