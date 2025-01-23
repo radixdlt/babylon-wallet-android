@@ -5,9 +5,9 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Slip10Curve
+import com.radixdlt.sargon.extensions.bip32CanonicalString
 import com.radixdlt.sargon.extensions.curve
 import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -131,7 +131,7 @@ sealed interface LedgerInteractionRequest {
 
             fun from(derivationPath: DerivationPath) = KeyParameters(
                 curve = Curve.from(derivationPath.curve),
-                derivationPath = derivationPath.string
+                derivationPath = derivationPath.bip32CanonicalString
             )
         }
     }

@@ -4,7 +4,6 @@ package com.babylon.wallet.android.presentation.settings.troubleshooting.importl
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
@@ -31,7 +30,6 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.validate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -414,7 +412,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = interactionId,
                 keyParameters = hardwareAccountsDerivationPaths.map { derivationPath ->
-                    LedgerInteractionRequest.KeyParameters(Curve.Secp256k1, derivationPath.string)
+                    LedgerInteractionRequest.KeyParameters.from(derivationPath)
                 },
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource)
             ).onFailure {

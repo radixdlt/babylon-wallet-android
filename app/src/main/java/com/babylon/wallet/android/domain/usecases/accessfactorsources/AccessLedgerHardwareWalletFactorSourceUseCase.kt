@@ -14,6 +14,7 @@ import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.bip32CanonicalString
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.decompile
 import com.radixdlt.sargon.extensions.hash
@@ -200,7 +201,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         ownedFactorInstances: List<OwnedFactorInstance>
     ): HdSignature<Signable.ID> {
         val ownedFactorInstance = ownedFactorInstances.find {
-            it.factorInstance.publicKey.derivationPath.string == derivedPublicKey.derivationPath
+            it.factorInstance.publicKey.derivationPath.bip32CanonicalString == derivedPublicKey.derivationPath
         } ?: error("No derivation path from ledger, matched the input ownedFactorInstances.")
 
         val input = HdSignatureInput(
