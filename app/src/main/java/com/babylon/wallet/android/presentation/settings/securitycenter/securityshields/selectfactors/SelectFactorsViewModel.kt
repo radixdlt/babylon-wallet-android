@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
@@ -39,7 +40,13 @@ class SelectFactorsViewModel @Inject constructor(
         checked: Boolean
     ) {
         viewModelScope.launch {
-            securityShieldBuilderClient.updatePrimaryRoleThresholdFactorSourceSelection(card.id, checked)
+            securityShieldBuilderClient.executeMutatingFunction {
+                if (checked) {
+                    addFactorSourceToPrimaryThreshold(card.id)
+                } else {
+                    removeFactorFromPrimary(card.id, FactorListKind.THRESHOLD)
+                }
+            }
         }
     }
 

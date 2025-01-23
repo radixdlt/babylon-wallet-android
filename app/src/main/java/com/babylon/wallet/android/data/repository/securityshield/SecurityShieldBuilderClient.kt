@@ -3,13 +3,11 @@ package com.babylon.wallet.android.data.repository.securityshield
 import com.babylon.wallet.android.data.repository.securityshield.model.PrimaryRoleSelection
 import com.babylon.wallet.android.data.repository.securityshield.model.RecoveryRoleSelection
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilder
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
-import com.radixdlt.sargon.Threshold
-import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,7 +26,6 @@ import rdx.works.profile.data.repository.profile
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
 @ActivityRetainedScoped
 class SecurityShieldBuilderClient @Inject constructor(
     profileRepository: ProfileRepository,
@@ -62,75 +59,10 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.sortedFactorSourcesForPrimaryThresholdSelection(allFactorSources.first())
     }
 
-    suspend fun updatePrimaryRoleThresholdFactorSourceSelection(
-        id: FactorSourceId,
-        isSelected: Boolean
-    ) = withContext(dispatcher) {
-        if (isSelected) {
-            executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryThreshold(id) }
-        } else {
-            executeMutatingFunction { securityShieldBuilder.removeFactorFromPrimary(id, FactorListKind.THRESHOLD) }
-        }
-
-        onPrimaryRoleSelectionUpdate()
-    }
-
     suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
         val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
         val selectedFactorSources = allFactorSources.value.filter { it.id in selectedFactorSourceIds }
         executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
-        onPrimaryRoleSelectionUpdate()
-        onRecoveryRoleSelectionUpdate()
-    }
-
-    suspend fun addPrimaryRoleThresholdFactorSource(id: FactorSourceId) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryThreshold(id) }
-        onPrimaryRoleSelectionUpdate()
-    }
-
-    suspend fun addPrimaryRoleOverrideFactorSource(id: FactorSourceId) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryOverride(id) }
-        onPrimaryRoleSelectionUpdate()
-    }
-
-    suspend fun removeFactorSourcesFromPrimary(ids: List<FactorSourceId>, factorListKind: FactorListKind) = withContext(dispatcher) {
-        ids.forEach { id -> securityShieldBuilder.removeFactorFromPrimary(id, factorListKind) }
-        onPrimaryRoleSelectionUpdate()
-    }
-
-    suspend fun setAuthenticationFactorSource(id: FactorSourceId?) = withContext(dispatcher) {
-        securityShieldBuilder.setAuthenticationSigningFactor(id)
-        onPrimaryRoleSelectionUpdate()
-    }
-
-    suspend fun setThreshold(threshold: Threshold) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.setThreshold(threshold) }
-        onPrimaryRoleSelectionUpdate()
-    }
-
-    suspend fun addFactorSourceToRecovery(id: FactorSourceId) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.addFactorSourceToRecoveryOverride(id) }
-        onRecoveryRoleSelectionUpdate()
-    }
-
-    suspend fun addFactorSourceToConfirmation(id: FactorSourceId) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.addFactorSourceToConfirmationOverride(id) }
-        onRecoveryRoleSelectionUpdate()
-    }
-
-    suspend fun removeFactorSourceFromRecovery(id: FactorSourceId) = withContext(dispatcher) {
-        securityShieldBuilder.removeFactorFromRecovery(id)
-        onRecoveryRoleSelectionUpdate()
-    }
-
-    suspend fun removeFactorSourceFromConfirmation(id: FactorSourceId) = withContext(dispatcher) {
-        securityShieldBuilder.removeFactorFromConfirmation(id)
-        onRecoveryRoleSelectionUpdate()
-    }
-
-    suspend fun setTimePeriodUntilAutoConfirm(timePeriod: TimePeriod) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.setTimePeriodUntilAutoConfirm(timePeriod) }
-        onRecoveryRoleSelectionUpdate()
     }
 
     suspend fun buildShield(name: String): SecurityStructureOfFactorSourceIDs = withContext(dispatcher) {
@@ -138,7 +70,7 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.build().also { Timber.w("Shield created: $it") }
     }
 
-    private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
+    private suspend fun onPrimaryRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
                 threshold = securityShieldBuilder.getPrimaryThreshold(),
@@ -147,28 +79,31 @@ class SecurityShieldBuilderClient @Inject constructor(
                 overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
                 authenticationFactor = securityShieldBuilder.getAuthenticationSigningFactor()?.toFactorSource(),
                 primaryRoleStatus = securityShieldBuilder.selectedPrimaryThresholdFactorsStatus(),
-                shieldStatus = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
+                shieldStatus = status
             )
         )
     }
 
-    private suspend fun onRecoveryRoleSelectionUpdate() = withContext(dispatcher) {
+    private suspend fun onRecoveryRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
         recoveryRoleSelection.emit(
             RecoveryRoleSelection(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
                 confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
                 timePeriodUntilAutoConfirm = securityShieldBuilder.getTimePeriodUntilAutoConfirm(),
-                shieldStatus = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
+                shieldStatus = status
             )
         )
     }
 
-    private fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) {
+    suspend fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
         securityShieldBuilder = securityShieldBuilder.function()
+
+        val status = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
+        onPrimaryRoleSelectionUpdate(status)
+        onRecoveryRoleSelectionUpdate(status)
     }
 
-    private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =
-        mapNotNull { id -> id.toFactorSource() }
+    private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> = mapNotNull { id -> id.toFactorSource() }
 
     private fun FactorSourceId.toFactorSource(): FactorSource? = allFactorSources.value.firstOrNull { it.id == this }
 }

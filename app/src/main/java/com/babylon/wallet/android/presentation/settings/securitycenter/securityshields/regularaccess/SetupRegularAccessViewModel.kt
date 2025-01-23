@@ -54,7 +54,7 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onThresholdSelect(threshold: Threshold) {
-        viewModelScope.launch { securityShieldBuilderClient.setThreshold(threshold) }
+        viewModelScope.launch { securityShieldBuilderClient.executeMutatingFunction { setThreshold(threshold) } }
     }
 
     fun onThresholdSelectionDismiss() {
@@ -73,7 +73,14 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id), FactorListKind.THRESHOLD) }
+        viewModelScope.launch {
+            securityShieldBuilderClient.executeMutatingFunction {
+                removeFactorFromPrimary(
+                    card.id,
+                    FactorListKind.THRESHOLD
+                )
+            }
+        }
     }
 
     fun onAddOverrideClick() {
@@ -102,10 +109,12 @@ class SetupRegularAccessViewModel @Inject constructor(
         val selectFactor = _state.value.selectFactor ?: return
 
         viewModelScope.launch {
-            when (selectFactor.purpose) {
-                State.SelectFactor.Purpose.Threshold -> securityShieldBuilderClient.addPrimaryRoleThresholdFactorSource(card.id)
-                State.SelectFactor.Purpose.Override -> securityShieldBuilderClient.addPrimaryRoleOverrideFactorSource(card.id)
-                State.SelectFactor.Purpose.Authentication -> securityShieldBuilderClient.setAuthenticationFactorSource(card.id)
+            securityShieldBuilderClient.executeMutatingFunction {
+                when (selectFactor.purpose) {
+                    State.SelectFactor.Purpose.Threshold -> addFactorSourceToPrimaryThreshold(card.id)
+                    State.SelectFactor.Purpose.Override -> addFactorSourceToPrimaryOverride(card.id)
+                    State.SelectFactor.Purpose.Authentication -> setAuthenticationSigningFactor(card.id)
+                }
             }
         }
     }
@@ -115,18 +124,19 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     fun onRemoveAuthenticationFactorClick() {
-        viewModelScope.launch { securityShieldBuilderClient.setAuthenticationFactorSource(null) }
+        viewModelScope.launch { securityShieldBuilderClient.executeMutatingFunction { setAuthenticationSigningFactor(null) } }
     }
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourcesFromPrimary(listOf(card.id), FactorListKind.OVERRIDE) }
+        viewModelScope.launch {
+            securityShieldBuilderClient.executeMutatingFunction {
+                removeFactorFromPrimary(card.id, FactorListKind.OVERRIDE)
+            }
+        }
     }
 
     fun onRemoveAllOverrideFactorsClick() {
-        viewModelScope.launch {
-            val ids = _state.value.overrideFactors.map { it.id }
-            securityShieldBuilderClient.removeFactorSourcesFromPrimary(ids, FactorListKind.OVERRIDE)
-        }
+        viewModelScope.launch { securityShieldBuilderClient.executeMutatingFunction { removeAllFactorsFromPrimaryOverride() } }
     }
 
     private fun observeSelection() {
@@ -181,7 +191,7 @@ class SetupRegularAccessViewModel @Inject constructor(
         }
         val isAuthSigningFactorMissing: Boolean = invalidStatus?.reason?.isAuthSigningFactorMissing == true
 
-        val isButtonEnabled = factorListStatus == FactorListStatus.Ok && !isAuthSigningFactorMissing
+        val isButtonEnabled = factorListStatus != FactorListStatus.Empty && !isAuthSigningFactorMissing
 
         enum class FactorListStatus {
             Empty,

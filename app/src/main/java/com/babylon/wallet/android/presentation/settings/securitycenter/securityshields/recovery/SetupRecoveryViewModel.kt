@@ -46,7 +46,7 @@ class SetupRecoveryViewModel @Inject constructor(
     }
 
     fun onRemoveStartRecoveryFactor(card: FactorSourceCard) {
-        viewModelScope.launch { securityShieldBuilderClient.removeFactorSourceFromRecovery(card.id) }
+        viewModelScope.launch { securityShieldBuilderClient.executeMutatingFunction { removeFactorFromRecovery(card.id) } }
     }
 
     fun onAddConfirmRecoveryFactorClick() {
@@ -62,7 +62,7 @@ class SetupRecoveryViewModel @Inject constructor(
 
     fun onRemoveConfirmRecoveryFactor(card: FactorSourceCard) {
         viewModelScope.launch {
-            securityShieldBuilderClient.removeFactorSourceFromConfirmation(card.id)
+            securityShieldBuilderClient.executeMutatingFunction { removeFactorFromConfirmation(card.id) }
             initSelection()
         }
     }
@@ -71,9 +71,11 @@ class SetupRecoveryViewModel @Inject constructor(
         val selectFactor = _state.value.selectFactor ?: return
 
         viewModelScope.launch {
-            when (selectFactor.purpose) {
-                State.SelectFactor.Purpose.StartRecovery -> securityShieldBuilderClient.addFactorSourceToRecovery(card.id)
-                State.SelectFactor.Purpose.Confirmation -> securityShieldBuilderClient.addFactorSourceToConfirmation(card.id)
+            securityShieldBuilderClient.executeMutatingFunction {
+                when (selectFactor.purpose) {
+                    State.SelectFactor.Purpose.StartRecovery -> addFactorSourceToRecoveryOverride(card.id)
+                    State.SelectFactor.Purpose.Confirmation -> addFactorSourceToConfirmationOverride(card.id)
+                }
             }
         }
     }
@@ -121,12 +123,14 @@ class SetupRecoveryViewModel @Inject constructor(
         viewModelScope.launch {
             val fallbackPeriod = requireNotNull(state.value.selectFallbackPeriod)
 
-            securityShieldBuilderClient.setTimePeriodUntilAutoConfirm(
-                TimePeriod(
-                    value = fallbackPeriod.currentValue.toUShort(),
-                    unit = fallbackPeriod.currentUnit
+            securityShieldBuilderClient.executeMutatingFunction {
+                setTimePeriodUntilAutoConfirm(
+                    TimePeriod(
+                        value = fallbackPeriod.currentValue.toUShort(),
+                        unit = fallbackPeriod.currentUnit
+                    )
                 )
-            )
+            }
         }
     }
 
