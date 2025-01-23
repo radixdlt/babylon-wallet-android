@@ -174,10 +174,20 @@ class SetupRegularAccessViewModel @Inject constructor(
 
         private val invalidStatus = status as? SecurityShieldBuilderStatus.Invalid
 
-        val isFactorListEmpty = invalidStatus?.reason?.isPrimaryRoleFactorListEmpty == true
+        val factorListStatus = when {
+            status is SecurityShieldBuilderStatus.Weak -> FactorListStatus.Unsafe
+            invalidStatus?.reason?.isPrimaryRoleFactorListEmpty == true -> FactorListStatus.Empty
+            else -> FactorListStatus.Ok
+        }
         val isAuthSigningFactorMissing: Boolean = invalidStatus?.reason?.isAuthSigningFactorMissing == true
 
-        val isButtonEnabled = !isFactorListEmpty && !isAuthSigningFactorMissing
+        val isButtonEnabled = factorListStatus == FactorListStatus.Ok && !isAuthSigningFactorMissing
+
+        enum class FactorListStatus {
+            Empty,
+            Unsafe,
+            Ok
+        }
 
         data class SelectFactor(
             val purpose: Purpose,

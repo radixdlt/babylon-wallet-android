@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,6 +47,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -53,16 +55,15 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewSize
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.Threshold
@@ -171,16 +172,16 @@ private fun SetupRegularAccessContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-                if (state.isFactorListEmpty) {
-                    ShieldSetupMissingFactorStatusView(
-                        modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingMedium,
-                            end = RadixTheme.dimensions.paddingMedium,
-                            top = RadixTheme.dimensions.paddingSemiLarge,
-                            bottom = RadixTheme.dimensions.paddingSemiLarge
-                        )
-                    )
-                }
+                FactorListStatusView(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingMedium,
+                        end = RadixTheme.dimensions.paddingMedium,
+                        top = RadixTheme.dimensions.paddingSemiLarge,
+                        bottom = RadixTheme.dimensions.paddingSemiLarge
+                    ),
+                    status = state.factorListStatus,
+                    onInfoClick = onInfoClick
+                )
 
                 ThresholdFactorsView(
                     numberOfFactors = state.threshold,
@@ -221,6 +222,25 @@ private fun SetupRegularAccessContent(
             onSelect = onNumberOfFactorsSelect,
             onDismiss = onNumberOfFactorsDismiss
         )
+    }
+}
+
+@Composable
+private fun FactorListStatusView(
+    modifier: Modifier,
+    status: SetupRegularAccessViewModel.State.FactorListStatus,
+    onInfoClick: (GlossaryItem) -> Unit
+) {
+    Box(
+        modifier = modifier
+    ) {
+        when (status) {
+            SetupRegularAccessViewModel.State.FactorListStatus.Empty -> ShieldSetupMissingFactorStatusView()
+            SetupRegularAccessViewModel.State.FactorListStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
+                onInfoClick = onInfoClick
+            )
+            SetupRegularAccessViewModel.State.FactorListStatus.Ok -> {}
+        }
     }
 }
 
@@ -453,7 +473,7 @@ private fun AuthenticationFactorView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-        if (factor == null) {
+        if (isMissing) {
             ShieldSetupMissingFactorStatusView(
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingSmall,
@@ -651,6 +671,43 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         isRecoveryRoleFactorListEmpty = false,
                         isConfirmationRoleFactorListEmpty = false
                     )
+                )
+            ),
+            SetupRegularAccessViewModel.State(
+                thresholdFactors = persistentListOf(
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "My Phone",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
+                    ),
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "My second phone",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
+                    )
+                ),
+                selectThreshold = null,
+                threshold = Threshold.Specific(2.toUByte()),
+                status = SecurityShieldBuilderStatus.Weak(
+                    reason = SecurityShieldBuilderRuleViolation.PrimaryCannotHaveMultipleDevices()
                 )
             ),
             SetupRegularAccessViewModel.State(

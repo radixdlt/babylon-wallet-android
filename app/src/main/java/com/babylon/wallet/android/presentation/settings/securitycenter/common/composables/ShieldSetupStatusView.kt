@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.SecurityShieldBuilderStatus
 
 @Composable
 fun ShieldSetupMissingFactorStatusView(
