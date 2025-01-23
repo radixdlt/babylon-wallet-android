@@ -81,9 +81,9 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
-import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -267,6 +267,8 @@ private fun ImportLegacyWalletContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
+
+    val isSuggestionsVisible = seedPhraseInputState.rememberSuggestionsVisibilityState()
     Box(modifier = modifier) {
         Scaffold(
             topBar = {
@@ -284,7 +286,7 @@ private fun ImportLegacyWalletContent(
                 )
             },
             bottomBar = {
-                if (seedPhraseSuggestionsVisible(seedPhraseInputState.wordAutocompleteCandidates)) {
+                if (isSuggestionsVisible) {
                     SeedPhraseSuggestions(
                         wordAutocompleteCandidates = seedPhraseInputState.wordAutocompleteCandidates,
                         modifier = Modifier
@@ -336,7 +338,7 @@ private fun ImportLegacyWalletContent(
                                 .fillMaxSize()
                                 .keyboardVisiblePadding(
                                     padding = padding,
-                                    bottom = if (seedPhraseSuggestionsVisible(seedPhraseInputState.wordAutocompleteCandidates)) {
+                                    bottom = if (isSuggestionsVisible) {
                                         RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                                     } else {
                                         RadixTheme.dimensions.paddingDefault
@@ -413,12 +415,6 @@ private fun ImportLegacyWalletContent(
     }
 }
 
-@Composable
-private fun seedPhraseSuggestionsVisible(wordAutocompleteCandidates: ImmutableList<String>): Boolean {
-    return wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
-}
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,

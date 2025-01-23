@@ -33,7 +33,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun RadixTextField(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onValueChanged: (String) -> Unit,
     value: String,
     colors: TextFieldColors? = null,
@@ -125,7 +125,7 @@ fun RadixTextField(
                         tint = RadixTheme.colors.red1
                     )
                 }
-                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)
+                Text(text = error.orEmpty(), style = RadixTheme.typography.body2HighImportance, color = RadixTheme.colors.red1)
             }
         } else {
             optionalHint?.let { hint ->

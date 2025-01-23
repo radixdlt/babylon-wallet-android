@@ -322,7 +322,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     fun `transaction approval success`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
-        vm.onApproveTransaction()
+        vm.onSignAndSubmitTransaction()
         advanceUntilIdle()
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithSuccessTransactionIntent(
@@ -337,7 +337,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
         val vm = vm.value
         advanceUntilIdle()
-        vm.onApproveTransaction()
+        vm.onSignAndSubmitTransaction()
         advanceUntilIdle()
         val errorSlot = slot<DappWalletInteractionErrorType>()
         coVerify(exactly = 1) {
@@ -360,7 +360,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         val vm = vm.value
         advanceUntilIdle()
-        vm.onApproveTransaction()
+        vm.onSignAndSubmitTransaction()
         advanceUntilIdle()
         val state = vm.state.first()
         val errorSlot = slot<DappWalletInteractionErrorType>()

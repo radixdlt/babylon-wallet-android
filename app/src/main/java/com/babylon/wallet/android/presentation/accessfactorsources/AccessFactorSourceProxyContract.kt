@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
@@ -10,10 +9,9 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
@@ -99,8 +97,7 @@ sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKeys(
         val purpose: DerivationPurpose,
-        val factorSourceId: FactorSourceIdFromHash,
-        val derivationPaths: List<DerivationPath>
+        val request: KeyDerivationRequestPerFactorSource
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
@@ -159,9 +156,7 @@ sealed interface AccessFactorSourcesOutput {
             val factorInstances: List<HierarchicalDeterministicFactorInstance>
         ) : DerivedPublicKeys
 
-        data class Failure(
-            val error: AccessFactorSourceError.Fatal
-        ) : DerivedPublicKeys
+        data object Rejected : DerivedPublicKeys
     }
 
     data class DerivedAccountsWithNextDerivationPath(
@@ -169,19 +164,13 @@ sealed interface AccessFactorSourcesOutput {
         val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
-    sealed interface EntitiesWithSignatures : AccessFactorSourcesOutput {
-        data class Success(
-            val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
-        ) : EntitiesWithSignatures
+    sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
+        data class Completed<ID : Signable.ID>(
+            val outcome: PerFactorOutcome<ID>
+        ) : SignOutput<ID>
 
-        data class Failure(
-            val error: AccessFactorSourceError.Fatal
-        ) : EntitiesWithSignatures
+        data object Rejected : SignOutput<Signable.ID>
     }
-
-    data class SignOutput<ID : Signable.ID>(
-        val output: PerFactorOutcome<ID>
-    ) : AccessFactorSourcesOutput
 
     data class Failure(
         val error: Throwable

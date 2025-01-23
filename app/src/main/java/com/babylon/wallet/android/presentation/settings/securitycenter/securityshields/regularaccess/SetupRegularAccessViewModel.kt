@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldB
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
@@ -135,9 +135,22 @@ class SetupRegularAccessViewModel @Inject constructor(
                 .collect { selection ->
                     _state.update { state ->
                         state.copy(
-                            thresholdFactors = selection.thresholdFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                            overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                            authenticationFactor = selection.authenticationFactor?.toCompactInstanceCard(true),
+                            thresholdFactors = selection.thresholdFactors.map {
+                                it.toFactorSourceCard(
+                                    includeDescription = true,
+                                    includeLastUsedOn = false
+                                )
+                            }.toPersistentList(),
+                            overrideFactors = selection.overrideFactors.map {
+                                it.toFactorSourceCard(
+                                    includeDescription = true,
+                                    includeLastUsedOn = false
+                                )
+                            }.toPersistentList(),
+                            authenticationFactor = selection.authenticationFactor?.toFactorSourceCard(
+                                includeDescription = true,
+                                includeLastUsedOn = false
+                            ),
                             status = selection.shieldStatus,
                             threshold = selection.threshold,
                             selectThreshold = null,
