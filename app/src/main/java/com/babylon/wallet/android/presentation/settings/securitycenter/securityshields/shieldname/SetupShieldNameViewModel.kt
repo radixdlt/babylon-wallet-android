@@ -59,7 +59,7 @@ class SetupShieldNameViewModel @Inject constructor(
     ) : UiState {
 
         val isNameTooLong = name.trim().length > SharedConstants.displayNameMaxLength
-        val isButtonEnabled = name.isNotBlank()
+        val isButtonEnabled = name.isNotBlank() && !isNameTooLong
     }
 
     sealed interface Event : OneOffEvent {
