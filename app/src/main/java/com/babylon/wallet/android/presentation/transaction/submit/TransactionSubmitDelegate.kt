@@ -253,14 +253,6 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             _state.update { state ->
                 state.copy(isSubmitting = false)
             }
-        }.recover { error ->
-            logger.e(error)
-            _state.update { state ->
-                state.copy(
-                    isSubmitting = false,
-                    error = TransactionErrorMessage(error)
-                )
-            }
         }
     }
 
@@ -277,7 +269,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
             // When signing failed due to many factor sources were skipped, the user must see the appropriate modal
             is CommonException.SigningFailedTooManyFactorSourcesNeglected -> {
-                _state.update { it.copy(isSubmitting = false, sheetState = TransactionReviewViewModel.State.Sheet.SigningFailed) }
+                _state.update { it.copy(isSubmitting = false, sheetState = Sheet.SigningFailed) }
             }
 
             // Errors that need to be reported both to the user and back to the dApp. The user cannot recover.
