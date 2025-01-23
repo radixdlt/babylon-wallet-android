@@ -162,13 +162,19 @@ class SetupRecoveryViewModel @Inject constructor(
     }
 
     data class State(
-        val status: SecurityShieldBuilderStatus? = null,
+        private val status: SecurityShieldBuilderStatus? = null,
         val startRecoveryFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val confirmationFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val fallbackPeriod: TimePeriod? = null,
         val selectFallbackPeriod: SelectFallbackPeriod? = null,
         val selectFactor: SelectFactor? = null
     ) : UiState {
+
+        private val invalidStatus = status as? SecurityShieldBuilderStatus.Invalid
+
+        val isRecoveryListEmpty: Boolean = invalidStatus?.reason?.isRecoveryRoleFactorListEmpty == true
+        val isConfirmationListEmpty: Boolean = invalidStatus?.reason?.isConfirmationRoleFactorListEmpty == true
+        val isCombinationUnsafe: Boolean = status is SecurityShieldBuilderStatus.Weak
 
         val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
 

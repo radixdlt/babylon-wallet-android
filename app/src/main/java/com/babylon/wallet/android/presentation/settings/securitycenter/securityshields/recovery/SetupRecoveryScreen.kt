@@ -43,6 +43,8 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -58,6 +60,9 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
+import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -165,6 +170,18 @@ private fun SetupRecoveryContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
+                if (state.isCombinationUnsafe) {
+                    ShieldSetupUnsafeCombinationStatusView(
+                        modifier = Modifier.padding(
+                            start = RadixTheme.dimensions.paddingSmall,
+                            end = RadixTheme.dimensions.paddingSmall,
+                            top = RadixTheme.dimensions.paddingDefault,
+                            bottom = RadixTheme.dimensions.paddingXXLarge
+                        ),
+                        onInfoClick = onInfoClick
+                    )
+                }
+
                 SectionHeaderView(
                     title = stringResource(id = R.string.shieldWizardRecovery_start_title),
                     subtitle = stringResource(id = R.string.shieldWizardRecovery_start_subtitle),
@@ -172,17 +189,15 @@ private fun SetupRecoveryContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-                state.status?.let {
-//                    ShieldSetupInvalidStatusView(
-//                        modifier = Modifier.padding(
-//                            start = RadixTheme.dimensions.paddingSemiLarge,
-//                            end = RadixTheme.dimensions.paddingSemiLarge,
-//                            top = RadixTheme.dimensions.paddingSemiLarge,
-//                            bottom = RadixTheme.dimensions.paddingXXLarge
-//                        ),
-//                        status = it,
-//                        onInfoClick = onInfoClick
-//                    )
+                if (state.isRecoveryListEmpty) {
+                    ShieldSetupMissingFactorStatusView(
+                        modifier = Modifier.padding(
+                            start = RadixTheme.dimensions.paddingMedium,
+                            end = RadixTheme.dimensions.paddingMedium,
+                            top = RadixTheme.dimensions.paddingMedium,
+                            bottom = RadixTheme.dimensions.paddingLarge
+                        )
+                    )
                 }
 
                 FactorsView(
@@ -209,6 +224,17 @@ private fun SetupRecoveryContent(
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+
+                if (state.isConfirmationListEmpty) {
+                    ShieldSetupMissingFactorStatusView(
+                        modifier = Modifier.padding(
+                            start = RadixTheme.dimensions.paddingMedium,
+                            end = RadixTheme.dimensions.paddingMedium,
+                            top = RadixTheme.dimensions.paddingMedium,
+                            bottom = RadixTheme.dimensions.paddingLarge
+                        )
+                    )
+                }
 
                 FactorsView(
                     factors = state.confirmationFactors,
@@ -615,6 +641,53 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                     )
                 ),
                 fallbackPeriod = TimePeriod.sample()
+            ),
+            SetupRecoveryViewModel.State(
+                startRecoveryFactors = persistentListOf(
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "Ledger ABC",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
+                    )
+                ),
+                confirmationFactors = persistentListOf(
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "Ledger ABC",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
+                    )
+                ),
+                status = SecurityShieldBuilderStatus.Weak(
+                    reason = SecurityShieldBuilderRuleViolation.RecoveryAndConfirmationFactorsOverlap()
+                )
+            ),
+            SetupRecoveryViewModel.State(
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = false,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = true,
+                        isConfirmationRoleFactorListEmpty = true
+                    )
+                )
             ),
             SetupRecoveryViewModel.State(
                 selectFallbackPeriod = SetupRecoveryViewModel.State.SelectFallbackPeriod(
