@@ -96,7 +96,7 @@ class CreateAccountViewModel @Inject constructor(
                 }
 
                 is FactorSourceToCreateAccount.MainBabylon -> runCatching {
-                    sargonOsManager.sargonOs.createAndSaveNewAccountWithBdfs(
+                    sargonOsManager.sargonOs.createAndSaveNewAccountWithMainBdfs(
                         networkId = networkId,
                         name = name
                     )

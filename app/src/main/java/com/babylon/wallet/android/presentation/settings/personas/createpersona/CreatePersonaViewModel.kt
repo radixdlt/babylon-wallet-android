@@ -67,7 +67,7 @@ class CreatePersonaViewModel @Inject constructor(
             val isFirstPersonaAboutToBeCreated = profile.activePersonasOnCurrentNetwork.isEmpty()
 
             runCatching {
-                sargonOsManager.sargonOs.createAndSaveNewPersonaWithBdfs(
+                sargonOsManager.sargonOs.createAndSaveNewPersonaWithMainBdfs(
                     networkId = networkId,
                     name = DisplayName.init(_state.value.personaDisplayName.value.trim()),
                     personaData = personaData
