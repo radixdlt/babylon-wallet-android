@@ -43,7 +43,6 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -174,16 +173,16 @@ private fun SetupRecoveryContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
                 state.status?.let {
-                    ShieldSetupStatusView(
-                        modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingSemiLarge,
-                            end = RadixTheme.dimensions.paddingSemiLarge,
-                            top = RadixTheme.dimensions.paddingSemiLarge,
-                            bottom = RadixTheme.dimensions.paddingXXLarge
-                        ),
-                        status = it,
-                        onInfoClick = onInfoClick
-                    )
+//                    ShieldSetupInvalidStatusView(
+//                        modifier = Modifier.padding(
+//                            start = RadixTheme.dimensions.paddingSemiLarge,
+//                            end = RadixTheme.dimensions.paddingSemiLarge,
+//                            top = RadixTheme.dimensions.paddingSemiLarge,
+//                            bottom = RadixTheme.dimensions.paddingXXLarge
+//                        ),
+//                        status = it,
+//                        onInfoClick = onInfoClick
+//                    )
                 }
 
                 FactorsView(

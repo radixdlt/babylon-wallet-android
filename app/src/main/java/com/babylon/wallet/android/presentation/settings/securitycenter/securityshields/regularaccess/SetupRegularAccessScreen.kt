@@ -45,7 +45,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -171,16 +171,14 @@ private fun SetupRegularAccessContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-                state.status?.let {
-                    ShieldSetupStatusView(
+                if (state.isFactorListEmpty) {
+                    ShieldSetupMissingFactorStatusView(
                         modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingSemiLarge,
-                            end = RadixTheme.dimensions.paddingSemiLarge,
+                            start = RadixTheme.dimensions.paddingMedium,
+                            end = RadixTheme.dimensions.paddingMedium,
                             top = RadixTheme.dimensions.paddingSemiLarge,
-                            bottom = RadixTheme.dimensions.paddingXXLarge
-                        ),
-                        status = it,
-                        onInfoClick = onInfoClick
+                            bottom = RadixTheme.dimensions.paddingSemiLarge
+                        )
                     )
                 }
 
@@ -208,6 +206,7 @@ private fun SetupRegularAccessContent(
 
             AuthenticationFactorView(
                 factor = state.authenticationFactor,
+                isMissing = state.isAuthSigningFactorMissing,
                 onRemoveClick = onRemoveAuthenticationFactorClick,
                 onAddClick = onAddAuthenticationFactorClick
             )
@@ -368,7 +367,7 @@ private fun ThresholdFactorsView(
             Text(
                 text = buildAnnotatedString {
                     val annotatedPart = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_selection)
-                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title)
+                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title, annotatedPart)
                     val parts = text.split(annotatedPart)
                     append(parts.getOrNull(0).orEmpty())
                     appendInlineContent(id = inlineContentKey)
@@ -439,6 +438,7 @@ private fun NumberOfFactorsView(
 private fun AuthenticationFactorView(
     modifier: Modifier = Modifier,
     factor: FactorSourceCard?,
+    isMissing: Boolean,
     onRemoveClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -454,14 +454,10 @@ private fun AuthenticationFactorView(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
         if (factor == null) {
-            StatusMessageText(
+            ShieldSetupMissingFactorStatusView(
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingSmall,
                     bottom = RadixTheme.dimensions.paddingSemiLarge
-                ),
-                message = StatusMessage(
-                    message = stringResource(id = R.string.shieldSetupStatus_roles_atLeastOneFactor),
-                    type = StatusMessage.Type.WARNING
                 )
             )
         }
@@ -644,6 +640,18 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     personas = persistentListOf(),
                     hasHiddenEntities = false
                 ),
+            ),
+            SetupRegularAccessViewModel.State(
+                selectThreshold = null,
+                threshold = Threshold.Specific(2.toUByte()),
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = true,
+                        isAuthSigningFactorMissing = true,
+                        isRecoveryRoleFactorListEmpty = false,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
+                )
             ),
             SetupRegularAccessViewModel.State(
                 selectThreshold = SetupRegularAccessViewModel.State.SelectThreshold(

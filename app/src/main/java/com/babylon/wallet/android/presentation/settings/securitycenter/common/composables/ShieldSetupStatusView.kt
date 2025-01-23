@@ -14,32 +14,34 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 
 @Composable
-fun ShieldSetupStatusView(
+fun ShieldSetupMissingFactorStatusView(
     modifier: Modifier = Modifier,
-    status: SecurityShieldBuilderStatus,
+) {
+    StatusMessageText(
+        modifier = modifier,
+        message = StatusMessage(
+            message = stringResource(id = R.string.shieldSetupStatus_roles_atLeastOneFactor),
+            type = StatusMessage.Type.ERROR
+        )
+    )
+}
+
+@Composable
+fun ShieldSetupUnsafeCombinationStatusView(
+    modifier: Modifier = Modifier,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
-    // TODO sergiu proper handling
-    when (status) {
-        is SecurityShieldBuilderStatus.Invalid -> StatusMessageText(
-            modifier = modifier,
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_roles_atLeastOneFactor),
-                type = StatusMessage.Type.ERROR
-            )
+    StatusMessageText(
+        modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
+        message = StatusMessage(
+            message = stringResource(id = R.string.shieldSetupStatus_unsafeCombination).formattedSpans(
+                boldStyle = SpanStyle(
+                    color = RadixTheme.colors.blue2,
+                    fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
+                    fontSize = RadixTheme.typography.body2Link.fontSize
+                )
+            ),
+            type = StatusMessage.Type.WARNING
         )
-        is SecurityShieldBuilderStatus.Weak -> StatusMessageText(
-            modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_unsafeCombination).formattedSpans(
-                    boldStyle = SpanStyle(
-                        color = RadixTheme.colors.blue2,
-                        fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
-                        fontSize = RadixTheme.typography.body2Link.fontSize
-                    )
-                ),
-                type = StatusMessage.Type.WARNING
-            )
-        ) else -> {}
-    }
+    )
 }

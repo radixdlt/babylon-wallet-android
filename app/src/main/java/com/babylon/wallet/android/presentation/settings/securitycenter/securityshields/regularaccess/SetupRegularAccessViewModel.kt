@@ -135,10 +135,10 @@ class SetupRegularAccessViewModel @Inject constructor(
                 .collect { selection ->
                     _state.update { state ->
                         state.copy(
+                            status = selection.shieldStatus,
                             thresholdFactors = selection.thresholdFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             authenticationFactor = selection.authenticationFactor?.toCompactInstanceCard(true),
-                            status = selection.shieldStatus,
                             threshold = selection.threshold,
                             selectThreshold = null,
                             selectFactor = null
@@ -149,7 +149,7 @@ class SetupRegularAccessViewModel @Inject constructor(
     }
 
     data class State(
-        val status: SecurityShieldBuilderStatus? = null,
+        private val status: SecurityShieldBuilderStatus? = null,
         val threshold: Threshold = Threshold.All,
         val selectThreshold: SelectThreshold? = null,
         val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
@@ -159,7 +159,12 @@ class SetupRegularAccessViewModel @Inject constructor(
         val selectFactor: SelectFactor? = null
     ) : UiState {
 
-        val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
+        private val invalidStatus = status as? SecurityShieldBuilderStatus.Invalid
+
+        val isFactorListEmpty = invalidStatus?.reason?.isPrimaryRoleFactorListEmpty == true
+        val isAuthSigningFactorMissing: Boolean = invalidStatus?.reason?.isAuthSigningFactorMissing == true
+
+        val isButtonEnabled = !isFactorListEmpty && !isAuthSigningFactorMissing
 
         data class SelectFactor(
             val purpose: Purpose,
