@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +33,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -50,7 +50,8 @@ fun AddFactorScreen(
     viewModel: AddFactorViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    toFactorSetup: (FactorSourceKind) -> Unit
+    toFactorSetup: (FactorSourceKind) -> Unit,
+    toRegularAccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -58,6 +59,7 @@ fun AddFactorScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
+        onSkipClick = viewModel::onSkipClick,
         onFactorSourceKindSelect = viewModel::onFactorSourceKindSelect,
         onInfoClick = onInfoClick,
         onButtonClick = viewModel::onButtonClick,
@@ -68,6 +70,7 @@ fun AddFactorScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is AddFactorViewModel.Event.ToFactorSetup -> toFactorSetup(event.kind)
+                AddFactorViewModel.Event.ToRegularAccess -> toRegularAccess()
             }
         }
     }
@@ -78,6 +81,7 @@ private fun AddFactorContent(
     modifier: Modifier = Modifier,
     state: AddFactorViewModel.State,
     onDismiss: () -> Unit,
+    onSkipClick: () -> Unit,
     onFactorSourceKindSelect: (FactorSourceKindCard) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onButtonClick: () -> Unit,
@@ -105,15 +109,17 @@ private fun AddFactorContent(
                 onClick = onButtonClick,
                 text = state.mode.button(),
                 enabled = state.isButtonEnabled,
-                additionalBottomContent = if (state.isModeHardwareOnly) {
-                    {
-                        RadixTextButton(
-                            text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
-                            onClick = { onInfoClick(GlossaryItem.nohardwaredevice) }
-                        )
-                    }
-                } else {
-                    null
+                additionalBottomContent = {
+                    RadixTextButton(
+                        modifier = Modifier.padding(
+                            top = RadixTheme.dimensions.paddingSmall,
+                            start = RadixTheme.dimensions.paddingDefault,
+                            end = RadixTheme.dimensions.paddingDefault
+                        ),
+                        text = stringResource(id = R.string.shieldSetupPrepareFactors_skip_button),
+                        onClick = onSkipClick,
+                        textAlign = TextAlign.Center
+                    )
                 }
             )
         },
@@ -126,39 +132,36 @@ private fun AddFactorContent(
         containerColor = RadixTheme.colors.white
     ) { padding ->
         LazyColumn(
-            contentPadding = padding
+            contentPadding = padding,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        painter = painterResource(id = DSR.ic_add_hardware_device),
-                        contentDescription = null
-                    )
+                Image(
+                    painter = painterResource(id = DSR.ic_add_hardware_device),
+                    contentDescription = null
+                )
 
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-                    Text(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                        text = state.mode.title(),
-                        style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Center
-                    )
+                Text(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                    text = state.mode.title(),
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
+                )
 
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
 
-                    Text(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                        text = state.mode.subtitle(),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Center
-                    )
+                Text(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                    text = state.mode.subtitle(),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
+                )
 
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             }
 
             items(state.factorSourceKinds) { item ->
@@ -169,6 +172,15 @@ private fun AddFactorContent(
                     item = item,
                     onSelect = onFactorSourceKindSelect
                 )
+            }
+
+            if (state.isModeHardwareOnly) {
+                item {
+                    InfoButton(
+                        text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
+                        onClick = { onInfoClick(GlossaryItem.nohardwaredevice) },
+                    )
+                }
             }
         }
     }
@@ -204,6 +216,7 @@ private fun AddFactorPreview(
         AddFactorContent(
             onDismiss = {},
             state = state,
+            onSkipClick = {},
             onFactorSourceKindSelect = {},
             onInfoClick = {},
             onButtonClick = {},

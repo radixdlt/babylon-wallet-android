@@ -112,6 +112,13 @@ class SelectFactorsViewModel @Inject constructor(
         )
     }
 
+    fun onSkipClick() {
+        viewModelScope.launch {
+            securityShieldBuilderClient.newSecurityShieldBuilder()
+            sendEvent(Event.ToRegularAccess)
+        }
+    }
+
     data class State(
         val items: List<UiItem> = emptyList(),
         val status: SelectedPrimaryThresholdFactorsStatus? = null,

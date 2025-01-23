@@ -27,6 +27,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityRetainedScoped
+@Suppress("TooManyFunctions")
 class SecurityShieldBuilderClient @Inject constructor(
     profileRepository: ProfileRepository,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -45,10 +46,11 @@ class SecurityShieldBuilderClient @Inject constructor(
     private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun newSecurityShieldBuilder() {
+    suspend fun newSecurityShieldBuilder() {
         securityShieldBuilder = SecurityShieldBuilder()
         primaryRoleSelection.resetReplayCache()
         recoveryRoleSelection.resetReplayCache()
+        initSelection()
     }
 
     fun primaryRoleSelection(): Flow<PrimaryRoleSelection> = primaryRoleSelection
@@ -70,7 +72,18 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.build().also { Timber.w("Shield created: $it") }
     }
 
-    private suspend fun onPrimaryRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
+    suspend fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
+        securityShieldBuilder = securityShieldBuilder.function()
+        initSelection()
+    }
+
+    private suspend fun initSelection() {
+        val status = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
+        initPrimaryRoleSelectionUpdate(status)
+        initRecoveryAndConfirmationRoleSelectionUpdate(status)
+    }
+
+    private suspend fun initPrimaryRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
                 threshold = securityShieldBuilder.getPrimaryThreshold(),
@@ -84,7 +97,7 @@ class SecurityShieldBuilderClient @Inject constructor(
         )
     }
 
-    private suspend fun onRecoveryRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
+    private suspend fun initRecoveryAndConfirmationRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
         recoveryRoleSelection.emit(
             RecoveryRoleSelection(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
@@ -93,14 +106,6 @@ class SecurityShieldBuilderClient @Inject constructor(
                 shieldStatus = status
             )
         )
-    }
-
-    suspend fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
-        securityShieldBuilder = securityShieldBuilder.function()
-
-        val status = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
-        onPrimaryRoleSelectionUpdate(status)
-        onRecoveryRoleSelectionUpdate(status)
     }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> = mapNotNull { id -> id.toFactorSource() }

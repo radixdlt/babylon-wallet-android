@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -70,6 +71,7 @@ fun SelectFactorsScreen(
         onDismiss = onDismiss,
         onFactorCheckedChange = viewModel::onFactorCheckedChange,
         onInfoClick = onInfoClick,
+        onSkipClick = viewModel::onSkipClick,
         onBuildShieldClick = viewModel::onBuildShieldClick
     )
 
@@ -89,6 +91,7 @@ private fun SelectFactorsContent(
     onDismiss: () -> Unit,
     onFactorCheckedChange: (FactorSourceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
+    onSkipClick: () -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
     Scaffold(
@@ -170,6 +173,16 @@ private fun SelectFactorsContent(
                         onCheckedChange = onFactorCheckedChange
                     )
                 }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                RadixTextButton(
+                    text = stringResource(id = R.string.shieldSetupSelectFactors_skipButtonTitle),
+                    onClick = onSkipClick,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -258,6 +271,7 @@ private fun SelectFactorsPreview(
             onDismiss = {},
             onFactorCheckedChange = { _, _ -> },
             onInfoClick = {},
+            onSkipClick = {},
             onBuildShieldClick = {},
         )
     }
