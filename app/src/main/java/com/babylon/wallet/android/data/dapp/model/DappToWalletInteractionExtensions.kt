@@ -56,6 +56,8 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
             requestId = interactionId,
             metadata = metadata
         )
+
+        is DappToWalletInteractionItems.BatchOfTransactions -> TODO("Not implemented yet")
     }
 }.mapError {
     RadixWalletException.DappRequestException.InvalidRequestChallenge

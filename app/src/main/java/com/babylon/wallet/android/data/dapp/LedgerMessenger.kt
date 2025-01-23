@@ -2,12 +2,10 @@
 
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
-import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
@@ -100,10 +98,7 @@ class LedgerMessengerImpl @Inject constructor(
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignTransaction(
             interactionId = interactionId,
             signers = hdPublicKeys.map {
-                LedgerInteractionRequest.KeyParameters(
-                    Curve.from(it.publicKey),
-                    it.derivationPath.string
-                )
+                LedgerInteractionRequest.KeyParameters.from(it.derivationPath)
             },
             ledgerDevice = ledgerDevice,
             displayHash = displayHashOnLedgerDisplay,
@@ -124,10 +119,7 @@ class LedgerMessengerImpl @Inject constructor(
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignSubintentHash(
             interactionId = interactionId,
             signers = hdPublicKeys.map {
-                LedgerInteractionRequest.KeyParameters(
-                    Curve.from(it.publicKey),
-                    it.derivationPath.string
-                )
+                LedgerInteractionRequest.KeyParameters.from(it.derivationPath)
             },
             ledgerDevice = ledgerDevice,
             subintentHash = subintentHash
@@ -148,10 +140,7 @@ class LedgerMessengerImpl @Inject constructor(
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignChallenge(
             interactionId = interactionId,
             signers = hdPublicKeys.map {
-                LedgerInteractionRequest.KeyParameters(
-                    Curve.from(it.publicKey),
-                    it.derivationPath.string
-                )
+                LedgerInteractionRequest.KeyParameters.from(it.derivationPath)
             },
             ledgerDevice = ledgerDevice,
             challengeHex = challengeHex,

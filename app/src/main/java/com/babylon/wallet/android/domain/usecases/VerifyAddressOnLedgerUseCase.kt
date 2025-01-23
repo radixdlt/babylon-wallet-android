@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.FactorSource
@@ -38,10 +37,7 @@ class VerifyAddressOnLedgerUseCase @Inject constructor(
 
         return ledgerMessenger.deriveAndDisplayAddressRequest(
             interactionId = UUIDGenerator.uuid().toString(),
-            keyParameters = LedgerInteractionRequest.KeyParameters(
-                curve = Curve.from(publicKey = factorInstance.publicKey.publicKey),
-                derivationPath = factorInstance.publicKey.derivationPath.string
-            ),
+            keyParameters = LedgerInteractionRequest.KeyParameters.from(factorInstance.publicKey.derivationPath),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource)
         ).fold(
             onSuccess = { response ->
