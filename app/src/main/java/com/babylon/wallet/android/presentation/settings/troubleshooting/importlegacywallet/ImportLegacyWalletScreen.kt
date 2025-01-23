@@ -407,7 +407,6 @@ private fun ImportLegacyWalletContent(
                 backIconType = BackIconType.Back,
                 onClose = onCloseSettings,
                 waitingForLedgerResponse = waitingForLedgerResponse,
-                onBackClick = onCloseSettings,
                 isAddingLedgerDeviceInProgress = false
 
             )

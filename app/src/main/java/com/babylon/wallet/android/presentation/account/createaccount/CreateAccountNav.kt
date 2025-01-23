@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.account.createaccount
 
 import android.os.Build
 import android.os.Bundle
-import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -20,18 +19,14 @@ import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.toUrl
-import rdx.works.core.sargon.init
 
 private const val ARG_NETWORK_ID_TO_SWITCH = "arg_network_id_to_switch"
 
 const val ROUTE_CREATE_ACCOUNT = "create_account_route" +
-    "?$ARG_REQUEST_SOURCE={$ARG_REQUEST_SOURCE}" +
-    "&$ARG_NETWORK_ID_TO_SWITCH={$ARG_NETWORK_ID_TO_SWITCH}"
+        "?$ARG_REQUEST_SOURCE={$ARG_REQUEST_SOURCE}" +
+        "&$ARG_NETWORK_ID_TO_SWITCH={$ARG_NETWORK_ID_TO_SWITCH}"
 
 internal class CreateAccountNavArgs(
     val requestSource: CreateAccountRequestSource?,
@@ -39,7 +34,9 @@ internal class CreateAccountNavArgs(
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE),
-        savedStateHandle.get<Int?>(ARG_NETWORK_ID_TO_SWITCH)?.let { NetworkId.init(discriminant = it.toUByte()) },
+        savedStateHandle.get<Byte?>(ARG_NETWORK_ID_TO_SWITCH)?.let {
+            NetworkId.init(discriminant = it.toUByte())
+        },
     )
 }
 
@@ -48,10 +45,9 @@ fun NavController.createAccountScreen(
     networkIdToSwitch: NetworkId? = null,
     popToRoute: String? = null
 ) {
-    var route = "create_account_route?$ARG_REQUEST_SOURCE=$requestSource"
-    networkIdToSwitch?.let {
-        route += "&$ARG_NETWORK_ID_TO_SWITCH=${it.discriminant.toInt()}"
-    }
+    val route = "create_account_route" +
+            "?$ARG_REQUEST_SOURCE=$requestSource" +
+            "&$ARG_NETWORK_ID_TO_SWITCH=${networkIdToSwitch?.discriminant?.toByte()}"
 
     navigate(route = route) {
         if (requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled) {
@@ -84,7 +80,7 @@ fun NavGraphBuilder.createAccountScreen(
                 defaultValue = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
             },
             navArgument(ARG_NETWORK_ID_TO_SWITCH) {
-                type = NavType.IntType
+                type = OptionalNetworkIdParamType()
                 nullable = true
             }
         ),
@@ -115,6 +111,24 @@ fun NavGraphBuilder.createAccountScreen(
             onContinueClick = onContinueClick,
             onAddLedgerDevice = onAddLedgerDevice
         )
+    }
+}
+
+private class OptionalNetworkIdParamType : NavType<NetworkId>(
+    isNullableAllowed = true
+) {
+    override fun get(bundle: Bundle, key: String): NetworkId? = if (bundle.containsKey(key)) {
+        NetworkId.init(discriminant = bundle.getByte(key).toUByte())
+    } else {
+        null
+    }
+
+    override fun parseValue(value: String): NetworkId {
+        return NetworkId.init(discriminant = value.toByte().toUByte())
+    }
+
+    override fun put(bundle: Bundle, key: String, value: NetworkId) {
+        bundle.putByte(key, value.discriminant.toByte())
     }
 }
 

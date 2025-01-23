@@ -237,7 +237,7 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.DerivePublicKeys -> navController.derivePublicKeysDialog()
                 is AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
-                is AppEvent.AccessFactorSources.SelectedLedgerDevice -> {}
+                is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
         }
     }

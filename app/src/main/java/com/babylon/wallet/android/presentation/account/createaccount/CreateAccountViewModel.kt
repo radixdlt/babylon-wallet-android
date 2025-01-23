@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.domain.usecases.SyncAccountThirdPartyDepositsWithLedger
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -19,23 +18,20 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.updateThirdPartyDepositSettings
-import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
@@ -48,7 +44,6 @@ import javax.inject.Inject
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val syncAccountThirdPartyDepositsWithLedger: SyncAccountThirdPartyDepositsWithLedger,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val getProfileUseCase: GetProfileUseCase,
     private val deleteWalletUseCase: DeleteWalletUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
@@ -63,7 +58,6 @@ class CreateAccountViewModel @Inject constructor(
 
     private val args = CreateAccountNavArgs(savedStateHandle)
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
-    val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
     val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
 
     override fun initialState(): CreateAccountUiState = CreateAccountUiState(
@@ -78,118 +72,40 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean) {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true) }
+            _state.update { it.copy(isCreatingAccount = true) }
 
             if (shouldCreateWallet()) {
-                createWallet()
-                    .then {
-                        // Since we choose to create a new profile, this is the time
-                        // we discard the data copied from the cloud backup, since they represent
-                        // a previous instance.
-                        discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
-                        resolveFactorSourceAndCreateAccount(isWithLedger = isWithLedger)
-                    }
-            } else {
-                resolveFactorSourceAndCreateAccount(isWithLedger = isWithLedger)
+                val walletCreated = createWallet().isSuccess
+                if (!walletCreated) return@launch
+            }
+
+            val factorSourceToCreateAccount = resolveFactorSource(isWithLedger = isWithLedger) ?: run {
+                _state.update { it.copy(isCreatingAccount = false) }
+                return@launch
+            }
+
+            val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
+            val name = DisplayName.init(accountName.value.trim())
+            when (factorSourceToCreateAccount) {
+                is FactorSourceToCreateAccount.Ledger -> runCatching {
+                    sargonOsManager.sargonOs.createAndSaveNewAccountWithFactorSource(
+                        factorSource = factorSourceToCreateAccount.factorSource,
+                        networkId = networkId,
+                        name = name
+                    )
+                }
+
+                is FactorSourceToCreateAccount.MainBabylon -> runCatching {
+                    sargonOsManager.sargonOs.createAndSaveNewAccountWithBdfs(
+                        networkId = networkId,
+                        name = name
+                    )
+                }
             }.onSuccess { account ->
-                if (args.networkIdToSwitch != null) {
-                    switchNetworkUseCase(networkId = args.networkIdToSwitch)
-                }
-
-                syncAccountThirdPartyDepositsWithLedger(account = account)
-                checkAndHandleFirstTimeAccountCreationExtras()
-
-                _state.update {
-                    it.copy(
-                        loading = false,
-                        accountId = account.address.string,
-                        accountName = account.displayName.value
-                    )
-                }
-
-                sendEvent(
-                    CreateAccountEvent.Complete(
-                        accountId = account.address,
-                        requestSource = args.requestSource
-                    )
-                )
+                onAccountCreated(account = account)
             }.onFailure { error ->
                 Timber.w(error)
-                _state.update { it.copy(loading = false) }
-            }
-        }
-    }
-
-    private suspend fun createWallet(): Result<Unit> {
-        val sargonOs = sargonOsManager.sargonOs
-        keystoreManager.resetMnemonicKeySpecWhenInvalidated()
-
-        return runCatching {
-            sargonOs.newWallet(
-                shouldPreDeriveInstances = false
-            )
-        }.onFailure { profileCreationError ->
-            if (profileCreationError is CommonException.SecureStorageAccessException) {
-                if (!profileCreationError.errorKind.isManualCancellation()) {
-                    _state.update {
-                        it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
-                    }
-                }
-            } else if (profileCreationError is CommonException.SecureStorageWriteException) {
-                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-            } else {
-                _state.update {
-                    it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
-                }
-            }
-        }
-    }
-
-    private suspend fun resolveFactorSourceAndCreateAccount(isWithLedger: Boolean): Result<Account> {
-        val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
-
-        val nonMainFactorSource = if (isWithLedger) {
-            sendEvent(CreateAccountEvent.AddLedgerDevice)
-            appEventBus.events
-                .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
-                .first()
-                .ledgerFactorSource
-        } else {
-            null
-        }
-
-        val name = DisplayName.init(accountName.value.trim())
-        return runCatching {
-            if (nonMainFactorSource != null) {
-                sargonOsManager.sargonOs.createAndSaveNewAccountWithFactorSource(
-                    factorSource = nonMainFactorSource,
-                    networkId = networkId,
-                    name = name
-                )
-            } else {
-                sargonOsManager.sargonOs.createAndSaveNewAccountWithBdfs(
-                    networkId = networkId,
-                    name = name
-                )
-            }
-        }
-    }
-
-    private suspend fun handleAccountCreationError(throwable: Throwable) {
-        if (throwable is ProfileException.SecureStorageAccess) {
-            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-        } else {
-            _state.update { state ->
-                if (throwable is ProfileException.NoMnemonic) {
-                    state.copy(shouldShowNoMnemonicError = true)
-                } else {
-                    if (throwable is CancellationException) { // user cancelled, don't print it
-                        return
-                    }
-                    state.copy(
-                        uiMessage = UiMessage.ErrorMessage(throwable)
-                    )
-                }
+                _state.update { it.copy(isCreatingAccount = false) }
             }
         }
     }
@@ -206,33 +122,8 @@ class CreateAccountViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    private suspend fun handleAccountCreation(
-        accountProvider: suspend (String) -> Account
-    ) {
-        _state.update { it.copy(loading = true) }
-        val accountName = accountName.value.trim()
-        if (args.networkIdToSwitch != null) {
-            switchNetworkUseCase(args.networkIdToSwitch)
-        }
-        val account = accountProvider(accountName)
-        val accountId = account.address
-
-        _state.update {
-            it.copy(
-                loading = true,
-                accountId = accountId.string,
-                accountName = accountName
-            )
-        }
-
-        checkAndHandleFirstTimeAccountCreationExtras()
-
-        sendEvent(
-            CreateAccountEvent.Complete(
-                accountId = accountId,
-                requestSource = args.requestSource
-            )
-        )
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(shouldShowNoMnemonicError = false) }
     }
 
     private suspend fun shouldCreateWallet(): Boolean {
@@ -247,6 +138,38 @@ class CreateAccountViewModel @Inject constructor(
         return true
     }
 
+    private suspend fun createWallet(): Result<Unit> {
+        val sargonOs = sargonOsManager.sargonOs
+        keystoreManager.resetMnemonicKeySpecWhenInvalidated()
+
+        return runCatching {
+            sargonOs.newWallet(shouldPreDeriveInstances = false)
+        }.onSuccess {
+            // Since we choose to create a new profile, this is the time
+            // we discard the data copied from the cloud backup, since they represent
+            // a previous instance.
+            discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
+        }.onFailure { profileCreationError ->
+            if (profileCreationError is CommonException.SecureStorageAccessException) {
+                if (!profileCreationError.errorKind.isManualCancellation()) {
+                    _state.update {
+                        it.copy(isCreatingAccount = false, uiMessage = UiMessage.ErrorMessage(profileCreationError))
+                    }
+                } else {
+                    _state.update {
+                        it.copy(isCreatingAccount = false)
+                    }
+                }
+            } else if (profileCreationError is CommonException.SecureStorageWriteException) {
+                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+            } else {
+                _state.update {
+                    it.copy(isCreatingAccount = false, uiMessage = UiMessage.ErrorMessage(profileCreationError))
+                }
+            }
+        }
+    }
+
     private suspend fun checkAndHandleFirstTimeAccountCreationExtras() {
         if (args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled ||
             args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
@@ -257,8 +180,52 @@ class CreateAccountViewModel @Inject constructor(
         }
     }
 
+    private suspend fun resolveFactorSource(isWithLedger: Boolean): FactorSourceToCreateAccount? = if (isWithLedger) {
+        sendEvent(CreateAccountEvent.AddLedgerDevice)
+        val event = appEventBus.events
+            .filterIsInstance<AppEvent.AccessFactorSources.SelectLedgerOutcome>()
+            .first()
+
+        when (event) {
+            is AppEvent.AccessFactorSources.SelectLedgerOutcome.Rejected -> null
+            is AppEvent.AccessFactorSources.SelectLedgerOutcome.Selected -> FactorSourceToCreateAccount.Ledger(event.ledgerFactorSource)
+        }
+    } else {
+        FactorSourceToCreateAccount.MainBabylon
+    }
+
+    private suspend fun onAccountCreated(account: Account) {
+        if (args.networkIdToSwitch != null) {
+            switchNetworkUseCase(networkId = args.networkIdToSwitch)
+        }
+
+        syncAccountThirdPartyDepositsWithLedger(account = account)
+        checkAndHandleFirstTimeAccountCreationExtras()
+
+        _state.update {
+            it.copy(
+                isCreatingAccount = false,
+                accountId = account.address.string,
+                accountName = account.displayName.value
+            )
+        }
+
+        sendEvent(
+            CreateAccountEvent.Complete(
+                accountId = account.address,
+                requestSource = args.requestSource
+            )
+        )
+    }
+
+    private sealed interface FactorSourceToCreateAccount {
+        data object MainBabylon : FactorSourceToCreateAccount
+
+        data class Ledger(val factorSource: FactorSource.Ledger) : FactorSourceToCreateAccount
+    }
+
     data class CreateAccountUiState(
-        val loading: Boolean = false,
+        val isCreatingAccount: Boolean = false,
         val isFirstAccount: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
@@ -266,10 +233,6 @@ class CreateAccountViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
         val shouldShowNoMnemonicError: Boolean = false
     ) : UiState
-
-    fun dismissNoMnemonicError() {
-        _state.update { it.copy(shouldShowNoMnemonicError = false) }
-    }
 
     companion object {
         private const val ACCOUNT_NAME = "account_name"

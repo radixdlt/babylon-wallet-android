@@ -141,7 +141,6 @@ fun LedgerDevicesScreen(
                     onMessageShown = addLedgerDeviceViewModel::onMessageShown,
                     onClose = viewModel::onCloseClick,
                     waitingForLedgerResponse = false,
-                    onBackClick = viewModel::onCloseClick,
                     isAddingLedgerDeviceInProgress = addLedgerDeviceState.isAddingLedgerDeviceInProgress,
                 )
             }
