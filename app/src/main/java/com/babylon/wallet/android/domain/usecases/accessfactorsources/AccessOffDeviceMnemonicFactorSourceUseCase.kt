@@ -79,8 +79,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
     enum class SeedPhraseValidity {
         Valid,
         InvalidMnemonic,
-
         DoesNotDeriveFactorSourceId;
+
         fun isIncorrect(): Boolean = this != Valid
     }
 }
