@@ -75,7 +75,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     private val sargonOsManager: SargonOsManager,
-) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<AccountRecoveryScanViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<AccountRecoveryScanViewModel.State>(),
+    OneOffEventHandler<AccountRecoveryScanViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
 
@@ -261,14 +262,14 @@ class AccountRecoveryScanViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isScanningNetwork = true) }
             val accountsToRecover = state.value.activeAccounts +
-                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+                state.value.inactiveAccounts.filter { it.selected }.map { it.data }
             when (source) {
                 is DerivePublicKeysSource.Mnemonic -> {
                     deriveProfileUseCase(
                         mnemonicWithPassphrase = source.v1,
                         accounts = Accounts(accountsToRecover)
                     ).onSuccess {
-                        _state.update { it.copy(isScanningNetwork = false) }
+                        _state.update { state -> state.copy(isScanningNetwork = false) }
                         sendEvent(Event.RecoverComplete)
                     }.onFailure { error ->
                         if (error is CommonException.SecureStorageWriteException) {
@@ -360,7 +361,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
 
                 return HdPathComponent.init(globalKeySpace = nextIndexInGlobalKeySpace)
             }
-
     }
 }
 

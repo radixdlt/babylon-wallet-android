@@ -44,7 +44,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
         coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
         coEvery {
-            sargonOs.createAndSaveNewPersonaWithBdfs(
+            sargonOs.createAndSaveNewPersonaWithMainBdfs(
                 networkId = any(),
                 name = any(),
                 personaData = any()
