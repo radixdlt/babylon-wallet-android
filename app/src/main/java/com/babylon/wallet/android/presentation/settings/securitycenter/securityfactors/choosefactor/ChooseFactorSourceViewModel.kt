@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.FactorSourceKindsByCategory
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceKindsByCategoryUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -16,6 +17,7 @@ import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStat
 import com.babylon.wallet.android.presentation.ui.model.factors.SecurityFactorTypeUiItem
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.EntitiesLinkedToFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -35,24 +37,28 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
+import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseFactorSourceViewModel @Inject constructor(
-    profileRepository: ProfileRepository,
+    getProfileUseCase: GetProfileUseCase,
     getFactorSourceKindsByCategoryUseCase: GetFactorSourceKindsByCategoryUseCase,
+    private val getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : StateViewModel<ChooseFactorSourceViewModel.State>(), OneOffEventHandler<ChooseFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val data = profileRepository.profile.map { it.factorSources }
+    private val data = getProfileUseCase.flow.map { it.factorSources }
         .map { allFactorSources ->
             Data(
                 kindsByCategories = getFactorSourceKindsByCategoryUseCase(),
                 allFactorSources = allFactorSources.groupBy { it.kind },
+                entitiesLinkedToFactorSourceById = allFactorSources.mapNotNull { factorSource ->
+                    val entities = getEntitiesLinkedToFactorSourceUseCase(factorSource) ?: return@mapNotNull null
+                    factorSource.id to entities
+                }.toMap(),
                 statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
                     deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>()
                 )
@@ -74,25 +80,25 @@ class ChooseFactorSourceViewModel @Inject constructor(
     ) {
         observeDataJob?.cancel()
         observeDataJob = viewModelScope.launch {
-            data.collect { (kindsByCategories, allFactorSources, statusMessagesByFactorSourceId) ->
+            data.collect { data ->
                 _state.update { state ->
                     state.copy(
                         pages = persistentListOf(
                             State.Page.SelectFactorSourceType(
-                                items = kindsByCategories.toTypeUiItems(unusableFactorSourceKinds)
+                                items = data.kindsByCategories.toTypeUiItems(unusableFactorSourceKinds)
                                     .toPersistentList()
                             )
                         ).plus(
-                            kindsByCategories.map { it.kinds }
+                            data.kindsByCategories.map { it.kinds }
                                 .flatten()
                                 .map { kind ->
                                     State.Page.SelectFactorSource(
                                         kind = kind,
-                                        items = allFactorSources.getOrDefault(kind, emptyList())
+                                        items = data.allFactorSources.getOrDefault(kind, emptyList())
                                             .toUiItems(
                                                 alreadySelectedFactorSources = alreadySelectedFactorSources,
                                                 unusableFactorSources = unusableFactorSources,
-                                                statusMessagesByFactorSourceId = statusMessagesByFactorSourceId
+                                                data = data,
                                             )
                                             .toPersistentList()
                                     )
@@ -124,9 +130,9 @@ class ChooseFactorSourceViewModel @Inject constructor(
                     mutation = {
                         currentPage.copy(
                             items = currentPage.items.mapWhen(
-                                predicate = { it.data == factorSourceCard && it.data.isEnabled },
+                                predicate = { it.data.isEnabled },
                                 mutation = { selectableItem ->
-                                    selectableItem.copy(selected = !selectableItem.selected)
+                                    selectableItem.copy(selected = selectableItem.data == factorSourceCard)
                                 }
                             ).toPersistentList()
                         )
@@ -191,10 +197,13 @@ class ChooseFactorSourceViewModel @Inject constructor(
     private fun List<FactorSource>.toUiItems(
         alreadySelectedFactorSources: List<FactorSourceId>,
         unusableFactorSources: List<FactorSourceId>,
-        statusMessagesByFactorSourceId: Map<FactorSourceId, List<FactorSourceStatusMessage>>
+        data: Data
     ): List<Selectable<FactorSourceCard>> = map { factorSource ->
-        val messages = statusMessagesByFactorSourceId.getOrDefault(factorSource.id, emptyList())
+        val messages = data.statusMessagesByFactorSourceId.getOrDefault(factorSource.id, emptyList())
+            // We don't want to show the success checkmark indicating the factor source was backed up
             .filterNot { it is FactorSourceStatusMessage.NoSecurityIssues }
+        val linkedEntities = data.entitiesLinkedToFactorSourceById[factorSource.id]
+
         val cannotBeUsedHereMessage = if (factorSource.id in unusableFactorSources) {
             listOf(FactorSourceStatusMessage.CannotBeUsedHere)
         } else {
@@ -205,7 +214,11 @@ class ChooseFactorSourceViewModel @Inject constructor(
         Selectable(
             factorSource.toFactorSourceCard(
                 isEnabled = !isSelected && messages.isEmpty() && factorSource.id !in unusableFactorSources,
-                messages = (messages + cannotBeUsedHereMessage).toPersistentList()
+                messages = (messages + cannotBeUsedHereMessage).toPersistentList(),
+                accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
+                personas = linkedEntities?.personas.orEmpty().toPersistentList(),
+                hasHiddenEntities = !linkedEntities?.hiddenAccounts.isNullOrEmpty() ||
+                    !linkedEntities?.hiddenPersonas.isNullOrEmpty()
             ),
             selected = isSelected
         )
@@ -214,6 +227,7 @@ class ChooseFactorSourceViewModel @Inject constructor(
     private data class Data(
         val kindsByCategories: List<FactorSourceKindsByCategory> = emptyList(),
         val allFactorSources: Map<FactorSourceKind, List<FactorSource>> = emptyMap(),
+        val entitiesLinkedToFactorSourceById: Map<FactorSourceId, EntitiesLinkedToFactorSource> = emptyMap(),
         val statusMessagesByFactorSourceId: Map<FactorSourceId, List<FactorSourceStatusMessage>> = emptyMap()
     )
 

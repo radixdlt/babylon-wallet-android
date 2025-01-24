@@ -239,7 +239,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     includeDescription = false,
                     lastUsedOn = "Today",
                     kind = FactorSourceKind.DEVICE,
-                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
                     accounts = persistentListOf(
                         Account.sampleMainnet()
                     ),
@@ -322,7 +322,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     includeDescription = false,
                     lastUsedOn = "Today",
                     kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = true,

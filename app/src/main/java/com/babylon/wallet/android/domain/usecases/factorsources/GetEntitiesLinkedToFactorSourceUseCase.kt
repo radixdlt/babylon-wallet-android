@@ -10,16 +10,16 @@ import kotlinx.coroutines.CoroutineDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 
-class GetEntitiesLinkedToDeviceFactorSourceUseCase @Inject constructor(
+class GetEntitiesLinkedToFactorSourceUseCase @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(
-        deviceFactorSource: FactorSource.Device
+        factorSource: FactorSource
     ): EntitiesLinkedToFactorSource? = sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
         entitiesLinkedToFactorSource(
-            factorSource = FactorSource.Device(deviceFactorSource.value),
+            factorSource = factorSource,
             profileToCheck = ProfileToCheck.Current
         )
     }.onFailure { error ->

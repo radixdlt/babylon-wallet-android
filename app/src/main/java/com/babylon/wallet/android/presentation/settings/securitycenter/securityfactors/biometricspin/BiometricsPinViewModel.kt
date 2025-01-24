@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -43,7 +43,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BiometricsPinViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
-    getEntitiesLinkedToDeviceFactorSourceUseCase: GetEntitiesLinkedToDeviceFactorSourceUseCase,
+    getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -59,7 +59,7 @@ class BiometricsPinViewModel @Inject constructor(
                 resetDeviceFactorSourceList()
 
                 deviceFactorSources.forEach { deviceFactorSource ->
-                    val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToDeviceFactorSourceUseCase(deviceFactorSource)
+                    val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                         ?: return@forEach
                     val securityMessages = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
                         deviceFactorSourceId = deviceFactorSource.id,

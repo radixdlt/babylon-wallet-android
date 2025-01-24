@@ -233,7 +233,7 @@ private val otherDeviceFactorSources = persistentListOf(
         includeDescription = false,
         lastUsedOn = "Today",
         kind = FactorSourceKind.DEVICE,
-        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
         accounts = persistentListOf(Account.sampleMainnet()),
         personas = persistentListOf(
             Persona.sampleMainnet(),

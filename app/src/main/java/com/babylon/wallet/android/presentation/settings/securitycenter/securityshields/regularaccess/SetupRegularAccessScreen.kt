@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -236,16 +235,15 @@ private fun FactorListStatusView(
     status: SetupRegularAccessViewModel.State.FactorListStatus,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
-    Box(
-        modifier = modifier
-    ) {
-        when (status) {
-            SetupRegularAccessViewModel.State.FactorListStatus.Empty -> ShieldSetupMissingFactorStatusView()
-            SetupRegularAccessViewModel.State.FactorListStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
-                onInfoClick = onInfoClick
-            )
-            SetupRegularAccessViewModel.State.FactorListStatus.Ok -> {}
-        }
+    when (status) {
+        SetupRegularAccessViewModel.State.FactorListStatus.Empty -> ShieldSetupMissingFactorStatusView(
+            modifier = modifier
+        )
+        SetupRegularAccessViewModel.State.FactorListStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
+        )
+        SetupRegularAccessViewModel.State.FactorListStatus.Ok -> {}
     }
 }
 

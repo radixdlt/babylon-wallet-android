@@ -159,7 +159,7 @@ private fun SelectableFactorSourcesListPreview() {
                         includeDescription = false,
                         lastUsedOn = "Yesterday",
                         kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+                        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
                         accounts = persistentListOf(
                             Account.sampleMainnet()
                         ),

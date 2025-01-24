@@ -18,7 +18,7 @@ sealed interface FactorSourceStatusMessage {
 
     sealed interface SecurityPrompt : FactorSourceStatusMessage {
         data object WriteDownSeedPhrase : SecurityPrompt
-        data object RecoveryRequired : SecurityPrompt
+        data object LostFactorSource : SecurityPrompt
         data object EntitiesNotRecoverable : SecurityPrompt
         data object SeedPhraseNeedRecovery : SecurityPrompt
     }
@@ -43,7 +43,7 @@ sealed interface FactorSourceStatusMessage {
                 ),
             type = StatusMessage.Type.WARNING
         )
-        SecurityPrompt.RecoveryRequired -> StatusMessage(
+        SecurityPrompt.LostFactorSource -> StatusMessage(
             message = stringResource(R.string.factorSources_list_lostFactorSource),
             type = StatusMessage.Type.ERROR
         )

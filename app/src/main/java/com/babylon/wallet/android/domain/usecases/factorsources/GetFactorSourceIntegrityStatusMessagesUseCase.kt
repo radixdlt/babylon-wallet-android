@@ -7,7 +7,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.extensions.id
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
@@ -15,7 +14,7 @@ import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 
 class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
-    private val getEntitiesLinkedToDeviceFactorSourceUseCase: GetEntitiesLinkedToDeviceFactorSourceUseCase,
+    private val getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -24,7 +23,7 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
         deviceFactorSources: List<FactorSource.Device>
     ): Map<FactorSourceId, List<FactorSourceStatusMessage>> = withContext(defaultDispatcher) {
         deviceFactorSources.mapNotNull { deviceFactorSource ->
-            val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToDeviceFactorSourceUseCase(deviceFactorSource)
+            val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                 ?: return@mapNotNull null
             deviceFactorSource.id to forDeviceFactorSource(
                 deviceFactorSourceId = deviceFactorSource.id,
@@ -48,7 +47,7 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
 
         return if (isDeviceFactorSourceLinkedToAnyEntities) {
             val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
-            deviceFactorSourceIntegrity.toMessages().toPersistentList()
+            listOf(deviceFactorSourceIntegrity.toMessage())
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
             // the integrity, but we can check if the user backed up the seed phrase
             listOf(FactorSourceStatusMessage.NoSecurityIssues)
@@ -58,17 +57,9 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
         }
     }
 
-    private fun FactorSourceIntegrity.Device.toMessages(): List<FactorSourceStatusMessage> {
-        val securityMessages = listOfNotNull(
-            FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase.takeIf {
-                this.v1.isMnemonicMarkedAsBackedUp.not()
-            },
-            FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired.takeIf {
-                this.v1.isMnemonicPresentInSecureStorage.not()
-            }
-        )
-        return securityMessages.ifEmpty {
-            listOf(FactorSourceStatusMessage.NoSecurityIssues)
-        }
+    private fun FactorSourceIntegrity.Device.toMessage(): FactorSourceStatusMessage = when {
+        this.v1.isMnemonicPresentInSecureStorage.not() -> FactorSourceStatusMessage.SecurityPrompt.LostFactorSource
+        this.v1.isMnemonicMarkedAsBackedUp.not() -> FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase
+        else -> FactorSourceStatusMessage.NoSecurityIssues
     }
 }
