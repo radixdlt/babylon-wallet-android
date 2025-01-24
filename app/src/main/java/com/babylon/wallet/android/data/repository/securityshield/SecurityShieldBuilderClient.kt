@@ -40,12 +40,11 @@ class SecurityShieldBuilderClient @Inject constructor(
 ) {
 
     private lateinit var securityShieldBuilder: SecurityShieldBuilder
-    private val allFactorSources = profileRepository.profile.map { it.factorSources }
-        .stateIn(
-            scope = applicationScope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
-        )
+    private val allFactorSources = profileRepository.profile.map { it.factorSources }.stateIn(
+        scope = applicationScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
 
     private val primaryRoleSelection = MutableSharedFlow<PrimaryRoleSelection>(1)
     private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
@@ -99,11 +98,11 @@ class SecurityShieldBuilderClient @Inject constructor(
 
     private suspend fun initSelection() {
         val status = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
-        initPrimaryRoleSelectionUpdate(status)
-        initRecoveryAndConfirmationRoleSelectionUpdate(status)
+        initPrimaryRoleSelection(status)
+        initRecoveryAndConfirmationRoleSelection(status)
     }
 
-    private suspend fun initPrimaryRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
+    private suspend fun initPrimaryRoleSelection(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
                 threshold = securityShieldBuilder.getPrimaryThreshold(),
@@ -117,7 +116,7 @@ class SecurityShieldBuilderClient @Inject constructor(
         )
     }
 
-    private suspend fun initRecoveryAndConfirmationRoleSelectionUpdate(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
+    private suspend fun initRecoveryAndConfirmationRoleSelection(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
         recoveryRoleSelection.emit(
             RecoveryRoleSelection(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),

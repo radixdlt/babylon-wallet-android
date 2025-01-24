@@ -105,6 +105,7 @@ fun SetupRegularAccessScreen(
             unusableFactorSourceKinds = selectFactor.unusableFactorSourceKinds,
             alreadySelectedFactorSources = selectFactor.alreadySelectedFactorSources,
             onContinueClick = viewModel::onFactorSelected,
+            onInfoClick = onInfoClick,
             onDismissSheet = viewModel::onDismissSelectFactor
         )
     }

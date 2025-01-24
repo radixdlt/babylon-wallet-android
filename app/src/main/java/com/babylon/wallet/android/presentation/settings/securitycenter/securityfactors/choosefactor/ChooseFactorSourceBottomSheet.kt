@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceViewModel.State
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -53,6 +54,7 @@ fun ChooseFactorSourceBottomSheet(
     unusableFactorSources: PersistentList<FactorSourceId> = persistentListOf(),
     viewModel: ChooseFactorSourceViewModel,
     onContinueClick: (factorSourceCard: FactorSourceCard) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onDismissSheet: () -> Unit,
 ) {
     LaunchedEffect(unusableFactorSources) {
@@ -83,6 +85,7 @@ fun ChooseFactorSourceBottomSheet(
         onFactorSourceSelect = viewModel::onFactorSourceSelect,
         onAddFactorSourceClick = viewModel::onAddFactorSourceClick,
         onContinueClick = viewModel::onSelectedFactorSourceConfirm,
+        onInfoClick = onInfoClick,
         onSheetBackClick = viewModel::onSheetBackClick,
         onSheetCloseClick = viewModel::onSheetCloseClick
     )
@@ -95,6 +98,7 @@ private fun ChooseFactorSourceContent(
     onSecurityFactorTypeClick: (SecurityFactorTypeUiItem.Item) -> Unit,
     onFactorSourceSelect: (FactorSourceCard) -> Unit,
     onAddFactorSourceClick: (FactorSourceKind) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit,
     onSheetBackClick: () -> Unit,
     onSheetCloseClick: () -> Unit
@@ -146,7 +150,8 @@ private fun ChooseFactorSourceContent(
             when (val currentPage = state.pages[pageIndex]) {
                 is State.Page.SelectFactorSourceType -> SecurityFactorTypesListView(
                     items = currentPage.items,
-                    onSecurityFactorTypeItemClick = onSecurityFactorTypeClick
+                    onSecurityFactorTypeItemClick = onSecurityFactorTypeClick,
+                    onInfoClick = onInfoClick
                 )
                 is State.Page.SelectFactorSource -> SelectableFactorSourcesListView(
                     factorSourceKind = currentPage.kind,
@@ -174,6 +179,7 @@ private fun ChooseFactorSourceBottomSheetPreview(
             onSecurityFactorTypeClick = {},
             onFactorSourceSelect = {},
             onAddFactorSourceClick = {},
+            onInfoClick = {},
             onContinueClick = {},
             onSheetBackClick = {},
             onSheetCloseClick = {}
@@ -194,6 +200,7 @@ private fun DeviceFactorsBottomSheetPreview(
             onSecurityFactorTypeClick = {},
             onFactorSourceSelect = {},
             onAddFactorSourceClick = {},
+            onInfoClick = {},
             onContinueClick = {},
             onSheetBackClick = {},
             onSheetCloseClick = {}

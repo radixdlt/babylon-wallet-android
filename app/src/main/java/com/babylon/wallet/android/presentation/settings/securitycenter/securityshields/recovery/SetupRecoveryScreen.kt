@@ -104,6 +104,7 @@ fun SetupRecoveryScreen(
             unusableFactorSourceKinds = selectFactor.unusableFactorSourceKinds,
             alreadySelectedFactorSources = selectFactor.alreadySelectedFactorSources,
             onContinueClick = viewModel::onFactorSelected,
+            onInfoClick = onInfoClick,
             onDismissSheet = viewModel::onDismissSelectFactor
         )
     }
@@ -404,7 +405,7 @@ private fun EmergencyFallbackView(
             color = RadixTheme.colors.gray1
         )
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
         Row(
             modifier = Modifier
@@ -436,7 +437,7 @@ private fun EmergencyFallbackView(
             )
         }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
         Text(
             modifier = Modifier
