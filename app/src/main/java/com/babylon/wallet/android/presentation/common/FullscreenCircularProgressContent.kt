@@ -39,6 +39,6 @@ fun FullscreenCircularProgressContent(
 
 @Preview(showBackground = true)
 @Composable
-fun FullscreenCircularProgressContentPreview() {
+private fun FullscreenCircularProgressContentPreview() {
     FullscreenCircularProgressContent()
 }

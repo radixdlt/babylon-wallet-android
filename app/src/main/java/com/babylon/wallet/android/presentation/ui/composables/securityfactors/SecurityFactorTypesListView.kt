@@ -46,6 +46,10 @@ fun SecurityFactorTypesListView(
     items: PersistentList<SecurityFactorTypeUiItem>,
     onSecurityFactorTypeItemClick: (SecurityFactorTypeUiItem.Item) -> Unit
 ) {
+    if (items.isEmpty() && description == null) {
+        return
+    }
+
     LazyColumn(
         modifier = modifier.background(color = RadixTheme.colors.gray5)
     ) {

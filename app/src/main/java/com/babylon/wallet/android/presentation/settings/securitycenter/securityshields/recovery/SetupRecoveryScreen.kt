@@ -372,7 +372,7 @@ private fun EmergencyFallbackView(
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .clip(RadixTheme.shapes.roundedRectTopMedium)
-                .clickable { onInfoClick(GlossaryItem.emergencyFallback) }
+                .clickable { onInfoClick(GlossaryItem.emergencyfallback) }
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween

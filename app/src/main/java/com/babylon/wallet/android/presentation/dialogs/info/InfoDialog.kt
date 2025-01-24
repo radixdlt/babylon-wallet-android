@@ -228,12 +228,12 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
     GlossaryItem.securityshields -> stringResource(id = R.string.infoLink_glossary_securityshields)
     GlossaryItem.buildingshield -> stringResource(id = R.string.infoLink_glossary_buildingshield)
-    GlossaryItem.biometricsPIN -> stringResource(id = R.string.infoLink_glossary_biometricspin)
+    GlossaryItem.biometricspin -> stringResource(id = R.string.infoLink_glossary_biometricspin)
     GlossaryItem.arculus -> stringResource(id = R.string.infoLink_glossary_arculus)
-    GlossaryItem.ledgerNano -> stringResource(id = R.string.infoLink_glossary_ledgernano)
+    GlossaryItem.ledgernano -> stringResource(id = R.string.infoLink_glossary_ledgernano)
     GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
-    GlossaryItem.offDeviceMnemonic -> stringResource(id = R.string.infoLink_glossary_passphrases)
-    GlossaryItem.emergencyFallback -> "" // TODO crowdin
+    GlossaryItem.mnemonics -> stringResource(id = R.string.infoLink_glossary_passphrases)
+    GlossaryItem.emergencyfallback -> "" // TODO crowdin
     GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 

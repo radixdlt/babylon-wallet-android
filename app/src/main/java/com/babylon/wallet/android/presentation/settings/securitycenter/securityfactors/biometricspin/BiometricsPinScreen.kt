@@ -144,7 +144,7 @@ private fun BiometricsPinContent(
                 factorSources = state.otherDeviceFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
-                glossaryItem = GlossaryItem.biometricsPIN,
+                glossaryItem = GlossaryItem.biometricspin,
                 onFactorSourceClick = onDeviceFactorSourceClick,
                 onAddFactorSourceClick = onAddBiometricsPinClick,
                 onChangeMainFactorSourceClick = onChangeMainDeviceFactorSourceClick,
