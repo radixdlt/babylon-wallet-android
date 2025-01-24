@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -15,13 +17,10 @@ import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DeviceFactorSource
-import com.radixdlt.sargon.EntitiesLinkedToFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
@@ -33,21 +32,20 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class BiometricsPinViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
+    getEntitiesLinkedToDeviceFactorSourceUseCase: GetEntitiesLinkedToDeviceFactorSourceUseCase,
+    getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val sargonOsManager: SargonOsManager,
-    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -61,40 +59,31 @@ class BiometricsPinViewModel @Inject constructor(
                 resetDeviceFactorSourceList()
 
                 deviceFactorSources.forEach { deviceFactorSource ->
-                    sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
-                        entitiesLinkedToFactorSource(
-                            factorSource = FactorSource.Device(deviceFactorSource.value),
-                            profileToCheck = ProfileToCheck.Current
-                        )
-                    }.onSuccess { entitiesLinkedToDeviceFactorSource ->
-                        val securityMessages = getSecurityPromptsForDeviceFactorSource(
-                            deviceFactorSourceId = deviceFactorSource.id,
-                            entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
-                        )
+                    val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToDeviceFactorSourceUseCase(deviceFactorSource)
+                        ?: return@forEach
+                    val securityMessages = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
+                        deviceFactorSourceId = deviceFactorSource.id,
+                        entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                    )
+                    val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
+                        messages = securityMessages.toPersistentList(),
+                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                    )
+                    val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
 
-                        val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
-                            messages = securityMessages,
-                            accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                            personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                            hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                                entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                        )
-
-                        val isMainDeviceFactorSource =
-                            deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
-                        if (isMainDeviceFactorSource) {
-                            _state.update { state ->
-                                state.copy(mainDeviceFactorSource = factorSourceCard)
-                            }
-                        } else {
-                            _state.update { state ->
-                                state.copy(
-                                    otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
-                                )
-                            }
+                    if (isMainDeviceFactorSource) {
+                        _state.update { state ->
+                            state.copy(mainDeviceFactorSource = factorSourceCard)
                         }
-                    }.onFailure { error ->
-                        Timber.e("Failed to find linked entities: $error")
+                    } else {
+                        _state.update { state ->
+                            state.copy(
+                                otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
+                            )
+                        }
                     }
                 }
             }
@@ -168,46 +157,6 @@ class BiometricsPinViewModel @Inject constructor(
             hasHiddenEntities = hasHiddenEntities,
             isEnabled = true
         )
-    }
-
-    private suspend fun getSecurityPromptsForDeviceFactorSource(
-        deviceFactorSourceId: FactorSourceId,
-        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource
-    ): PersistentList<FactorSourceStatusMessage> {
-        val isDeviceFactorSourceLinkedToAnyEntities = listOf(
-            entitiesLinkedToDeviceFactorSource.accounts,
-            entitiesLinkedToDeviceFactorSource.personas,
-            entitiesLinkedToDeviceFactorSource.hiddenAccounts,
-            entitiesLinkedToDeviceFactorSource.hiddenPersonas
-        ).any { it.isNotEmpty() }
-
-        val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
-
-        return if (isDeviceFactorSourceLinkedToAnyEntities) {
-            val deviceFactorSourceIntegrity =
-                entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
-            deviceFactorSourceIntegrity.toMessages().toPersistentList()
-        } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
-            // the integrity, but we can check if the user backed up the seed phrase
-            persistentListOf(FactorSourceStatusMessage.NoSecurityIssues)
-        } else {
-            // otherwise we don't show any warnings
-            persistentListOf()
-        }
-    }
-
-    private fun FactorSourceIntegrity.Device.toMessages(): List<FactorSourceStatusMessage> {
-        val securityMessages = listOfNotNull(
-            FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase.takeIf {
-                this.v1.isMnemonicMarkedAsBackedUp.not()
-            },
-            FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired.takeIf {
-                this.v1.isMnemonicPresentInSecureStorage.not()
-            }
-        )
-        return securityMessages.ifEmpty {
-            listOf(FactorSourceStatusMessage.NoSecurityIssues)
-        }
     }
 
     data class State(

@@ -183,7 +183,7 @@ fun SimpleFactorCardView(
         }
 
         Box(
-            modifier.enabledOpacity(isEnabled)
+            Modifier.enabledOpacity(isEnabled)
         ) {
             endContent?.invoke()
         }
