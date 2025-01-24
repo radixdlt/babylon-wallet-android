@@ -101,7 +101,8 @@ fun SetupRecoveryScreen(
     state.selectFactor?.let { selectFactor ->
         ChooseFactorSourceBottomSheet(
             viewModel = hiltViewModel(),
-            excludeFactorSources = selectFactor.excludeFactorSources,
+            unusableFactorSourceKinds = selectFactor.unusableFactorSourceKinds,
+            alreadySelectedFactorSources = selectFactor.alreadySelectedFactorSources,
             onContinueClick = viewModel::onFactorSelected,
             onDismissSheet = viewModel::onDismissSelectFactor
         )
@@ -593,7 +594,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -607,7 +609,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 confirmationFactors = persistentListOf(
@@ -623,7 +626,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -637,7 +641,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 fallbackPeriod = TimePeriod.sample()
@@ -656,7 +661,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 confirmationFactors = persistentListOf(
@@ -672,7 +678,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 status = SecurityShieldBuilderStatus.Weak(

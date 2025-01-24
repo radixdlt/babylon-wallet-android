@@ -101,7 +101,8 @@ class OffDeviceMnemonicsViewModel @Inject constructor(
             messages = messages,
             accounts = accounts,
             personas = personas,
-            hasHiddenEntities = hasHiddenEntities
+            hasHiddenEntities = hasHiddenEntities,
+            isEnabled = true
         )
     }
 

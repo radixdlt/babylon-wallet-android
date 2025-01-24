@@ -244,7 +244,8 @@ fun LedgerDevicesScreenPreview() {
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
                     ),
-                    hasHiddenEntities = true
+                    hasHiddenEntities = true,
+                    isEnabled = true
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -258,7 +259,8 @@ fun LedgerDevicesScreenPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -272,7 +274,8 @@ fun LedgerDevicesScreenPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 )
             ),
             isNewLinkedConnectorConnected = true,

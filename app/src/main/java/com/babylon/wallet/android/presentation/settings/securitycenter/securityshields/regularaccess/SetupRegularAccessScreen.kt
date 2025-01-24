@@ -89,9 +89,10 @@ fun SetupRegularAccessScreen(
         onNumberOfFactorsClick = viewModel::onThresholdClick,
         onNumberOfFactorsSelect = viewModel::onThresholdSelect,
         onNumberOfFactorsDismiss = viewModel::onThresholdSelectionDismiss,
-        onAddFactorClick = viewModel::onAddThresholdFactorClick,
-        onRemoveFactorClick = viewModel::onRemoveThresholdFactorClick,
+        onAddThresholdFactorClick = viewModel::onAddThresholdFactorClick,
+        onRemoveThresholdFactorClick = viewModel::onRemoveThresholdFactorClick,
         onAddOverrideClick = viewModel::onAddOverrideClick,
+        onAddOverrideFactorClick = viewModel::onAddOverrideFactorClick,
         onRemoveOverrideFactorClick = viewModel::onRemoveOverrideFactorClick,
         onRemoveAllOverrideFactorsClick = viewModel::onRemoveAllOverrideFactorsClick,
         onAddAuthenticationFactorClick = viewModel::onAddAuthenticationFactorClick,
@@ -102,7 +103,8 @@ fun SetupRegularAccessScreen(
     state.selectFactor?.let { selectFactor ->
         ChooseFactorSourceBottomSheet(
             viewModel = hiltViewModel(),
-            excludeFactorSources = selectFactor.excludeFactorSources,
+            unusableFactorSourceKinds = selectFactor.unusableFactorSourceKinds,
+            alreadySelectedFactorSources = selectFactor.alreadySelectedFactorSources,
             onContinueClick = viewModel::onFactorSelected,
             onDismissSheet = viewModel::onDismissSelectFactor
         )
@@ -118,9 +120,10 @@ private fun SetupRegularAccessContent(
     onNumberOfFactorsClick: () -> Unit,
     onNumberOfFactorsSelect: (Threshold) -> Unit,
     onNumberOfFactorsDismiss: () -> Unit,
-    onAddFactorClick: () -> Unit,
-    onRemoveFactorClick: (FactorSourceCard) -> Unit,
+    onAddThresholdFactorClick: () -> Unit,
+    onRemoveThresholdFactorClick: (FactorSourceCard) -> Unit,
     onAddOverrideClick: () -> Unit,
+    onAddOverrideFactorClick: () -> Unit,
     onRemoveOverrideFactorClick: (FactorSourceCard) -> Unit,
     onRemoveAllOverrideFactorsClick: () -> Unit,
     onAddAuthenticationFactorClick: () -> Unit,
@@ -187,13 +190,15 @@ private fun SetupRegularAccessContent(
                     numberOfFactors = state.threshold,
                     factors = state.thresholdFactors,
                     onNumberOfFactorsClick = onNumberOfFactorsClick,
-                    onAddFactorClick = onAddFactorClick,
-                    onRemoveFactorClick = onRemoveFactorClick
+                    onAddFactorClick = onAddThresholdFactorClick,
+                    onRemoveFactorClick = onRemoveThresholdFactorClick
                 )
 
                 OverrideFactorsView(
+                    isFactorsSectionVisible = state.isOverrideSectionVisible,
                     overrideFactors = state.overrideFactors,
-                    onAddClick = onAddOverrideClick,
+                    onAddOverrideClick = onAddOverrideClick,
+                    onAddFactorClick = onAddOverrideFactorClick,
                     onRemoveClick = onRemoveOverrideFactorClick,
                     onRemoveAllClick = onRemoveAllOverrideFactorsClick
                 )
@@ -246,15 +251,17 @@ private fun FactorListStatusView(
 
 @Composable
 private fun OverrideFactorsView(
+    isFactorsSectionVisible: Boolean,
     overrideFactors: PersistentList<FactorSourceCard>,
-    onAddClick: () -> Unit,
+    onAddOverrideClick: () -> Unit,
+    onAddFactorClick: () -> Unit,
     onRemoveClick: (FactorSourceCard) -> Unit,
     onRemoveAllClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        if (overrideFactors.isEmpty()) {
+        if (!isFactorsSectionVisible) {
             RadixTextButton(
                 modifier = Modifier
                     .padding(top = RadixTheme.dimensions.paddingXXSmall)
@@ -271,7 +278,7 @@ private fun OverrideFactorsView(
                 isWithoutPadding = true,
                 contentColor = RadixTheme.colors.blue2,
                 throttleClicks = true,
-                onClick = onAddClick
+                onClick = onAddOverrideClick
             )
         } else {
             Text(
@@ -357,7 +364,7 @@ private fun OverrideFactorsView(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
                 AddFactorButton(
-                    onClick = onAddClick
+                    onClick = onAddFactorClick
                 )
             }
         }
@@ -568,9 +575,10 @@ private fun RegularAccessPreview(
             onNumberOfFactorsClick = {},
             onNumberOfFactorsSelect = {},
             onNumberOfFactorsDismiss = {},
-            onAddFactorClick = {},
-            onRemoveFactorClick = {},
+            onAddThresholdFactorClick = {},
+            onRemoveThresholdFactorClick = {},
             onAddOverrideClick = {},
+            onAddOverrideFactorClick = {},
             onRemoveOverrideFactorClick = {},
             onRemoveAllOverrideFactorsClick = {},
             onAddAuthenticationFactorClick = {},
@@ -599,7 +607,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -613,7 +622,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 overrideFactors = persistentListOf(
@@ -629,7 +639,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -643,7 +654,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 authenticationFactor = FactorSourceCard(
@@ -658,7 +670,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
             ),
             SetupRegularAccessViewModel.State(
@@ -687,7 +700,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -701,7 +715,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 selectThreshold = null,

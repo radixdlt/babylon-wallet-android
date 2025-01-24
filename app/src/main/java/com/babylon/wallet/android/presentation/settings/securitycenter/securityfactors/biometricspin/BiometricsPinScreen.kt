@@ -239,7 +239,8 @@ private val otherDeviceFactorSources = persistentListOf(
             Persona.sampleMainnet(),
             Persona.sampleStokenet()
         ),
-        hasHiddenEntities = true
+        hasHiddenEntities = true,
+        isEnabled = true
     ),
     FactorSourceCard(
         id = FactorSourceId.Hash.init(
@@ -253,7 +254,8 @@ private val otherDeviceFactorSources = persistentListOf(
         messages = persistentListOf(),
         accounts = persistentListOf(),
         personas = persistentListOf(),
-        hasHiddenEntities = true
+        hasHiddenEntities = true,
+        isEnabled = true
     )
 )
 
@@ -279,7 +281,8 @@ private fun BiometricsPinPreview() {
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
                     ),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 otherDeviceFactorSources = otherDeviceFactorSources,
             ),

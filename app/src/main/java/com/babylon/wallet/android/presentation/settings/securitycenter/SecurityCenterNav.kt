@@ -12,7 +12,6 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
-import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
@@ -27,6 +26,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboarding
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
+import com.radixdlt.sargon.FactorSourceKind
 
 const val ROUTE_SECURITY_CENTER_SCREEN = "settings_security_center_screen"
 const val ROUTE_SECURITY_CENTER_GRAPH = "settings_security_center_graph"
@@ -93,27 +93,14 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onBackClick = {
                 navController.popBackStack()
             },
-            onSecurityFactorTypeClick = { item ->
-                when (item) {
-                    is SettingsItem.SecurityFactorsSettingsItem.BiometricsPin -> {
-                        navController.biometricsPin()
-                    }
-
-                    is SettingsItem.SecurityFactorsSettingsItem.LedgerNano -> {
-                        navController.ledgerDevices()
-                    }
-
-                    SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
-                        navController.arculusCards()
-                    }
-
-                    SettingsItem.SecurityFactorsSettingsItem.OffDeviceMnemonic -> {
-                        navController.offDeviceMnemonics()
-                    }
-
-                    SettingsItem.SecurityFactorsSettingsItem.Password -> {
-                        navController.passwords()
-                    }
+            onSecurityFactorTypeClick = { kind ->
+                when (kind) {
+                    FactorSourceKind.DEVICE -> navController.biometricsPin()
+                    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> navController.ledgerDevices()
+                    FactorSourceKind.OFF_DEVICE_MNEMONIC -> navController.offDeviceMnemonics()
+                    FactorSourceKind.ARCULUS_CARD -> navController.arculusCards()
+                    FactorSourceKind.PASSWORD -> navController.passwords()
+                    else -> {}
                 }
             }
         )

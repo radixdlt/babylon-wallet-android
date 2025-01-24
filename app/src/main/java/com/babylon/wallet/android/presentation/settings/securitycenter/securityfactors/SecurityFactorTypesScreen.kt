@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,33 +16,25 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.SecurityProblem
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListPreviewProvider
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListView
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.collections.immutable.toPersistentList
-import kotlinx.collections.immutable.toPersistentSet
+import com.babylon.wallet.android.presentation.ui.model.factors.SecurityFactorTypeUiItem
+import com.radixdlt.sargon.FactorSourceKind
 
 @Composable
 fun SecurityFactorTypesScreen(
     modifier: Modifier = Modifier,
     viewModel: SecurityFactorTypesViewModel,
-    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
+    onSecurityFactorTypeClick: (FactorSourceKind) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SecurityFactorTypesContent(
         modifier = modifier.fillMaxSize(),
-        securityFactorTypeSettingItems = state.securityFactorTypeSettingItems,
-        onSecurityFactorTypeClick = onSecurityFactorTypeClick,
+        state = state,
+        onSecurityFactorTypeClick = { onSecurityFactorTypeClick(it.factorSourceKind) },
         onBackClick = onBackClick,
     )
 }
@@ -49,8 +42,8 @@ fun SecurityFactorTypesScreen(
 @Composable
 private fun SecurityFactorTypesContent(
     modifier: Modifier = Modifier,
-    securityFactorTypeSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
-    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
+    state: SecurityFactorTypesViewModel.State,
+    onSecurityFactorTypeClick: (SecurityFactorTypeUiItem.Item) -> Unit,
     onBackClick: () -> Unit,
 ) {
     Scaffold(
@@ -70,30 +63,18 @@ private fun SecurityFactorTypesContent(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),
-            isDescriptionVisible = true,
-            securityFactorSettingItems = securityFactorTypeSettingItems,
+            description = {
+                Text(
+                    text = stringResource(id = R.string.securityFactors_subtitle),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray2,
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+                )
+            },
+            items = state.items,
             onSecurityFactorTypeItemClick = onSecurityFactorTypeClick
         )
     }
-}
-
-@Composable
-fun getSecurityWarnings(securityFactorsSettingsItem: SecurityFactorsSettingsItem.BiometricsPin): PersistentList<String> {
-    return mutableListOf<String>().apply {
-        securityFactorsSettingsItem.securityProblems.forEach { problem ->
-            when (problem) {
-                is SecurityProblem.EntitiesNotRecoverable -> {
-                    add(stringResource(id = R.string.securityProblems_no3_securityFactors))
-                }
-
-                is SecurityProblem.SeedPhraseNeedRecovery -> {
-                    add(stringResource(id = R.string.securityProblems_no9_securityFactors))
-                }
-
-                else -> {}
-            }
-        }
-    }.toPersistentList()
 }
 
 @Preview(showBackground = true)
@@ -102,36 +83,8 @@ private fun SecurityFactorTypesPreview() {
     RadixWalletTheme {
         SecurityFactorTypesContent(
             modifier = Modifier,
-            securityFactorTypeSettingItems = currentSecurityFactorTypeItems,
-            onSecurityFactorTypeClick = {},
-            onBackClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SecurityFactorTypesWithSecurityProblemsPreview() {
-    RadixWalletTheme {
-        SecurityFactorTypesContent(
-            modifier = Modifier,
-            securityFactorTypeSettingItems = persistentMapOf(
-                SecurityFactorCategory.Own to persistentSetOf(
-                    SecurityFactorsSettingsItem.BiometricsPin(
-                        securityProblems = setOf(
-                            SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true),
-                            SecurityProblem.EntitiesNotRecoverable(
-                                accountsNeedBackup = 7,
-                                personasNeedBackup = 2,
-                                hiddenAccountsNeedBackup = 1,
-                                hiddenPersonasNeedBackup = 3
-                            )
-                        ).toPersistentSet()
-                    )
-                ),
-                SecurityFactorCategory.Hardware to persistentSetOf(
-                    SecurityFactorsSettingsItem.LedgerNano
-                )
+            state = SecurityFactorTypesViewModel.State(
+                items = SecurityFactorTypesListPreviewProvider().value
             ),
             onSecurityFactorTypeClick = {},
             onBackClick = {}

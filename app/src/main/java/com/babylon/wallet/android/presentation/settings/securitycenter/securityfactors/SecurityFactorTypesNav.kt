@@ -7,7 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.radixdlt.sargon.FactorSourceKind
 
 private const val ROUTE_SECURITY_FACTOR_TYPES_SCREEN = "settings_security_factor_types_screen"
 
@@ -19,7 +19,7 @@ fun NavController.securityFactorTypes() {
 
 fun NavGraphBuilder.securityFactorTypes(
     onBackClick: () -> Unit,
-    onSecurityFactorTypeClick: (SettingsItem.SecurityFactorsSettingsItem) -> Unit
+    onSecurityFactorTypeClick: (FactorSourceKind) -> Unit
 ) {
     composable(
         route = ROUTE_SECURITY_FACTOR_TYPES_SCREEN,

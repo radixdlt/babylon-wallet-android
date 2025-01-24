@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -35,12 +36,14 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
+import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
@@ -92,6 +95,7 @@ fun FactorSourceCardView(
             iconRes = item.kind.iconRes(),
             title = item.name,
             subtitle = item.kind.subtitle().takeIf { item.includeDescription },
+            isEnabled = item.isEnabled,
             description = item.lastUsedOn?.let {
                 stringResource(id = R.string.factorSources_card_lastUsed, it)
                     .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
@@ -121,6 +125,7 @@ fun SimpleFactorCardView(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    isEnabled: Boolean = true,
     description: AnnotatedString? = null,
     endContent: @Composable (() -> Unit)? = null
 ) {
@@ -134,6 +139,7 @@ fun SimpleFactorCardView(
         Row(
             modifier = Modifier
                 .weight(1f)
+                .enabledOpacity(isEnabled)
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -176,7 +182,11 @@ fun SimpleFactorCardView(
             }
         }
 
-        endContent?.invoke()
+        Box(
+            modifier.enabledOpacity(isEnabled)
+        ) {
+            endContent?.invoke()
+        }
     }
 }
 
@@ -352,11 +362,11 @@ private fun LinkedEntitiesView(
 @Composable
 fun FactorSourceKind.iconRes(): Int {
     return when (this) {
-        FactorSourceKind.DEVICE -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_device
-        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_ledger_hardware
-        FactorSourceKind.OFF_DEVICE_MNEMONIC -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_passphrase
-        FactorSourceKind.ARCULUS_CARD -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_arculus
-        FactorSourceKind.PASSWORD -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_password
+        FactorSourceKind.DEVICE -> DSR.ic_factor_device
+        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> DSR.ic_factor_ledger_hardware
+        FactorSourceKind.OFF_DEVICE_MNEMONIC -> DSR.ic_factor_passphrase
+        FactorSourceKind.ARCULUS_CARD -> DSR.ic_factor_arculus
+        FactorSourceKind.PASSWORD -> DSR.ic_factor_password
         FactorSourceKind.TRUSTED_CONTACT,
         FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
     }
@@ -479,7 +489,8 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
                 ),
-                hasHiddenEntities = true
+                hasHiddenEntities = true,
+                isEnabled = true
             ),
             FactorSourceCard(
                 id = FactorSourceId.Hash.init(
@@ -503,7 +514,27 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Account.sampleMainnet()
                 ),
                 personas = persistentListOf(),
-                hasHiddenEntities = true
+                hasHiddenEntities = true,
+                isEnabled = true
+            ),
+            FactorSourceCard(
+                id = FactorSourceId.Hash.init(
+                    kind = FactorSourceKind.DEVICE,
+                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                ),
+                name = "My Phone",
+                includeDescription = false,
+                lastUsedOn = "Today",
+                kind = FactorSourceKind.DEVICE,
+                messages = persistentListOf(
+                    FactorSourceStatusMessage.CannotBeUsedHere,
+                ),
+                accounts = persistentListOf(
+                    Account.sampleMainnet()
+                ),
+                personas = persistentListOf(),
+                hasHiddenEntities = true,
+                isEnabled = false
             ),
             FactorSourceCard(
                 id = FactorSourceId.Hash.init(
@@ -520,7 +551,8 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
                 ),
-                hasHiddenEntities = false
+                hasHiddenEntities = false,
+                isEnabled = true
             ),
             FactorSourceCard(
                 id = FactorSourceId.Hash.init(
@@ -534,7 +566,8 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 messages = persistentListOf(),
                 accounts = persistentListOf(),
                 personas = persistentListOf(),
-                hasHiddenEntities = true
+                hasHiddenEntities = true,
+                isEnabled = true
             )
         )
 }

@@ -2,17 +2,19 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.model.FactorSourceCategory
+import com.babylon.wallet.android.domain.model.FactorSourceKindsByCategory
+import com.babylon.wallet.android.domain.model.SecurityProblem
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceKindsByCategoryUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.securityproblems.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
+import com.babylon.wallet.android.presentation.ui.model.factors.SecurityFactorTypeUiItem
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -23,39 +25,46 @@ import javax.inject.Inject
 @HiltViewModel
 class SecurityFactorTypesViewModel @Inject constructor(
     getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
-    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+    getFactorSourceKindsByCategoryUseCase: GetFactorSourceKindsByCategoryUseCase,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+    private val getFactorSourceStatusMessagesUseCase: GetFactorSourceStatusMessagesUseCase
 ) : StateViewModel<SecurityFactorTypesViewModel.State>() {
 
-    override fun initialState(): State = State(securityFactorTypeSettingItems = currentSecurityFactorTypeItems)
+    override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
+            val kindsByCategory = getFactorSourceKindsByCategoryUseCase()
+
             getSecurityProblemsUseCase()
                 .flowOn(defaultDispatcher)
                 .collectLatest { securityProblems ->
-                    if (securityProblems.isNotEmpty()) {
-                        val firstCategory = currentSecurityFactorTypeItems.keys.first()
-                        val updatedSecurityFactorsSettings = currentSecurityFactorTypeItems.put(
-                            key = firstCategory,
-                            value = persistentSetOf(
-                                SecurityFactorsSettingsItem.BiometricsPin(
-                                    securityProblems = securityProblems.toPersistentSet()
-                                )
-                            )
-                        )
-                        _state.update {
-                            it.copy(securityFactorTypeSettingItems = updatedSecurityFactorsSettings)
-                        }
-                    } else {
-                        _state.update {
-                            it.copy(securityFactorTypeSettingItems = currentSecurityFactorTypeItems)
-                        }
-                    }
+                    updateState(kindsByCategory, securityProblems)
                 }
         }
     }
 
+    private fun updateState(kindsByCategory: List<FactorSourceKindsByCategory>, securityProblems: Set<SecurityProblem>) {
+        _state.update { state ->
+            state.copy(
+                items = kindsByCategory.map { (category, kinds) ->
+                    val header = SecurityFactorTypeUiItem.Header(category)
+                        .takeIf { category != FactorSourceCategory.Identity }
+                    val items = kinds.map { kind ->
+                        SecurityFactorTypeUiItem.Item(
+                            factorSourceKind = kind,
+                            messages = getFactorSourceStatusMessagesUseCase(kind, securityProblems)
+                                .toPersistentList()
+                        )
+                    }
+
+                    listOfNotNull(header) + items
+                }.flatten().toPersistentList()
+            )
+        }
+    }
+
     data class State(
-        val securityFactorTypeSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>
+        val items: PersistentList<SecurityFactorTypeUiItem> = persistentListOf()
     ) : UiState
 }

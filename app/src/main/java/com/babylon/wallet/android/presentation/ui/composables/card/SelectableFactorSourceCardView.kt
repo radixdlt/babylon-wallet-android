@@ -47,10 +47,11 @@ fun SelectableSingleChoiceFactorSourceCard(
     onSelect: (FactorSourceCard) -> Unit
 ) {
     FactorSourceCardView(
-        modifier = modifier.noIndicationClickable { onSelect(item.data) },
+        modifier = modifier.noIndicationClickable(item.data.isEnabled) { onSelect(item.data) },
         item = item.data,
         endContent = {
             RadioButtonSelectorView(
+                isEnabled = item.data.isEnabled,
                 isSelected = item.selected,
                 onSelectedChange = { onSelect(item.data) }
             )
@@ -60,6 +61,7 @@ fun SelectableSingleChoiceFactorSourceCard(
 
 @Composable
 private fun RadioButtonSelectorView(
+    isEnabled: Boolean = true,
     isSelected: Boolean,
     onSelectedChange: () -> Unit
 ) {
@@ -67,6 +69,7 @@ private fun RadioButtonSelectorView(
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
 
         RadixRadioButton(
+            enabled = isEnabled,
             selected = isSelected,
             onClick = onSelectedChange
         )
@@ -237,7 +240,8 @@ private fun SelectableSingleChoiceFactorSourceCardPreview() {
                     messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = true
             ),
@@ -265,7 +269,8 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = true
             ),
@@ -293,7 +298,8 @@ private fun SimpleSelectableSingleChoiceFactorSourceCardPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = true
             ),
@@ -334,7 +340,8 @@ private fun RemovableFactorSourceCardPreview() {
                 messages = persistentListOf(),
                 accounts = persistentListOf(),
                 personas = persistentListOf(),
-                hasHiddenEntities = false
+                hasHiddenEntities = false,
+                isEnabled = true
             ),
             onRemoveClick = {}
         )

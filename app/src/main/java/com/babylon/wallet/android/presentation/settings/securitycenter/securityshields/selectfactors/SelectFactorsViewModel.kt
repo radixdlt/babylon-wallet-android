@@ -29,6 +29,8 @@ class SelectFactorsViewModel @Inject constructor(
 ) : StateViewModel<SelectFactorsViewModel.State>(),
     OneOffEventHandler<SelectFactorsViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private var hasMadeFirstSelection: Boolean = false
+
     init {
         initFactorSources()
     }
@@ -39,6 +41,8 @@ class SelectFactorsViewModel @Inject constructor(
         card: FactorSourceCard,
         checked: Boolean
     ) {
+        hasMadeFirstSelection = true
+
         viewModelScope.launch {
             securityShieldBuilderClient.executeMutatingFunction {
                 if (checked) {
@@ -81,7 +85,7 @@ class SelectFactorsViewModel @Inject constructor(
                 .collect {
                     _state.update { state ->
                         state.copy(
-                            status = it.primaryRoleStatus,
+                            status = it.primaryRoleStatus.takeIf { hasMadeFirstSelection },
                             items = state.items.map { item ->
                                 if (item is State.UiItem.Factor) {
                                     item.copy(

@@ -20,7 +20,8 @@ data class FactorSourceCard(
     val messages: PersistentList<FactorSourceStatusMessage>,
     val accounts: PersistentList<Account>,
     val personas: PersistentList<Persona>,
-    val hasHiddenEntities: Boolean
+    val hasHiddenEntities: Boolean,
+    val isEnabled: Boolean
 ) {
 
     companion object {
@@ -39,7 +40,8 @@ data class FactorSourceCard(
             messages = persistentListOf(),
             accounts = persistentListOf(),
             personas = persistentListOf(),
-            hasHiddenEntities = false
+            hasHiddenEntities = false,
+            isEnabled = true
         )
     }
 }
@@ -52,6 +54,7 @@ fun FactorSource.toFactorSourceCard(
     accounts: PersistentList<Account> = persistentListOf(),
     personas: PersistentList<Persona> = persistentListOf(),
     hasHiddenEntities: Boolean = false,
+    isEnabled: Boolean = true
 ): FactorSourceCard {
     return FactorSourceCard(
         id = this.id,
@@ -80,6 +83,7 @@ fun FactorSource.toFactorSourceCard(
         messages = messages,
         accounts = accounts,
         personas = personas,
-        hasHiddenEntities = hasHiddenEntities
+        hasHiddenEntities = hasHiddenEntities,
+        isEnabled = isEnabled
     )
 }

@@ -1,11 +1,16 @@
 package com.babylon.wallet.android.data.repository.securityshield
 
+import com.babylon.wallet.android.data.repository.securityshield.model.ChooseFactorSourceContext
 import com.babylon.wallet.android.data.repository.securityshield.model.PrimaryRoleSelection
 import com.babylon.wallet.android.data.repository.securityshield.model.RecoveryRoleSelection
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.FactorSourceValidationStatus
+import com.radixdlt.sargon.FactorSourceValidationStatusReasonIfInvalid
 import com.radixdlt.sargon.SecurityShieldBuilder
+import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.extensions.id
@@ -72,6 +77,21 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.build().also { Timber.w("Shield created: $it") }
     }
 
+    suspend fun getUnusableFactorSourceKinds(
+        context: ChooseFactorSourceContext
+    ): List<FactorSourceKind> = FactorSourceKind.entries.filterNot { kind ->
+        isFactorSourceKindValidOrCanBe(context, kind)
+    }
+
+    suspend fun findAlreadySelectedFactorSourceIds(context: ChooseFactorSourceContext): List<FactorSourceId> = withContext(dispatcher) {
+        validationForAdditionOfFactorSources(context).mapNotNull { status ->
+            status.factorSourceId.takeIf {
+                val nonBasicInvalidReason = status.reasonIfInvalid as? FactorSourceValidationStatusReasonIfInvalid.NonBasic
+                nonBasicInvalidReason?.v1 is SecurityShieldBuilderRuleViolation.FactorSourceAlreadyPresent
+            }
+        }
+    }
+
     suspend fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
         securityShieldBuilder = securityShieldBuilder.function()
         initSelection()
@@ -106,6 +126,51 @@ class SecurityShieldBuilderClient @Inject constructor(
                 shieldStatus = status
             )
         )
+    }
+
+    private suspend fun isFactorSourceKindValidOrCanBe(
+        context: ChooseFactorSourceContext,
+        kind: FactorSourceKind
+    ): Boolean = withContext(dispatcher) {
+        when (context) {
+            ChooseFactorSourceContext.PrimaryThreshold -> {
+                securityShieldBuilder.additionOfFactorSourceOfKindToPrimaryThresholdIsValidOrCanBe(kind)
+            }
+            ChooseFactorSourceContext.PrimaryOverride -> {
+                securityShieldBuilder.additionOfFactorSourceOfKindToPrimaryOverrideIsValidOrCanBe(kind)
+            }
+            ChooseFactorSourceContext.Recovery -> {
+                securityShieldBuilder.additionOfFactorSourceOfKindToRecoveryIsValidOrCanBe(kind)
+            }
+            ChooseFactorSourceContext.Confirmation -> {
+                securityShieldBuilder.additionOfFactorSourceOfKindToConfirmationIsValidOrCanBe(kind)
+            }
+            ChooseFactorSourceContext.AuthenticationSigning -> {
+                securityShieldBuilder.isAllowedFactorSourceKindForAuthenticationSigning(kind)
+            }
+        }
+    }
+
+    private suspend fun validationForAdditionOfFactorSources(context: ChooseFactorSourceContext): List<FactorSourceValidationStatus> {
+        val factorSourceIds = allFactorSources.first().map { it.id }
+
+        return when (context) {
+            ChooseFactorSourceContext.PrimaryThreshold -> {
+                securityShieldBuilder.validationForAdditionOfFactorSourceToPrimaryThresholdForEach(factorSourceIds)
+            }
+            ChooseFactorSourceContext.PrimaryOverride -> {
+                securityShieldBuilder.validationForAdditionOfFactorSourceToPrimaryOverrideForEach(factorSourceIds)
+            }
+            ChooseFactorSourceContext.Recovery -> {
+                securityShieldBuilder.validationForAdditionOfFactorSourceToRecoveryOverrideForEach(factorSourceIds)
+            }
+            ChooseFactorSourceContext.Confirmation -> {
+                securityShieldBuilder.validationForAdditionOfFactorSourceToConfirmationOverrideForEach(factorSourceIds)
+            }
+            ChooseFactorSourceContext.AuthenticationSigning -> {
+                emptyList()
+            }
+        }
     }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> = mapNotNull { id -> id.toFactorSource() }
