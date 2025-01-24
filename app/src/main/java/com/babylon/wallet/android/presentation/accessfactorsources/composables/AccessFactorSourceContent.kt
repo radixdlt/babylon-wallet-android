@@ -46,6 +46,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.DerivingAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.ProvingOwnership
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.SignatureRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.UpdatingFactorConfig
@@ -313,6 +314,7 @@ private fun <F : FactorSource> AccessFactorSourceContent(
             text = when (purpose) {
                 SignatureRequest -> stringResource(R.string.factorSourceActions_signature_title)
                 ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
+                DerivingAccounts -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
                 UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_updatingFactorConfig_title)
             },
             color = RadixTheme.colors.gray1,
@@ -361,29 +363,29 @@ private fun <F : FactorSource> AccessFactorSourceContent(
 private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): AnnotatedString = when (this) {
     FactorSourceKind.DEVICE -> when (purpose) {
         SignatureRequest -> stringResource(R.string.factorSourceActions_device_signMessage)
-        ProvingOwnership, UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_device_message)
+        ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_device_message)
     }
 
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> when (purpose) {
         SignatureRequest -> stringResource(R.string.factorSourceActions_ledger_signMessage)
         ProvingOwnership -> stringResource(R.string.factorSourceActions_ledger_message)
-        UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_ledger_deriveKeysMessage)
+        UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_ledger_deriveKeysMessage)
     }
 
     FactorSourceKind.ARCULUS_CARD -> when (purpose) {
         SignatureRequest -> stringResource(R.string.factorSourceActions_arculus_signMessage)
         ProvingOwnership -> stringResource(R.string.factorSourceActions_arculus_message)
-        UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_arculus_deriveKeysMessage)
+        UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_arculus_deriveKeysMessage)
     }
 
     FactorSourceKind.OFF_DEVICE_MNEMONIC -> when (purpose) {
         SignatureRequest -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_signMessage)
-        ProvingOwnership, UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_message)
+        ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_message)
     }
 
     FactorSourceKind.PASSWORD -> when (purpose) {
         SignatureRequest -> stringResource(R.string.factorSourceActions_password_signMessage)
-        ProvingOwnership, UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_password_message)
+        ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_password_message)
     }
 
     FactorSourceKind.TRUSTED_CONTACT -> ""

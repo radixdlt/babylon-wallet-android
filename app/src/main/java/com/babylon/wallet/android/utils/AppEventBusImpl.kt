@@ -71,8 +71,6 @@ sealed interface AppEvent {
 
         data object DerivePublicKeys : AccessFactorSources
 
-        data object DeriveAccounts : AccessFactorSources
-
         data object GetSignatures : AccessFactorSources
     }
 

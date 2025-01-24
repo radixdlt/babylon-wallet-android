@@ -1,13 +1,9 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DerivationPurpose
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
-import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
@@ -27,10 +23,6 @@ interface AccessFactorSourcesProxy {
     suspend fun derivePublicKeys(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
     ): AccessFactorSourcesOutput.DerivedPublicKeys
-
-    suspend fun reDeriveAccounts(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
-    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 
     suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
@@ -85,26 +77,6 @@ sealed interface AccessFactorSourcesInput {
         val request: KeyDerivationRequestPerFactorSource
     ) : AccessFactorSourcesInput
 
-    sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
-
-        val factorSource: FactorSource
-        val isForLegacyOlympia: Boolean
-        val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
-
-        data class WithGivenMnemonic(
-            override val factorSource: FactorSource,
-            override val isForLegacyOlympia: Boolean = false,
-            override val nextDerivationPathIndex: HdPathComponent,
-            val mnemonicWithPassphrase: MnemonicWithPassphrase,
-        ) : ToReDeriveAccounts
-
-        data class WithGivenFactorSource(
-            override val factorSource: FactorSource,
-            override val isForLegacyOlympia: Boolean,
-            override val nextDerivationPathIndex: HdPathComponent,
-        ) : ToReDeriveAccounts
-    }
-
     data class ToSign<SP : Signable.Payload, ID : Signable.ID>(
         val purpose: Purpose,
         val kind: FactorSourceKind,
@@ -131,10 +103,6 @@ sealed interface AccessFactorSourcesInput {
  */
 sealed interface AccessFactorSourcesOutput {
 
-    data class HDPublicKey(
-        val value: HierarchicalDeterministicPublicKey
-    ) : AccessFactorSourcesOutput
-
     sealed interface DerivedPublicKeys : AccessFactorSourcesOutput {
         data class Success(
             val factorSourceId: FactorSourceIdFromHash,
@@ -144,11 +112,6 @@ sealed interface AccessFactorSourcesOutput {
         data object Rejected : DerivedPublicKeys
     }
 
-    data class DerivedAccountsWithNextDerivationPath(
-        val derivedAccounts: List<Account>,
-        val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
-    ) : AccessFactorSourcesOutput
-
     sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
         data class Completed<ID : Signable.ID>(
             val outcome: PerFactorOutcome<ID>
@@ -156,10 +119,6 @@ sealed interface AccessFactorSourcesOutput {
 
         data object Rejected : SignOutput<Signable.ID>
     }
-
-    data class Failure(
-        val error: Throwable
-    ) : AccessFactorSourcesOutput
 
     data object Init : AccessFactorSourcesOutput
 }

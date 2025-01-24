@@ -148,7 +148,7 @@ private fun DerivePublicKeysSheetContent(
             when (accessFactorSourceState.factorSourceToAccess.kind) {
                 FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
                     modifier = contentModifier,
-                    purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
+                    purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
                     isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                     canUseDifferentFactor = false,
@@ -158,7 +158,7 @@ private fun DerivePublicKeysSheetContent(
 
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
                     modifier = contentModifier,
-                    purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
+                    purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
                     isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                     canUseDifferentFactor = false,
@@ -168,7 +168,7 @@ private fun DerivePublicKeysSheetContent(
 
                 FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
                     modifier = contentModifier,
-                    purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
+                    purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                     seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
                     canUseDifferentFactor = false,
@@ -182,7 +182,7 @@ private fun DerivePublicKeysSheetContent(
 
                 FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
                     modifier = contentModifier,
-                    purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
+                    purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                     canUseDifferentFactor = false,
                     onSkipClick = {}
@@ -190,7 +190,7 @@ private fun DerivePublicKeysSheetContent(
 
                 FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
                     modifier = contentModifier,
-                    purpose = AccessFactorSourcePurpose.UpdatingFactorConfig,
+                    purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
                     passwordState = accessFactorSourceState.passwordState,
                     onPasswordTyped = onPasswordTyped,
@@ -209,14 +209,15 @@ private fun DerivePublicKeysSheetContent(
 @Preview
 @Composable
 private fun DerivePublicKeyPreview(
-    @PreviewParameter(DerivePublicKeysPreviewParameterProvider::class) factorSource: FactorSource
+    @PreviewParameter(DerivePublicKeysPreviewParameterProvider::class) param: Pair<AccessFactorSourcePurpose, FactorSource>
 ) {
     RadixWalletTheme {
         DerivePublicKeysSheetContent(
             state = DerivePublicKeysViewModel.State(
+                purpose = param.first,
                 accessState = AccessFactorSourceDelegate.State(
                     factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
-                        factorSource = factorSource
+                        factorSource = param.second
                     )
                 )
             ),
@@ -230,14 +231,27 @@ private fun DerivePublicKeyPreview(
 }
 
 @UsesSampleValues
-class DerivePublicKeysPreviewParameterProvider : PreviewParameterProvider<FactorSource> {
+class DerivePublicKeysPreviewParameterProvider : PreviewParameterProvider<Pair<AccessFactorSourcePurpose, FactorSource>> {
 
-    override val values: Sequence<FactorSource>
-        get() = sequenceOf(
-            DeviceFactorSource.sample().asGeneral(),
-            LedgerHardwareWalletFactorSource.sample().asGeneral(),
-            ArculusCardFactorSource.sample().asGeneral(),
-            OffDeviceMnemonicFactorSource.sample().asGeneral(),
-            PasswordFactorSource.sample().asGeneral(),
-        )
+    override val values: Sequence<Pair<AccessFactorSourcePurpose, FactorSource>>
+        get() {
+            val factorSources = listOf(
+                DeviceFactorSource.sample().asGeneral(),
+                LedgerHardwareWalletFactorSource.sample().asGeneral(),
+                ArculusCardFactorSource.sample().asGeneral(),
+                OffDeviceMnemonicFactorSource.sample().asGeneral(),
+                PasswordFactorSource.sample().asGeneral(),
+            )
+
+            val purposes = listOf(
+                AccessFactorSourcePurpose.UpdatingFactorConfig,
+                AccessFactorSourcePurpose.DerivingAccounts
+            )
+
+            return purposes.map { purpose ->
+                factorSources.map { factorSource ->
+                    (purpose to factorSource)
+                }
+            }.flatten().asSequence()
+        }
 }

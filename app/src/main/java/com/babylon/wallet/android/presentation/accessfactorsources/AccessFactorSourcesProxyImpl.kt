@@ -30,22 +30,6 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         return result as AccessFactorSourcesOutput.DerivedPublicKeys
     }
 
-    override suspend fun reDeriveAccounts(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
-    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath> {
-        input = accessFactorSourcesInput
-        tempMnemonicWithPassphrase = null // at this point the DeriveAccountsViewModel has already received the mnemonic
-
-        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DeriveAccounts)
-        val result = _output.first()
-
-        return if (result is AccessFactorSourcesOutput.Failure) {
-            Result.failure(result.error)
-        } else {
-            Result.success(result as AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath)
-        }
-    }
-
     override suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
     ): AccessFactorSourcesOutput.SignOutput<ID> {
