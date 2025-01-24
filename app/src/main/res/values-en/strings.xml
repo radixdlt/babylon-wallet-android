@@ -1541,4 +1541,7 @@ Code: %s</string>
   <string name="transactionRecovery_preAuthorization_message">You’ve skipped too many factors and cannot sign the pre-authorization. You can restart the signing process, or cancel it.</string>
   <string name="transactionRecovery_preAuthorization_cancel">Cancel Pre-Authorization</string>
   <string name="transactionRecovery_restart">Restart Signing</string>
+  <string name="authorization_createAccount_title">Creating Account</string>
+  <string name="authorization_createPersona_title">Creating Persona</string>
+  <string name="authorization_createEntity_message">Use your phone’s biometrics or PIN to confirm you want to do this.</string>
 </resources>
