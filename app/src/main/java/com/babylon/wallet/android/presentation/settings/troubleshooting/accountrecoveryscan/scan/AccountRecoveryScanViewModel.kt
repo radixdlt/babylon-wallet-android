@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.ResolveDerivationPathsForRecoveryScanUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -16,15 +17,10 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountPath
-import com.radixdlt.sargon.Bip44LikePath
-import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DerivationPath
-import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DerivePublicKeysSource
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
@@ -34,11 +30,8 @@ import com.radixdlt.sargon.OnLedgerSettings
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.asHardened
 import com.radixdlt.sargon.extensions.displayString
 import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
-import com.radixdlt.sargon.extensions.indexInLocalKeySpace
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.lastPathComponent
 import com.radixdlt.sargon.os.SargonOsManager
@@ -51,12 +44,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.core.sargon.asIdentifiable
-import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.derivationPathEntityIndex
-import rdx.works.core.sargon.derivationPathScheme
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.initBabylon
+import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.core.then
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.DeriveProfileUseCase
@@ -74,6 +63,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
+    private val resolveDerivationPathsForRecoveryScanUseCase: ResolveDerivationPathsForRecoveryScanUseCase,
     private val sargonOsManager: SargonOsManager,
 ) : StateViewModel<AccountRecoveryScanViewModel.State>(),
     OneOffEventHandler<AccountRecoveryScanViewModel.Event> by OneOffEventHandlerImpl() {
@@ -115,9 +105,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(recoverySource = recoverySource, isScanningNetwork = true) }
 
-            val pathsToResolve = derivationPathsToResolve(
+            val pathsToResolve = resolveDerivationPathsForRecoveryScanUseCase(
                 source = recoverySource,
-                isOlympia = _state.value.isOlympiaSeedPhrase
+                isOlympia = _state.value.isOlympiaSeedPhrase,
+                currentPathIndex = nextDerivationPathIndex
             ).apply {
                 this.derivationPaths.forEachIndexed { index, derivationPath ->
                     Timber.tag("Bakos").d("[$index]: ${derivationPath.displayString}")
@@ -152,7 +143,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 }
 
                 nextDerivationPathIndex = pathsToResolve.nextIndex
-                Timber.tag("Bakos").d("Next starts from ${nextDerivationPathIndex.indexInLocalKeySpace}")
 
                 _state.update { state ->
                     state.copy(
@@ -173,67 +163,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    private suspend fun derivationPathsToResolve(
-        source: DerivePublicKeysSource,
-        isOlympia: Boolean
-    ): PathsToResolve {
-        val profile = getProfileUseCase.finishedOnboardingProfile()
-
-        val networkId = profile?.currentGateway?.network?.id ?: NetworkId.MAINNET
-        val usedIndices = if (profile != null) {
-            val factorSourceId = source.toFactorSourceId()
-            val network = profile.networks.asIdentifiable().getBy(networkId)
-            val derivationPathScheme = if (state.value.isOlympiaSeedPhrase) {
-                DerivationPathScheme.BIP44_OLYMPIA
-            } else {
-                DerivationPathScheme.CAP26
-            }
-
-            network
-                ?.accounts
-                ?.filter { account ->
-                    account.factorSourceId == factorSourceId && account.derivationPathScheme == derivationPathScheme
-                }
-                ?.map { account ->
-                    account.derivationPathEntityIndex.indexInLocalKeySpace
-                }
-                ?.toSet().orEmpty()
-        } else {
-            emptySet()
-        }
-
-        val indicesToScan = LinkedHashSet<HdPathComponent>()
-        var currentIndex = nextDerivationPathIndex.indexInLocalKeySpace
-        do {
-            if (currentIndex !in usedIndices) {
-                indicesToScan.add(
-                    HdPathComponent.init(
-                        localKeySpace = currentIndex,
-                        keySpace = KeySpace.Unsecurified(isHardened = true)
-                    )
-                )
-            }
-            currentIndex++
-        } while (indicesToScan.size < ACCOUNTS_PER_SCAN)
-
-        val paths = indicesToScan.map { index ->
-            if (isOlympia) {
-                Bip44LikePath.init(index = index).asGeneral()
-            } else {
-                AccountPath.init(
-                    networkId = networkId,
-                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-                    index = index.asHardened()
-                ).asGeneral()
-            }
-        }
-
-        return PathsToResolve(
-            derivationPaths = paths,
-            networkId = networkId
-        )
     }
 
     private suspend fun deriveAccounts(
@@ -362,12 +291,4 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 return HdPathComponent.init(globalKeySpace = nextIndexInGlobalKeySpace)
             }
     }
-}
-
-private fun DerivePublicKeysSource.toFactorSourceId(): FactorSourceId.Hash = when (this) {
-    is DerivePublicKeysSource.FactorSource -> v1.asGeneral()
-    is DerivePublicKeysSource.Mnemonic -> FactorSourceId.Hash.init(
-        kind = FactorSourceKind.DEVICE,
-        mnemonicWithPassphrase = v1
-    )
 }
