@@ -53,7 +53,7 @@ fun ShieldSetupNotEnoughFactorsStatusView(
     StatusMessageText(
         modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
         message = StatusMessage(
-            //TODO crowdin
+            // TODO crowdin
             message = "You haven’t chosen enough factors to build a Shield. Learn about **Factors required for Shield**".formattedSpans(
                 boldStyle = SpanStyle(
                     color = RadixTheme.colors.blue2,

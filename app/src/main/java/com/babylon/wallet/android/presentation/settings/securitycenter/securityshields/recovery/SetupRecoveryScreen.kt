@@ -48,6 +48,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
@@ -96,7 +97,9 @@ fun SetupRecoveryScreen(
         onFallbackPeriodUnitChange = viewModel::onFallbackPeriodUnitChange,
         onSetFallbackPeriodClick = viewModel::onSetFallbackPeriodClick,
         onDismissFallbackPeriod = viewModel::onDismissFallbackPeriod,
-        onContinueClick = toNameSetup
+        onContinueClick = viewModel::onContinueClick,
+        onUnsafeCombinationInfoDismiss = viewModel::onUnsafeCombinationInfoDismiss,
+        onUnsafeCombinationInfoConfirm = viewModel::onUnsafeCombinationInfoConfirm
     )
 
     state.selectFactor?.let { selectFactor ->
@@ -134,7 +137,9 @@ private fun SetupRecoveryContent(
     onFallbackPeriodUnitChange: (TimePeriodUnit) -> Unit,
     onSetFallbackPeriodClick: () -> Unit,
     onDismissFallbackPeriod: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+    onUnsafeCombinationInfoDismiss: () -> Unit,
+    onUnsafeCombinationInfoConfirm: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -273,6 +278,13 @@ private fun SetupRecoveryContent(
             onUnitChange = onFallbackPeriodUnitChange,
             onSetClick = onSetFallbackPeriodClick,
             onDismiss = onDismissFallbackPeriod
+        )
+    }
+
+    if (state.showUnsafeCombinationInfo) {
+        UnsafeCombinationInfoDialog(
+            onCancelClick = onUnsafeCombinationInfoDismiss,
+            onContinueClick = onUnsafeCombinationInfoConfirm
         )
     }
 }
@@ -547,6 +559,41 @@ private fun SelectFallbackPeriodSheet(
 }
 
 @Composable
+private fun UnsafeCombinationInfoDialog(
+    modifier: Modifier = Modifier,
+    onCancelClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    BasicPromptAlertDialog(
+        modifier = modifier,
+        finish = { accepted ->
+            if (accepted) {
+                onContinueClick()
+            } else {
+                onCancelClick()
+            }
+        },
+        title = {
+            Text(
+                text = "Unsafe combination", // TODO crowdin
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        message = {
+            Text(
+                text = "This combination of factors may be unsafe", // TODO crowdin
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        confirmText = stringResource(id = R.string.common_continue),
+        dismissText = stringResource(id = R.string.common_cancel),
+        confirmTextColor = RadixTheme.colors.red1
+    )
+}
+
+@Composable
 private fun TimePeriod.title(): String {
     val value = value.toInt()
     val isSingular = value == 1
@@ -590,7 +637,9 @@ private fun SetupRecoveryPreview(
             onFallbackPeriodUnitChange = {},
             onSetFallbackPeriodClick = {},
             onDismissFallbackPeriod = {},
-            onContinueClick = {}
+            onContinueClick = {},
+            onUnsafeCombinationInfoDismiss = {},
+            onUnsafeCombinationInfoConfirm = {}
         )
     }
 }
@@ -733,6 +782,9 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                     values = TimePeriodUnit.DAYS.values.toPersistentList(),
                     units = TimePeriodUnit.entries.toPersistentList()
                 )
+            ),
+            SetupRecoveryViewModel.State(
+                showUnsafeCombinationInfo = true
             )
         )
 }

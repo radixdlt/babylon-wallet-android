@@ -133,6 +133,23 @@ class SetupRecoveryViewModel @Inject constructor(
         }
     }
 
+    fun onContinueClick() {
+        if (state.value.status is SecurityShieldBuilderStatus.Weak) {
+            _state.update { state -> state.copy(showUnsafeCombinationInfo = true) }
+        } else {
+            viewModelScope.launch { sendEvent(Event.ToNameSetup) }
+        }
+    }
+
+    fun onUnsafeCombinationInfoDismiss() {
+        _state.update { state -> state.copy(showUnsafeCombinationInfo = false) }
+    }
+
+    fun onUnsafeCombinationInfoConfirm() {
+        _state.update { state -> state.copy(showUnsafeCombinationInfo = false) }
+        viewModelScope.launch { sendEvent(Event.ToNameSetup) }
+    }
+
     private fun initSelection() {
         viewModelScope.launch {
             shieldBuilderClient.recoveryRoleSelection()
@@ -170,12 +187,13 @@ class SetupRecoveryViewModel @Inject constructor(
     }
 
     data class State(
-        private val status: SecurityShieldBuilderStatus? = null,
+        val status: SecurityShieldBuilderStatus? = null,
         val startRecoveryFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val confirmationFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val fallbackPeriod: TimePeriod? = null,
         val selectFallbackPeriod: SelectFallbackPeriod? = null,
-        val selectFactor: SelectFactor? = null
+        val selectFactor: SelectFactor? = null,
+        val showUnsafeCombinationInfo: Boolean = false
     ) : UiState {
 
         private val invalidStatus = status as? SecurityShieldBuilderStatus.Invalid
