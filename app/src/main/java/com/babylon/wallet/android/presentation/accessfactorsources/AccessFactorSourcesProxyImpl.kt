@@ -20,6 +20,16 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     // used only when recovering accounts from onboarding (reDeriveAccounts)
     private var tempMnemonicWithPassphrase: MnemonicWithPassphrase? = null
 
+    override suspend fun requestAuthorization(
+        input: AccessFactorSourcesInput.ToRequestAuthorization
+    ): AccessFactorSourcesOutput.RequestAuthorization {
+        this.input = input
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.RequestAuthorization)
+        val result = _output.first()
+
+        return result as AccessFactorSourcesOutput.RequestAuthorization
+    }
+
     override suspend fun derivePublicKeys(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
     ): AccessFactorSourcesOutput.DerivedPublicKeys {

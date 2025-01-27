@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.interactor
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.radixdlt.sargon.AuthorizationPurpose
+import com.radixdlt.sargon.AuthorizationResponse
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.KeyDerivationRequest
@@ -23,6 +25,10 @@ class WalletInteractor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy
 ) : HostInteractor {
 
+    override suspend fun requestAuthorization(purpose: AuthorizationPurpose): AuthorizationResponse {
+        return accessFactorSourcesProxy.requestAuthorization(AccessFactorSourcesInput.ToRequestAuthorization(purpose)).output
+    }
+
     override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
         val publicKeysPerFactorSource = request.perFactorSource.map {
             val result = accessFactorSourcesProxy.derivePublicKeys(
@@ -39,7 +45,7 @@ class WalletInteractor(
                         result.factorInstances
                     )
                 }
-                else -> throw CommonException.SigningRejected()
+                else -> throw CommonException.HostInteractionAborted()
             }.also {
                 delay(delayPerFactorSource)
             }
@@ -64,7 +70,7 @@ class WalletInteractor(
 
             val outcome = when (output) {
                 is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
-                else -> throw CommonException.SigningRejected()
+                else -> throw CommonException.HostInteractionAborted()
             }
 
             if (index != request.perFactorSource.lastIndex) {
@@ -95,7 +101,7 @@ class WalletInteractor(
 
             val outcome = when (output) {
                 is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
-                else -> throw CommonException.SigningRejected()
+                else -> throw CommonException.HostInteractionAborted()
             }
 
             if (index != request.perFactorSource.lastIndex) {
@@ -126,7 +132,7 @@ class WalletInteractor(
 
             val outcome = when (output) {
                 is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
-                else -> throw CommonException.SigningRejected()
+                else -> throw CommonException.HostInteractionAborted()
             }
 
             if (index != request.perFactorSource.lastIndex) {

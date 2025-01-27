@@ -69,6 +69,8 @@ sealed interface AppEvent {
             data object Rejected : SelectLedgerOutcome
         }
 
+        data object RequestAuthorization : AccessFactorSources
+
         data object DerivePublicKeys : AccessFactorSources
 
         data object GetSignatures : AccessFactorSources

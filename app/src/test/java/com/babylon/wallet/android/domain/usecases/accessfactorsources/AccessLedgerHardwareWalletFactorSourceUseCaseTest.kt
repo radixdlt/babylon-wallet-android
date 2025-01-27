@@ -23,7 +23,7 @@ import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.bip32CanonicalString
+import com.radixdlt.sargon.extensions.bip32String
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
@@ -225,7 +225,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                     LedgerResponse.DerivedPublicKey(
                         curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                         publicKeyHex = expectedHDPublicKey.publicKey.hex,
-                        derivationPath = expectedHDPublicKey.derivationPath.bip32CanonicalString
+                        derivationPath = expectedHDPublicKey.derivationPath.bip32String
                     )
                 )
             )
@@ -278,7 +278,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                         derivedPublicKey = LedgerResponse.DerivedPublicKey(
                             curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                             publicKeyHex = signature.publicKey.hex,
-                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32CanonicalString
+                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32String
                         ),
                         signature = signature.signature.bytes.hex
                     )
@@ -345,7 +345,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                         derivedPublicKey = LedgerResponse.DerivedPublicKey(
                             curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                             publicKeyHex = signature.publicKey.hex,
-                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32CanonicalString
+                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32String
                         ),
                         signature = signature.signature.bytes.hex
                     )
@@ -414,7 +414,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
                         derivedPublicKey = LedgerResponse.DerivedPublicKey(
                             curve = LedgerResponse.DerivedPublicKey.Curve.Curve25519,
                             publicKeyHex = signature.publicKey.hex,
-                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32CanonicalString
+                            derivationPath = ownedFactorInstance.factorInstance.publicKey.derivationPath.bip32String
                         ),
                         signature = signature.signature.bytes.hex
                     )

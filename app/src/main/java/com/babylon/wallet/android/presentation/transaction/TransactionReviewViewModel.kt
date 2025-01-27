@@ -456,14 +456,14 @@ class TransactionReviewViewModel @Inject constructor(
 
                 companion object {
 
-                    fun from(isPreAuthorization: Boolean) = SigningFailed(type = if (isPreAuthorization) {
-                        Type.PreAuthorization
-                    } else {
-                        Type.Transaction
-                    })
-
+                    fun from(isPreAuthorization: Boolean) = SigningFailed(
+                        type = if (isPreAuthorization) {
+                            Type.PreAuthorization
+                        } else {
+                            Type.Transaction
+                        }
+                    )
                 }
-
             }
         }
 

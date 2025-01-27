@@ -1,18 +1,15 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.composables
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,7 +30,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -84,7 +80,7 @@ fun AccessDeviceFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.DEVICE,
         factorActions = {
-            RetryButton(
+            AccessContentRetryButton(
                 modifier = Modifier
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
                 isEnabled = isRetryEnabled,
@@ -114,7 +110,7 @@ fun AccessLedgerHardwareWalletFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
         factorActions = {
-            RetryButton(
+            AccessContentRetryButton(
                 modifier = Modifier
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
                 isEnabled = isRetryEnabled,
@@ -290,73 +286,38 @@ private fun <F : FactorSource> AccessFactorSourceContent(
     factorSource: F?,
     factorActions: @Composable ColumnScope.(F) -> Unit
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Icon(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                .size(81.dp),
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
-            ),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray3
-        )
+    AccessContent(
+        modifier = modifier.fillMaxWidth(),
+        title = when (purpose) {
+            SignatureRequest -> stringResource(R.string.factorSourceActions_signature_title)
+            ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
+            DerivingAccounts -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
+            UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_updatingFactorConfig_title)
+        },
+        message = factorSourceKind.message(purpose),
+        content = {
+            val card = remember(factorSource) {
+                factorSource?.toFactorSourceCard(
+                    includeDescription = false,
+                    includeLastUsedOn = false
+                )
+            }
+            if (card != null) {
+                FactorSourceCardView(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                    item = card
+                )
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
 
-        Text(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = when (purpose) {
-                SignatureRequest -> stringResource(R.string.factorSourceActions_signature_title)
-                ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
-                DerivingAccounts -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
-                UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_updatingFactorConfig_title)
-            },
-            color = RadixTheme.colors.gray1,
-            style = RadixTheme.typography.title,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        Text(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = factorSourceKind.message(purpose),
-            color = RadixTheme.colors.gray1,
-            style = RadixTheme.typography.body1Regular,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-        val card = remember(factorSource) {
-            factorSource?.toFactorSourceCard(
-                includeDescription = false,
-                includeLastUsedOn = false
-            )
+            if (factorSource != null) {
+                factorActions(factorSource)
+            }
         }
-        if (card != null) {
-            FactorSourceCardView(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                item = card
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        }
-
-        if (factorSource != null) {
-            factorActions(factorSource)
-        }
-    }
+    )
 }
 
 @Composable
@@ -391,23 +352,6 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
     FactorSourceKind.TRUSTED_CONTACT -> ""
     FactorSourceKind.SECURITY_QUESTIONS -> ""
 }.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
-
-@Composable
-private fun RetryButton(
-    modifier: Modifier = Modifier,
-    isEnabled: Boolean,
-    onClick: () -> Unit
-) {
-    RadixTextButton(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-            .height(50.dp),
-        text = stringResource(R.string.common_retry),
-        enabled = isEnabled,
-        onClick = onClick
-    )
-}
 
 @Composable
 private fun UseDifferentFactor(

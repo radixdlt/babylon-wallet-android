@@ -107,7 +107,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
                 when (error) {
                     // When signing is rejected we just need to stop the submit process. User can retry.
-                    is CommonException.SigningRejected -> {
+                    is CommonException.HostInteractionAborted -> {
                         _state.update { it.copy(isSubmitting = false) }
                     }
 

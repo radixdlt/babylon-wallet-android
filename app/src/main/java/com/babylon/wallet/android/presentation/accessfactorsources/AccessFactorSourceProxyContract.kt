@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
+import com.radixdlt.sargon.AuthorizationPurpose
+import com.radixdlt.sargon.AuthorizationResponse
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
@@ -19,6 +21,10 @@ import com.radixdlt.sargon.os.signing.Signable
  *
  */
 interface AccessFactorSourcesProxy {
+
+    suspend fun requestAuthorization(
+        input: AccessFactorSourcesInput.ToRequestAuthorization
+    ): AccessFactorSourcesOutput.RequestAuthorization
 
     suspend fun derivePublicKeys(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
@@ -72,6 +78,10 @@ interface AccessFactorSourcesIOHandler {
  */
 sealed interface AccessFactorSourcesInput {
 
+    data class ToRequestAuthorization(
+        val purpose: AuthorizationPurpose
+    ) : AccessFactorSourcesInput
+
     data class ToDerivePublicKeys(
         val purpose: DerivationPurpose,
         val request: KeyDerivationRequestPerFactorSource
@@ -102,6 +112,10 @@ sealed interface AccessFactorSourcesInput {
  *
  */
 sealed interface AccessFactorSourcesOutput {
+
+    data class RequestAuthorization(
+        val output: AuthorizationResponse
+    ) : AccessFactorSourcesOutput
 
     sealed interface DerivedPublicKeys : AccessFactorSourcesOutput {
         data class Success(

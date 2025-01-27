@@ -94,7 +94,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
             val recoverySource = if (args.factorSourceId != null) {
                 DerivePublicKeysSource.FactorSource(args.factorSourceId.value)
             } else {
-                val mnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase() ?: error("")
+                val mnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase() ?: error("No mnemonic provided")
                 DerivePublicKeysSource.Mnemonic(mnemonic)
             }
 
@@ -164,7 +164,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     )
                 }
             }.onFailure { error ->
-                if (error is CommonException.SigningRejected) {
+                if (error is CommonException.HostInteractionAborted) {
                     _state.update { state -> state.copy(isScanningNetwork = false) }
                 } else {
                     _state.update { state -> state.copy(isScanningNetwork = false, uiMessage = UiMessage.ErrorMessage(error)) }

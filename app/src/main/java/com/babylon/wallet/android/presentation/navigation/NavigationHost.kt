@@ -8,6 +8,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorizationDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.account.account
@@ -274,6 +275,11 @@ fun NavigationHost(
             },
             onInfoClick = { glossaryItem ->
                 navController.infoDialog(glossaryItem)
+            }
+        )
+        requestAuthorizationDialog(
+            onDismiss = {
+                navController.popBackStack()
             }
         )
         derivePublicKeysDialog(
