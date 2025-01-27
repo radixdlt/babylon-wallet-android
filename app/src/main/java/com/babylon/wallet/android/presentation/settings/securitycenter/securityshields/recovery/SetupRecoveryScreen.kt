@@ -44,7 +44,6 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupNotEnoughFactorsStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -178,16 +177,17 @@ private fun SetupRecoveryContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                GeneralStatusView(
-                    modifier = Modifier.padding(
-                        start = RadixTheme.dimensions.paddingSmall,
-                        end = RadixTheme.dimensions.paddingSmall,
-                        top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingXXLarge
-                    ),
-                    status = state.generalStatus,
-                    onInfoClick = onInfoClick
-                )
+                if (state.isCombinationUnsafe) {
+                    ShieldSetupUnsafeCombinationStatusView(
+                        modifier = Modifier.padding(
+                            start = RadixTheme.dimensions.paddingSmall,
+                            end = RadixTheme.dimensions.paddingSmall,
+                            top = RadixTheme.dimensions.paddingDefault,
+                            bottom = RadixTheme.dimensions.paddingXXLarge
+                        ),
+                        onInfoClick = onInfoClick
+                    )
+                }
 
                 SectionHeaderView(
                     title = stringResource(id = R.string.shieldWizardRecovery_start_title),
@@ -359,25 +359,6 @@ private fun FactorsView(
         AddFactorButton(
             onClick = onAddFactorClick
         )
-    }
-}
-
-@Composable
-private fun GeneralStatusView(
-    modifier: Modifier,
-    status: SetupRecoveryViewModel.State.GeneralStatus,
-    onInfoClick: (GlossaryItem) -> Unit
-) {
-    when (status) {
-        SetupRecoveryViewModel.State.GeneralStatus.NotEnoughFactors -> ShieldSetupNotEnoughFactorsStatusView(
-            modifier = modifier,
-            onInfoClick = onInfoClick
-        )
-        SetupRecoveryViewModel.State.GeneralStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
-            modifier = modifier,
-            onInfoClick = onInfoClick
-        )
-        SetupRecoveryViewModel.State.GeneralStatus.Ok -> {}
     }
 }
 
@@ -575,13 +556,13 @@ private fun UnsafeCombinationInfoDialog(
         },
         message = {
             Text(
-                text = "The combination of factors you have chosen may make this Shield unsafe or easily lost without special precautions. Only proceed if you are certain you understand how you will use this Shield.", // TODO crowdin
+                text = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_message),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
         },
-        confirmText = "I understand", // TODO crowdin
-        dismissText = "Go back", // TODO crowdin
+        confirmText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_confirm),
+        dismissText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_cancel),
         confirmTextColor = RadixTheme.colors.red1
     )
 }

@@ -61,7 +61,7 @@ fun ShieldSetupNotEnoughFactorsStatusView(
                     fontSize = RadixTheme.typography.body2Link.fontSize
                 )
             ),
-            type = StatusMessage.Type.ERROR
+            type = StatusMessage.Type.WARNING
         )
     )
 }

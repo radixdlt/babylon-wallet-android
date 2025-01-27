@@ -233,7 +233,7 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.ledgernano -> stringResource(id = R.string.infoLink_glossary_ledgernano)
     GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
     GlossaryItem.mnemonics -> stringResource(id = R.string.infoLink_glossary_passphrases)
-    GlossaryItem.emergencyfallback -> "" // TODO crowdin
+    GlossaryItem.emergencyfallback -> stringResource(id = R.string.infoLink_glossary_emergencyfallback)
     GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 

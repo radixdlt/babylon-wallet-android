@@ -8,7 +8,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.notEnoughFactors
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
@@ -200,19 +199,9 @@ class SetupRecoveryViewModel @Inject constructor(
 
         val isRecoveryListEmpty: Boolean = invalidStatus?.reason?.isRecoveryRoleFactorListEmpty == true
         val isConfirmationListEmpty: Boolean = invalidStatus?.reason?.isConfirmationRoleFactorListEmpty == true
-        val generalStatus = when {
-            invalidStatus?.reason.notEnoughFactors() -> GeneralStatus.NotEnoughFactors
-            status is SecurityShieldBuilderStatus.Weak -> GeneralStatus.Unsafe
-            else -> GeneralStatus.Ok
-        }
+        val isCombinationUnsafe: Boolean = status is SecurityShieldBuilderStatus.Weak
 
         val isButtonEnabled = status !is SecurityShieldBuilderStatus.Invalid
-
-        enum class GeneralStatus {
-            NotEnoughFactors,
-            Unsafe,
-            Ok
-        }
 
         data class SelectFactor(
             val context: ChooseFactorSourceContext,
