@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.AccountRecoveryScanViewModel.Companion.ACCOUNTS_PER_SCAN
 import com.radixdlt.sargon.AccountPath
 import com.radixdlt.sargon.Bip44LikePath
 import com.radixdlt.sargon.Cap26KeyKind
@@ -32,7 +31,8 @@ class ResolveDerivationPathsForRecoveryScanUseCase @Inject constructor(
     suspend operator fun invoke(
         source: DerivePublicKeysSource,
         isOlympia: Boolean,
-        currentPathIndex: HdPathComponent
+        currentPathIndex: HdPathComponent,
+        maxIndicesToResolve: Int
     ): Paths {
         val profile = getProfileUseCase.finishedOnboardingProfile()
 
@@ -71,7 +71,7 @@ class ResolveDerivationPathsForRecoveryScanUseCase @Inject constructor(
                 )
             }
             currentIndex++
-        } while (indicesToScan.size < ACCOUNTS_PER_SCAN)
+        } while (indicesToScan.size < maxIndicesToResolve)
 
         val paths = indicesToScan.map { index ->
             if (isOlympia) {

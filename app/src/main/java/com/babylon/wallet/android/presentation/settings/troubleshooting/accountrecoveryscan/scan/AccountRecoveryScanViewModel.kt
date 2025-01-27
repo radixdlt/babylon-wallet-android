@@ -18,7 +18,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivePublicKeysSource
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSourceKind
@@ -31,9 +30,7 @@ import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
 import com.radixdlt.sargon.extensions.displayString
-import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.lastPathComponent
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -108,7 +105,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
             val pathsToResolve = resolveDerivationPathsForRecoveryScanUseCase(
                 source = recoverySource,
                 isOlympia = _state.value.isOlympiaSeedPhrase,
-                currentPathIndex = nextDerivationPathIndex
+                currentPathIndex = nextDerivationPathIndex,
+                maxIndicesToResolve = ACCOUNTS_PER_SCAN
             ).apply {
                 this.derivationPaths.forEachIndexed { index, derivationPath ->
                     Timber.tag("Bakos").d("[$index]: ${derivationPath.displayString}")
@@ -273,22 +271,5 @@ class AccountRecoveryScanViewModel @Inject constructor(
         data object CloseScan : Event
         data object RecoverComplete : Event
         data object OnBackClick : Event
-    }
-
-    private data class PathsToResolve(
-        val derivationPaths: List<DerivationPath>,
-        val networkId: NetworkId
-    ) {
-
-        val nextIndex: HdPathComponent
-            get() {
-                val nextIndexInGlobalKeySpace = if (derivationPaths.isNotEmpty()) {
-                    derivationPaths.maxOf { it.lastPathComponent.indexInGlobalKeySpace } + 1u
-                } else {
-                    0u
-                }
-
-                return HdPathComponent.init(globalKeySpace = nextIndexInGlobalKeySpace)
-            }
     }
 }
