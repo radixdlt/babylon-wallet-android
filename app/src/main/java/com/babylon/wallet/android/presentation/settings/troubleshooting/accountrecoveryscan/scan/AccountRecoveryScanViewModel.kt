@@ -29,7 +29,6 @@ import com.radixdlt.sargon.OnLedgerSettings
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
-import com.radixdlt.sargon.extensions.displayString
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,15 +45,12 @@ import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.core.then
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.DeriveProfileUseCase
-import rdx.works.profile.domain.GetProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
 class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val deriveProfileUseCase: DeriveProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
@@ -107,11 +103,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 isOlympia = _state.value.isOlympiaSeedPhrase,
                 currentPathIndex = nextDerivationPathIndex,
                 maxIndicesToResolve = ACCOUNTS_PER_SCAN
-            ).apply {
-                this.derivationPaths.forEachIndexed { index, derivationPath ->
-                    Timber.tag("Bakos").d("[$index]: ${derivationPath.displayString}")
-                }
-            }
+            )
 
             runCatching {
                 sargonOsManager.sargonOs.derivePublicKeys(
