@@ -58,7 +58,7 @@ fun SigningFailedSheet(
         Spacer(modifier = Modifier.weight(1f))
 
         RadixBottomBar(
-            text = stringResource(R.string.transactionRecovery_transaction_restart),
+            text = stringResource(R.string.transactionRecovery_restart),
             onClick = onRestartSigning,
             insets = WindowInsets.none,
             additionalBottomContent = {
