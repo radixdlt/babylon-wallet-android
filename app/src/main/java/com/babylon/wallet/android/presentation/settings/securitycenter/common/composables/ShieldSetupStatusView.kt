@@ -44,3 +44,24 @@ fun ShieldSetupUnsafeCombinationStatusView(
         )
     )
 }
+
+@Composable
+fun ShieldSetupNotEnoughFactorsStatusView(
+    modifier: Modifier = Modifier,
+    onInfoClick: (GlossaryItem) -> Unit
+) {
+    StatusMessageText(
+        modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
+        message = StatusMessage(
+            //TODO crowdin
+            message = "You haven’t chosen enough factors to build a Shield. Learn about **Factors required for Shield**".formattedSpans(
+                boldStyle = SpanStyle(
+                    color = RadixTheme.colors.blue2,
+                    fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
+                    fontSize = RadixTheme.typography.body2Link.fontSize
+                )
+            ),
+            type = StatusMessage.Type.ERROR
+        )
+    )
+}

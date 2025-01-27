@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupNotEnoughFactorsStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -172,17 +173,16 @@ private fun SetupRecoveryContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                if (state.isCombinationUnsafe) {
-                    ShieldSetupUnsafeCombinationStatusView(
-                        modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingSmall,
-                            end = RadixTheme.dimensions.paddingSmall,
-                            top = RadixTheme.dimensions.paddingDefault,
-                            bottom = RadixTheme.dimensions.paddingXXLarge
-                        ),
-                        onInfoClick = onInfoClick
-                    )
-                }
+                GeneralStatusView(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingSmall,
+                        end = RadixTheme.dimensions.paddingSmall,
+                        top = RadixTheme.dimensions.paddingDefault,
+                        bottom = RadixTheme.dimensions.paddingXXLarge
+                    ),
+                    status = state.generalStatus,
+                    onInfoClick = onInfoClick
+                )
 
                 SectionHeaderView(
                     title = stringResource(id = R.string.shieldWizardRecovery_start_title),
@@ -347,6 +347,25 @@ private fun FactorsView(
         AddFactorButton(
             onClick = onAddFactorClick
         )
+    }
+}
+
+@Composable
+private fun GeneralStatusView(
+    modifier: Modifier,
+    status: SetupRecoveryViewModel.State.GeneralStatus,
+    onInfoClick: (GlossaryItem) -> Unit
+) {
+    when (status) {
+        SetupRecoveryViewModel.State.GeneralStatus.NotEnoughFactors -> ShieldSetupNotEnoughFactorsStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
+        )
+        SetupRecoveryViewModel.State.GeneralStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
+        )
+        SetupRecoveryViewModel.State.GeneralStatus.Ok -> {}
     }
 }
 
@@ -685,6 +704,16 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                 ),
                 status = SecurityShieldBuilderStatus.Weak(
                     reason = SecurityShieldBuilderRuleViolation.RecoveryAndConfirmationFactorsOverlap()
+                )
+            ),
+            SetupRecoveryViewModel.State(
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = true,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = false,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
                 )
             ),
             SetupRecoveryViewModel.State(

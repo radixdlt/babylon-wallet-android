@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.repository.securityshield.model.ChooseFac
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.notEnoughFactors
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorListKind
@@ -69,12 +70,7 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
         viewModelScope.launch {
-            shieldBuilderClient.executeMutatingFunction {
-                removeFactorFromPrimary(
-                    card.id,
-                    FactorListKind.THRESHOLD
-                )
-            }
+            shieldBuilderClient.executeMutatingFunction { removeFactorFromPrimary(card.id, FactorListKind.THRESHOLD) }
         }
     }
 
@@ -117,9 +113,7 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
         viewModelScope.launch {
-            shieldBuilderClient.executeMutatingFunction {
-                removeFactorFromPrimary(card.id, FactorListKind.OVERRIDE)
-            }
+            shieldBuilderClient.executeMutatingFunction { removeFactorFromPrimary(card.id, FactorListKind.OVERRIDE) }
         }
     }
 
@@ -190,15 +184,17 @@ class SetupRegularAccessViewModel @Inject constructor(
 
         val factorListStatus = when {
             status is SecurityShieldBuilderStatus.Weak -> FactorListStatus.Unsafe
-            invalidStatus?.reason?.isPrimaryRoleFactorListEmpty == true -> FactorListStatus.Empty
+            invalidStatus?.reason?.isPrimaryRoleFactorListEmpty == true -> FactorListStatus.PrimaryEmpty
+            invalidStatus?.reason.notEnoughFactors() -> FactorListStatus.NotEnoughFactors
             else -> FactorListStatus.Ok
         }
         val isAuthSigningFactorMissing: Boolean = invalidStatus?.reason?.isAuthSigningFactorMissing == true
 
-        val isButtonEnabled = factorListStatus != FactorListStatus.Empty && !isAuthSigningFactorMissing
+        val isButtonEnabled = factorListStatus != FactorListStatus.PrimaryEmpty && !isAuthSigningFactorMissing
 
         enum class FactorListStatus {
-            Empty,
+            PrimaryEmpty,
+            NotEnoughFactors,
             Unsafe,
             Ok
         }

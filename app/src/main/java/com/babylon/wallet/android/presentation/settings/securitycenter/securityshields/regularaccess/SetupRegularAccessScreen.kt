@@ -46,6 +46,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupNotEnoughFactorsStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -237,8 +238,12 @@ private fun FactorListStatusView(
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     when (status) {
-        SetupRegularAccessViewModel.State.FactorListStatus.Empty -> ShieldSetupMissingFactorStatusView(
+        SetupRegularAccessViewModel.State.FactorListStatus.PrimaryEmpty -> ShieldSetupMissingFactorStatusView(
             modifier = modifier
+        )
+        SetupRegularAccessViewModel.State.FactorListStatus.NotEnoughFactors -> ShieldSetupNotEnoughFactorsStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
         )
         SetupRegularAccessViewModel.State.FactorListStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
             modifier = modifier,
@@ -672,6 +677,18 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     hasHiddenEntities = false,
                     isEnabled = true
                 ),
+            ),
+            SetupRegularAccessViewModel.State(
+                selectThreshold = null,
+                threshold = Threshold.All,
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = false,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = true,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
+                )
             ),
             SetupRegularAccessViewModel.State(
                 selectThreshold = null,

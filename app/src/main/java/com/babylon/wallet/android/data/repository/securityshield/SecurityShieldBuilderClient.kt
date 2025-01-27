@@ -65,10 +65,12 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.sortedFactorSourcesForPrimaryThresholdSelection(allFactorSources.first())
     }
 
-    suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
-        val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
-        val selectedFactorSources = allFactorSources.value.filter { it.id in selectedFactorSourceIds }
-        executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
+    suspend fun autoAssignFactors() = withContext(dispatcher) {
+        executeMutatingFunction {
+            securityShieldBuilder.removeAllFactorsFromPrimaryOverride()
+                .resetRecoveryAndConfirmationRoleState()
+                .autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(allFactorSources.first())
+        }
     }
 
     suspend fun buildShield(name: String): SecurityStructureOfFactorSourceIDs = withContext(dispatcher) {
@@ -91,7 +93,7 @@ class SecurityShieldBuilderClient @Inject constructor(
         }
     }
 
-    suspend fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
+    suspend fun executeMutatingFunction(function: suspend SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
         securityShieldBuilder = securityShieldBuilder.function()
         initSelection()
     }

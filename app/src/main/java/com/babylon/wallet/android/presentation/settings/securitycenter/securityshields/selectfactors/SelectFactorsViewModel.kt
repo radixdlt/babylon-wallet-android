@@ -57,7 +57,7 @@ class SelectFactorsViewModel @Inject constructor(
 
     fun onBuildShieldClick() {
         viewModelScope.launch {
-            securityShieldBuilderClient.autoAssignSelectedFactors()
+            securityShieldBuilderClient.autoAssignFactors()
             sendEvent(Event.ToRegularAccess)
         }
     }
