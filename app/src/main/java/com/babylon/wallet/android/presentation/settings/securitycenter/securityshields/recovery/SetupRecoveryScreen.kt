@@ -573,22 +573,15 @@ private fun UnsafeCombinationInfoDialog(
                 onCancelClick()
             }
         },
-        title = {
-            Text(
-                text = "Unsafe combination", // TODO crowdin
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
-            )
-        },
         message = {
             Text(
-                text = "This combination of factors may be unsafe", // TODO crowdin
+                text = "The combination of factors you have chosen may make this Shield unsafe or easily lost without special precautions. Only proceed if you are certain you understand how you will use this Shield.", // TODO crowdin
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
         },
-        confirmText = stringResource(id = R.string.common_continue),
-        dismissText = stringResource(id = R.string.common_cancel),
+        confirmText = "I understand", // TODO crowdin
+        dismissText = "Go back", // TODO crowdin
         confirmTextColor = RadixTheme.colors.red1
     )
 }
