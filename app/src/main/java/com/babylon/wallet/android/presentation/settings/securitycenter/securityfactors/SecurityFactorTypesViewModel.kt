@@ -55,7 +55,7 @@ class SecurityFactorTypesViewModel @Inject constructor(
                         )
                     }
 
-                    listOfNotNull(header) + items
+                    listOf(header) + items
                 }.flatten().toPersistentList()
             )
         }

@@ -130,9 +130,9 @@ class ChooseFactorSourceViewModel @Inject constructor(
                     mutation = {
                         currentPage.copy(
                             items = currentPage.items.mapWhen(
-                                predicate = { it.data.isEnabled },
-                                mutation = { selectableItem ->
-                                    selectableItem.copy(selected = selectableItem.data == factorSourceCard)
+                                predicate = { item -> item.data.isEnabled },
+                                mutation = { item ->
+                                    item.copy(selected = item.data == factorSourceCard)
                                 }
                             ).toPersistentList()
                         )
@@ -191,7 +191,7 @@ class ChooseFactorSourceViewModel @Inject constructor(
             )
         }
 
-        listOfNotNull(header) + items
+        listOf(header) + items
     }.flatten()
 
     private fun List<FactorSource>.toUiItems(
