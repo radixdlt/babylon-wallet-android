@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.setupRecoveryScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldname.setupShieldName
 
 const val ROUTE_SECURITY_SHIELDS = "security_shields"
 const val ROUTE_SECURITY_SHIELDS_GRAPH = "security_shields_graph"
@@ -42,6 +43,8 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         regularAccess(navController)
 
         setupRecoveryScreen(navController)
+
+        setupShieldName(navController)
     }
 }
 

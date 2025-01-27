@@ -139,11 +139,11 @@ fun FactorSourcesList(
                         vertical = RadixTheme.dimensions.paddingLarge
                     ),
                 text = when (glossaryItem) {
-                    GlossaryItem.biometricsPIN -> stringResource(R.string.infoLink_title_biometricspin)
+                    GlossaryItem.biometricspin -> stringResource(R.string.infoLink_title_biometricspin)
                     GlossaryItem.arculus -> stringResource(R.string.infoLink_title_arculus)
-                    GlossaryItem.ledgerNano -> stringResource(R.string.infoLink_title_ledgernano)
+                    GlossaryItem.ledgernano -> stringResource(R.string.infoLink_title_ledgernano)
                     GlossaryItem.passwords -> stringResource(R.string.infoLink_title_passwords)
-                    GlossaryItem.offDeviceMnemonic -> stringResource(R.string.infoLink_title_passphrases)
+                    GlossaryItem.mnemonics -> stringResource(R.string.infoLink_title_passphrases)
                     else -> stringResource(R.string.empty)
                 },
                 onClick = {

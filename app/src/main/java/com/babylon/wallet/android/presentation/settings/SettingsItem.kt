@@ -70,19 +70,6 @@ sealed interface SettingsItem {
 
     sealed interface SecurityFactorsSettingsItem {
 
-        enum class SecurityFactorCategory {
-            Own, Hardware, Information;
-
-            @StringRes
-            fun titleRes(): Int? {
-                return when (this) {
-                    Own -> null
-                    Hardware -> R.string.securityFactors_hardware
-                    Information -> R.string.securityFactors_information
-                }
-            }
-        }
-
         data class BiometricsPin(
             val securityProblems: ImmutableSet<SecurityProblem> = persistentSetOf()
         ) : SecurityFactorsSettingsItem
@@ -90,39 +77,6 @@ sealed interface SettingsItem {
         data object ArculusCard : SecurityFactorsSettingsItem
         data object Password : SecurityFactorsSettingsItem
         data object OffDeviceMnemonic : SecurityFactorsSettingsItem
-
-        @StringRes
-        fun titleRes(): Int {
-            return when (this) {
-                is BiometricsPin -> R.string.factorSources_card_deviceTitle
-                LedgerNano -> R.string.factorSources_card_ledgerTitle
-                ArculusCard -> R.string.factorSources_card_arculusCardTitle
-                OffDeviceMnemonic -> R.string.factorSources_card_offDeviceMnemonicTitle
-                Password -> R.string.factorSources_card_passwordTitle
-            }
-        }
-
-        @StringRes
-        fun subtitleRes(): Int {
-            return when (this) {
-                is BiometricsPin -> R.string.factorSources_card_deviceDescription
-                LedgerNano -> R.string.factorSources_card_ledgerDescription
-                ArculusCard -> R.string.factorSources_card_arculusCardDescription
-                OffDeviceMnemonic -> R.string.factorSources_card_offDeviceMnemonicDescription
-                Password -> R.string.factorSources_card_passwordDescription
-            }
-        }
-
-        @DrawableRes
-        fun getIcon(): Int? { // add rest of icons
-            return when (this) {
-                is BiometricsPin -> DSR.ic_device_biometric_pin
-                LedgerNano -> DSR.ic_ledger_nano
-                ArculusCard -> DSR.ic_arculus_card
-                Password -> DSR.ic_password
-                OffDeviceMnemonic -> DSR.ic_passphrase
-            }
-        }
     }
 
     sealed interface Troubleshooting {

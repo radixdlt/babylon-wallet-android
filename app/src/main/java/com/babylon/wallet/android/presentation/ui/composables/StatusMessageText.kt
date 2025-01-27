@@ -23,9 +23,9 @@ fun StatusMessageText(
 @Composable
 private fun StatusMessage.Type.iconRes(): Int {
     return when (this) {
-        StatusMessage.Type.SUCCESS -> com.babylon.wallet.android.designsystem.R.drawable.ic_check_circle_outline
-        StatusMessage.Type.WARNING -> com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-        StatusMessage.Type.ERROR -> com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+        StatusMessage.Type.SUCCESS -> DSR.ic_check_circle_outline
+        StatusMessage.Type.WARNING -> DSR.ic_warning_error
+        StatusMessage.Type.ERROR -> DSR.ic_warning_error
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.DebugSettingsItem.InspectProfile
 import com.babylon.wallet.android.presentation.settings.debug.backups.inspectGoogleBackups
@@ -71,6 +72,7 @@ fun NavGraphBuilder.debugSettings(
             }
         )
         securityFactorSamples(
+            onInfoClick = { navController.infoDialog(it) },
             onBackClick = {
                 navController.popBackStack()
             }

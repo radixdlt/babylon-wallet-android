@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 
 const val ROUTE_ADD_FACTOR = "add_factor"
 
@@ -70,7 +71,8 @@ fun NavGraphBuilder.addFactor(
             toFactorSetup = { kind ->
                 // TODO navigate to specific factor setup screen based on the kind
                 navController.factorsReady()
-            }
+            },
+            toRegularAccess = { navController.regularAccess() }
         )
     }
 }

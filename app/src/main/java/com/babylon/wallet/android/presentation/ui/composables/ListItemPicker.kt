@@ -44,6 +44,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
+// Increase or decrease for more or less friction when scrolling through the list
+private const val SCROLL_FRICTION_MULTIPLIER = 3f
+
 object ListItemPicker {
 
     @Suppress("MagicNumber")
@@ -93,7 +96,7 @@ fun <T> ListItemPicker(
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = lazyListState,
         springAnimationSpec = spring(),
-        decayAnimationSpec = exponentialDecay(frictionMultiplier = 5f),
+        decayAnimationSpec = exponentialDecay(frictionMultiplier = SCROLL_FRICTION_MULTIPLIER),
         endContentPadding = verticalContentPadding
     )
 

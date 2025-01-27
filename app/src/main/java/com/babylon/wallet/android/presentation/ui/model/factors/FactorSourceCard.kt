@@ -20,29 +20,9 @@ data class FactorSourceCard(
     val messages: PersistentList<FactorSourceStatusMessage>,
     val accounts: PersistentList<Account>,
     val personas: PersistentList<Persona>,
-    val hasHiddenEntities: Boolean
-) {
-
-    companion object {
-
-        fun compact(
-            id: FactorSourceId,
-            name: String,
-            kind: FactorSourceKind,
-            includeDescription: Boolean = true
-        ): FactorSourceCard = FactorSourceCard(
-            id = id,
-            name = name,
-            includeDescription = includeDescription,
-            lastUsedOn = null,
-            kind = kind,
-            messages = persistentListOf(),
-            accounts = persistentListOf(),
-            personas = persistentListOf(),
-            hasHiddenEntities = false
-        )
-    }
-}
+    val hasHiddenEntities: Boolean,
+    val isEnabled: Boolean
+)
 
 @Suppress("LongParameterList")
 fun FactorSource.toFactorSourceCard(
@@ -52,6 +32,7 @@ fun FactorSource.toFactorSourceCard(
     accounts: PersistentList<Account> = persistentListOf(),
     personas: PersistentList<Persona> = persistentListOf(),
     hasHiddenEntities: Boolean = false,
+    isEnabled: Boolean = true
 ): FactorSourceCard {
     return FactorSourceCard(
         id = this.id,
@@ -80,6 +61,7 @@ fun FactorSource.toFactorSourceCard(
         messages = messages,
         accounts = accounts,
         personas = personas,
-        hasHiddenEntities = hasHiddenEntities
+        hasHiddenEntities = hasHiddenEntities,
+        isEnabled = isEnabled
     )
 }

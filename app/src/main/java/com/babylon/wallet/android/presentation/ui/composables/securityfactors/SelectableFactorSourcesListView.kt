@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables.securityfactors
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +26,7 @@ import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.radixdlt.sargon.Account
@@ -44,9 +44,9 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun SelectableFactorSourcesListView(
     modifier: Modifier = Modifier,
+    isButtonEnabled: Boolean,
+    factorSourceKind: FactorSourceKind,
     factorSources: PersistentList<Selectable<FactorSourceCard>>,
-    @StringRes factorSourceDescriptionText: Int,
-    @StringRes addFactorSourceButtonTitle: Int,
     onFactorSourceSelect: (FactorSourceCard) -> Unit,
     onAddFactorSourceClick: () -> Unit,
     onContinueClick: () -> Unit
@@ -59,15 +59,16 @@ fun SelectableFactorSourcesListView(
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 Text(
                     modifier = Modifier.padding(
                         top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingLarge
+                        bottom = RadixTheme.dimensions.paddingSmall
                     ),
-                    text = stringResource(id = factorSourceDescriptionText),
+                    text = factorSourceKind.subtitle(),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
@@ -87,7 +88,7 @@ fun SelectableFactorSourcesListView(
                         .fillMaxWidth()
                         .wrapContentWidth(align = Alignment.CenterHorizontally)
                         .padding(bottom = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = addFactorSourceButtonTitle),
+                    text = factorSourceKind.addButtonTitle(),
                     onClick = onAddFactorSourceClick,
                     throttleClicks = true
                 )
@@ -102,7 +103,7 @@ fun SelectableFactorSourcesListView(
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(R.string.common_continue),
-                    enabled = factorSources.any { it.selected },
+                    enabled = isButtonEnabled,
                     onClick = onContinueClick
                 )
             },
@@ -111,13 +112,25 @@ fun SelectableFactorSourcesListView(
 }
 
 @Composable
+private fun FactorSourceKind.addButtonTitle(): String = stringResource(
+    id = when (this) {
+        FactorSourceKind.DEVICE -> R.string.factorSources_list_deviceAdd
+        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> R.string.factorSources_list_ledgerAdd
+        FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_list_offDeviceMnemonicAdd
+        FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_list_arculusCardAdd
+        FactorSourceKind.PASSWORD -> R.string.factorSources_list_passwordAdd
+        FactorSourceKind.TRUSTED_CONTACT,
+        FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
+    }
+)
+
+@Composable
 @Preview(showBackground = true)
 @UsesSampleValues
 private fun SelectableFactorSourcesListPreview() {
     RadixWalletPreviewTheme {
         SelectableFactorSourcesListView(
-            factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
-            addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
+            factorSourceKind = FactorSourceKind.DEVICE,
             factorSources = persistentListOf(
                 Selectable(
                     data = FactorSourceCard(
@@ -132,7 +145,8 @@ private fun SelectableFactorSourcesListPreview() {
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 Selectable(
@@ -145,15 +159,17 @@ private fun SelectableFactorSourcesListPreview() {
                         includeDescription = false,
                         lastUsedOn = "Yesterday",
                         kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+                        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
                         accounts = persistentListOf(
                             Account.sampleMainnet()
                         ),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 )
             ),
+            isButtonEnabled = false,
             onFactorSourceSelect = {},
             onAddFactorSourceClick = {},
             onContinueClick = {}

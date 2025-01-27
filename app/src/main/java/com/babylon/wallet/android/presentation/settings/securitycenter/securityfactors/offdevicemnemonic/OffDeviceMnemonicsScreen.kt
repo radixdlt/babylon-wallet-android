@@ -93,7 +93,7 @@ private fun OffDeviceMnemonicsContent(
                 factorSources = offDeviceMnemonicFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
-                glossaryItem = GlossaryItem.offDeviceMnemonic,
+                glossaryItem = GlossaryItem.mnemonics,
                 onFactorSourceClick = onOffDeviceMnemonicFactorSourceClick,
                 onAddFactorSourceClick = onAddOffDeviceMnemonicClick,
                 onInfoClick = onInfoClick
@@ -121,7 +121,8 @@ private fun OffDeviceMnemonicsPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -135,7 +136,8 @@ private fun OffDeviceMnemonicsPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -149,7 +151,8 @@ private fun OffDeviceMnemonicsPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 )
             ),
             onOffDeviceMnemonicFactorSourceClick = {},

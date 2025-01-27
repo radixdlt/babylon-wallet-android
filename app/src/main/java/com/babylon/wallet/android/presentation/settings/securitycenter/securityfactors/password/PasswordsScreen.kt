@@ -121,7 +121,8 @@ private fun PasswordsScreenPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -135,7 +136,8 @@ private fun PasswordsScreenPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -149,7 +151,8 @@ private fun PasswordsScreenPreview() {
                     messages = persistentListOf(),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 )
             ),
             onPasswordFactorSourceClick = {},

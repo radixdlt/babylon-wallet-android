@@ -144,7 +144,7 @@ private fun BiometricsPinContent(
                 factorSources = state.otherDeviceFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
-                glossaryItem = GlossaryItem.biometricsPIN,
+                glossaryItem = GlossaryItem.biometricspin,
                 onFactorSourceClick = onDeviceFactorSourceClick,
                 onAddFactorSourceClick = onAddBiometricsPinClick,
                 onChangeMainFactorSourceClick = onChangeMainDeviceFactorSourceClick,
@@ -233,13 +233,14 @@ private val otherDeviceFactorSources = persistentListOf(
         includeDescription = false,
         lastUsedOn = "Today",
         kind = FactorSourceKind.DEVICE,
-        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.RecoveryRequired),
+        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
         accounts = persistentListOf(Account.sampleMainnet()),
         personas = persistentListOf(
             Persona.sampleMainnet(),
             Persona.sampleStokenet()
         ),
-        hasHiddenEntities = true
+        hasHiddenEntities = true,
+        isEnabled = true
     ),
     FactorSourceCard(
         id = FactorSourceId.Hash.init(
@@ -253,7 +254,8 @@ private val otherDeviceFactorSources = persistentListOf(
         messages = persistentListOf(),
         accounts = persistentListOf(),
         personas = persistentListOf(),
-        hasHiddenEntities = true
+        hasHiddenEntities = true,
+        isEnabled = true
     )
 )
 
@@ -279,7 +281,8 @@ private fun BiometricsPinPreview() {
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
                     ),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 otherDeviceFactorSources = otherDeviceFactorSources,
             ),

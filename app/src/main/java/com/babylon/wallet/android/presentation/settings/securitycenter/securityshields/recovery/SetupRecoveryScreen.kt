@@ -43,9 +43,11 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
@@ -59,6 +61,9 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
+import com.radixdlt.sargon.SecurityShieldBuilderStatus
+import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -91,14 +96,18 @@ fun SetupRecoveryScreen(
         onFallbackPeriodUnitChange = viewModel::onFallbackPeriodUnitChange,
         onSetFallbackPeriodClick = viewModel::onSetFallbackPeriodClick,
         onDismissFallbackPeriod = viewModel::onDismissFallbackPeriod,
-        onContinueClick = toNameSetup
+        onContinueClick = viewModel::onContinueClick,
+        onUnsafeCombinationInfoDismiss = viewModel::onUnsafeCombinationInfoDismiss,
+        onUnsafeCombinationInfoConfirm = viewModel::onUnsafeCombinationInfoConfirm
     )
 
     state.selectFactor?.let { selectFactor ->
         ChooseFactorSourceBottomSheet(
             viewModel = hiltViewModel(),
-            excludeFactorSources = selectFactor.excludeFactorSources,
+            unusableFactorSourceKinds = selectFactor.unusableFactorSourceKinds,
+            alreadySelectedFactorSources = selectFactor.alreadySelectedFactorSources,
             onContinueClick = viewModel::onFactorSelected,
+            onInfoClick = onInfoClick,
             onDismissSheet = viewModel::onDismissSelectFactor
         )
     }
@@ -127,7 +136,9 @@ private fun SetupRecoveryContent(
     onFallbackPeriodUnitChange: (TimePeriodUnit) -> Unit,
     onSetFallbackPeriodClick: () -> Unit,
     onDismissFallbackPeriod: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+    onUnsafeCombinationInfoDismiss: () -> Unit,
+    onUnsafeCombinationInfoConfirm: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -166,6 +177,18 @@ private fun SetupRecoveryContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
+                if (state.isCombinationUnsafe) {
+                    ShieldSetupUnsafeCombinationStatusView(
+                        modifier = Modifier.padding(
+                            start = RadixTheme.dimensions.paddingSmall,
+                            end = RadixTheme.dimensions.paddingSmall,
+                            top = RadixTheme.dimensions.paddingDefault,
+                            bottom = RadixTheme.dimensions.paddingXXLarge
+                        ),
+                        onInfoClick = onInfoClick
+                    )
+                }
+
                 SectionHeaderView(
                     title = stringResource(id = R.string.shieldWizardRecovery_start_title),
                     subtitle = stringResource(id = R.string.shieldWizardRecovery_start_subtitle),
@@ -173,16 +196,14 @@ private fun SetupRecoveryContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-                state.status?.let {
-                    ShieldSetupStatusView(
+                if (state.isRecoveryListEmpty) {
+                    ShieldSetupMissingFactorStatusView(
                         modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingSemiLarge,
-                            end = RadixTheme.dimensions.paddingSemiLarge,
-                            top = RadixTheme.dimensions.paddingSemiLarge,
-                            bottom = RadixTheme.dimensions.paddingXXLarge
-                        ),
-                        status = it,
-                        onInfoClick = onInfoClick
+                            start = RadixTheme.dimensions.paddingMedium,
+                            end = RadixTheme.dimensions.paddingMedium,
+                            top = RadixTheme.dimensions.paddingMedium,
+                            bottom = RadixTheme.dimensions.paddingLarge
+                        )
                     )
                 }
 
@@ -210,6 +231,17 @@ private fun SetupRecoveryContent(
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+
+                if (state.isConfirmationListEmpty) {
+                    ShieldSetupMissingFactorStatusView(
+                        modifier = Modifier.padding(
+                            start = RadixTheme.dimensions.paddingMedium,
+                            end = RadixTheme.dimensions.paddingMedium,
+                            top = RadixTheme.dimensions.paddingMedium,
+                            bottom = RadixTheme.dimensions.paddingLarge
+                        )
+                    )
+                }
 
                 FactorsView(
                     factors = state.confirmationFactors,
@@ -246,6 +278,13 @@ private fun SetupRecoveryContent(
             onUnitChange = onFallbackPeriodUnitChange,
             onSetClick = onSetFallbackPeriodClick,
             onDismiss = onDismissFallbackPeriod
+        )
+    }
+
+    if (state.showUnsafeCombinationInfo) {
+        UnsafeCombinationInfoDialog(
+            onCancelClick = onUnsafeCombinationInfoDismiss,
+            onContinueClick = onUnsafeCombinationInfoConfirm
         )
     }
 }
@@ -346,7 +385,7 @@ private fun EmergencyFallbackView(
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .clip(RadixTheme.shapes.roundedRectTopMedium)
-                .clickable { onInfoClick(GlossaryItem.emergencyFallback) }
+                .clickable { onInfoClick(GlossaryItem.emergencyfallback) }
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -378,7 +417,7 @@ private fun EmergencyFallbackView(
             color = RadixTheme.colors.gray1
         )
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
         Row(
             modifier = Modifier
@@ -410,7 +449,7 @@ private fun EmergencyFallbackView(
             )
         }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
         Text(
             modifier = Modifier
@@ -501,6 +540,34 @@ private fun SelectFallbackPeriodSheet(
 }
 
 @Composable
+private fun UnsafeCombinationInfoDialog(
+    modifier: Modifier = Modifier,
+    onCancelClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    BasicPromptAlertDialog(
+        modifier = modifier,
+        finish = { accepted ->
+            if (accepted) {
+                onContinueClick()
+            } else {
+                onCancelClick()
+            }
+        },
+        message = {
+            Text(
+                text = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_message),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        confirmText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_confirm),
+        dismissText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_cancel),
+        confirmTextColor = RadixTheme.colors.red1
+    )
+}
+
+@Composable
 private fun TimePeriod.title(): String {
     val value = value.toInt()
     val isSingular = value == 1
@@ -544,7 +611,9 @@ private fun SetupRecoveryPreview(
             onFallbackPeriodUnitChange = {},
             onSetFallbackPeriodClick = {},
             onDismissFallbackPeriod = {},
-            onContinueClick = {}
+            onContinueClick = {},
+            onUnsafeCombinationInfoDismiss = {},
+            onUnsafeCombinationInfoConfirm = {}
         )
     }
 }
@@ -568,7 +637,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -582,7 +652,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 confirmationFactors = persistentListOf(
@@ -598,7 +669,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -612,10 +684,70 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 fallbackPeriod = TimePeriod.sample()
+            ),
+            SetupRecoveryViewModel.State(
+                startRecoveryFactors = persistentListOf(
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "Ledger ABC",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false,
+                        isEnabled = true
+                    )
+                ),
+                confirmationFactors = persistentListOf(
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "Ledger ABC",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false,
+                        isEnabled = true
+                    )
+                ),
+                status = SecurityShieldBuilderStatus.Weak(
+                    reason = SecurityShieldBuilderRuleViolation.RecoveryAndConfirmationFactorsOverlap()
+                )
+            ),
+            SetupRecoveryViewModel.State(
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = true,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = false,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
+                )
+            ),
+            SetupRecoveryViewModel.State(
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = false,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = true,
+                        isConfirmationRoleFactorListEmpty = true
+                    )
+                )
             ),
             SetupRecoveryViewModel.State(
                 selectFallbackPeriod = SetupRecoveryViewModel.State.SelectFallbackPeriod(
@@ -624,6 +756,9 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                     values = TimePeriodUnit.DAYS.values.toPersistentList(),
                     units = TimePeriodUnit.entries.toPersistentList()
                 )
+            ),
+            SetupRecoveryViewModel.State(
+                showUnsafeCombinationInfo = true
             )
         )
 }

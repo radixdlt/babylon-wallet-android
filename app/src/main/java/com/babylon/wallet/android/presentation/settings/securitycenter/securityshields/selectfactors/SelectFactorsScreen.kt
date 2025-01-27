@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -53,6 +54,7 @@ import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SelectFactorsScreen(
@@ -70,6 +72,7 @@ fun SelectFactorsScreen(
         onDismiss = onDismiss,
         onFactorCheckedChange = viewModel::onFactorCheckedChange,
         onInfoClick = onInfoClick,
+        onSkipClick = viewModel::onSkipClick,
         onBuildShieldClick = viewModel::onBuildShieldClick
     )
 
@@ -89,6 +92,7 @@ private fun SelectFactorsContent(
     onDismiss: () -> Unit,
     onFactorCheckedChange: (FactorSourceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
+    onSkipClick: () -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
     Scaffold(
@@ -170,6 +174,16 @@ private fun SelectFactorsContent(
                         onCheckedChange = onFactorCheckedChange
                     )
                 }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                RadixTextButton(
+                    text = stringResource(id = R.string.shieldSetupSelectFactors_skipButtonTitle),
+                    onClick = onSkipClick,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -258,6 +272,7 @@ private fun SelectFactorsPreview(
             onDismiss = {},
             onFactorCheckedChange = { _, _ -> },
             onInfoClick = {},
+            onSkipClick = {},
             onBuildShieldClick = {},
         )
     }
@@ -270,13 +285,20 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                     ),
                     name = "My Phone",
                     kind = FactorSourceKind.DEVICE,
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = false
             )
@@ -284,13 +306,20 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.ARCULUS_CARD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.ARCULUS_CARD,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                     ),
                     name = "SecretSecret123",
-                    kind = FactorSourceKind.ARCULUS_CARD
+                    kind = FactorSourceKind.ARCULUS_CARD,
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = false
             )
@@ -298,26 +327,40 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                     ),
                     name = "Highly Secretive Stick",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = false
             )
         ),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                     ),
                     name = "My Arc",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = false
             )
@@ -325,13 +368,20 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.PASSWORD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.PASSWORD,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                     ),
                     name = "My Password",
-                    kind = FactorSourceKind.PASSWORD
+                    kind = FactorSourceKind.PASSWORD,
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = true
             )
@@ -339,13 +389,20 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.OFF_DEVICE_MNEMONIC),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
                     ),
                     name = "ShizzleWords",
-                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC
+                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = false
             )

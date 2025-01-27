@@ -45,7 +45,9 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupMissingFactorStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupNotEnoughFactorsStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -53,16 +55,15 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewSize
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.Threshold
@@ -88,9 +89,10 @@ fun SetupRegularAccessScreen(
         onNumberOfFactorsClick = viewModel::onThresholdClick,
         onNumberOfFactorsSelect = viewModel::onThresholdSelect,
         onNumberOfFactorsDismiss = viewModel::onThresholdSelectionDismiss,
-        onAddFactorClick = viewModel::onAddThresholdFactorClick,
-        onRemoveFactorClick = viewModel::onRemoveThresholdFactorClick,
+        onAddThresholdFactorClick = viewModel::onAddThresholdFactorClick,
+        onRemoveThresholdFactorClick = viewModel::onRemoveThresholdFactorClick,
         onAddOverrideClick = viewModel::onAddOverrideClick,
+        onAddOverrideFactorClick = viewModel::onAddOverrideFactorClick,
         onRemoveOverrideFactorClick = viewModel::onRemoveOverrideFactorClick,
         onRemoveAllOverrideFactorsClick = viewModel::onRemoveAllOverrideFactorsClick,
         onAddAuthenticationFactorClick = viewModel::onAddAuthenticationFactorClick,
@@ -101,8 +103,10 @@ fun SetupRegularAccessScreen(
     state.selectFactor?.let { selectFactor ->
         ChooseFactorSourceBottomSheet(
             viewModel = hiltViewModel(),
-            excludeFactorSources = selectFactor.excludeFactorSources,
+            unusableFactorSourceKinds = selectFactor.unusableFactorSourceKinds,
+            alreadySelectedFactorSources = selectFactor.alreadySelectedFactorSources,
             onContinueClick = viewModel::onFactorSelected,
+            onInfoClick = onInfoClick,
             onDismissSheet = viewModel::onDismissSelectFactor
         )
     }
@@ -117,9 +121,10 @@ private fun SetupRegularAccessContent(
     onNumberOfFactorsClick: () -> Unit,
     onNumberOfFactorsSelect: (Threshold) -> Unit,
     onNumberOfFactorsDismiss: () -> Unit,
-    onAddFactorClick: () -> Unit,
-    onRemoveFactorClick: (FactorSourceCard) -> Unit,
+    onAddThresholdFactorClick: () -> Unit,
+    onRemoveThresholdFactorClick: (FactorSourceCard) -> Unit,
     onAddOverrideClick: () -> Unit,
+    onAddOverrideFactorClick: () -> Unit,
     onRemoveOverrideFactorClick: (FactorSourceCard) -> Unit,
     onRemoveAllOverrideFactorsClick: () -> Unit,
     onAddAuthenticationFactorClick: () -> Unit,
@@ -171,30 +176,30 @@ private fun SetupRegularAccessContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-                state.status?.let {
-                    ShieldSetupStatusView(
-                        modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingSemiLarge,
-                            end = RadixTheme.dimensions.paddingSemiLarge,
-                            top = RadixTheme.dimensions.paddingSemiLarge,
-                            bottom = RadixTheme.dimensions.paddingXXLarge
-                        ),
-                        status = it,
-                        onInfoClick = onInfoClick
-                    )
-                }
+                FactorListStatusView(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingMedium,
+                        end = RadixTheme.dimensions.paddingMedium,
+                        top = RadixTheme.dimensions.paddingSemiLarge,
+                        bottom = RadixTheme.dimensions.paddingSemiLarge
+                    ),
+                    status = state.factorListStatus,
+                    onInfoClick = onInfoClick
+                )
 
                 ThresholdFactorsView(
                     numberOfFactors = state.threshold,
                     factors = state.thresholdFactors,
                     onNumberOfFactorsClick = onNumberOfFactorsClick,
-                    onAddFactorClick = onAddFactorClick,
-                    onRemoveFactorClick = onRemoveFactorClick
+                    onAddFactorClick = onAddThresholdFactorClick,
+                    onRemoveFactorClick = onRemoveThresholdFactorClick
                 )
 
                 OverrideFactorsView(
+                    isFactorsSectionVisible = state.isOverrideSectionVisible,
                     overrideFactors = state.overrideFactors,
-                    onAddClick = onAddOverrideClick,
+                    onAddOverrideClick = onAddOverrideClick,
+                    onAddFactorClick = onAddOverrideFactorClick,
                     onRemoveClick = onRemoveOverrideFactorClick,
                     onRemoveAllClick = onRemoveAllOverrideFactorsClick
                 )
@@ -208,6 +213,7 @@ private fun SetupRegularAccessContent(
 
             AuthenticationFactorView(
                 factor = state.authenticationFactor,
+                isMissing = state.isAuthSigningFactorMissing,
                 onRemoveClick = onRemoveAuthenticationFactorClick,
                 onAddClick = onAddAuthenticationFactorClick
             )
@@ -226,16 +232,40 @@ private fun SetupRegularAccessContent(
 }
 
 @Composable
+private fun FactorListStatusView(
+    modifier: Modifier,
+    status: SetupRegularAccessViewModel.State.FactorListStatus,
+    onInfoClick: (GlossaryItem) -> Unit
+) {
+    when (status) {
+        SetupRegularAccessViewModel.State.FactorListStatus.PrimaryEmpty -> ShieldSetupMissingFactorStatusView(
+            modifier = modifier
+        )
+        SetupRegularAccessViewModel.State.FactorListStatus.NotEnoughFactors -> ShieldSetupNotEnoughFactorsStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
+        )
+        SetupRegularAccessViewModel.State.FactorListStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
+        )
+        SetupRegularAccessViewModel.State.FactorListStatus.Ok -> {}
+    }
+}
+
+@Composable
 private fun OverrideFactorsView(
+    isFactorsSectionVisible: Boolean,
     overrideFactors: PersistentList<FactorSourceCard>,
-    onAddClick: () -> Unit,
+    onAddOverrideClick: () -> Unit,
+    onAddFactorClick: () -> Unit,
     onRemoveClick: (FactorSourceCard) -> Unit,
     onRemoveAllClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        if (overrideFactors.isEmpty()) {
+        if (!isFactorsSectionVisible) {
             RadixTextButton(
                 modifier = Modifier
                     .padding(top = RadixTheme.dimensions.paddingXXSmall)
@@ -252,7 +282,7 @@ private fun OverrideFactorsView(
                 isWithoutPadding = true,
                 contentColor = RadixTheme.colors.blue2,
                 throttleClicks = true,
-                onClick = onAddClick
+                onClick = onAddOverrideClick
             )
         } else {
             Text(
@@ -338,7 +368,7 @@ private fun OverrideFactorsView(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
                 AddFactorButton(
-                    onClick = onAddClick
+                    onClick = onAddFactorClick
                 )
             }
         }
@@ -368,7 +398,7 @@ private fun ThresholdFactorsView(
             Text(
                 text = buildAnnotatedString {
                     val annotatedPart = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_selection)
-                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title)
+                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title, annotatedPart)
                     val parts = text.split(annotatedPart)
                     append(parts.getOrNull(0).orEmpty())
                     appendInlineContent(id = inlineContentKey)
@@ -439,6 +469,7 @@ private fun NumberOfFactorsView(
 private fun AuthenticationFactorView(
     modifier: Modifier = Modifier,
     factor: FactorSourceCard?,
+    isMissing: Boolean,
     onRemoveClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -453,15 +484,11 @@ private fun AuthenticationFactorView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-        if (factor == null) {
-            StatusMessageText(
+        if (isMissing) {
+            ShieldSetupMissingFactorStatusView(
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingSmall,
                     bottom = RadixTheme.dimensions.paddingSemiLarge
-                ),
-                message = StatusMessage(
-                    message = stringResource(id = R.string.shieldSetupStatus_roles_atLeastOneFactor),
-                    type = StatusMessage.Type.WARNING
                 )
             )
         }
@@ -552,9 +579,10 @@ private fun RegularAccessPreview(
             onNumberOfFactorsClick = {},
             onNumberOfFactorsSelect = {},
             onNumberOfFactorsDismiss = {},
-            onAddFactorClick = {},
-            onRemoveFactorClick = {},
+            onAddThresholdFactorClick = {},
+            onRemoveThresholdFactorClick = {},
             onAddOverrideClick = {},
+            onAddOverrideFactorClick = {},
             onRemoveOverrideFactorClick = {},
             onRemoveAllOverrideFactorsClick = {},
             onAddAuthenticationFactorClick = {},
@@ -583,7 +611,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -597,7 +626,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 overrideFactors = persistentListOf(
@@ -613,7 +643,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     ),
                     FactorSourceCard(
                         id = FactorSourceId.Hash.init(
@@ -627,7 +658,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
-                        hasHiddenEntities = false
+                        hasHiddenEntities = false,
+                        isEnabled = true
                     )
                 ),
                 authenticationFactor = FactorSourceCard(
@@ -642,8 +674,72 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
-                    hasHiddenEntities = false
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
+            ),
+            SetupRegularAccessViewModel.State(
+                selectThreshold = null,
+                threshold = Threshold.All,
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = false,
+                        isAuthSigningFactorMissing = false,
+                        isRecoveryRoleFactorListEmpty = true,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
+                )
+            ),
+            SetupRegularAccessViewModel.State(
+                selectThreshold = null,
+                threshold = Threshold.Specific(2.toUByte()),
+                status = SecurityShieldBuilderStatus.Invalid(
+                    reason = SecurityShieldBuilderStatusInvalidReason(
+                        isPrimaryRoleFactorListEmpty = true,
+                        isAuthSigningFactorMissing = true,
+                        isRecoveryRoleFactorListEmpty = false,
+                        isConfirmationRoleFactorListEmpty = false
+                    )
+                )
+            ),
+            SetupRegularAccessViewModel.State(
+                thresholdFactors = persistentListOf(
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "My Phone",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false,
+                        isEnabled = true
+                    ),
+                    FactorSourceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "My second phone",
+                        includeDescription = true,
+                        lastUsedOn = null,
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(),
+                        accounts = persistentListOf(),
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false,
+                        isEnabled = true
+                    )
+                ),
+                selectThreshold = null,
+                threshold = Threshold.Specific(2.toUByte()),
+                status = SecurityShieldBuilderStatus.Weak(
+                    reason = SecurityShieldBuilderRuleViolation.PrimaryCannotHaveMultipleDevices()
+                )
             ),
             SetupRegularAccessViewModel.State(
                 selectThreshold = SetupRegularAccessViewModel.State.SelectThreshold(

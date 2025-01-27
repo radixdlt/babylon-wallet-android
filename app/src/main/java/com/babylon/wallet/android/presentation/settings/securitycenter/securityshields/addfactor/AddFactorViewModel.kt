@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddFactorViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val securityShieldBuilderClient: SecurityShieldBuilderClient
 ) : StateViewModel<AddFactorViewModel.State>(),
     OneOffEventHandler<AddFactorViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -39,6 +41,13 @@ class AddFactorViewModel @Inject constructor(
 
     fun onMessageShown() {
         _state.update { state -> state.copy(message = null) }
+    }
+
+    fun onSkipClick() {
+        viewModelScope.launch {
+            securityShieldBuilderClient.newSecurityShieldBuilder()
+            sendEvent(Event.ToRegularAccess)
+        }
     }
 
     data class State(
@@ -101,5 +110,7 @@ class AddFactorViewModel @Inject constructor(
         data class ToFactorSetup(
             val kind: FactorSourceKind
         ) : Event
+
+        data object ToRegularAccess : Event
     }
 }

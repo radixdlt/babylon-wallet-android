@@ -35,11 +35,11 @@ enum class GlossaryItem {
     possibledappcalls,
     securityshields,
     buildingshield,
-    emergencyFallback,
-    biometricsPIN, // TODO pending the right glossary item
-    arculus, // TODO pending the right glossary item
-    ledgerNano, // TODO pending the right glossary item
-    passwords, // TODO pending the right glossary item
-    offDeviceMnemonic, // TODO pending the right glossary item
+    emergencyfallback,
+    biometricspin,
+    arculus,
+    ledgernano,
+    passwords,
+    mnemonics,
     nohardwaredevice, // TODO pending the right glossary item
 }

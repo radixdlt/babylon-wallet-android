@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,34 +14,55 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
-import com.babylon.wallet.android.presentation.settings.debug.factors.SecurityFactorSamplesViewModel.Companion.availableFactorSources
+import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceViewModel.State
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.card.title
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListPreviewProvider
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListView
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SelectableFactorSourcesListView
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.SecurityFactorTypeUiItem
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 
 @Composable
 fun ChooseFactorSourceBottomSheet(
     modifier: Modifier = Modifier,
-    excludeFactorSources: PersistentList<FactorSourceId> = persistentListOf(),
+    unusableFactorSourceKinds: PersistentList<FactorSourceKind> = persistentListOf(),
+    alreadySelectedFactorSources: PersistentList<FactorSourceId> = persistentListOf(),
+    unusableFactorSources: PersistentList<FactorSourceId> = persistentListOf(),
     viewModel: ChooseFactorSourceViewModel,
     onContinueClick: (factorSourceCard: FactorSourceCard) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onDismissSheet: () -> Unit,
 ) {
-    LaunchedEffect(excludeFactorSources) {
-        viewModel.initData(excludeFactorSources)
+    LaunchedEffect(unusableFactorSources) {
+        viewModel.initData(
+            unusableFactorSourceKinds = unusableFactorSourceKinds,
+            alreadySelectedFactorSources = alreadySelectedFactorSources,
+            unusableFactorSources = unusableFactorSources
+        )
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -58,27 +78,14 @@ fun ChooseFactorSourceBottomSheet(
         }
     }
 
-    val pagerState = rememberPagerState(
-        pageCount = { state.pages.count() }
-    )
-
-    LaunchedEffect(state.currentPagePosition) {
-        if (state.currentPagePosition == State.Page.SelectFactorSourceType.ordinal) {
-            // animation is abnormal when navigating back thus scrollToPage works as expected
-            pagerState.scrollToPage(state.currentPagePosition)
-        } else {
-            pagerState.animateScrollToPage(state.currentPagePosition)
-        }
-    }
-
     ChooseFactorSourceContent(
         modifier = modifier,
         state = state,
-        pagerState = pagerState,
         onSecurityFactorTypeClick = viewModel::onSecurityFactorTypeClick,
-        onFactorSourceSelect = viewModel::onFactorSourceFromSheetSelect,
+        onFactorSourceSelect = viewModel::onFactorSourceSelect,
         onAddFactorSourceClick = viewModel::onAddFactorSourceClick,
         onContinueClick = viewModel::onSelectedFactorSourceConfirm,
+        onInfoClick = onInfoClick,
         onSheetBackClick = viewModel::onSheetBackClick,
         onSheetCloseClick = viewModel::onSheetCloseClick
     )
@@ -88,36 +95,46 @@ fun ChooseFactorSourceBottomSheet(
 private fun ChooseFactorSourceContent(
     modifier: Modifier = Modifier,
     state: State,
-    pagerState: PagerState,
-    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
+    onSecurityFactorTypeClick: (SecurityFactorTypeUiItem.Item) -> Unit,
     onFactorSourceSelect: (FactorSourceCard) -> Unit,
     onAddFactorSourceClick: (FactorSourceKind) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit,
     onSheetBackClick: () -> Unit,
     onSheetCloseClick: () -> Unit
 ) {
+    val pagerState = rememberPagerState(
+        initialPage = state.currentPagePosition,
+        pageCount = { state.pages.size }
+    )
+
+    LaunchedEffect(state.currentPagePosition) {
+        if (state.currentPagePosition == state.selectTypePagePosition) {
+            // animation is abnormal when navigating back thus scrollToPage works as expected
+            pagerState.scrollToPage(state.currentPagePosition)
+        } else {
+            pagerState.animateScrollToPage(state.currentPagePosition)
+        }
+    }
+
     // TODO this will be replaced with the DefaultModalSheetLayout only when this bug is really fixed.
     // https://issuetracker.google.com/issues/278216859
     BottomSheetDialogWrapper(
         modifier = modifier,
         addScrim = true,
-        sheetBackgroundColor = if (pagerState.currentPage == State.Page.SelectFactorSourceType.ordinal) {
+        sheetBackgroundColor = if (pagerState.currentPage == state.selectTypePagePosition) {
             RadixTheme.colors.defaultBackground
         } else {
             RadixTheme.colors.gray5
         },
-        headerBackIcon = if (pagerState.currentPage == State.Page.SelectFactorSourceType.ordinal) {
+        headerBackIcon = if (pagerState.currentPage == state.selectTypePagePosition) {
             Icons.Filled.Clear
         } else {
             Icons.AutoMirrored.Filled.ArrowBack
         },
-        title = when (state.pages[pagerState.currentPage]) {
-            State.Page.SelectFactorSourceType -> stringResource(R.string.securityFactors_selectFactor_title)
-            State.Page.BiometricsPin -> stringResource(R.string.factorSources_card_deviceTitle)
-            State.Page.LedgerNano -> stringResource(R.string.factorSources_card_ledgerTitle)
-            State.Page.ArculusCard -> stringResource(R.string.factorSources_card_arculusCardTitle)
-            State.Page.Password -> stringResource(R.string.factorSources_card_passwordTitle)
-            State.Page.Passphrase -> stringResource(R.string.factorSources_card_offDeviceMnemonicTitle)
+        title = when (val page = state.pages[pagerState.currentPage]) {
+            is State.Page.SelectFactorSourceType -> stringResource(R.string.securityFactors_selectFactor_title)
+            is State.Page.SelectFactorSource -> page.kind.title()
         },
         isDismissible = false,
         onHeaderBackIconClick = onSheetBackClick,
@@ -130,70 +147,20 @@ private fun ChooseFactorSourceContent(
             state = pagerState,
             userScrollEnabled = false
         ) { pageIndex ->
-            val currentPage = state.pages[pageIndex]
-            when (currentPage) {
-                State.Page.SelectFactorSourceType -> {
-                    SecurityFactorTypesListView(
-                        securityFactorSettingItems = state.securityFactorTypeItems,
-                        onSecurityFactorTypeItemClick = onSecurityFactorTypeClick
-                    )
-                }
-
-                State.Page.BiometricsPin -> {
-                    SelectableFactorSourcesListView(
-                        factorSources = state.selectableFactorSources[FactorSourceKind.DEVICE] ?: persistentListOf(),
-                        factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
-                        addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
-                        onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.DEVICE) },
-                        onContinueClick = onContinueClick
-                    )
-                }
-
-                State.Page.LedgerNano -> {
-                    SelectableFactorSourcesListView(
-                        factorSources = state.selectableFactorSources[FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET]
-                            ?: persistentListOf(),
-                        factorSourceDescriptionText = R.string.factorSources_card_ledgerDescription,
-                        addFactorSourceButtonTitle = R.string.factorSources_list_ledgerAdd,
-                        onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET) },
-                        onContinueClick = onContinueClick
-                    )
-                }
-
-                State.Page.ArculusCard -> {
-                    SelectableFactorSourcesListView(
-                        factorSources = state.selectableFactorSources[FactorSourceKind.ARCULUS_CARD] ?: persistentListOf(),
-                        factorSourceDescriptionText = R.string.factorSources_card_arculusCardDescription,
-                        addFactorSourceButtonTitle = R.string.factorSources_list_arculusCardAdd,
-                        onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.ARCULUS_CARD) },
-                        onContinueClick = onContinueClick
-                    )
-                }
-
-                State.Page.Password -> {
-                    SelectableFactorSourcesListView(
-                        factorSources = state.selectableFactorSources[FactorSourceKind.PASSWORD] ?: persistentListOf(),
-                        factorSourceDescriptionText = R.string.factorSources_card_passwordDescription,
-                        addFactorSourceButtonTitle = R.string.factorSources_list_passwordAdd,
-                        onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.PASSWORD) },
-                        onContinueClick = onContinueClick
-                    )
-                }
-
-                State.Page.Passphrase -> {
-                    SelectableFactorSourcesListView(
-                        factorSources = state.selectableFactorSources[FactorSourceKind.OFF_DEVICE_MNEMONIC] ?: persistentListOf(),
-                        factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
-                        addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
-                        onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.OFF_DEVICE_MNEMONIC) },
-                        onContinueClick = onContinueClick
-                    )
-                }
+            when (val currentPage = state.pages[pageIndex]) {
+                is State.Page.SelectFactorSourceType -> SecurityFactorTypesListView(
+                    items = currentPage.items,
+                    onSecurityFactorTypeItemClick = onSecurityFactorTypeClick,
+                    onInfoClick = onInfoClick
+                )
+                is State.Page.SelectFactorSource -> SelectableFactorSourcesListView(
+                    factorSourceKind = currentPage.kind,
+                    factorSources = currentPage.items,
+                    isButtonEnabled = state.isButtonEnabled,
+                    onFactorSourceSelect = onFactorSourceSelect,
+                    onAddFactorSourceClick = { onAddFactorSourceClick(currentPage.kind) },
+                    onContinueClick = onContinueClick
+                )
             }
         }
     }
@@ -202,21 +169,17 @@ private fun ChooseFactorSourceContent(
 @Preview
 @Composable
 @UsesSampleValues
-private fun ChooseFactorSourceBottomSheetPreview() {
+private fun ChooseFactorSourceBottomSheetPreview(
+    @PreviewParameter(ChooseFactorSourcePreviewProvider::class) state: State
+) {
     RadixWalletPreviewTheme {
         ChooseFactorSourceContent(
             modifier = Modifier,
-            state = State(
-                currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
-                securityFactorTypeItems = currentSecurityFactorTypeItems,
-
-            ),
-            pagerState = rememberPagerState {
-                State.Page.entries.count()
-            },
+            state = state,
             onSecurityFactorTypeClick = {},
             onFactorSourceSelect = {},
             onAddFactorSourceClick = {},
+            onInfoClick = {},
             onContinueClick = {},
             onSheetBackClick = {},
             onSheetCloseClick = {}
@@ -227,24 +190,175 @@ private fun ChooseFactorSourceBottomSheetPreview() {
 @Preview
 @Composable
 @UsesSampleValues
-private fun DeviceFactorsBottomSheetPreview() {
+private fun DeviceFactorsBottomSheetPreview(
+    @PreviewParameter(ChooseFactorSourcePreviewProvider::class) state: State
+) {
     RadixWalletPreviewTheme {
         ChooseFactorSourceContent(
             modifier = Modifier,
-            state = State(
-                currentPagePosition = State.Page.BiometricsPin.ordinal,
-                securityFactorTypeItems = currentSecurityFactorTypeItems,
-                selectableFactorSources = availableFactorSources
-            ),
-            pagerState = rememberPagerState(initialPage = State.Page.BiometricsPin.ordinal) {
-                State.Page.entries.count()
-            },
+            state = state,
             onSecurityFactorTypeClick = {},
             onFactorSourceSelect = {},
             onAddFactorSourceClick = {},
+            onInfoClick = {},
             onContinueClick = {},
             onSheetBackClick = {},
             onSheetCloseClick = {}
         )
     }
+}
+
+@UsesSampleValues
+class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
+
+    private val securityFactorTypeItems = SecurityFactorTypesListPreviewProvider().value
+    private val availableFactorSources = mapOf(
+        FactorSourceKind.DEVICE to persistentListOf(
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "Fotis Ioannidis",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                        Persona.sampleStokenet()
+                    ),
+                    hasHiddenEntities = false,
+                    isEnabled = true
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "666",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                        Persona.sampleStokenet()
+                    ),
+                    hasHiddenEntities = true,
+                    isEnabled = true
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "999",
+                    includeDescription = false,
+                    lastUsedOn = "Yesterday",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "XXX",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet(),
+                    ),
+                    hasHiddenEntities = true,
+                    isEnabled = true
+                )
+            )
+        ),
+        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET to persistentListOf(
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "ALFZ PSF",
+                    includeDescription = false,
+                    lastUsedOn = "every year",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet()
+                    ),
+                    hasHiddenEntities = false,
+                    isEnabled = true
+                )
+            ),
+            Selectable(
+                FactorSourceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "DPG7000",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = true,
+                    isEnabled = true
+                )
+            )
+        )
+    ).toPersistentMap()
+
+    private val pages = listOf(
+        State.Page.SelectFactorSourceType(
+            items = securityFactorTypeItems
+        )
+    ) + FactorSourceKind.entries.map {
+        State.Page.SelectFactorSource(
+            kind = it,
+            items = availableFactorSources[it] ?: persistentListOf()
+        )
+    }
+
+    override val values: Sequence<State>
+        get() = sequenceOf(
+            State(
+                pages = pages.toPersistentList(),
+                currentPagePosition = 0
+            ),
+            State(
+                pages = pages.toPersistentList(),
+                currentPagePosition = 1
+            )
+        )
 }

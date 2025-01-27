@@ -18,6 +18,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -47,6 +48,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun SecurityFactorSamplesScreen(
     viewModel: SecurityFactorSamplesViewModel,
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state = viewModel.state.collectAsState().value
@@ -65,6 +67,7 @@ fun SecurityFactorSamplesScreen(
         ChooseFactorSourceBottomSheet(
             viewModel = hiltViewModel(),
             onContinueClick = viewModel::onSelectedFactorSourceConfirm,
+            onInfoClick = onInfoClick,
             onDismissSheet = viewModel::onSheetClosed
         )
     }
@@ -180,7 +183,8 @@ private fun SecurityFactorSamplesPreview() {
                             Persona.sampleMainnet(),
                             Persona.sampleStokenet()
                         ),
-                        hasHiddenEntities = true
+                        hasHiddenEntities = true,
+                        isEnabled = true
                     )
                 ),
                 displayOnlyFactorSourceKindItems = persistentListOf(
@@ -221,7 +225,8 @@ private fun SecurityFactorSamplesPreview() {
                             messages = persistentListOf(),
                             accounts = persistentListOf(),
                             personas = persistentListOf(),
-                            hasHiddenEntities = false
+                            hasHiddenEntities = false,
+                            isEnabled = true
                         )
                     )
                 ),
@@ -239,7 +244,8 @@ private fun SecurityFactorSamplesPreview() {
                             messages = persistentListOf(),
                             accounts = persistentListOf(),
                             personas = persistentListOf(),
-                            hasHiddenEntities = false
+                            hasHiddenEntities = false,
+                            isEnabled = true
                         )
                     )
                 )

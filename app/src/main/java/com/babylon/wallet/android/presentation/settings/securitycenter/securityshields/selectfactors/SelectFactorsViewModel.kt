@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
@@ -18,6 +19,7 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,6 +29,8 @@ class SelectFactorsViewModel @Inject constructor(
     private val securityShieldBuilderClient: SecurityShieldBuilderClient
 ) : StateViewModel<SelectFactorsViewModel.State>(),
     OneOffEventHandler<SelectFactorsViewModel.Event> by OneOffEventHandlerImpl() {
+
+    private var hasMadeFirstSelection: Boolean = false
 
     init {
         initFactorSources()
@@ -38,14 +42,22 @@ class SelectFactorsViewModel @Inject constructor(
         card: FactorSourceCard,
         checked: Boolean
     ) {
+        hasMadeFirstSelection = true
+
         viewModelScope.launch {
-            securityShieldBuilderClient.updatePrimaryRoleThresholdFactorSourceSelection(card.id, checked)
+            securityShieldBuilderClient.executeMutatingFunction {
+                if (checked) {
+                    addFactorSourceToPrimaryThreshold(card.id)
+                } else {
+                    removeFactorFromPrimary(card.id, FactorListKind.THRESHOLD)
+                }
+            }
         }
     }
 
     fun onBuildShieldClick() {
         viewModelScope.launch {
-            securityShieldBuilderClient.autoAssignSelectedFactors()
+            securityShieldBuilderClient.autoAssignFactors()
             sendEvent(Event.ToRegularAccess)
         }
     }
@@ -74,7 +86,7 @@ class SelectFactorsViewModel @Inject constructor(
                 .collect {
                     _state.update { state ->
                         state.copy(
-                            status = it.primaryRoleStatus,
+                            status = it.primaryRoleStatus.takeIf { hasMadeFirstSelection },
                             items = state.items.map { item ->
                                 if (item is State.UiItem.Factor) {
                                     item.copy(
@@ -95,14 +107,28 @@ class SelectFactorsViewModel @Inject constructor(
     private fun FactorSource.toUiItem(): State.UiItem.Factor {
         return State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard.compact(
+                data = FactorSourceCard(
                     id = id,
                     name = name,
-                    kind = kind
+                    includeDescription = false,
+                    lastUsedOn = null,
+                    kind = kind,
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false,
+                    isEnabled = true
                 ),
                 selected = false
             )
         )
+    }
+
+    fun onSkipClick() {
+        viewModelScope.launch {
+            securityShieldBuilderClient.newSecurityShieldBuilder()
+            sendEvent(Event.ToRegularAccess)
+        }
     }
 
     data class State(
