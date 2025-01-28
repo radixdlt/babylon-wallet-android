@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedg
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -16,6 +17,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.extensions.asGeneral
@@ -56,6 +58,10 @@ class DerivePublicKeysViewModel @Inject constructor(
     )
 
     override fun initialState(): State = State(
+        purpose = when (proxyInput.purpose) {
+            DerivationPurpose.ACCOUNT_RECOVERY -> AccessFactorSourcePurpose.DerivingAccounts
+            else -> AccessFactorSourcePurpose.UpdatingFactorConfig
+        },
         accessState = accessDelegate.state.value
     )
 
@@ -124,6 +130,7 @@ class DerivePublicKeysViewModel @Inject constructor(
     }
 
     data class State(
+        val purpose: AccessFactorSourcePurpose,
         val accessState: AccessFactorSourceDelegate.State
     ) : UiState
 

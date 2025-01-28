@@ -35,7 +35,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
@@ -62,30 +61,26 @@ fun CreateAccountScreen(
 
     BackHandler(onBack = viewModel::onBackClick)
 
-    if (state.loading) {
-        FullscreenCircularProgressContent()
-    } else {
-        val accountName by viewModel.accountName.collectAsStateWithLifecycle()
-        val buttonEnabled by viewModel.buttonEnabled.collectAsStateWithLifecycle()
-        val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
+    val accountName by viewModel.accountName.collectAsStateWithLifecycle()
+    val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
 
-        CreateAccountContent(
-            onAccountNameChange = viewModel::onAccountNameChange,
-            onAccountCreateClick = {
-                viewModel.onAccountCreateClick(isWithLedger = it)
-            },
-            accountName = accountName,
-            isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
-            buttonEnabled = buttonEnabled,
-            onBackClick = viewModel::onBackClick,
-            modifier = modifier,
-            firstTime = state.isFirstAccount,
-            isWithLedger = state.isWithLedger,
-            onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
-            uiMessage = state.uiMessage,
-            onUiMessageShown = viewModel::onUiMessageShown
-        )
-    }
+    CreateAccountContent(
+        onAccountNameChange = viewModel::onAccountNameChange,
+        onAccountCreateClick = {
+            viewModel.onAccountCreateClick(isWithLedger = it)
+        },
+        accountName = accountName,
+        isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
+        onBackClick = viewModel::onBackClick,
+        modifier = modifier,
+        firstTime = state.isFirstAccount,
+        isWithLedger = state.isWithLedger,
+        uiMessage = state.uiMessage,
+        isCreatingAccount = state.isCreatingAccount,
+        onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
+        onUiMessageShown = viewModel::onUiMessageShown
+    )
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -111,11 +106,11 @@ fun CreateAccountContent(
     onAccountCreateClick: (Boolean) -> Unit,
     accountName: String,
     isAccountNameLengthMoreThanTheMaximum: Boolean,
-    buttonEnabled: Boolean,
     onBackClick: () -> Unit,
     modifier: Modifier,
     firstTime: Boolean,
     isWithLedger: Boolean,
+    isCreatingAccount: Boolean,
     onUseLedgerSelectionChanged: (Boolean) -> Unit,
     uiMessage: UiMessage? = null,
     onUiMessageShown: () -> Unit = {}
@@ -145,7 +140,7 @@ fun CreateAccountContent(
                     onAccountCreateClick(isWithLedger)
                 },
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
-                enabled = buttonEnabled,
+                isLoading = isCreatingAccount,
                 insets = if (isKeyboardVisible()) WindowInsets.ime else WindowInsets.navigationBars
             )
         },
@@ -239,7 +234,10 @@ private fun CreateWithLedgerSwitch(
                 color = RadixTheme.colors.gray2
             )
         }
-        RadixSwitch(checked = isChecked, onCheckedChange = onUseLedgerSelectionChanged)
+        RadixSwitch(
+            checked = isChecked,
+            onCheckedChange = onUseLedgerSelectionChanged
+        )
     }
 }
 
@@ -253,11 +251,11 @@ fun CreateAccountContentPreview() {
             onAccountCreateClick = {},
             accountName = "Name",
             isAccountNameLengthMoreThanTheMaximum = false,
-            buttonEnabled = false,
             onBackClick = {},
             modifier = Modifier,
             firstTime = false,
             isWithLedger = false,
+            isCreatingAccount = false,
             onUseLedgerSelectionChanged = {}
         )
     }

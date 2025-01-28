@@ -14,7 +14,7 @@ import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.extensions.bip32CanonicalString
+import com.radixdlt.sargon.extensions.bip32String
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.decompile
 import com.radixdlt.sargon.extensions.hash
@@ -45,28 +45,31 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
     override suspend fun derivePublicKeys(
         factorSource: FactorSource.Ledger,
         input: KeyDerivationRequestPerFactorSource
-    ): Result<List<HierarchicalDeterministicFactorInstance>> {
-        val factorInstances = input.derivationPaths.map { derivationPath ->
-            ledgerMessenger.sendDerivePublicKeyRequest(
-                interactionId = UUIDGenerator.uuid().toString(),
-                keyParameters = listOf(LedgerInteractionRequest.KeyParameters.from(derivationPath)),
-                ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = factorSource)
-            ).map { derivePublicKeyResponse ->
-                HierarchicalDeterministicFactorInstance(
-                    factorSourceId = factorSource.value.id,
-                    publicKey = HierarchicalDeterministicPublicKey(
-                        publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex),
-                        derivationPath = derivationPath
-                    )
+    ): Result<List<HierarchicalDeterministicFactorInstance>> = ledgerMessenger.sendDerivePublicKeyRequest(
+        interactionId = UUIDGenerator.uuid().toString(),
+        keyParameters = input.derivationPaths.map { derivationPath ->
+            LedgerInteractionRequest.KeyParameters.from(derivationPath)
+        },
+        ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = factorSource)
+    ).mapCatching { response ->
+        response.publicKeys.map { key ->
+            val derivationPath = input.derivationPaths.find {
+                it.bip32String == key.derivationPath
+            } ?: error("Such derivation path ${key.derivationPath} was not requested")
+
+            HierarchicalDeterministicFactorInstance(
+                factorSourceId = factorSource.value.id,
+                publicKey = HierarchicalDeterministicPublicKey(
+                    publicKey = when (key.curve) {
+                        LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> PublicKey.Ed25519.init(hex = key.publicKeyHex)
+                        LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> PublicKey.Secp256k1.init(hex = key.publicKeyHex)
+                    },
+                    derivationPath = derivationPath
                 )
-            }.getOrElse {
-                return Result.failure(it)
-            }
+            )
         }
-
+    }.onSuccess {
         updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
-
-        return Result.success(factorInstances)
     }
 
     override suspend fun signMono(
@@ -201,7 +204,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         ownedFactorInstances: List<OwnedFactorInstance>
     ): HdSignature<Signable.ID> {
         val ownedFactorInstance = ownedFactorInstances.find {
-            it.factorInstance.publicKey.derivationPath.bip32CanonicalString == derivedPublicKey.derivationPath
+            it.factorInstance.publicKey.derivationPath.bip32String == derivedPublicKey.derivationPath
         } ?: error("No derivation path from ledger, matched the input ownedFactorInstances.")
 
         val input = HdSignatureInput(

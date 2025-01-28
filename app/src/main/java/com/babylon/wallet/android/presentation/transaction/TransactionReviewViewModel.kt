@@ -445,7 +445,26 @@ class TransactionReviewViewModel @Inject constructor(
                 val unknownAddresses: ImmutableList<Address>
             ) : Sheet
 
-            data object SigningFailed : Sheet
+            data class SigningFailed(
+                val type: Type
+            ) : Sheet {
+
+                enum class Type {
+                    Transaction,
+                    PreAuthorization
+                }
+
+                companion object {
+
+                    fun from(isPreAuthorization: Boolean) = SigningFailed(
+                        type = if (isPreAuthorization) {
+                            Type.PreAuthorization
+                        } else {
+                            Type.Transaction
+                        }
+                    )
+                }
+            }
         }
 
         data class SelectFeePayerInput(

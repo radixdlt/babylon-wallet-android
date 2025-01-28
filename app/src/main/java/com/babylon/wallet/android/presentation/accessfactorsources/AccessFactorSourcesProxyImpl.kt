@@ -20,18 +20,14 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     // used only when recovering accounts from onboarding (reDeriveAccounts)
     private var tempMnemonicWithPassphrase: MnemonicWithPassphrase? = null
 
-    override suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.HDPublicKey> {
-        input = accessFactorSourcesInput
-        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKey)
+    override suspend fun requestAuthorization(
+        input: AccessFactorSourcesInput.ToRequestAuthorization
+    ): AccessFactorSourcesOutput.RequestAuthorization {
+        this.input = input
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.RequestAuthorization)
         val result = _output.first()
 
-        return if (result is AccessFactorSourcesOutput.Failure) {
-            Result.failure(result.error)
-        } else {
-            Result.success(result as AccessFactorSourcesOutput.HDPublicKey)
-        }
+        return result as AccessFactorSourcesOutput.RequestAuthorization
     }
 
     override suspend fun derivePublicKeys(
@@ -42,22 +38,6 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         val result = _output.first()
 
         return result as AccessFactorSourcesOutput.DerivedPublicKeys
-    }
-
-    override suspend fun reDeriveAccounts(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
-    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath> {
-        input = accessFactorSourcesInput
-        tempMnemonicWithPassphrase = null // at this point the DeriveAccountsViewModel has already received the mnemonic
-
-        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DeriveAccounts)
-        val result = _output.first()
-
-        return if (result is AccessFactorSourcesOutput.Failure) {
-            Result.failure(result.error)
-        } else {
-            Result.success(result as AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath)
-        }
     }
 
     override suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(

@@ -32,7 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,7 +46,6 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.AccountRecoveryScanViewModel.Companion.ACCOUNTS_PER_SCAN
-import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -55,7 +56,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSource
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
 
@@ -67,18 +67,13 @@ fun AccountRecoveryScanScreen(
     onRecoveryComplete: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    if (state.isNoMnemonicErrorVisible) {
-        NoMnemonicAlertDialog {
-            viewModel.dismissNoMnemonicError()
-        }
-    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is Event.RecoverComplete -> onRecoveryComplete()
-                Event.OnBackClick -> onBackClick()
-                Event.CloseScan -> onBackClick()
+                is AccountRecoveryScanViewModel.Event.RecoverComplete -> onRecoveryComplete()
+                AccountRecoveryScanViewModel.Event.OnBackClick -> onBackClick()
+                AccountRecoveryScanViewModel.Event.CloseScan -> onBackClick()
             }
         }
     }
@@ -95,11 +90,6 @@ fun AccountRecoveryScanScreen(
         isScanningNetwork = state.isScanningNetwork,
         onMessageShown = viewModel::onMessageShown
     )
-    if (state.isNoMnemonicErrorVisible) {
-        NoMnemonicAlertDialog {
-            viewModel.dismissNoMnemonicError()
-        }
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -196,9 +186,7 @@ private fun AccountRecoveryScanContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding),
-                        isLedgerDevice = state.recoveryFactorSource?.let {
-                            it is FactorSource.Ledger
-                        } ?: false,
+                        isLedgerDevice = state.isLedgerFactorSource,
                         isOlympiaSeedPhrase = state.isOlympiaSeedPhrase,
                         isScanningNetwork = state.isScanningNetwork
                     )
@@ -343,7 +331,9 @@ private fun InactiveAccountsPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.accountRecoveryScan_selectInactiveAccounts_header_subtitle),
+                text = stringResource(
+                    id = R.string.accountRecoveryScan_selectInactiveAccounts_header_subtitle
+                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1

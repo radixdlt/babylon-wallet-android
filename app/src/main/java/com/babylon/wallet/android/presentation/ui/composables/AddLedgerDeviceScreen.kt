@@ -55,11 +55,10 @@ fun AddLedgerDeviceScreen(
     onMessageShown: () -> Unit = {},
     onClose: () -> Unit,
     waitingForLedgerResponse: Boolean,
-    onBackClick: () -> Unit,
     isAddingLedgerDeviceInProgress: Boolean,
     isAddingNewLinkConnectorInProgress: Boolean = false
 ) {
-    BackHandler(onBack = onBackClick)
+    BackHandler(onBack = onClose)
 
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -232,7 +231,6 @@ fun AddLedgerDeviceScreenPreview() {
             onMessageShown = {},
             onClose = {},
             waitingForLedgerResponse = false,
-            onBackClick = {},
             isAddingLedgerDeviceInProgress = false,
             isAddingNewLinkConnectorInProgress = false
         )
@@ -254,7 +252,6 @@ fun AddLedgerDeviceContentPreview3() {
             onMessageShown = {},
             onClose = {},
             waitingForLedgerResponse = false,
-            onBackClick = {},
             isAddingLedgerDeviceInProgress = false,
             isAddingNewLinkConnectorInProgress = false
         )

@@ -25,8 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorization
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
@@ -233,11 +232,10 @@ private fun HandleAccessFactorSourcesEvents(
     LaunchedEffect(Unit) {
         accessFactorSourcesEvents.collect { event ->
             when (event) {
-                AppEvent.AccessFactorSources.DerivePublicKey -> navController.derivePublicKeyDialog()
                 AppEvent.AccessFactorSources.DerivePublicKeys -> navController.derivePublicKeysDialog()
-                is AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
-                is AppEvent.AccessFactorSources.SelectedLedgerDevice -> {}
+                AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
+                is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
         }
     }

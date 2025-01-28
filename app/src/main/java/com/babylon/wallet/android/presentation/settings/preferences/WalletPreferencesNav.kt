@@ -120,11 +120,10 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
     ) {
         GatewaysScreen(
             viewModel = hiltViewModel(),
-            onCreateProfile = { url, networkId ->
+            onCreateAccount = { networkId ->
                 navController.createAccountScreen(
-                    CreateAccountRequestSource.Gateways,
-                    url,
-                    networkId
+                    requestSource = CreateAccountRequestSource.Gateways,
+                    networkIdToSwitch = networkId
                 )
             },
             onInfoClick = { glossaryItem ->

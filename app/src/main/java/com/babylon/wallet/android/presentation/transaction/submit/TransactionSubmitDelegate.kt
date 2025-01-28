@@ -107,13 +107,18 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
                 when (error) {
                     // When signing is rejected we just need to stop the submit process. User can retry.
-                    is CommonException.SigningRejected -> {
+                    is CommonException.HostInteractionAborted -> {
                         _state.update { it.copy(isSubmitting = false) }
                     }
 
                     // When signing failed due to many factor sources were skipped, the user must see the appropriate modal
                     is CommonException.SigningFailedTooManyFactorSourcesNeglected -> {
-                        _state.update { it.copy(isSubmitting = false, sheetState = Sheet.SigningFailed) }
+                        _state.update {
+                            it.copy(
+                                isSubmitting = false,
+                                sheetState = Sheet.SigningFailed.from(isPreAuthorization = data.value.request.kind.isPreAuthorized)
+                            )
+                        }
                     }
 
                     // The rest of the errors are reported to the user

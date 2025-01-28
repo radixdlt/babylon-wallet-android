@@ -608,6 +608,7 @@ private fun BottomSheetContent(
         is State.Sheet.SigningFailed -> {
             SigningFailedSheet(
                 modifier = modifier,
+                state = sheetState,
                 onDismiss = onCloseBottomSheetClick,
                 onRestartSigning = onFailedSigningRestart,
                 onCancelTransaction = onFailedSigningCancel
