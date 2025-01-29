@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldname.setupShieldName
 
-const val ROUTE_SETUP_RECOVERY = "setup_recovery"
+private const val ROUTE_SETUP_RECOVERY = "setup_recovery"
 
 fun NavController.setupRecoveryScreen() {
     navigate(ROUTE_SETUP_RECOVERY)

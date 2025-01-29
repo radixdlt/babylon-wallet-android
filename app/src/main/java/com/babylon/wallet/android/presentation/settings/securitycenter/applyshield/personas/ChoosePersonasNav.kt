@@ -1,32 +1,32 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready
+package com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.personas
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
 
-private const val ROUTE_FACTORS_READY = "factors_ready"
+private const val ROUTE_CHOOSE_PERSONAS = "choose_personas"
 
-fun NavController.factorsReady() {
-    navigate(ROUTE_FACTORS_READY)
+fun NavController.choosePersonas() {
+    navigate(ROUTE_CHOOSE_PERSONAS)
 }
 
-fun NavGraphBuilder.factorsReady(
+fun NavGraphBuilder.choosePersonas(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_FACTORS_READY,
+        route = ROUTE_CHOOSE_PERSONAS,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        FactorsReadyScreen(
-            onDismiss = { navController.popBackStack() },
-            onBuildShieldClick = { navController.selectFactors() }
+        ChoosePersonasScreen(
+            viewModel = hiltViewModel(),
+            onDismiss = { navController.popBackStack() }
         )
     }
 }

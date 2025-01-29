@@ -7,9 +7,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldcreated.shieldCreated
 
-const val ROUTE_SETUP_SHIELD_NAME = "setup_shield_name"
+private const val ROUTE_SETUP_SHIELD_NAME = "setup_shield_name"
 
 fun NavController.setupShieldName() {
     navigate(ROUTE_SETUP_SHIELD_NAME)
@@ -28,10 +28,7 @@ fun NavGraphBuilder.setupShieldName(
         SetupShieldNameScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onShieldCreated = {
-                navController.popBackStack(ROUTE_SECURITY_SHIELDS_GRAPH, true)
-                // TODO navigate to shield created screen
-            }
+            onShieldCreated = { id -> navController.shieldCreated(id) }
         )
     }
 }

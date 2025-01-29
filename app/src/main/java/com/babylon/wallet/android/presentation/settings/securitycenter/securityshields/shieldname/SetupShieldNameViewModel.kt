@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.extensions.SharedConstants
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,7 +43,7 @@ class SetupShieldNameViewModel @Inject constructor(
             sargonOsManager.callSafely(defaultDispatcher) {
                 addSecurityStructureOfFactorSourceIds(securityStructureOfFactorSourceIDs)
             }.onSuccess {
-                sendEvent(Event.ShieldCreated)
+                sendEvent(Event.ShieldCreated(securityStructureOfFactorSourceIDs.metadata.id))
             }.onFailure {
                 _state.update { state -> state.copy(message = UiMessage.ErrorMessage(it)) }
             }
@@ -64,6 +65,8 @@ class SetupShieldNameViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data object ShieldCreated : Event
+        data class ShieldCreated(
+            val id: SecurityStructureId
+        ) : Event
     }
 }

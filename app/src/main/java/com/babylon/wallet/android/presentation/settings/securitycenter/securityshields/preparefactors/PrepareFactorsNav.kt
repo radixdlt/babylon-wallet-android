@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addAnyFactor
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addHardwareDevice
 
-const val ROUTE_PREPARE_FACTORS = "prepare_factors"
+private const val ROUTE_PREPARE_FACTORS = "prepare_factors"
 
 fun NavController.prepareFactors() {
     navigate(ROUTE_PREPARE_FACTORS)
