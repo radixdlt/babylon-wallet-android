@@ -20,7 +20,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.Signable
@@ -98,8 +97,6 @@ class GetSignaturesViewModel @Inject constructor(
             factorSource = factorSource,
             input = proxyInput.input
         )
-        is FactorSource.SecurityQuestions -> error("Signing with ${factorSource.value.kind} is not supported yet")
-        is FactorSource.TrustedContact -> error("Signing with ${factorSource.value.kind} is not supported yet")
     }.map { perFactorOutcome ->
         finishWithSuccess(perFactorOutcome)
     }

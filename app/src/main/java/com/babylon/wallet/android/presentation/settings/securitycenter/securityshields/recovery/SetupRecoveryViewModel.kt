@@ -91,7 +91,7 @@ class SetupRecoveryViewModel @Inject constructor(
             val fallbackPeriod = requireNotNull(state.value.selectFallbackPeriod)
 
             shieldBuilderClient.executeMutatingFunction {
-                setTimePeriodUntilAutoConfirm(
+                setTimeUntilDelayedConfirmationIsCallable(
                     TimePeriod(
                         value = fallbackPeriod.currentValue.toUShort(),
                         unit = fallbackPeriod.currentUnit

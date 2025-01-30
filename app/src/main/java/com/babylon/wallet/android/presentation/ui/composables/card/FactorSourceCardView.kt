@@ -367,8 +367,6 @@ fun FactorSourceKind.iconRes(): Int {
         FactorSourceKind.OFF_DEVICE_MNEMONIC -> DSR.ic_factor_passphrase
         FactorSourceKind.ARCULUS_CARD -> DSR.ic_factor_arculus
         FactorSourceKind.PASSWORD -> DSR.ic_factor_password
-        FactorSourceKind.TRUSTED_CONTACT,
-        FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
     }
 }
 
@@ -381,8 +379,6 @@ fun FactorSourceKind.title(): String {
             FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_offDeviceMnemonicTitle
             FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_card_arculusCardTitle
             FactorSourceKind.PASSWORD -> R.string.factorSources_card_passwordTitle
-            FactorSourceKind.TRUSTED_CONTACT,
-            FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
         }
     )
 }
@@ -396,8 +392,6 @@ fun FactorSourceKind.subtitle(): String {
             FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_offDeviceMnemonicDescription
             FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_card_arculusCardDescription
             FactorSourceKind.PASSWORD -> R.string.factorSources_card_passwordDescription
-            FactorSourceKind.TRUSTED_CONTACT,
-            FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
         }
     )
 }

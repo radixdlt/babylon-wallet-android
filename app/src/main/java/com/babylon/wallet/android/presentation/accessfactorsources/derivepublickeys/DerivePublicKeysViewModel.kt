@@ -21,7 +21,6 @@ import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.toUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -107,8 +106,6 @@ class DerivePublicKeysViewModel @Inject constructor(
             factorSource = factorSource,
             input = proxyInput.request
         )
-        is FactorSource.SecurityQuestions -> error("Deriving keys with ${factorSource.value.kind} is not supported yet")
-        is FactorSource.TrustedContact -> error("Deriving keys with ${factorSource.value.kind} is not supported yet")
     }.mapCatching { factorInstances ->
         finishWithSuccess(factorInstances)
     }.toUnit()

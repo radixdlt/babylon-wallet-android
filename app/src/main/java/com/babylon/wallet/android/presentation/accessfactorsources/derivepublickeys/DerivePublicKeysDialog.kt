@@ -197,9 +197,6 @@ private fun DerivePublicKeysSheetContent(
                     canUseDifferentFactor = false,
                     onSkipClick = {}
                 )
-
-                FactorSourceKind.SECURITY_QUESTIONS -> {}
-                FactorSourceKind.TRUSTED_CONTACT -> {}
             }
         })
     })

@@ -218,9 +218,6 @@ private fun GetSignaturesBottomSheetContent(
                             canUseDifferentFactor = state.canSkipFactor,
                             onSkipClick = onSkipClick
                         )
-
-                        FactorSourceKind.SECURITY_QUESTIONS -> {}
-                        FactorSourceKind.TRUSTED_CONTACT -> {}
                     }
                 }
             )
