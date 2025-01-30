@@ -119,8 +119,6 @@ private fun FactorSourceKind.addButtonTitle(): String = stringResource(
         FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_list_offDeviceMnemonicAdd
         FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_list_arculusCardAdd
         FactorSourceKind.PASSWORD -> R.string.factorSources_list_passwordAdd
-        FactorSourceKind.TRUSTED_CONTACT,
-        FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
     }
 )
 

@@ -123,7 +123,7 @@ class SecurityShieldBuilderClient @Inject constructor(
             RecoveryRoleSelection(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
                 confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
-                timePeriodUntilAutoConfirm = securityShieldBuilder.getTimePeriodUntilAutoConfirm(),
+                timePeriodUntilAutoConfirm = securityShieldBuilder.getTimeUntilTimedConfirmationIsCallable(),
                 shieldStatus = status
             )
         )

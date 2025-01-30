@@ -348,9 +348,6 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
         SignatureRequest -> stringResource(R.string.factorSourceActions_password_signMessage)
         ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_password_message)
     }
-
-    FactorSourceKind.TRUSTED_CONTACT -> ""
-    FactorSourceKind.SECURITY_QUESTIONS -> ""
 }.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
 
 @Composable
@@ -456,9 +453,6 @@ private fun Preview(
                     onSkipClick = {},
                 )
             }
-
-            is FactorSource.SecurityQuestions -> {}
-            is FactorSource.TrustedContact -> {}
         }
     }
 }

@@ -113,7 +113,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 )
             )
         ),
-        singleChoiceFactorSourceKindItems = getSupportedKinds().map {
+        singleChoiceFactorSourceKindItems = getKinds().map {
             Selectable(
                 data = FactorSourceKindCard(
                     kind = it,
@@ -132,7 +132,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 selected = false
             )
         ),
-        multiChoiceItems = getSupportedKinds().map {
+        multiChoiceItems = getKinds().map {
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -205,12 +205,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         Timber.d("Remove clicked: $item")
     }
 
-    private fun getSupportedKinds(): List<FactorSourceKind> {
-        return FactorSourceKind.entries.filter { it.isSupported() }
-    }
-
-    private fun FactorSourceKind.isSupported(): Boolean {
-        return this !in unsupportedKinds
+    private fun getKinds(): List<FactorSourceKind> {
+        return FactorSourceKind.entries
     }
 
     private fun DeviceFactorSource.toFactorSourceCard(
@@ -277,12 +273,4 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         val removableItems: PersistentList<FactorSourceCard> = persistentListOf(),
         val isBottomSheetVisible: Boolean = false
     ) : UiState
-
-    companion object {
-
-        private val unsupportedKinds = setOf(
-            FactorSourceKind.TRUSTED_CONTACT,
-            FactorSourceKind.SECURITY_QUESTIONS
-        )
-    }
 }
