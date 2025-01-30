@@ -4,9 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.assets.GetAllAccountsXrdBalanceUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.os.SargonOsManager
@@ -24,7 +28,8 @@ class ShieldCreatedViewModel @Inject constructor(
     private val getAllAccountsXrdBalanceUseCase: GetAllAccountsXrdBalanceUseCase,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
-) : StateViewModel<ShieldCreatedViewModel.State>() {
+) : StateViewModel<ShieldCreatedViewModel.State>(),
+    OneOffEventHandler<ShieldCreatedViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = ShieldCreatedArgs(savedStateHandle)
 
@@ -48,11 +53,20 @@ class ShieldCreatedViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
+    fun onApplyClick() {
+        viewModelScope.launch { sendEvent(Event.ApplyShield(args.securityStructureId)) }
+    }
+
     data class State(
         val shieldName: String = "",
         val hasInsufficientXrd: Boolean = false
     ) : UiState {
 
         val isButtonEnabled = !hasInsufficientXrd
+    }
+
+    sealed interface Event : OneOffEvent {
+
+        data class ApplyShield(val securityStructureId: SecurityStructureId) : Event
     }
 }

@@ -10,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.applyShieldNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
 import com.radixdlt.sargon.SecurityStructureId
 
@@ -46,7 +47,12 @@ fun NavGraphBuilder.shieldCreated(
     ) {
         ShieldCreatedScreen(
             viewModel = hiltViewModel(),
-            onDismiss = { navController.popBackStack(ROUTE_SECURITY_SHIELDS_GRAPH, false) }
+            onDismiss = { navController.popBackStack(ROUTE_SECURITY_SHIELDS_GRAPH, false) },
+            onApply = { id ->
+                navController.applyShieldNavGraph(id) {
+                    popUpTo(ROUTE_SECURITY_SHIELDS_GRAPH) { inclusive = false }
+                }
+            }
         )
     }
 }

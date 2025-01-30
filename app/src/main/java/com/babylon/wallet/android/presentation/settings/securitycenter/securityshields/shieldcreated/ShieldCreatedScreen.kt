@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,12 +38,14 @@ import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.radixdlt.sargon.SecurityStructureId
 
 @Composable
 fun ShieldCreatedScreen(
     modifier: Modifier = Modifier,
     viewModel: ShieldCreatedViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onApply: (SecurityStructureId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -50,9 +53,17 @@ fun ShieldCreatedScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
-        onApplyClick = {}, // todo
+        onApplyClick = viewModel::onApplyClick,
         onSkipClick = onDismiss
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is ShieldCreatedViewModel.Event.ApplyShield -> onApply(event.securityStructureId)
+            }
+        }
+    }
 }
 
 @Composable
