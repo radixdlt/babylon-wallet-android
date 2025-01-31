@@ -37,7 +37,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 manifestClass
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
-            is DetailedManifestClass.SecurifyEntity -> PreviewType.NonConforming
+            is DetailedManifestClass.SecurifyEntity -> TODO()
         }
     }
 }
