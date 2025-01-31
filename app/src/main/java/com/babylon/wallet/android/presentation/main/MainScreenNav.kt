@@ -5,6 +5,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
 import kotlinx.coroutines.flow.StateFlow
 
 const val MAIN_ROUTE = "main"
@@ -22,6 +23,7 @@ fun NavGraphBuilder.main(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
+    onApplyShield: (AccountAddress) -> Unit
 ) {
     composable(
         route = MAIN_ROUTE,
@@ -41,7 +43,8 @@ fun NavGraphBuilder.main(
             showNPSSurvey = showNPSSurvey,
             onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
             onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
-            onNavigateToLinkConnector = onNavigateToLinkConnector
+            onNavigateToLinkConnector = onNavigateToLinkConnector,
+            onApplyShield = onApplyShield
         )
     }
 }
