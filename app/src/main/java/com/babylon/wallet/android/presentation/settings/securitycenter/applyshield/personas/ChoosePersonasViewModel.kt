@@ -31,7 +31,7 @@ class ChoosePersonasViewModel @Inject constructor(
         initPersonas()
     }
 
-    override fun initialState(): ChooseEntityUiState<Persona> = ChooseEntityUiState()
+    override fun initialState(): ChooseEntityUiState<Persona> = ChooseEntityUiState(isButtonEnabled = true)
 
     fun onContinueClick() {
         viewModelScope.launch {

@@ -43,6 +43,7 @@ class ShieldCreatedViewModel @Inject constructor(
 
                 _state.update { state ->
                     state.copy(
+                        isLoading = false,
                         shieldName = securityStructureOfFactorSourceIDs.metadata.displayName.value,
                         hasInsufficientXrd = hasInsufficientXrd
                     )
@@ -51,13 +52,14 @@ class ShieldCreatedViewModel @Inject constructor(
         }
     }
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(isLoading = true)
 
     fun onApplyClick() {
         viewModelScope.launch { sendEvent(Event.ApplyShield(args.securityStructureId)) }
     }
 
     data class State(
+        val isLoading: Boolean = false,
         val shieldName: String = "",
         val hasInsufficientXrd: Boolean = false
     ) : UiState {

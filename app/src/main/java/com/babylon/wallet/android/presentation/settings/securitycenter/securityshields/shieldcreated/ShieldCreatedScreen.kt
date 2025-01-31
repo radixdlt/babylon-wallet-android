@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -99,74 +100,78 @@ private fun ShieldCreatedContent(
         },
         containerColor = RadixTheme.colors.white
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = DSR.ic_shield_created),
-                contentDescription = null
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-            Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                text = "${state.shieldName} Created", // TODO crowdin
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-            Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = "Apply this Shield to Accounts and Personas. You can update it any time.", // TODO crowdin
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-            Row(
+        if (state.isLoading) {
+            FullscreenCircularProgressContent()
+        } else {
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                    .fillMaxWidth()
-                    .background(
-                        color = RadixTheme.colors.gray5,
-                        shape = RadixTheme.shapes.roundedRectMedium
-                    )
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    ),
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    painter = painterResource(id = DSR.ic_info_outline),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                Image(
+                    painter = painterResource(id = DSR.ic_shield_created),
+                    contentDescription = null
                 )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
                 Text(
-                    text = "To apply your Shield on the Radix Network, you’ll need to sign a transaction", // TODO crowdin
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                    text = "${state.shieldName} Created", // TODO crowdin
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
                 )
-            }
 
-            if (state.hasInsufficientXrd) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
-                PromptLabel(
+                Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                    text = "Not enough XRD to pay transaction. Get some XRD tokens first to apply Shields.", // TODO crowdin
+                    text = "Apply this Shield to Accounts and Personas. You can update it any time.", // TODO crowdin
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
                 )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                        .fillMaxWidth()
+                        .background(
+                            color = RadixTheme.colors.gray5,
+                            shape = RadixTheme.shapes.roundedRectMedium
+                        )
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingLarge,
+                            vertical = RadixTheme.dimensions.paddingDefault
+                        ),
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = DSR.ic_info_outline),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.gray1
+                    )
+
+                    Text(
+                        text = "To apply your Shield on the Radix Network, you’ll need to sign a transaction", // TODO crowdin
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+
+                if (state.hasInsufficientXrd) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                    PromptLabel(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+                        text = "Not enough XRD to pay transaction. Get some XRD tokens first to apply Shields.", // TODO crowdin
+                    )
+                }
             }
         }
     }
@@ -198,6 +203,9 @@ class ShieldCreatedPreviewProvider : PreviewParameterProvider<ShieldCreatedViewM
             ShieldCreatedViewModel.State(
                 shieldName = "My Shield 2",
                 hasInsufficientXrd = true
+            ),
+            ShieldCreatedViewModel.State(
+                isLoading = true
             )
         )
 }

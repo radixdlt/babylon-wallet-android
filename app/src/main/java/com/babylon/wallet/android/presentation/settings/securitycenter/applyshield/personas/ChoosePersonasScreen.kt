@@ -85,9 +85,9 @@ private fun ChoosePersonasContent(
                         color = RadixTheme.colors.gray5,
                         shape = RadixTheme.shapes.roundedRectMedium
                     )
-                    .padding(RadixTheme.dimensions.paddingDefault)
                     .clip(RadixTheme.shapes.roundedRectMedium)
-                    .clickable { onSelectPersona(persona.data) },
+                    .clickable { onSelectPersona(persona.data) }
+                    .padding(RadixTheme.dimensions.paddingDefault),
                 persona = persona.data,
                 checked = persona.selected,
                 isSingleChoice = false,

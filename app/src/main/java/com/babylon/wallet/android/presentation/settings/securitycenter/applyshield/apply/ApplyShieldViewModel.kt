@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,19 +34,22 @@ class ApplyShieldViewModel @Inject constructor(
     ) = viewModelScope.launch {
         _state.update { state -> state.copy(isLoading = true) }
 
-        sargonOsManager.callSafely(dispatcher) { applySecurityShieldWithIdToEntities(securityStructureId, entityAddresses) }
-            .onSuccess {
-                _state.update { state -> state.copy(isLoading = false) }
-                sendEvent(Event.ShieldApplied)
+        sargonOsManager.callSafely(dispatcher) {
+            makeInteractionForApplyingSecurityShield(securityStructureId, entityAddresses)
+        }.onSuccess { interaction ->
+            Timber.d("Interaction: $interaction")
+            // TODO prepare the batch transactions request and add it to the queue
+
+            _state.update { state -> state.copy(isLoading = false) }
+            sendEvent(Event.ShieldApplied)
+        }.onFailure { error ->
+            _state.update { state ->
+                state.copy(
+                    isLoading = false,
+                    message = UiMessage.ErrorMessage(error)
+                )
             }
-            .onFailure { error ->
-                _state.update { state ->
-                    state.copy(
-                        isLoading = false,
-                        message = UiMessage.ErrorMessage(error)
-                    )
-                }
-            }
+        }
     }
 
     fun onMessageShown() {
