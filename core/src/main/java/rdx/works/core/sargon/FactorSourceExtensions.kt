@@ -18,9 +18,7 @@ import com.radixdlt.sargon.LedgerHardwareWalletHint
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
-import com.radixdlt.sargon.SecurityQuestionsNotProductionReadyFactorSource
 import com.radixdlt.sargon.Timestamp
-import com.radixdlt.sargon.TrustedContactFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
@@ -139,8 +137,6 @@ fun LedgerHardwareWalletModel.displayName() = when (this) {
 // TODO move to sargon
 fun ArculusCardFactorSource.asGeneral() = FactorSource.ArculusCard(value = this)
 fun OffDeviceMnemonicFactorSource.asGeneral() = FactorSource.OffDeviceMnemonic(value = this)
-fun SecurityQuestionsNotProductionReadyFactorSource.asGeneral() = FactorSource.SecurityQuestions(value = this)
-fun TrustedContactFactorSource.asGeneral() = FactorSource.TrustedContact(value = this)
 
 @UsesSampleValues
 @Suppress("MagicNumber")

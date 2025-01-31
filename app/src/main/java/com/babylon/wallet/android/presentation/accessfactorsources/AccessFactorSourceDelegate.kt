@@ -219,7 +219,6 @@ class AccessFactorSourceDelegate(
             val id: FactorSourceId
             val kind: FactorSourceKind
                 get() = when (val id = id) {
-                    is FactorSourceId.Address -> id.value.kind
                     is FactorSourceId.Hash -> id.value.kind
                 }
 
