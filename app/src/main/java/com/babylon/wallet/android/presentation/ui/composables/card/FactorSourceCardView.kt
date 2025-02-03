@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.ui.composables.card
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -42,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -84,12 +87,16 @@ fun FactorSourceKindCardView(
 
 @Composable
 fun FactorSourceCardView(
-    item: FactorSourceCard,
     modifier: Modifier = Modifier,
+    item: FactorSourceCard,
+    isOutlined: Boolean = false,
+    castsShadow: Boolean = true,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
-        modifier = modifier
+        modifier = modifier,
+        castsShadow = castsShadow,
+        isOutlined = isOutlined
     ) {
         SimpleFactorCardView(
             iconRes = item.kind.iconRes(),
@@ -193,12 +200,26 @@ fun SimpleFactorCardView(
 @Composable
 private fun CardContainer(
     modifier: Modifier = Modifier,
+    castsShadow: Boolean = true,
+    isOutlined: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         modifier = modifier
-            .defaultCardShadow(elevation = 6.dp)
-            .clip(RadixTheme.shapes.roundedRectMedium)
+            .applyIf(
+                castsShadow,
+                Modifier
+                    .defaultCardShadow(elevation = 6.dp)
+                    .clip(RadixTheme.shapes.roundedRectMedium)
+            )
+            .applyIf(
+                isOutlined,
+                Modifier.border(
+                    width = 1.dp,
+                    color = RadixTheme.colors.gray4,
+                    shape = RadixTheme.shapes.roundedRectDefault
+                )
+            )
             .fillMaxWidth()
             .background(
                 color = RadixTheme.colors.white,

@@ -13,26 +13,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AddressOfAccountOrPersona
-import com.radixdlt.sargon.DappToWalletInteractionItems
-import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
-import com.radixdlt.sargon.DappToWalletInteractionTransactionItems
-import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.SecurityStructureMetadata
-import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.TxVersion
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.toList
 import com.radixdlt.sargon.os.SargonOsManager
-import com.radixdlt.sargon.transactionManifestSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,11 +87,10 @@ class ApplyShieldViewModel @Inject constructor(
                     _state.update { it.copy(isApplying = false) }
                     sendEvent(Event.Dismiss)
 
-
                     incomingRequestRepository.add(request)
-                }.onFailure {
+                }.onFailure { error ->
                     _state.update { it.copy(isApplying = false) }
-                    Timber.w(it)
+                    Timber.w(error)
                 }
             }
         }
@@ -119,9 +107,7 @@ class ApplyShieldViewModel @Inject constructor(
             get() = shields.isNotEmpty() && selected != null
     }
 
-
     sealed interface Event : OneOffEvent {
         data object Dismiss : Event
     }
-
 }
