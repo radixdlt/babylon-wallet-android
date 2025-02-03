@@ -17,12 +17,11 @@ data class ApplyShieldArgs(
     val address: AddressOfAccountOrPersona
 ) {
 
-    constructor(savedStateHandle: SavedStateHandle): this(
+    constructor(savedStateHandle: SavedStateHandle) : this(
         requireNotNull(savedStateHandle.get<String>(ARG_ADDRESS)).let {
             AddressOfAccountOrPersona.init(it)
         }
     )
-
 }
 
 fun NavController.applyShield(address: AddressOfAccountOrPersona) {
@@ -44,5 +43,4 @@ fun NavGraphBuilder.applyShieldDialog(
             onDismiss = onDismiss
         )
     }
-
 }

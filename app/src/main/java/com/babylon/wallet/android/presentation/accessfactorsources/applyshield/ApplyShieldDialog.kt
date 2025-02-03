@@ -99,20 +99,19 @@ private fun ApplyShieldContent(
                         )
                     },
                     bottomBar = {
-                       RadixBottomBar(
-                           enabled = state.isApplyEnabled,
-                           isLoading = state.isApplying,
-                           text = "Apply",
-                           onClick = onApply
-                       )
+                        RadixBottomBar(
+                            enabled = state.isApplyEnabled,
+                            isLoading = state.isApplying,
+                            text = "Apply",
+                            onClick = onApply
+                        )
                     },
                     containerColor = RadixTheme.colors.defaultBackground,
                     content = { padding ->
                         Column(modifier = Modifier.padding(padding)) {
-
                             state.shields.forEach { shield ->
                                 Column(
-                                    modifier = modifier
+                                    modifier = Modifier
                                         .padding(
                                             horizontal = RadixTheme.dimensions.paddingDefault,
                                             vertical = RadixTheme.dimensions.paddingSmall
@@ -130,7 +129,7 @@ private fun ApplyShieldContent(
                                     }
 
                                     Row(
-                                        modifier = modifier
+                                        modifier = Modifier
                                             .clickable {
                                                 if (!isSelected) {
                                                     onSelected(shield.id)
