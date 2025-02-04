@@ -1549,4 +1549,20 @@ Code: %s</string>
   <string name="authorization_createAccount_title">Creating Account</string>
   <string name="authorization_createPersona_title">Creating Persona</string>
   <string name="authorization_createEntity_message">Use your phone’s biometrics or PIN to confirm you want to do this.</string>
+  <string name="shieldWizardApplyShield_shieldCreated_title">%s Created</string>
+  <string name="shieldWizardApplyShield_shieldCreated_subtitle">Apply this Shield to Accounts and Personas. You can update it any time.</string>
+  <string name="shieldWizardApplyShield_shieldCreated_note">To apply your Shield on the Radix Network, you’ll need to sign a transaction</string>
+  <string name="shieldWizardApplyShield_shieldCreated_notEnoughXrd">Not enough XRD to pay transaction. Get some XRD tokens first to apply Shields.</string>
+  <string name="shieldWizardApplyShield_shieldCreated_applyButton">Apply to Accounts and Personas</string>
+  <string name="shieldWizardApplyShield_shieldCreated_skipButton">Skip For Now</string>
+  <string name="shieldWizardApplyShield_chooseAccounts_title">Choose Accounts</string>
+  <string name="shieldWizardApplyShield_chooseAccounts_subtitle">Choose the Accounts you want to apply this Shield to.</string>
+  <string name="shieldWizardApplyShield_choosePersonas_title">Choose Personas</string>
+  <string name="shieldWizardApplyShield_choosePersonas_subtitle">Choose the Personas you want to apply this Shield to.</string>
+  <string name="shieldWizardApplyShield_chooseEntities_selectAllButton">Select all</string>
+  <string name="shieldWizardApplyShield_chooseEntities_deselectAllButton">Deselect all</string>
+  <string name="shieldWizardApplyShield_chooseEntities_skipButton">Skip</string>
+  <string name="shieldWizardApplyShield_applyShield_title">Apply your Shield</string>
+  <string name="shieldWizardApplyShield_applyShield_subtitle">Now let’s save your Shield settings to your wallet and apply them on the Radix Network with a transaction.</string>
+  <string name="shieldWizardApplyShield_applyShield_saveButton">Save and Apply</string>
 </resources>
