@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.personas
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,18 +21,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChoosePersonasViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val chooseEntityDelegate: ChooseEntityDelegateImpl<Persona>
 ) : StateViewModel<ChooseEntityUiState<Persona>>(),
     ChooseEntityDelegate<Persona> by chooseEntityDelegate,
     OneOffEventHandler<ChooseEntityEvent> by OneOffEventHandlerImpl() {
 
+    private val args = ChoosePersonasArgs(savedStateHandle)
+
     init {
         chooseEntityDelegate(viewModelScope, _state)
         initPersonas()
     }
 
-    override fun initialState(): ChooseEntityUiState<Persona> = ChooseEntityUiState(isButtonEnabled = true)
+    override fun initialState(): ChooseEntityUiState<Persona> = ChooseEntityUiState(mustSelectAtLeastOne = args.mustSelectAtLeastOne)
 
     fun onContinueClick() {
         viewModelScope.launch {

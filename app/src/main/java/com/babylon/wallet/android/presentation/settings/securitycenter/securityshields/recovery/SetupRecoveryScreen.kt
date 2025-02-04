@@ -249,16 +249,16 @@ private fun SetupRecoveryContent(
                     onRemoveFactorClick = onRemoveConfirmRecoveryFactor
                 )
 
-                Text(
-                    modifier = Modifier
-                        .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                        .align(Alignment.CenterHorizontally),
-                    text = stringResource(id = R.string.shieldWizardRecovery_combination_label),
-                    style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray1
-                )
-
                 state.fallbackPeriod?.let { period ->
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                            .align(Alignment.CenterHorizontally),
+                        text = stringResource(id = R.string.shieldWizardRecovery_combination_label),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray1
+                    )
+
                     EmergencyFallbackView(
                         period = period,
                         onInfoClick = onInfoClick,
@@ -727,7 +727,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                 ),
                 status = SecurityShieldBuilderStatus.Weak(
                     reason = SecurityShieldBuilderRuleViolation.RecoveryAndConfirmationFactorsOverlap()
-                )
+                ),
+                fallbackPeriod = TimePeriod.sample()
             ),
             SetupRecoveryViewModel.State(
                 status = SecurityShieldBuilderStatus.Invalid(
@@ -737,7 +738,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         isRecoveryRoleFactorListEmpty = false,
                         isConfirmationRoleFactorListEmpty = false
                     )
-                )
+                ),
+                fallbackPeriod = TimePeriod.sample()
             ),
             SetupRecoveryViewModel.State(
                 status = SecurityShieldBuilderStatus.Invalid(
@@ -747,7 +749,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         isRecoveryRoleFactorListEmpty = true,
                         isConfirmationRoleFactorListEmpty = true
                     )
-                )
+                ),
+                fallbackPeriod = TimePeriod.sample()
             ),
             SetupRecoveryViewModel.State(
                 selectFallbackPeriod = SetupRecoveryViewModel.State.SelectFallbackPeriod(
@@ -755,10 +758,12 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                     currentUnit = TimePeriodUnit.DAYS,
                     values = TimePeriodUnit.DAYS.values.toPersistentList(),
                     units = TimePeriodUnit.entries.toPersistentList()
-                )
+                ),
+                fallbackPeriod = TimePeriod.sample()
             ),
             SetupRecoveryViewModel.State(
-                showUnsafeCombinationInfo = true
+                showUnsafeCombinationInfo = true,
+                fallbackPeriod = TimePeriod.sample()
             )
         )
 }

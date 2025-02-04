@@ -29,11 +29,13 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 @Composable
 fun ChooseEntityContent(
     modifier: Modifier = Modifier,
+    onSkipClick: (() -> Unit)? = null,
     title: String,
     subtitle: String,
     isButtonEnabled: Boolean,
     isSelectAllVisible: Boolean,
     selectedAll: Boolean,
+    hasSkipButton: Boolean,
     onDismiss: () -> Unit,
     onSelectAllToggleClick: () -> Unit,
     onContinueClick: () -> Unit,
@@ -52,7 +54,18 @@ fun ChooseEntityContent(
             RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = isButtonEnabled,
-                text = stringResource(R.string.common_continue)
+                text = stringResource(R.string.common_continue),
+                additionalBottomContent = if (hasSkipButton) {
+                    {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                        RadixTextButton(
+                            text = "Skip", // TODO crowdin
+                            onClick = { onSkipClick?.invoke() }
+                        )
+                    }
+                } else {
+                    null
+                }
             )
         },
         containerColor = RadixTheme.colors.white
@@ -126,6 +139,7 @@ private fun ChooseEntityContentPreview() {
             isButtonEnabled = false,
             isSelectAllVisible = true,
             selectedAll = false,
+            hasSkipButton = true,
             onDismiss = {},
             onContinueClick = {},
             onSelectAllToggleClick = {}

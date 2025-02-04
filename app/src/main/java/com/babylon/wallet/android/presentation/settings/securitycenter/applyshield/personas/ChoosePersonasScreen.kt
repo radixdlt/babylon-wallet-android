@@ -70,6 +70,7 @@ private fun ChoosePersonasContent(
         isButtonEnabled = state.isButtonEnabled,
         isSelectAllVisible = !state.isEmpty,
         selectedAll = state.selectedAll,
+        hasSkipButton = false,
         onContinueClick = onContinueClick,
         onDismiss = onDismiss,
         onSelectAllToggleClick = onSelectAllToggleClick

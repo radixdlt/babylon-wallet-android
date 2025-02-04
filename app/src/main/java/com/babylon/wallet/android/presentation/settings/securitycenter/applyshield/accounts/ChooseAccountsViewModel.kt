@@ -31,7 +31,7 @@ class ChooseAccountsViewModel @Inject constructor(
         initAccounts()
     }
 
-    override fun initialState(): ChooseEntityUiState<Account> = ChooseEntityUiState()
+    override fun initialState(): ChooseEntityUiState<Account> = ChooseEntityUiState(mustSelectAtLeastOne = true)
 
     fun onContinueClick() {
         viewModelScope.launch {
@@ -47,6 +47,16 @@ class ChooseAccountsViewModel @Inject constructor(
         viewModelScope.launch {
             val accounts = getProfileUseCase().activeAccountsOnCurrentNetwork
             _state.update { state -> state.copy(items = accounts.map { Selectable(it) }) }
+        }
+    }
+
+    fun onSkipClick() {
+        viewModelScope.launch {
+            sendEvent(
+                ChooseEntityEvent.EntitiesSelected(
+                    addresses = emptyList()
+                )
+            )
         }
     }
 }

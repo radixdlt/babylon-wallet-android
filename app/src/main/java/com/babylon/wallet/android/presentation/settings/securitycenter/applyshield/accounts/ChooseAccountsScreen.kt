@@ -42,7 +42,8 @@ fun ChooseAccountsScreen(
         onDismiss = onDismiss,
         onSelectAllToggleClick = viewModel::onSelectAllToggleClick,
         onSelectAccount = viewModel::onSelectItem,
-        onContinueClick = viewModel::onContinueClick
+        onContinueClick = viewModel::onContinueClick,
+        onSkipClick = viewModel::onSkipClick
     )
 
     LaunchedEffect(Unit) {
@@ -61,7 +62,8 @@ private fun ChooseAccountsContent(
     onDismiss: () -> Unit,
     onSelectAllToggleClick: () -> Unit,
     onSelectAccount: (Account) -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+    onSkipClick: () -> Unit
 ) {
     ChooseEntityContent(
         modifier = modifier.fillMaxSize(),
@@ -70,9 +72,11 @@ private fun ChooseAccountsContent(
         isButtonEnabled = state.isButtonEnabled,
         isSelectAllVisible = !state.isEmpty,
         selectedAll = state.selectedAll,
+        hasSkipButton = true,
         onContinueClick = onContinueClick,
         onDismiss = onDismiss,
-        onSelectAllToggleClick = onSelectAllToggleClick
+        onSelectAllToggleClick = onSelectAllToggleClick,
+        onSkipClick = onSkipClick
     ) {
         items(state.items) { account ->
             AccountSelectionCard(
@@ -108,7 +112,8 @@ private fun ChooseAccountsPreview(
             onDismiss = {},
             onSelectAllToggleClick = {},
             onSelectAccount = {},
-            onContinueClick = {}
+            onContinueClick = {},
+            onSkipClick = {}
         )
     }
 }

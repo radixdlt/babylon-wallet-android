@@ -36,7 +36,7 @@ fun NavGraphBuilder.chooseAccounts(
             onDismiss = { navController.popBackStack() },
             onSelected = { addresses ->
                 sharedVM.onAccountsSelected(addresses)
-                navController.choosePersonas()
+                navController.choosePersonas(mustSelectAtLeastOne = sharedVM.mustSelectAtLeastOnePersona)
             }
         )
     }
