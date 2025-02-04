@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Selectable
@@ -67,8 +69,8 @@ private fun ChooseAccountsContent(
 ) {
     ChooseEntityContent(
         modifier = modifier.fillMaxSize(),
-        title = "Choose Accounts", // TODO crowdin
-        subtitle = "Choose the Accounts you want to apply this Shield to.", // TODO crowdin
+        title = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_title),
+        subtitle = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_subtitle),
         isButtonEnabled = state.isButtonEnabled,
         isSelectAllVisible = !state.isEmpty,
         selectedAll = state.selectedAll,

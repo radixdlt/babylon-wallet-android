@@ -88,11 +88,11 @@ private fun ShieldCreatedContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onApplyClick,
-                text = "Apply to Accounts and Personas", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_applyButton),
                 enabled = state.isButtonEnabled,
                 additionalBottomContent = {
                     RadixTextButton(
-                        text = "Skip For Now", // TODO crowdin
+                        text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_skipButton),
                         onClick = onSkipClick
                     )
                 }
@@ -118,7 +118,7 @@ private fun ShieldCreatedContent(
 
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                    text = "${state.shieldName} Created", // TODO crowdin
+                    text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_title, state.shieldName),
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
@@ -128,7 +128,7 @@ private fun ShieldCreatedContent(
 
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                    text = "Apply this Shield to Accounts and Personas. You can update it any time.", // TODO crowdin
+                    text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_subtitle),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
@@ -158,7 +158,7 @@ private fun ShieldCreatedContent(
                     )
 
                     Text(
-                        text = "To apply your Shield on the Radix Network, you’ll need to sign a transaction", // TODO crowdin
+                        text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_note),
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -169,7 +169,7 @@ private fun ShieldCreatedContent(
 
                     PromptLabel(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                        text = "Not enough XRD to pay transaction. Get some XRD tokens first to apply Shields.", // TODO crowdin
+                        text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_notEnoughXrd)
                     )
                 }
             }

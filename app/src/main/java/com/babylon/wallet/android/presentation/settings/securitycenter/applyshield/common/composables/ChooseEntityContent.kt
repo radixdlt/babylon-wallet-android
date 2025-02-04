@@ -59,7 +59,7 @@ fun ChooseEntityContent(
                     {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         RadixTextButton(
-                            text = "Skip", // TODO crowdin
+                            text = stringResource(id = R.string.shieldWizardApplyShield_chooseEntities_skipButton),
                             onClick = { onSkipClick?.invoke() }
                         )
                     }
@@ -110,13 +110,15 @@ fun ChooseEntityContent(
 
                         RadixTextButton(
                             modifier = Modifier.align(Alignment.End),
-                            text = remember(selectedAll) {
-                                if (selectedAll) {
-                                    "Deselect All" // TODO crowdin
-                                } else {
-                                    "Select All" // TODO crowdin
+                            text = stringResource(
+                                id = remember(selectedAll) {
+                                    if (selectedAll) {
+                                        R.string.shieldWizardApplyShield_chooseEntities_deselectAllButton
+                                    } else {
+                                        R.string.shieldWizardApplyShield_chooseEntities_selectAllButton
+                                    }
                                 }
-                            },
+                            ),
                             onClick = onSelectAllToggleClick
                         )
                     }

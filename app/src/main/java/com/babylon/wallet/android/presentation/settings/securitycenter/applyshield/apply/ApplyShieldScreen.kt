@@ -93,7 +93,7 @@ private fun ApplyShieldContent(
         },
         bottomBar = {
             RadixBottomBar(
-                text = "Save and Apply", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardApplyShield_applyShield_saveButton),
                 isLoading = state.isLoading,
                 enabled = !state.isLoading,
                 onClick = onApplyClick
@@ -129,7 +129,7 @@ private fun ApplyShieldContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                text = "Apply your Shield", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardApplyShield_applyShield_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -139,7 +139,7 @@ private fun ApplyShieldContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = "Now let’s save your Shield settings to your wallet and apply them on the Radix Network with a transaction.", // TODO crowdin
+                text = stringResource(id = R.string.shieldWizardApplyShield_applyShield_subtitle),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
