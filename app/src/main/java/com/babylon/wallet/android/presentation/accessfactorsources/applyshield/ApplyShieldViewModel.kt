@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources.applyshield
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
@@ -69,11 +70,10 @@ class ApplyShieldViewModel @Inject constructor(
             withContext(defaultDispatcher) {
                 val networkId = getProfileUseCase().currentGateway.network.id
                 runCatching {
+                    val entityToSecurify = _state.value.address
                     val batchOfTransactions = sargonOsManager.sargonOs.makeInteractionForApplyingSecurityShield(
                         securityShieldId = shield.id,
-                        addresses = listOf(
-                            _state.value.address
-                        )
+                        addresses = listOf(entityToSecurify)
                     )
 
                     val transaction = batchOfTransactions.transactions.first()
@@ -82,7 +82,11 @@ class ApplyShieldViewModel @Inject constructor(
                         plainMessage = null,
                         networkId = networkId,
                         blobs = transaction.blobs.toList().map { it.bytes },
-                    ).prepareInternalTransactionRequest()
+                    ).prepareInternalTransactionRequest(
+                        transactionType = TransactionType.SecurifyEntity(
+                            entityAddress = entityToSecurify
+                        )
+                    )
                 }.onSuccess { request ->
                     _state.update { it.copy(isApplying = false) }
                     sendEvent(Event.Dismiss)
