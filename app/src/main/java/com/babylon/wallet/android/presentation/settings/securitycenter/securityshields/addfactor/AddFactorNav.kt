@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 
-const val ROUTE_ADD_FACTOR = "add_factor"
+private const val ROUTE_ADD_FACTOR = "add_factor"
 
 private const val ARG_MODE = "arg_mode"
 

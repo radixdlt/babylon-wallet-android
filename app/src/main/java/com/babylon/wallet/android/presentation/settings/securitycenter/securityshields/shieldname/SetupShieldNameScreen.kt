@@ -40,12 +40,13 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.radixdlt.sargon.SecurityStructureId
 
 @Composable
 fun SetupShieldNameScreen(
     viewModel: SetupShieldNameViewModel,
     onDismiss: () -> Unit,
-    onShieldCreated: () -> Unit
+    onShieldCreated: (SecurityStructureId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -60,7 +61,7 @@ fun SetupShieldNameScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                SetupShieldNameViewModel.Event.ShieldCreated -> onShieldCreated()
+                is SetupShieldNameViewModel.Event.ShieldCreated -> onShieldCreated(event.id)
             }
         }
     }

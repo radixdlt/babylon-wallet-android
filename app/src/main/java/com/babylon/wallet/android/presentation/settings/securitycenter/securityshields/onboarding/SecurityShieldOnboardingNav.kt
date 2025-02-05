@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactors
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
 
-const val ROUTE_SECURITY_SHIELD_ONBOARDING = "security_shield_onboarding"
+private const val ROUTE_SECURITY_SHIELD_ONBOARDING = "security_shield_onboarding"
 
 fun NavController.securityShieldOnboarding() {
     navigate(ROUTE_SECURITY_SHIELD_ONBOARDING)

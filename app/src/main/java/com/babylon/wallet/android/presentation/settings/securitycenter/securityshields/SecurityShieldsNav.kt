@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.applyShieldNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addFactor
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboarding
@@ -16,6 +17,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.setupRecoveryScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldcreated.shieldCreated
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldname.setupShieldName
 
 const val ROUTE_SECURITY_SHIELDS = "security_shields"
@@ -45,6 +47,10 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         setupRecoveryScreen(navController)
 
         setupShieldName(navController)
+
+        shieldCreated(navController)
+
+        applyShieldNavGraph(navController)
     }
 }
 

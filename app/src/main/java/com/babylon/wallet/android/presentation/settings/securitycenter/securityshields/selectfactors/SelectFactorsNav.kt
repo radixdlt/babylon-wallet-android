@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 
-const val ROUTE_SELECT_FACTORS = "select_factors"
+private const val ROUTE_SELECT_FACTORS = "select_factors"
 
 fun NavController.selectFactors() {
     navigate(ROUTE_SELECT_FACTORS)

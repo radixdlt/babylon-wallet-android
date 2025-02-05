@@ -8,7 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
 
-const val ROUTE_FACTORS_READY = "factors_ready"
+private const val ROUTE_FACTORS_READY = "factors_ready"
 
 fun NavController.factorsReady() {
     navigate(ROUTE_FACTORS_READY)
