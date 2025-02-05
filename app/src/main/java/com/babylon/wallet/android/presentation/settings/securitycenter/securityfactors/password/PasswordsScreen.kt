@@ -93,7 +93,7 @@ private fun PasswordsContent(
                 factorSources = passwordFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_passwordDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_passwordAdd,
-                glossaryItem = GlossaryItem.passwords,
+                factorSourceKind = FactorSourceKind.PASSWORD,
                 onFactorSourceClick = onPasswordFactorSourceClick,
                 onAddFactorSourceClick = onAddPasswordClick,
                 onInfoClick = onInfoClick

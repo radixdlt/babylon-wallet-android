@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.addFactor
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
@@ -106,7 +107,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         biometricsPin(
             onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddBiometricPin = { }, // TODO next task
+            onNavigateToAddBiometricPin = { navController.addFactor(FactorSourceKind.DEVICE) },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )
@@ -156,5 +157,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
             }
         )
         securityShieldsNavGraph(navController)
+        addFactor(navController)
     }
 }

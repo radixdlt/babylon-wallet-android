@@ -93,7 +93,7 @@ private fun OffDeviceMnemonicsContent(
                 factorSources = offDeviceMnemonicFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
-                glossaryItem = GlossaryItem.mnemonics,
+                factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 onFactorSourceClick = onOffDeviceMnemonicFactorSourceClick,
                 onAddFactorSourceClick = onAddOffDeviceMnemonicClick,
                 onInfoClick = onInfoClick

@@ -1,0 +1,45 @@
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptionsBuilder
+import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.biometricspin.biometricsPinSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro.ROUTE_ADD_FACTOR_INTRO
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro.addFactorIntro
+import com.radixdlt.sargon.FactorSourceKind
+
+private const val DESTINATION_ADD_FACTOR_GRAPH = "add_factor_graph"
+private const val ARG_FACTOR_SOURCE_KIND = "arg_factor_source_kind"
+
+const val ROUTE_ADD_FACTOR_GRAPH = "$DESTINATION_ADD_FACTOR_GRAPH/{$ARG_FACTOR_SOURCE_KIND}"
+
+internal class AddFactorArgs(
+    val kind: FactorSourceKind
+) {
+
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        kind = FactorSourceKind.entries[requireNotNull(savedStateHandle.get<Int>(ARG_FACTOR_SOURCE_KIND))]
+    )
+}
+
+fun NavController.addFactor(
+    kind: FactorSourceKind,
+    navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}
+) {
+    navigate("$DESTINATION_ADD_FACTOR_GRAPH/$kind", navOptionsBuilder)
+}
+
+fun NavGraphBuilder.addFactor(
+    navController: NavController
+) {
+    navigation(
+        startDestination = ROUTE_ADD_FACTOR_INTRO,
+        route = ROUTE_ADD_FACTOR_GRAPH
+    ) {
+        addFactorIntro(navController)
+
+        biometricsPinSeedPhrase(navController)
+    }
+}

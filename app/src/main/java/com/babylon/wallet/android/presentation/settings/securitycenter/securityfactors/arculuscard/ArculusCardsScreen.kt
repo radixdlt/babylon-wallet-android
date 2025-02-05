@@ -93,7 +93,7 @@ private fun ArculusCardsContent(
                 factorSources = arculusFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_arculusCardDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_arculusCardAdd,
-                glossaryItem = GlossaryItem.arculus,
+                factorSourceKind = FactorSourceKind.ARCULUS_CARD,
                 onFactorSourceClick = onArculusFactorSourceClick,
                 onAddFactorSourceClick = onAddArculusCardClick,
                 onInfoClick = onInfoClick

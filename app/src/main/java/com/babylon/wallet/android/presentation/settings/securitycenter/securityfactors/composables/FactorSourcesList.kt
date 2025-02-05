@@ -23,6 +23,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoButtonTitle
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoGlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
@@ -33,11 +35,11 @@ import kotlinx.collections.immutable.PersistentList
 @Composable
 fun FactorSourcesList(
     modifier: Modifier = Modifier,
+    factorSourceKind: FactorSourceKind,
     mainFactorSource: FactorSourceCard?,
     factorSources: PersistentList<FactorSourceCard>,
     @StringRes factorSourceDescriptionText: Int,
     @StringRes addFactorSourceButtonTitle: Int? = null,
-    glossaryItem: GlossaryItem,
     addFactorSourceButtonContent: @Composable (() -> Unit)? = null,
     onFactorSourceClick: (FactorSourceId) -> Unit,
     onAddFactorSourceClick: (() -> Unit)? = null,
@@ -72,7 +74,11 @@ fun FactorSourcesList(
                             style = RadixTheme.typography.body1HighImportance,
                             color = RadixTheme.colors.gray2
                         )
-                        Spacer(Modifier.weight(1f).fillMaxHeight())
+                        Spacer(
+                            Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        )
                         RadixTextButton(
                             text = stringResource(R.string.factorSources_list_change),
                             onClick = onChangeMainFactorSourceClick
@@ -138,17 +144,8 @@ fun FactorSourcesList(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingLarge
                     ),
-                text = when (glossaryItem) {
-                    GlossaryItem.biometricspin -> stringResource(R.string.infoLink_title_biometricspin)
-                    GlossaryItem.arculus -> stringResource(R.string.infoLink_title_arculus)
-                    GlossaryItem.ledgernano -> stringResource(R.string.infoLink_title_ledgernano)
-                    GlossaryItem.passwords -> stringResource(R.string.infoLink_title_passwords)
-                    GlossaryItem.mnemonics -> stringResource(R.string.infoLink_title_passphrases)
-                    else -> stringResource(R.string.empty)
-                },
-                onClick = {
-                    onInfoClick(glossaryItem)
-                }
+                text = factorSourceKind.infoButtonTitle(),
+                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
             )
         }
     }
