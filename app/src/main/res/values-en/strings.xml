@@ -1075,13 +1075,12 @@ Code: %s</string>
   <string name="survey_reason_fieldHint">Let us know...</string>
   <string name="survey_submitButton">Submit Feedback - Thanks!</string>
   <string name="factorSourceActions_signature_title">Signature Request</string>
-  <string name="factorSourceActions_createAccount_title">Creating Account</string>
-  <string name="factorSourceActions_createPersona_title">Creating Persona</string>
   <string name="factorSourceActions_deriveAccounts_title">Deriving Accounts</string>
   <string name="factorSourceActions_proveOwnership_title">Proving Ownership</string>
   <string name="factorSourceActions_encryptMessage_title">Encrypting Message</string>
   <string name="factorSourceActions_updatingFactorConfig_title">Updating Factor Config</string>
   <string name="factorSourceActions_createKey_title">Creating Key</string>
+  <string name="factorSourceActions_spotCheck_title">Check Factor</string>
   <string name="factorSourceActions_device_deriveAccountsMessage">Authenticate to your phone to sign.</string>
   <string name="factorSourceActions_device_signMessage">Use your phone’s biometrics or PIN to sign</string>
   <string name="factorSourceActions_device_message">Use your phone’s biometrics or PIN</string>
@@ -1096,6 +1095,7 @@ Code: %s</string>
   <string name="factorSourceActions_arculus_deriveKeysMessage">Tap and hold this **Arculus Card** to your phone. **This may take up to a minute.**</string>
   <string name="factorSourceActions_password_signMessage">Enter this **password** to sign</string>
   <string name="factorSourceActions_password_message">Enter this **password**</string>
+  <string name="factorSourceActions_password_heading">Password</string>
   <string name="factorSourceActions_password_incorrect">Incorrect password</string>
   <string name="factorSourceActions_offDeviceMnemonic_signMessage">Enter this **mnemonic** to sign</string>
   <string name="factorSourceActions_offDeviceMnemonic_message">Enter this **mnemonic**</string>
