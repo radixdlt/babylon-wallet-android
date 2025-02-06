@@ -1075,13 +1075,12 @@ Code: %s</string>
   <string name="survey_reason_fieldHint">Let us know...</string>
   <string name="survey_submitButton">Submit Feedback - Thanks!</string>
   <string name="factorSourceActions_signature_title">Signature Request</string>
-  <string name="factorSourceActions_createAccount_title">Creating Account</string>
-  <string name="factorSourceActions_createPersona_title">Creating Persona</string>
   <string name="factorSourceActions_deriveAccounts_title">Deriving Accounts</string>
   <string name="factorSourceActions_proveOwnership_title">Proving Ownership</string>
   <string name="factorSourceActions_encryptMessage_title">Encrypting Message</string>
   <string name="factorSourceActions_updatingFactorConfig_title">Updating Factor Config</string>
   <string name="factorSourceActions_createKey_title">Creating Key</string>
+  <string name="factorSourceActions_spotCheck_title">Check Factor</string>
   <string name="factorSourceActions_device_deriveAccountsMessage">Authenticate to your phone to sign.</string>
   <string name="factorSourceActions_device_signMessage">Use your phone’s biometrics or PIN to sign</string>
   <string name="factorSourceActions_device_message">Use your phone’s biometrics or PIN</string>
@@ -1096,6 +1095,7 @@ Code: %s</string>
   <string name="factorSourceActions_arculus_deriveKeysMessage">Tap and hold this **Arculus Card** to your phone. **This may take up to a minute.**</string>
   <string name="factorSourceActions_password_signMessage">Enter this **password** to sign</string>
   <string name="factorSourceActions_password_message">Enter this **password**</string>
+  <string name="factorSourceActions_password_heading">Password</string>
   <string name="factorSourceActions_password_incorrect">Incorrect password</string>
   <string name="factorSourceActions_offDeviceMnemonic_signMessage">Enter this **mnemonic** to sign</string>
   <string name="factorSourceActions_offDeviceMnemonic_message">Enter this **mnemonic**</string>
@@ -1565,4 +1565,18 @@ Code: %s</string>
   <string name="shieldWizardApplyShield_applyShield_title">Apply your Shield</string>
   <string name="shieldWizardApplyShield_applyShield_subtitle">Now let’s save your Shield settings to your wallet and apply them on the Radix Network with a transaction.</string>
   <string name="shieldWizardApplyShield_applyShield_saveButton">Save and Apply</string>
+  <string name="securityShields_title">Security Shields</string>
+  <string name="securityShields_default">Default Shield</string>
+  <string name="securityShields_change">Change</string>
+  <string name="securityShields_others">Others</string>
+  <string name="securityShields_status_applied">Applied and working</string>
+  <string name="securityShields_status_actionRequired">Action required</string>
+  <string name="securityShields_assigned_title">Assigned to:</string>
+  <string name="securityShields_assigned_accountSingular">1 Account</string>
+  <string name="securityShields_assigned_accountPlural">%d Accounts</string>
+  <string name="securityShields_assigned_personaSingular">1 Persona</string>
+  <string name="securityShields_assigned_personaPlural">%d Personas</string>
+  <string name="securityShields_changeMain_title">Change Default Shield</string>
+  <string name="securityShields_changeMain_subtitle">Choose which Security Shield will be pre-selected when you want to use one for an Account or Persona.</string>
+  <string name="securityShields_createShieldButton">Create New Security Shield</string>
 </resources>
