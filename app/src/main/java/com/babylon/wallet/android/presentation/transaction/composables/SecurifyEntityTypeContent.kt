@@ -1,8 +1,10 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +17,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -36,8 +37,11 @@ import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceC
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.ConfirmationRoleWithFactorSources
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PrimaryRoleWithFactorSources
+import com.radixdlt.sargon.RecoveryRoleWithFactorSources
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.TimePeriod
@@ -46,8 +50,6 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSampleOther
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun SecurifyEntityTypeContent(
@@ -82,7 +84,8 @@ fun SecurifyEntityTypeContent(
                 )
 
                 is ProfileEntity.PersonaEntity -> PersonaCardHeader(
-                    persona = entity.persona
+                    persona = entity.persona,
+                    containerColor = RadixTheme.colors.white
                 )
             }
 
@@ -101,86 +104,34 @@ fun SecurifyEntityTypeContent(
 
                 HorizontalDivider(color = RadixTheme.colors.gray3)
 
-                with(preview.provisionalConfig.matrixOfFactors.primaryRole) {
-                    RoleView(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        title = stringResource(R.string.transactionReview_updateShield_regularAccessTitle),
-                        message = stringResource(R.string.transactionReview_updateShield_regularAccessMessage),
-                        threshold = threshold,
-                        thresholdFactors = remember(thresholdFactors) { thresholdFactors.toImmutableList() },
-                        overrideFactors = remember(overrideFactors) { overrideFactors.toImmutableList() }
-                    )
-                }
+                PrimaryView(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    primary = preview.provisionalConfig.matrixOfFactors.primaryRole
+                )
 
                 HorizontalDivider(color = RadixTheme.colors.gray3)
 
-                Text(
+                ProveOwnershipView(
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingSemiLarge
+                    ),
+                    authenticationSigningFactor = preview.provisionalConfig.authenticationSigningFactor
+                )
+
+                HorizontalDivider(color = RadixTheme.colors.gray3)
+
+                RecoveryAndConfirmationView(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(top = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(R.string.transactionReview_updateShield_startConfirmTitle),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                        .padding(
+                            top = RadixTheme.dimensions.paddingSemiLarge,
+                            bottom = RadixTheme.dimensions.paddingXXXLarge
+                        ),
+                    recovery = preview.provisionalConfig.matrixOfFactors.recoveryRole,
+                    confirmation = preview.provisionalConfig.matrixOfFactors.confirmationRole,
+                    confirmationDelay = preview.provisionalConfig.matrixOfFactors.timeUntilDelayedConfirmationIsCallable
                 )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
-                Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(R.string.transactionReview_updateShield_startConfirmMessage),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray3
-                )
-
-                with(preview.provisionalConfig.matrixOfFactors.recoveryRole) {
-                    RoleView(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        title = stringResource(R.string.transactionReview_updateShield_startRecoveryTitle),
-                        message = null,
-                        threshold = threshold,
-                        thresholdFactors = remember(thresholdFactors) { thresholdFactors.toImmutableList() },
-                        overrideFactors = remember(overrideFactors) { overrideFactors.toImmutableList() }
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray3
-                )
-
-                with(preview.provisionalConfig.matrixOfFactors.confirmationRole) {
-                    RoleView(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        title = stringResource(R.string.transactionReview_updateShield_confirmRecoveryTitle),
-                        message = null,
-                        threshold = threshold,
-                        thresholdFactors = remember(thresholdFactors) { thresholdFactors.toImmutableList() },
-                        overrideFactors = remember(overrideFactors) { overrideFactors.toImmutableList() }
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray3
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                EmergencyFallback(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault
-                    ),
-                    delay = preview.provisionalConfig.matrixOfFactors.timeUntilDelayedConfirmationIsCallable
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
         }
     }
@@ -200,38 +151,58 @@ private fun ShieldConfigTitle(
 }
 
 @Composable
-private fun RoleView(
+private fun PrimaryView(
     modifier: Modifier = Modifier,
-    title: String,
-    message: String?,
-    threshold: Threshold,
-    thresholdFactors: ImmutableList<FactorSource>,
-    overrideFactors: ImmutableList<FactorSource>
+    primary: PrimaryRoleWithFactorSources
 ) {
     Column(modifier = modifier) {
         Text(
-            text = title,
+            text = stringResource(R.string.transactionReview_updateShield_regularAccessTitle),
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
-        message?.let {
-            Text(
-                text = it,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+        Text(
+            text = stringResource(R.string.transactionReview_updateShield_regularAccessMessage),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray2
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        Text(
+            text = stringResource(
+                R.string.transactionReview_updateShield_primaryThersholdMessage,
+                primary.threshold.display()
+            ).formattedSpans(
+                SpanStyle(fontWeight = FontWeight.Bold)
+            ),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        primary.thresholdFactors.forEachIndexed { index, factorSource ->
+            FactorSourceCardView(
+                item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
+                castsShadow = false,
+                isOutlined = true
             )
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            if (index != primary.thresholdFactors.lastIndex) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            }
         }
 
-        if (thresholdFactors.isNotEmpty()) {
+        if (primary.overrideFactors.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
             Text(
                 text = stringResource(
-                    R.string.transactionReview_updateShield_threshold,
-                    threshold.display()
+                    R.string.transactionReview_updateShield_primaryOverrideMessage,
                 ).formattedSpans(
                     SpanStyle(fontWeight = FontWeight.Bold)
                 ),
@@ -241,54 +212,15 @@ private fun RoleView(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            thresholdFactors.forEachIndexed { index, factorSource ->
+            primary.overrideFactors.forEachIndexed { index, factorSource ->
                 FactorSourceCardView(
                     item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
                     castsShadow = false,
                     isOutlined = true
                 )
 
-                if (index != thresholdFactors.lastIndex) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                    HorizontalDivider(color = RadixTheme.colors.gray3)
-
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-            }
-        }
-
-        if (overrideFactors.isNotEmpty()) {
-            if (thresholdFactors.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
-
-            Text(
-                text = stringResource(
-                    R.string.transactionReview_updateShield_threshold,
-                    "ANY"
-                ).formattedSpans(
-                    SpanStyle(fontWeight = FontWeight.Bold)
-                ),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-            overrideFactors.forEachIndexed { index, factorSource ->
-                FactorSourceCardView(
-                    item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
-                    castsShadow = false,
-                    isOutlined = true
-                )
-
-                if (index != overrideFactors.lastIndex) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                    HorizontalDivider(color = RadixTheme.colors.gray3)
-
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                if (index != primary.overrideFactors.lastIndex) {
+                    OrView()
                 }
             }
         }
@@ -296,7 +228,160 @@ private fun RoleView(
 }
 
 @Composable
-private fun EmergencyFallback(
+private fun ProveOwnershipView(
+    modifier: Modifier,
+    authenticationSigningFactor: FactorSource
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = stringResource(R.string.transactionReview_updateShield_authSigningTitle),
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        Text(
+            text = stringResource(R.string.transactionReview_updateShield_authSigningMessage),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray2
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        Text(
+            text = stringResource(R.string.transactionReview_updateShield_authSigningThreshold),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        FactorSourceCardView(
+            item = authenticationSigningFactor.toFactorSourceCard(includeLastUsedOn = false),
+            castsShadow = false,
+            isOutlined = true
+        )
+    }
+}
+
+@Composable
+private fun RecoveryAndConfirmationView(
+    modifier: Modifier = Modifier,
+    recovery: RecoveryRoleWithFactorSources,
+    confirmation: ConfirmationRoleWithFactorSources,
+    confirmationDelay: TimePeriod
+) {
+    Column(modifier = modifier) {
+        Text(
+            modifier = Modifier,
+            text = stringResource(R.string.transactionReview_updateShield_startConfirmTitle),
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        Text(
+            text = stringResource(R.string.transactionReview_updateShield_startConfirmMessage),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray2
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        HorizontalDivider(
+            color = RadixTheme.colors.gray3
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        Text(
+            modifier = Modifier,
+            text = stringResource(R.string.transactionReview_updateShield_startRecoveryTitle),
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        Text(
+            text = stringResource(
+                R.string.transactionReview_updateShield_nonPrimaryOverrideMessage
+            ).formattedSpans(
+                SpanStyle(fontWeight = FontWeight.Bold)
+            ),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        recovery.overrideFactors.forEachIndexed { index, factorSource ->
+            FactorSourceCardView(
+                item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
+                castsShadow = false,
+                isOutlined = true
+            )
+
+            if (index != recovery.overrideFactors.lastIndex) {
+                OrView()
+            }
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        HorizontalDivider(color = RadixTheme.colors.gray3)
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        Text(
+            modifier = Modifier,
+            text = stringResource(R.string.transactionReview_updateShield_confirmRecoveryTitle),
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        Text(
+            text = stringResource(
+                R.string.transactionReview_updateShield_nonPrimaryOverrideMessage
+            ).formattedSpans(
+                SpanStyle(fontWeight = FontWeight.Bold)
+            ),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        confirmation.overrideFactors.forEachIndexed { index, factorSource ->
+            FactorSourceCardView(
+                item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
+                castsShadow = false,
+                isOutlined = true
+            )
+
+            if (index != confirmation.overrideFactors.lastIndex) {
+                OrView()
+            }
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        HorizontalDivider(color = RadixTheme.colors.gray3)
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        ConfirmationDelay(
+            delay = confirmationDelay
+        )
+    }
+}
+
+@Composable
+private fun ConfirmationDelay(
     modifier: Modifier = Modifier,
     delay: TimePeriod
 ) {
@@ -310,7 +395,7 @@ private fun EmergencyFallback(
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         Text(
-            text = stringResource(R.string.transactionReview_updateShield_fallbackMessage),
+            text = stringResource(R.string.transactionReview_updateShield_confirmationDelayMessage),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
@@ -320,6 +405,11 @@ private fun EmergencyFallback(
                 .fillMaxWidth()
                 .background(
                     color = RadixTheme.colors.white,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
+                .border(
+                    width = 1.dp,
+                    color = RadixTheme.colors.gray4,
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
                 .padding(
@@ -347,6 +437,20 @@ private fun EmergencyFallback(
 private fun Threshold.display(): String = when (this) {
     is Threshold.All -> "ALL"
     is Threshold.Specific -> "${v1.toInt()}"
+}
+
+@Composable
+private fun ColumnScope.OrView() {
+    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+    Text(
+        modifier = Modifier.align(Alignment.CenterHorizontally),
+        text = stringResource(R.string.transactionReview_updateShield_combinationLabel),
+        style = RadixTheme.typography.body2Regular,
+        color = RadixTheme.colors.gray2
+    )
+
+    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 }
 
 @UsesSampleValues

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -251,12 +253,18 @@ fun AccountCardHeader(
 fun PersonaCardHeader(
     modifier: Modifier = Modifier,
     persona: Persona,
+    containerColor: Color = RadixTheme.colors.gray5
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.gray5,
+                color = containerColor,
+                shape = RadixTheme.shapes.roundedRectTopMedium
+            )
+            .border(
+                width = 1.dp,
+                color = RadixTheme.colors.gray4,
                 shape = RadixTheme.shapes.roundedRectTopMedium
             )
             .padding(
