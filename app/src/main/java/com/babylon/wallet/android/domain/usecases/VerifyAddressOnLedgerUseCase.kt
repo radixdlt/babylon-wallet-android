@@ -4,10 +4,11 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.unsecuredLedgerControlledFactorInstance
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
@@ -26,8 +27,9 @@ class VerifyAddressOnLedgerUseCase @Inject constructor(
             withAddress = address
         ) ?: return Result.failure(Exception("No account with address: $address"))
 
-        val ledgerControlledFactorInstance = account.unsecuredLedgerControlledFactorInstance
-            ?: return Result.failure(Exception("Account $address is not a Ledger backed account"))
+        val ledgerControlledFactorInstance = account.unsecuredControllingFactorInstance?.takeIf {
+            it.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+        } ?: return Result.failure(Exception("Account $address is not a Ledger backed account"))
 
         val ledgerFactorSource = profile.factorSourceById(
             id = ledgerControlledFactorInstance.factorSourceId.asGeneral()

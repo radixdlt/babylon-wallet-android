@@ -49,6 +49,7 @@ import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.sign
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.HdSignature
 import com.radixdlt.sargon.os.signing.HdSignatureInput
@@ -64,7 +65,6 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.sargon.transactionSigningFactorInstance
 
 class WalletInteractorTest {
 
@@ -144,7 +144,7 @@ class WalletInteractorTest {
         val instances = accounts.map {
             OwnedFactorInstance(
                 owner = it.asProfileEntity().address,
-                factorInstance = it.securityState.transactionSigningFactorInstance
+                factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
             )
 
         }
@@ -241,7 +241,7 @@ class WalletInteractorTest {
         val instances = accounts.map {
             OwnedFactorInstance(
                 owner = it.asProfileEntity().address,
-                factorInstance = it.securityState.transactionSigningFactorInstance
+                factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
             )
 
         }
@@ -338,7 +338,7 @@ class WalletInteractorTest {
         val instances = accounts.map {
             OwnedFactorInstance(
                 owner = it.asProfileEntity().address,
-                factorInstance = it.securityState.transactionSigningFactorInstance
+                factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
             )
 
         }

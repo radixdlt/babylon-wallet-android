@@ -40,6 +40,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.initFromLocal
 import com.radixdlt.sargon.extensions.phrase
 import com.radixdlt.sargon.extensions.sign
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.newDeviceFactorSourceBabylon
 import com.radixdlt.sargon.newMnemonicSampleDevice
 import com.radixdlt.sargon.newMnemonicSampleDeviceOther
@@ -69,7 +70,6 @@ import org.junit.Test
 import rdx.works.core.sargon.allAccountsOnCurrentNetwork
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.initBabylon
-import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 
 
@@ -163,7 +163,7 @@ class GetSignaturesViewModelTest {
     private val ownedFactorInstances = sampleProfile.allAccountsOnCurrentNetwork.map {
         OwnedFactorInstance(
             owner = AddressOfAccountOrPersona.Account(it.address),
-            factorInstance = it.securityState.transactionSigningFactorInstance
+            factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
         )
     }
     private val deviceFactorInstances = ownedFactorInstances.filter { it.factorInstance.factorSourceId.kind == FactorSourceKind.DEVICE }

@@ -32,7 +32,6 @@ import rdx.works.core.sargon.active
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.isHidden
-import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
@@ -74,7 +73,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     ProfileToCheck.Specific(it)
                 }
             } ?: ProfileToCheck.Current
-
 
             val recoverableFactorSources = profileToCheck.recoverableFactorSources()
                 // we want main factor source to go first
@@ -123,7 +121,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
             )
         }
     }
-
 
     fun onBackClick() {
         if (state.value.screenType != State.ScreenType.Entities) {

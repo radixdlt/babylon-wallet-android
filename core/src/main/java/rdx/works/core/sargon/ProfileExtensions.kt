@@ -40,6 +40,7 @@ import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isLegacyOlympia
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
@@ -121,7 +122,9 @@ private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, Li
     get() {
         val activeAccountsOnCurrentNetwork = activeAccountsOnCurrentNetwork
         return deviceFactorSources.associateWith { deviceFactorSource ->
-            activeAccountsOnCurrentNetwork.filter { it.factorSourceId == deviceFactorSource.id }
+            activeAccountsOnCurrentNetwork.filter {
+                it.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral() == deviceFactorSource.id
+            }
         }
     }
 

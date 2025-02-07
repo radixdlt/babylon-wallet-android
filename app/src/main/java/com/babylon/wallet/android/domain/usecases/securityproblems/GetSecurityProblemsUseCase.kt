@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.BackupState
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isNotHidden
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
@@ -70,14 +69,14 @@ class GetSecurityProblemsUseCase @Inject constructor(
             .filter { entityWithSecurityPrompt ->
                 entityWithSecurityPrompt.prompts.contains(SecurityPromptType.WRITE_DOWN_SEED_PHRASE)
             }
-        val factorSourceIdsNeedBackup = entitiesNeedBackup.map { entityWithSecurityPrompt ->
-            entityWithSecurityPrompt.entity.securityState.factorSourceId
+        val factorSourceIdsNeedBackup = entitiesNeedBackup.mapNotNull { entityWithSecurityPrompt ->
+            entityWithSecurityPrompt.entity.unsecuredControllingFactorInstance?.factorSourceId
         }.toSet()
         // not hidden and hidden accounts that need to write down seed phrase
         val (activeAccountAddressesNeedBackup, hiddenAccountAddressesNeedBackup) = entitiesNeedBackup
             .filter { entityWithSecurityPrompt ->
                 entityWithSecurityPrompt.entity is ProfileEntity.AccountEntity &&
-                    factorSourceIdsNeedBackup.contains(entityWithSecurityPrompt.entity.securityState.factorSourceId)
+                    entityWithSecurityPrompt.entity.unsecuredControllingFactorInstance?.factorSourceId in factorSourceIdsNeedBackup
             }
             .map { entityWithSecurityPrompt -> entityWithSecurityPrompt.entity as ProfileEntity.AccountEntity }
             .partition { accountEntity -> accountEntity.isNotHidden() }
@@ -88,7 +87,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
         val (activePersonaAddressesNeedBackup, hiddenPersonaAddressesNeedBackup) = entitiesNeedBackup
             .filter { entityWithSecurityPrompt ->
                 entityWithSecurityPrompt.entity is ProfileEntity.PersonaEntity &&
-                    factorSourceIdsNeedBackup.contains(entityWithSecurityPrompt.entity.securityState.factorSourceId)
+                    entityWithSecurityPrompt.entity.unsecuredControllingFactorInstance?.factorSourceId in factorSourceIdsNeedBackup
             }
             .map { entityWithSecurityPrompt -> entityWithSecurityPrompt.entity as ProfileEntity.PersonaEntity }
             .partition { personaEntity -> personaEntity.isNotHidden() }

@@ -14,9 +14,6 @@ import com.radixdlt.sargon.extensions.init
 
 fun Collection<Persona>.active(): List<Persona> = filterNot { it.isHidden || it.isDeleted }
 
-val Persona.factorSourceId: FactorSourceId
-    get() = securityState.factorSourceId
-
 val Persona.isHidden: Boolean
     get() = EntityFlag.HIDDEN_BY_USER in flags
 
