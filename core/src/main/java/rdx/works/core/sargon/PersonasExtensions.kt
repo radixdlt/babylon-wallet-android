@@ -17,9 +17,6 @@ fun Collection<Persona>.active(): List<Persona> = filterNot { it.isHidden || it.
 val Persona.factorSourceId: FactorSourceId
     get() = securityState.factorSourceId
 
-val Persona.usesEd25519: Boolean
-    get() = securityState.usesEd25519
-
 val Persona.isHidden: Boolean
     get() = EntityFlag.HIDDEN_BY_USER in flags
 

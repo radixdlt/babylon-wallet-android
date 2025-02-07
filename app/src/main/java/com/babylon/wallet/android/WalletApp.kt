@@ -2,7 +2,6 @@ package com.babylon.wallet.android
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -42,7 +41,6 @@ import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.transaction.transactionReview
-import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
@@ -163,20 +161,6 @@ fun WalletApp(
                     Text(text = stringResource(id = R.string.homePage_secureFolder_warning))
                 },
                 dismissText = null
-            )
-        }
-        val olympiaErrorState = state.olympiaErrorState
-        if (olympiaErrorState != null) {
-            BackHandler {}
-            BDFSErrorDialog(
-                finish = {
-                    if (!olympiaErrorState.isCountdownActive) {
-                        mainViewModel.clearOlympiaError()
-                    }
-                },
-                title = stringResource(id = R.string.homePage_profileOlympiaError_title),
-                message = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-                state = olympiaErrorState
             )
         }
         state.dappRequestFailure?.let {

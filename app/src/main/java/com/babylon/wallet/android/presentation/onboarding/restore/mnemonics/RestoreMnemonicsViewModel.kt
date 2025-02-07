@@ -16,23 +16,22 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.isLegacyOlympia
+import com.radixdlt.sargon.extensions.isMain
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.active
 import rdx.works.core.sargon.changeGatewayToNetworkId
-import rdx.works.core.sargon.currentNetwork
-import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.isHidden
-import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.core.sargon.usesEd25519
-import rdx.works.core.sargon.usesSECP256k1
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
@@ -55,7 +54,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
-    private val keystoreManager: KeystoreManager
+    private val keystoreManager: KeystoreManager,
+    private val sargonOsManager: SargonOsManager,
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -67,23 +67,27 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val profile = args.backupType?.let { backupType ->
+            val profileToCheck = args.backupType?.let { backupType ->
                 // Reset keyspec before importing any mnemonic, when keyspec is invalid
                 keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
-                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
-            } ?: run {
-                getProfileUseCase.flow.firstOrNull()
-            }
-            val mainBabylonFactorSourceId = profile?.mainBabylonFactorSource?.value?.id?.asGeneral()
-            // we want main factor source to go first
-            val factorSources = profile.recoverableFactorSources().sortedByDescending {
-                it.factorSource.value.id.asGeneral() == mainBabylonFactorSourceId
-            }
+                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)?.let {
+                    ProfileToCheck.Specific(it)
+                }
+            } ?: ProfileToCheck.Current
+
+
+            val recoverableFactorSources = profileToCheck.recoverableFactorSources()
+                // we want main factor source to go first
+                .sortedByDescending {
+                    it.factorSource.isMain
+                }
+
+            val mainBDFS = recoverableFactorSources.find { it.factorSource.isMain }?.factorSource
             _state.update {
                 it.copy(
-                    recoverableFactorSources = factorSources,
-                    mainBabylonFactorSourceId = mainBabylonFactorSourceId
+                    recoverableFactorSources = recoverableFactorSources,
+                    mainBabylonFactorSourceId = mainBDFS?.value?.id?.asGeneral()
                 )
             }
 
@@ -97,27 +101,30 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun Profile?.recoverableFactorSources(): List<RecoverableFactorSource> {
-        val allAccounts = this?.currentNetwork?.accounts.orEmpty()
+    private suspend fun ProfileToCheck.recoverableFactorSources(): List<RecoverableFactorSource> {
+        val profile = when (this) {
+            ProfileToCheck.Current -> getProfileUseCase()
+            is ProfileToCheck.Specific -> this.v1
+        }
 
-        return this?.factorSources
-            ?.filterIsInstance<FactorSource.Device>()
-            ?.filter { !mnemonicRepository.mnemonicExist(it.value.id.asGeneral()) }
-            ?.map { factorSource ->
-                val associatedBabylonAccounts = allAccounts.filter {
-                    it.factorSourceId == factorSource.id && it.usesEd25519
-                }
-                val associatedOlympiaAccounts = allAccounts.filter {
-                    it.factorSourceId == factorSource.id && it.usesSECP256k1
-                }
+        return profile.deviceFactorSources.map { deviceFactorSource ->
+            sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
+                factorSource = deviceFactorSource,
+                profileToCheck = this
+            ) to deviceFactorSource
+        }.filter {
+            (it.first.integrity as? FactorSourceIntegrity.Device)?.v1?.isMnemonicPresentInSecureStorage == false
+        }.map { (entities, deviceFactorSource) ->
+            val babylonAccounts = entities.accounts.filter { !it.isLegacyOlympia }
+            val olympiaAccounts = entities.accounts.filter { it.isLegacyOlympia }
 
-                RecoverableFactorSource(
-                    associatedAccounts = associatedBabylonAccounts.ifEmpty { associatedOlympiaAccounts },
-                    factorSource = factorSource
-                )
-            }
-            .orEmpty()
+            RecoverableFactorSource(
+                associatedAccounts = babylonAccounts.ifEmpty { olympiaAccounts },
+                factorSource = deviceFactorSource
+            )
+        }
     }
+
 
     fun onBackClick() {
         if (state.value.screenType != State.ScreenType.Entities) {

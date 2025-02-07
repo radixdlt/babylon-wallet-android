@@ -29,6 +29,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.HomeCard
+import com.radixdlt.sargon.extensions.isLegacyOlympia
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -62,7 +63,6 @@ import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.isLedgerAccount
-import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -392,11 +392,11 @@ class WalletViewModel @Inject constructor(
                 securityPrompts = accountsWithSecurityPrompts[account.address]?.toPersistentList(),
                 deposits = accountsWithLockerDeposits[account.address].orEmpty().toPersistentList(),
                 tag = when {
-                    !accountWithAssets.isDappDefinitionAccountType && !account.isOlympia && !account.isLedgerAccount -> null
+                    !accountWithAssets.isDappDefinitionAccountType && !account.isLegacyOlympia && !account.isLedgerAccount -> null
                     accountWithAssets.isDappDefinitionAccountType -> AccountTag.DAPP_DEFINITION
-                    account.isOlympia && account.isLedgerAccount -> AccountTag.LEDGER_LEGACY
-                    account.isOlympia && !account.isLedgerAccount -> AccountTag.LEGACY_SOFTWARE
-                    !account.isOlympia && account.isLedgerAccount -> AccountTag.LEDGER_BABYLON
+                    account.isLegacyOlympia && account.isLedgerAccount -> AccountTag.LEDGER_LEGACY
+                    account.isLegacyOlympia && !account.isLedgerAccount -> AccountTag.LEGACY_SOFTWARE
+                    !account.isLegacyOlympia && account.isLedgerAccount -> AccountTag.LEDGER_BABYLON
                     else -> null
                 },
                 isFiatBalanceVisible = isFiatBalanceVisible,

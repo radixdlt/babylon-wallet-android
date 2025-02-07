@@ -37,20 +37,11 @@ val Account.derivationPathScheme: DerivationPathScheme
 val Account.derivationPathEntityIndex: HdPathComponent
     get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.path.components.last()
 
-val Account.usesEd25519: Boolean
-    get() = securityState.usesEd25519
-
-val Account.usesSECP256k1: Boolean
-    get() = securityState.usesSECP256k1
-
 val Account.isHidden: Boolean
     get() = EntityFlag.HIDDEN_BY_USER in flags
 
 val Account.isDeleted: Boolean
     get() = EntityFlag.TOMBSTONED_BY_USER in flags
-
-val Account.isOlympia: Boolean
-    get() = usesSECP256k1
 
 val Account.hasAcceptKnownDepositRule: Boolean
     get() = onLedgerSettings.thirdPartyDeposits.depositRule == DepositRule.ACCEPT_KNOWN
