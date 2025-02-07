@@ -46,9 +46,6 @@ val Account.isDeleted: Boolean
 val Account.hasAcceptKnownDepositRule: Boolean
     get() = onLedgerSettings.thirdPartyDeposits.depositRule == DepositRule.ACCEPT_KNOWN
 
-val Account.isLedgerAccount: Boolean
-    get() = securityState.transactionSigningFactorInstance.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
-
 @Suppress("LongParameterList")
 fun Account.Companion.initBabylon(
     networkId: NetworkId,
