@@ -34,11 +34,9 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -107,11 +105,8 @@ fun MnemonicWordTextField(
                         onFocusChanged?.invoke(it)
                     }
                     .focusRequester(focusRequester),
-                value = TextFieldValue(
-                    text = value,
-                    selection = if (enabled) TextRange(value.length) else TextRange.Zero
-                ),
-                onValueChange = { onValueChanged(it.text) },
+                value = value,
+                onValueChange = onValueChanged,
                 textStyle = textStyle.copy(color = textColor),
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
