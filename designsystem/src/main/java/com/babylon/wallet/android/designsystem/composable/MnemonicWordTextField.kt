@@ -99,6 +99,14 @@ fun MnemonicWordTextField(
             else -> RadixTheme.colors.gray4
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        var textFieldValueState by remember(value) {
+            mutableStateOf(
+                TextFieldValue(
+                    text = value,
+                    selection = if (enabled) TextRange(value.length) else TextRange.Zero
+                )
+            )
+        }
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
             BasicTextField(
                 modifier = Modifier
@@ -107,11 +115,11 @@ fun MnemonicWordTextField(
                         onFocusChanged?.invoke(it)
                     }
                     .focusRequester(focusRequester),
-                value = TextFieldValue(
-                    text = value,
-                    selection = if (enabled) TextRange(value.length) else TextRange.Zero
-                ),
-                onValueChange = { onValueChanged(it.text) },
+                value = textFieldValueState,
+                onValueChange = {
+                    textFieldValueState = it
+                    onValueChanged(it.text)
+                },
                 textStyle = textStyle.copy(color = textColor),
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
