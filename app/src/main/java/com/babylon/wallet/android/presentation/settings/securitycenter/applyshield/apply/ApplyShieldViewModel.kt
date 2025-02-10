@@ -58,7 +58,7 @@ class ApplyShieldViewModel @Inject constructor(
                     blobs = transaction.blobs.toList().map { it.bytes },
                 ).prepareInternalTransactionRequest(
                     transactionType = TransactionType.SecurifyEntity(
-                        entityAddress = entityAddresses.first() //
+                        entityAddress = entityAddresses.first()
                     )
                 )
 
