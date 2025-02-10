@@ -34,9 +34,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -97,6 +99,14 @@ fun MnemonicWordTextField(
             else -> RadixTheme.colors.gray4
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        var textFieldValueState by remember(value) {
+            mutableStateOf(
+                TextFieldValue(
+                    text = value,
+                    selection = if (enabled) TextRange(value.length) else TextRange.Zero
+                )
+            )
+        }
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
             BasicTextField(
                 modifier = Modifier
@@ -105,8 +115,11 @@ fun MnemonicWordTextField(
                         onFocusChanged?.invoke(it)
                     }
                     .focusRequester(focusRequester),
-                value = value,
-                onValueChange = onValueChanged,
+                value = textFieldValueState,
+                onValueChange = {
+                    textFieldValueState = it
+                    onValueChanged(it.text)
+                },
                 textStyle = textStyle.copy(color = textColor),
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
