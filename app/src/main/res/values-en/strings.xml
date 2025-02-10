@@ -933,6 +933,8 @@ Code: %s</string>
   <string name="factorSources_detail_seedPhraseLost">Seed Phrase Lost</string>
   <string name="factorSources_detail_enterSeedPhrase">Enter seed phrase to recover use of this factor</string>
   <string name="factorSources_detail_changePin">Change PIN</string>
+  <string name="factorSources_detail_spotCheckSuccess">Factor access spot check was successful.</string>
+  <string name="factorSources_detail_spotCheckFailure">Factor access spot check failed! Please try again if you want to verify that you are able to use this factor.</string>
   <string name="factorSources_changeMain_title">Change Default Biometrics/PIN</string>
   <string name="factorSources_changeMain_subtitle">Select the biometrics/PIN factor that will be automatically selected when you create a new Account or Persona.</string>
   <string name="customizeNetworkFees_normalMode_title">Customize Fees</string>
