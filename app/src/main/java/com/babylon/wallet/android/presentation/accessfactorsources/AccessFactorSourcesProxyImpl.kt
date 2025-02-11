@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.Signable
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,6 +50,18 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
 
         @Suppress("UNCHECKED_CAST")
         return result as AccessFactorSourcesOutput.SignOutput<ID>
+    }
+
+    override suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput {
+        input = AccessFactorSourcesInput.ToSpotCheck(
+            factorSource = factorSource,
+            allowSkip = allowSkip
+        )
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.SpotCheck)
+        val result = _output.first()
+
+        @Suppress("UNCHECKED_CAST")
+        return result as AccessFactorSourcesOutput.SpotCheckOutput
     }
 
     override fun getInput(): AccessFactorSourcesInput {

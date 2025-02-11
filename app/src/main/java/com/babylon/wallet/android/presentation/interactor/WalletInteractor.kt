@@ -47,6 +47,7 @@ class WalletInteractor(
                         result.factorInstances
                     )
                 }
+
                 else -> throw CommonException.HostInteractionAborted()
             }.also {
                 delay(delayPerFactorSource)
@@ -154,7 +155,15 @@ class WalletInteractor(
     }
 
     override suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): SpotCheckResponse {
-        throw CommonException.HostInteractionAborted()
+        val output = accessFactorSourcesProxy.spotCheck(
+            factorSource = factorSource,
+            allowSkip = allowSkip
+        )
+
+        return when (output) {
+            is AccessFactorSourcesOutput.SpotCheckOutput.Completed -> output.response
+            is AccessFactorSourcesOutput.SpotCheckOutput.Rejected -> throw CommonException.HostInteractionAborted()
+        }
     }
 
     companion object {

@@ -3,11 +3,13 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.radixdlt.sargon.AuthorizationPurpose
 import com.radixdlt.sargon.AuthorizationResponse
 import com.radixdlt.sargon.DerivationPurpose
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SpotCheckResponse
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
@@ -33,6 +35,8 @@ interface AccessFactorSourcesProxy {
     suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
     ): AccessFactorSourcesOutput.SignOutput<ID>
+
+    suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -100,6 +104,11 @@ sealed interface AccessFactorSourcesInput {
         }
     }
 
+    data class ToSpotCheck(
+        val factorSource: FactorSource,
+        val allowSkip: Boolean
+    ) : AccessFactorSourcesInput
+
     data object Init : AccessFactorSourcesInput
 }
 
@@ -132,6 +141,14 @@ sealed interface AccessFactorSourcesOutput {
         ) : SignOutput<ID>
 
         data object Rejected : SignOutput<Signable.ID>
+    }
+
+    sealed interface SpotCheckOutput : AccessFactorSourcesOutput {
+        data class Completed(
+            val response: SpotCheckResponse
+        ) : SpotCheckOutput
+
+        data object Rejected : SpotCheckOutput
     }
 
     data object Init : AccessFactorSourcesOutput

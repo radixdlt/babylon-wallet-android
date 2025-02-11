@@ -28,6 +28,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
@@ -151,7 +152,7 @@ private fun DerivePublicKeysSheetContent(
                     purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
                     isRetryEnabled = accessFactorSourceState.isRetryEnabled,
-                    canUseDifferentFactor = false,
+                    skipOption = AccessFactorSourceSkipOption.None,
                     onRetryClick = onRetryClick,
                     onSkipClick = {}
                 )
@@ -161,7 +162,7 @@ private fun DerivePublicKeysSheetContent(
                     purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
                     isRetryEnabled = accessFactorSourceState.isRetryEnabled,
-                    canUseDifferentFactor = false,
+                    skipOption = AccessFactorSourceSkipOption.None,
                     onRetryClick = onRetryClick,
                     onSkipClick = {}
                 )
@@ -171,7 +172,7 @@ private fun DerivePublicKeysSheetContent(
                     purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                     seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
-                    canUseDifferentFactor = false,
+                    skipOption = AccessFactorSourceSkipOption.None,
                     onWordChanged = onSeedPhraseWordChanged,
                     onConfirmed = onInputConfirmed,
                     onFocusedWordChanged = {
@@ -184,7 +185,7 @@ private fun DerivePublicKeysSheetContent(
                     modifier = contentModifier,
                     purpose = state.purpose,
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
-                    canUseDifferentFactor = false,
+                    skipOption = AccessFactorSourceSkipOption.None,
                     onSkipClick = {}
                 )
 
@@ -194,7 +195,7 @@ private fun DerivePublicKeysSheetContent(
                     factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
                     passwordState = accessFactorSourceState.passwordState,
                     onPasswordTyped = onPasswordTyped,
-                    canUseDifferentFactor = false,
+                    skipOption = AccessFactorSourceSkipOption.None,
                     onSkipClick = {}
                 )
             }

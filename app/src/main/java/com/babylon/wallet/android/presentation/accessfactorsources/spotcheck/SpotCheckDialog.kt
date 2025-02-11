@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
-package com.babylon.wallet.android.presentation.accessfactorsources.signatures
+package com.babylon.wallet.android.presentation.accessfactorsources.spotcheck
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,16 +25,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
-import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
-import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -57,9 +53,9 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.launch
 
 @Composable
-fun GetSignaturesDialog(
+fun SpotCheckDialog(
     modifier: Modifier = Modifier,
-    viewModel: GetSignaturesViewModel,
+    viewModel: SpotCheckViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -79,34 +75,34 @@ fun GetSignaturesDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                GetSignaturesViewModel.Event.Completed -> onDismiss()
+                SpotCheckViewModel.Event.Completed -> onDismiss()
             }
         }
     }
 
-    GetSignaturesBottomSheetContent(
+    SpotCheckBottomSheetContent(
         modifier = modifier,
         state = state,
-        onInputConfirmed = viewModel::onInputConfirmed,
-        onDismiss = viewModel::onDismiss,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onInputConfirmed = viewModel::onInputConfirmed,
+        onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry,
-        onSkipClick = viewModel::onSkip
+        onIgnoreClick = viewModel::onIgnore
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GetSignaturesBottomSheetContent(
+private fun SpotCheckBottomSheetContent(
     modifier: Modifier = Modifier,
-    state: GetSignaturesViewModel.State,
+    state: SpotCheckViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
-    onSkipClick: () -> Unit
+    onIgnoreClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -160,8 +156,6 @@ private fun GetSignaturesBottomSheetContent(
                 },
                 containerColor = RadixTheme.colors.defaultBackground,
                 content = { padding ->
-                    val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
-
                     val contentModifier = Modifier
                         .padding(padding)
                         .verticalScroll(rememberScrollState())
@@ -169,27 +163,27 @@ private fun GetSignaturesBottomSheetContent(
                     when (accessFactorSourceState.factorSourceToAccess.kind) {
                         FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
                             modifier = contentModifier,
-                            purpose = purpose,
+                            purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
                             isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                             skipOption = state.skipOption,
                             onRetryClick = onRetryClick,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onIgnoreClick
                         )
 
                         FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
                             modifier = contentModifier,
-                            purpose = purpose,
+                            purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
                             isRetryEnabled = accessFactorSourceState.isRetryEnabled,
                             skipOption = state.skipOption,
                             onRetryClick = onRetryClick,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onIgnoreClick
                         )
 
                         FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
                             modifier = contentModifier,
-                            purpose = purpose,
+                            purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
                             seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
                             skipOption = state.skipOption,
@@ -198,25 +192,25 @@ private fun GetSignaturesBottomSheetContent(
                                 focusedWordIndex = it
                             },
                             onConfirmed = onInputConfirmed,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onIgnoreClick
                         )
 
                         FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
                             modifier = contentModifier,
-                            purpose = purpose,
+                            purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                             skipOption = state.skipOption,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onIgnoreClick
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
                             modifier = contentModifier,
-                            purpose = purpose,
+                            purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
                             passwordState = accessFactorSourceState.passwordState,
                             onPasswordTyped = onPasswordTyped,
                             skipOption = state.skipOption,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onIgnoreClick
                         )
                     }
                 }
@@ -225,62 +219,42 @@ private fun GetSignaturesBottomSheetContent(
     )
 }
 
-private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
-    Purpose.TransactionIntents,
-    Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
-    Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
-}
-
 @UsesSampleValues
 @Preview
 @Composable
-private fun GetSignaturesPreview(
-    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+private fun SpotCheckPreview(
+    @PreviewParameter(SpotCheckPreviewParameterProvider::class) param: FactorSource
 ) {
-    RadixWalletPreviewTheme {
-        GetSignaturesBottomSheetContent(
-            state = GetSignaturesViewModel.State(
-                signPurpose = sample.first,
+    RadixWalletTheme {
+        SpotCheckBottomSheetContent(
+            state = SpotCheckViewModel.State(
+                factorSource = param,
+                isSkipAllowed = true,
                 accessState = AccessFactorSourceDelegate.State(
-                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(factorSource = sample.second),
-                    seedPhraseInputState = remember(sample.second) {
-                        AccessFactorSourceDelegate.State.SeedPhraseInputState(
-                            delegateState = SeedPhraseInputDelegate.State()
-                        )
-                    }
-                ),
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                        factorSource = param
+                    )
+                )
             ),
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
             onRetryClick = {},
             onInputConfirmed = {},
-            onSkipClick = {}
+            onIgnoreClick = {}
         )
     }
 }
 
 @UsesSampleValues
-private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<Purpose, FactorSource>> {
+class SpotCheckPreviewParameterProvider : PreviewParameterProvider<FactorSource> {
 
-    private val samples: List<Pair<Purpose, FactorSource>>
-
-    init {
-        val factorSources = listOf(
+    override val values: Sequence<FactorSource>
+        get() = sequenceOf(
             DeviceFactorSource.sample().asGeneral(),
             LedgerHardwareWalletFactorSource.sample().asGeneral(),
             ArculusCardFactorSource.sample().asGeneral(),
             OffDeviceMnemonicFactorSource.sample().asGeneral(),
-            PasswordFactorSource.sample().asGeneral()
+            PasswordFactorSource.sample().asGeneral(),
         )
-
-        samples = Purpose.entries.flatMap { purpose ->
-            factorSources.map { factorSource ->
-                purpose to factorSource
-            }
-        }
-    }
-
-    override val values: Sequence<Pair<Purpose, FactorSource>>
-        get() = samples.asSequence()
 }

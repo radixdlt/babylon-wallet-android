@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -16,24 +15,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,13 +62,14 @@ fun FactorSourceDetailsScreen(
     FactorSourceDetailsContent(
         factorSourceName = state.factorSourceName,
         factorSourceKind = state.factorSourceKind,
-        isFactorSourceNameUpdated = state.isFactorSourceNameUpdated,
         isArculusPinEnabled = state.isArculusPinEnabled,
+        uiMessage = state.uiMessage,
         onRenameFactorSourceClick = viewModel::onRenameFactorSourceClick,
         onViewSeedPhraseClick = viewModel::onViewSeedPhraseClick,
         onArculusPinCheckedChange = viewModel::onArculusPinCheckedChange,
         onChangeArculusPinClick = viewModel::onChangeArculusPinClick,
-        onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
+        onMessageShown = viewModel::onMessageShown,
+        onSpotCheckClick = viewModel::onSpotCheckClick,
         onBackClick = onBackClick
     )
 
@@ -93,30 +93,23 @@ private fun FactorSourceDetailsContent(
     modifier: Modifier = Modifier,
     factorSourceName: String,
     factorSourceKind: FactorSourceKind,
-    isFactorSourceNameUpdated: Boolean,
     isArculusPinEnabled: Boolean,
+    uiMessage: UiMessage?,
     onRenameFactorSourceClick: () -> Unit,
     onViewSeedPhraseClick: () -> Unit,
     onArculusPinCheckedChange: (Boolean) -> Unit,
     onChangeArculusPinClick: () -> Unit,
-    onSnackbarMessageShown: () -> Unit,
+    onSpotCheckClick: () -> Unit,
+    onMessageShown: () -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val snackBarMessage = stringResource(R.string.renameLabel_success)
-    LaunchedEffect(isFactorSourceNameUpdated) {
-        if (isFactorSourceNameUpdated) {
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = snackBarMessage,
-                    duration = SnackbarDuration.Short,
-                    withDismissAction = true
-                )
-            }
-            onSnackbarMessageShown()
-        }
-    }
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
 
     Scaffold(
         modifier = modifier,
@@ -134,7 +127,7 @@ private fun FactorSourceDetailsContent(
         snackbarHost = {
             RadixSnackbarHost(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackbarHostState
+                hostState = snackBarHostState
             )
         }
     ) { padding ->
@@ -175,7 +168,7 @@ private fun FactorSourceDetailsContent(
                 title = stringResource(id = R.string.factorSources_detail_spotCheck),
                 subtitle = stringResource(id = R.string.factorSources_detail_testCanUse),
                 leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_check_circle_outline,
-                onClick = {}
+                onClick = onSpotCheckClick
             )
             HorizontalDivider(color = RadixTheme.colors.gray4)
         }
@@ -251,13 +244,14 @@ private fun DeviceFactorSourceDetailsPreview() {
         FactorSourceDetailsContent(
             factorSourceName = "My factor source",
             factorSourceKind = FactorSourceKind.DEVICE,
-            isFactorSourceNameUpdated = false,
+            uiMessage = null,
             isArculusPinEnabled = true,
             onRenameFactorSourceClick = {},
             onViewSeedPhraseClick = {},
             onArculusPinCheckedChange = {},
             onChangeArculusPinClick = {},
-            onSnackbarMessageShown = {},
+            onMessageShown = {},
+            onSpotCheckClick = {},
             onBackClick = {}
         )
     }
@@ -270,13 +264,14 @@ private fun LedgerFactorSourceDetailsPreview() {
         FactorSourceDetailsContent(
             factorSourceName = "My factor source",
             factorSourceKind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-            isFactorSourceNameUpdated = false,
+            uiMessage = null,
             isArculusPinEnabled = true,
             onRenameFactorSourceClick = {},
             onViewSeedPhraseClick = {},
             onArculusPinCheckedChange = {},
             onChangeArculusPinClick = {},
-            onSnackbarMessageShown = {},
+            onMessageShown = {},
+            onSpotCheckClick = {},
             onBackClick = {}
         )
     }
@@ -289,13 +284,14 @@ private fun ArculusFactorSourceDetailsPreview() {
         FactorSourceDetailsContent(
             factorSourceName = "My factor source",
             factorSourceKind = FactorSourceKind.ARCULUS_CARD,
-            isFactorSourceNameUpdated = false,
+            uiMessage = null,
             isArculusPinEnabled = true,
             onRenameFactorSourceClick = {},
             onViewSeedPhraseClick = {},
             onArculusPinCheckedChange = {},
             onChangeArculusPinClick = {},
-            onSnackbarMessageShown = {},
+            onMessageShown = {},
+            onSpotCheckClick = {},
             onBackClick = {}
         )
     }

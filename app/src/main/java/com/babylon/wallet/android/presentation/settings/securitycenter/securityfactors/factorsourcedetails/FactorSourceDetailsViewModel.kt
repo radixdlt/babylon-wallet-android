@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
@@ -102,7 +103,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(
                     isRenameBottomSheetVisible = false,
-                    isFactorSourceNameUpdated = true
+                    uiMessage = UiMessage.InfoMessage.RenameSuccessful
                 )
             }
         }
@@ -112,12 +113,17 @@ class FactorSourceDetailsViewModel @Inject constructor(
         _state.update { state -> state.copy(isRenameBottomSheetVisible = false) }
     }
 
-    fun onSnackbarMessageShown() {
-        _state.update { state -> state.copy(isFactorSourceNameUpdated = false) }
-    }
-
     fun onSpotCheckClick() {
-        // TODO
+        val factorSource = currentFactorSource ?: return
+        viewModelScope.launch {
+            sargonOsManager.callSafely(defaultDispatcher) {
+                triggerSpotCheck(factorSource = factorSource)
+            }.onSuccess { isChecked ->
+                _state.update { it.copy(uiMessage = UiMessage.InfoMessage.SpotCheckOutcome(isSuccess = isChecked)) }
+            }.onFailure {
+                _state.update { state -> state.copy(uiMessage = UiMessage.InfoMessage.SpotCheckOutcome(isSuccess = false)) }
+            }
+        }
     }
 
     fun onViewSeedPhraseClick() {
@@ -143,13 +149,18 @@ class FactorSourceDetailsViewModel @Inject constructor(
         // TODO
     }
 
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
+    }
+
     data class State(
         val factorSourceName: String = "",
         val factorSourceKind: FactorSourceKind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
         val renameFactorSourceInput: RenameFactorSourceInput = RenameFactorSourceInput(),
         val isFactorSourceNameUpdated: Boolean = false,
         val isRenameBottomSheetVisible: Boolean = false,
-        val isArculusPinEnabled: Boolean = false
+        val isArculusPinEnabled: Boolean = false,
+        val uiMessage: UiMessage? = null
     ) : UiState
 
     data class RenameFactorSourceInput(

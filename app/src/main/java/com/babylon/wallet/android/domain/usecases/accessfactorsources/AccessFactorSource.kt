@@ -18,4 +18,8 @@ interface AccessFactorSource<F : FactorSource> {
         factorSource: F,
         input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
     ): Result<PerFactorOutcome<Signable.ID>>
+
+    suspend fun spotCheck(
+        factorSource: F
+    ): Result<Boolean>
 }

@@ -14,6 +14,7 @@ import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.extensions.bip32String
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.decompile
@@ -23,6 +24,7 @@ import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.factorSourcePerformSpotCheck
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.HdSignature
 import com.radixdlt.sargon.os.signing.HdSignatureInput
@@ -107,6 +109,15 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
                 factorSourceId = input.factorSourceId,
                 outcome = FactorOutcome.Signed(producedSignatures = hdSignatures)
             )
+        )
+    }
+
+    override suspend fun spotCheck(factorSource: FactorSource.Ledger): Result<Boolean> = ledgerMessenger.sendDeviceInfoRequest(
+        interactionId = UUIDGenerator.uuid().toString()
+    ).mapCatching { deviceIdResponse ->
+        factorSourcePerformSpotCheck(
+            factorSource = factorSource,
+            input = SpotCheckInput.Ledger(id = deviceIdResponse.deviceId)
         )
     }
 

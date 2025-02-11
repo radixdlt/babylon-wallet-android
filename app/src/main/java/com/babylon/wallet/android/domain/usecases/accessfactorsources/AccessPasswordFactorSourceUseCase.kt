@@ -23,4 +23,8 @@ class AccessPasswordFactorSourceUseCase @Inject constructor() : AccessFactorSour
     ): Result<PerFactorOutcome<Signable.ID>> {
         TODO("Future implementation")
     }
+
+    override suspend fun spotCheck(factorSource: FactorSource.Password): Result<Boolean> {
+        TODO("Future implementation")
+    }
 }

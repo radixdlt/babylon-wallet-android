@@ -4,5 +4,12 @@ enum class AccessFactorSourcePurpose {
     SignatureRequest,
     ProvingOwnership,
     DerivingAccounts,
-    UpdatingFactorConfig
+    UpdatingFactorConfig,
+    SpotCheck
+}
+
+enum class AccessFactorSourceSkipOption {
+    CanSkipFactor,
+    CanIgnoreFactor,
+    None
 }
