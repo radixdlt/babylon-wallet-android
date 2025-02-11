@@ -40,6 +40,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
@@ -248,14 +249,18 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
             )
 
             AnimatedVisibility(
-                visible = seedPhraseInputState.isSeedPhraseInvalidErrorVisible
+                visible = seedPhraseInputState.errorInSeedPhrase
             ) {
                 WarningText(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     text = AnnotatedString(
-                        text = stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
+                        text = when (seedPhraseInputState.seedPhraseValidity) {
+                            SeedPhraseValidity.InvalidMnemonic -> "Invalid Mnemonic"
+                            SeedPhraseValidity.IncorrectMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
+                            else -> ""
+                        }
                     ),
                     contentColor = RadixTheme.colors.red1,
                     textStyle = RadixTheme.typography.body2HighImportance
@@ -267,7 +272,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = "Confirm",
+                text = stringResource(R.string.common_confirm),
                 enabled = seedPhraseInputState.isConfirmButtonEnabled,
                 onClick = onConfirmed
             )
@@ -480,7 +485,7 @@ private fun Preview(
                     skipOption = skipOption,
                     seedPhraseInputState = AccessFactorSourceDelegate.State.SeedPhraseInputState(
                         delegateState = state,
-                        isSeedPhraseInvalidErrorVisible = true
+                        seedPhraseValidity = SeedPhraseValidity.IncorrectMnemonic
                     ),
                     onWordChanged = delegate::onWordChanged,
                     onFocusedWordChanged = {},

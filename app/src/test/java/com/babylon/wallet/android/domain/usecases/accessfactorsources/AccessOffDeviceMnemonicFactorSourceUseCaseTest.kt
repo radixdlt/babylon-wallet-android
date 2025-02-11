@@ -123,7 +123,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         )
 
         assertEquals(
-            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.DoesNotDeriveFactorSourceId,
+            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.IncorrectMnemonic,
             result
         )
     }

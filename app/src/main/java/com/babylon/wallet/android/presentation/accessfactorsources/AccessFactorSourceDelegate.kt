@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.State.FactorSourcesToAccess
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -149,11 +150,10 @@ class AccessFactorSourceDelegate private constructor(
                 )
 
                 _state.update {
-                    val isIncorrect = validity.isIncorrect()
                     it.copy(
                         seedPhraseInputState = it.seedPhraseInputState.copy(
-                            isSeedPhraseInvalidErrorVisible = isIncorrect,
-                            isConfirmButtonEnabled = !isIncorrect
+                            seedPhraseValidity = validity,
+                            isConfirmButtonEnabled = validity == SeedPhraseValidity.Valid
                         )
                     )
                 }
@@ -230,7 +230,7 @@ class AccessFactorSourceDelegate private constructor(
                     it.copy(
                         seedPhraseInputState = it.seedPhraseInputState.copy(
                             isConfirmButtonEnabled = isComplete,
-                            isSeedPhraseInvalidErrorVisible = false
+                            seedPhraseValidity = null
                         )
                     )
                 }
@@ -289,9 +289,11 @@ class AccessFactorSourceDelegate private constructor(
 
         data class SeedPhraseInputState(
             val delegateState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
-            val isSeedPhraseInvalidErrorVisible: Boolean = false,
+            val seedPhraseValidity: SeedPhraseValidity? = null,
             val isConfirmButtonEnabled: Boolean = false
         ) {
+
+            val errorInSeedPhrase = seedPhraseValidity != null && seedPhraseValidity != SeedPhraseValidity.Valid
 
             val inputWords: ImmutableList<SeedPhraseWord> = delegateState.seedPhraseWords
         }
