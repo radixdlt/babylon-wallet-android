@@ -1120,7 +1120,7 @@ Code: %s</string>
   <string name="factorSourceActions_password_incorrect">Incorrect password</string>
   <string name="factorSourceActions_offDeviceMnemonic_signMessage">Enter this **mnemonic** to sign</string>
   <string name="factorSourceActions_offDeviceMnemonic_message">Enter this **mnemonic**</string>
-  <string name="factorSourceActions_offDeviceMnemonic_incorrect">Incorrect mnemonic</string>
+  <string name="factorSourceActions_offDeviceMnemonic_wrong">Wrong mnemonic</string>
   <string name="factorSourceActions_offDeviceMnemonic_invalid">Invalid mnemonic</string>
   <string name="factorSourceActions_useDifferentFactor">Use a different factor</string>
   <string name="factorSourceActions_ignore">Ignore</string>
