@@ -125,7 +125,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         )
 
         assertEquals(
-            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.IncorrectMnemonic,
+            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.WrongMnemonic,
             result
         )
     }
@@ -150,7 +150,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         )
 
         assertEquals(
-            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.IncorrectMnemonic,
+            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.WrongMnemonic,
             result
         )
     }

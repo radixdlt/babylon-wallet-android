@@ -258,7 +258,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                     text = AnnotatedString(
                         text = when (seedPhraseInputState.seedPhraseValidity) {
                             SeedPhraseValidity.InvalidMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_invalid)
-                            SeedPhraseValidity.IncorrectMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
+                            SeedPhraseValidity.WrongMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
                             else -> ""
                         }
                     ),
@@ -485,7 +485,7 @@ private fun Preview(
                     skipOption = skipOption,
                     seedPhraseInputState = AccessFactorSourceDelegate.State.SeedPhraseInputState(
                         delegateState = state,
-                        seedPhraseValidity = SeedPhraseValidity.IncorrectMnemonic
+                        seedPhraseValidity = SeedPhraseValidity.WrongMnemonic
                     ),
                     onWordChanged = delegate::onWordChanged,
                     onFocusedWordChanged = {},

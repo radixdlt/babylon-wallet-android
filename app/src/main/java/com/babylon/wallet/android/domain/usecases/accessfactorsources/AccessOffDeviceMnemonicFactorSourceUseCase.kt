@@ -37,7 +37,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
         val generatedId = seedPhrase.factorSourceId(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC)
 
         return if (generatedId != factorSourceId) {
-            SeedPhraseValidity.IncorrectMnemonic
+            SeedPhraseValidity.WrongMnemonic
         } else {
             seedPhraseChannel.send(seedPhrase)
             SeedPhraseValidity.Valid
@@ -81,7 +81,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
     enum class SeedPhraseValidity {
         Valid,
         InvalidMnemonic,
-        IncorrectMnemonic
+        WrongMnemonic
     }
 
     override suspend fun spotCheck(factorSource: FactorSource.OffDeviceMnemonic): Result<Boolean> = runCatching {
