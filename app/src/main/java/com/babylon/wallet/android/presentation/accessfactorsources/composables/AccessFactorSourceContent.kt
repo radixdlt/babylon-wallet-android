@@ -254,7 +254,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     text = AnnotatedString(
-                        text = stringResource(R.string.factorSourceActions_offDeviceMnemonic_incorrect)
+                        text = stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
                     ),
                     contentColor = RadixTheme.colors.red1,
                     textStyle = RadixTheme.typography.body2HighImportance
