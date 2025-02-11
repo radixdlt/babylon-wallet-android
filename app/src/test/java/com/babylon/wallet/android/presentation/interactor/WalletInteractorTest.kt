@@ -12,6 +12,7 @@ import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdSignatureInputOfAuthIntentHash
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
@@ -39,6 +40,7 @@ import com.radixdlt.sargon.SignResponseOfAuthIntentHash
 import com.radixdlt.sargon.SignResponseOfSubintentHash
 import com.radixdlt.sargon.SignResponseOfTransactionIntentHash
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.SpotCheckResponse
 import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
@@ -419,6 +421,25 @@ class WalletInteractorTest {
                     )
                 )
             ),
+            response
+        )
+    }
+
+    @Test
+    fun testSpotCheck() = runTest {
+        val factorSource = FactorSource.sample()
+        val expectedResponse = SpotCheckResponse.VALID
+        coEvery { proxy.spotCheck(factorSource, false) } returns AccessFactorSourcesOutput.SpotCheckOutput.Completed(
+            response = expectedResponse
+        )
+
+        val response = sut.spotCheck(
+            factorSource = factorSource,
+            allowSkip = false
+        )
+
+        assertEquals(
+            expectedResponse,
             response
         )
     }
