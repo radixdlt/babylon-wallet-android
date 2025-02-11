@@ -47,7 +47,6 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
-import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
 @Composable
 fun ChooseSeedPhraseScreen(

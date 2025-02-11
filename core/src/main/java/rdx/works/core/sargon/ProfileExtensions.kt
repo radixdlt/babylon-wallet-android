@@ -9,7 +9,6 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
@@ -17,10 +16,8 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Profile
@@ -42,8 +39,8 @@ import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isLegacy
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
@@ -125,7 +122,9 @@ private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, Li
     get() {
         val activeAccountsOnCurrentNetwork = activeAccountsOnCurrentNetwork
         return deviceFactorSources.associateWith { deviceFactorSource ->
-            activeAccountsOnCurrentNetwork.filter { it.factorSourceId == deviceFactorSource.id }
+            activeAccountsOnCurrentNetwork.filter {
+                it.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral() == deviceFactorSource.id
+            }
         }
     }
 
@@ -143,14 +142,14 @@ val Profile.babylonFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
         entry.key.isBabylonDeviceFactorSource
     }.mapValues { entry ->
-        entry.value.filter { account -> account.usesEd25519 }
+        entry.value.filter { account -> !account.isLegacy }
     }
 
 val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
         entry.key.supportsOlympia
     }.mapValues { entry ->
-        entry.value.filter { account -> account.usesSECP256k1 }
+        entry.value.filter { account -> account.isLegacy }
     }
 
 /**
@@ -207,70 +206,6 @@ fun Profile.updateThirdPartyDepositSettings(
     return copy(networks = ProfileNetworks(updatedNetworks).asList())
 }
 
-fun Profile.addNetworkIfDoesNotExist(
-    onNetwork: NetworkId
-): Profile = if (networks.none { onNetwork == it.id }) {
-    copy(
-        networks = ProfileNetworks(
-            networks + ProfileNetwork(
-                id = onNetwork,
-                accounts = Accounts().asList(),
-                authorizedDapps = AuthorizedDapps().asList(),
-                personas = Personas().asList(),
-                resourcePreferences = ResourceAppPreferences().asList()
-            )
-        ).asList()
-    ).withUpdatedContentHint()
-} else {
-    this
-}
-
-fun Profile.nextAccountIndex(
-    forNetworkId: NetworkId,
-    factorSourceId: FactorSourceId,
-    derivationPathScheme: DerivationPathScheme,
-): HdPathComponent {
-    val default = HdPathComponent.init(
-        localKeySpace = 0u,
-        keySpace = KeySpace.Unsecurified(isHardened = true)
-    )
-    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return default
-
-    val accountsControlledByFactorSource = forNetwork.accounts.filter {
-        it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
-    }
-    return if (accountsControlledByFactorSource.isEmpty()) {
-        default
-    } else {
-        val global = accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex.indexInGlobalKeySpace } + 1u
-
-        HdPathComponent.init(globalKeySpace = global)
-    }
-}
-
-fun Profile.nextPersonaIndex(
-    forNetworkId: NetworkId,
-    derivationPathScheme: DerivationPathScheme,
-    factorSourceId: FactorSourceId
-): HdPathComponent {
-    val default = HdPathComponent.init(
-        localKeySpace = 0u,
-        keySpace = KeySpace.Unsecurified(isHardened = true)
-    )
-    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return default
-
-    val personasControlledByFactorSource = forNetwork.personas.filter {
-        it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
-    }
-    return if (personasControlledByFactorSource.isEmpty()) {
-        default
-    } else {
-        val global = personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex.indexInGlobalKeySpace } + 1u
-
-        HdPathComponent.init(globalKeySpace = global)
-    }
-}
-
 fun Profile.updatePersona(
     persona: Persona
 ): Profile {
@@ -287,25 +222,6 @@ fun Profile.updatePersona(
             })
         ).asList()
     )
-}
-
-fun Profile.addPersona(
-    persona: Persona,
-    onNetwork: NetworkId,
-): Profile {
-    val personaExists = persona in networks.asIdentifiable().getBy(onNetwork)?.personas.orEmpty().asIdentifiable()
-
-    if (personaExists) {
-        return this
-    }
-
-    return copy(
-        networks = ProfileNetworks(
-            networks.mapWhen(predicate = { it.id == onNetwork }, mutation = { network ->
-                network.copy(personas = Personas(network.personas + persona).asList())
-            })
-        ).asList()
-    ).withUpdatedContentHint()
 }
 
 fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: Boolean): Profile {

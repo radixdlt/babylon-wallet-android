@@ -8,10 +8,10 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
-import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -27,21 +27,23 @@ class VerifyAddressOnLedgerUseCase @Inject constructor(
             withAddress = address
         ) ?: return Result.failure(Exception("No account with address: $address"))
 
-        val factorInstance = account.securityState.transactionSigningFactorInstance
-        if (factorInstance.factorSourceId.kind != FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET) {
-            return Result.failure(Exception("Account $address is not a Ledger backed account"))
-        }
+        val ledgerControlledFactorInstance = account.unsecuredControllingFactorInstance?.takeIf {
+            it.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+        } ?: return Result.failure(Exception("Account $address is not a Ledger backed account"))
 
-        val ledgerFactorSource = (profile.factorSourceById(factorInstance.factorSourceId.asGeneral()) as? FactorSource.Ledger)
-            ?: return Result.failure(Exception("Ledger factor source not found for $factorInstance"))
+        val ledgerFactorSource = profile.factorSourceById(
+            id = ledgerControlledFactorInstance.factorSourceId.asGeneral()
+        ) as? FactorSource.Ledger ?: return Result.failure(
+            Exception("Ledger factor source not found for ${ledgerControlledFactorInstance.factorSourceId}")
+        )
 
         return ledgerMessenger.deriveAndDisplayAddressRequest(
             interactionId = UUIDGenerator.uuid().toString(),
-            keyParameters = LedgerInteractionRequest.KeyParameters.from(factorInstance.publicKey.derivationPath),
+            keyParameters = LedgerInteractionRequest.KeyParameters.from(ledgerControlledFactorInstance.publicKey.derivationPath),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource)
         ).fold(
             onSuccess = { response ->
-                if (response.derivedAddress.derivedKey.publicKeyHex != factorInstance.publicKey.publicKey.hex) {
+                if (response.derivedAddress.derivedKey.publicKeyHex != ledgerControlledFactorInstance.publicKey.publicKey.hex) {
                     return Result.failure(Exception("Public key does not match the derived pub key from Ledger"))
                 }
 

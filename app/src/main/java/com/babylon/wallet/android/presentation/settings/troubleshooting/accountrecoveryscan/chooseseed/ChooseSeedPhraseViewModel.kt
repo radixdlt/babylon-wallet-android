@@ -10,7 +10,10 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +25,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.babylonFactorSourcesWithAccounts
 import rdx.works.core.sargon.olympiaFactorSourcesWithAccounts
-import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -91,3 +93,9 @@ class ChooseSeedPhraseViewModel @Inject constructor(
         data class UseFactorSource(val factorSource: FactorSourceId.Hash, val isOlympia: Boolean) : Event
     }
 }
+
+data class DeviceFactorSourceWithEntities(
+    val deviceFactorSource: FactorSource.Device,
+    val allAccounts: List<Account> = emptyList(),
+    val personas: List<Persona> = emptyList(),
+)
