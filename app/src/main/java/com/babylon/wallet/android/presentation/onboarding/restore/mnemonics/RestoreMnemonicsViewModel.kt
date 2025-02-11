@@ -21,7 +21,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.isLegacyOlympia
+import com.radixdlt.sargon.extensions.isLegacy
 import com.radixdlt.sargon.extensions.isMain
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -112,8 +112,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }.filter {
             (it.first.integrity as? FactorSourceIntegrity.Device)?.v1?.isMnemonicPresentInSecureStorage == false
         }.map { (entities, deviceFactorSource) ->
-            val babylonAccounts = entities.accounts.filter { !it.isLegacyOlympia }
-            val olympiaAccounts = entities.accounts.filter { it.isLegacyOlympia }
+            val babylonAccounts = entities.accounts.filter { !it.isLegacy }
+            val olympiaAccounts = entities.accounts.filter { it.isLegacy }
 
             RecoverableFactorSource(
                 associatedAccounts = babylonAccounts.ifEmpty { olympiaAccounts },

@@ -29,7 +29,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.HomeCard
-import com.radixdlt.sargon.extensions.isLegacyOlympia
+import com.radixdlt.sargon.extensions.isLegacy
 import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
@@ -385,7 +385,7 @@ class WalletViewModel @Inject constructor(
                 (accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance)
 
             val account = accountWithAssets.account
-            val isLegacyOlympiaAccount = account.isLegacyOlympia
+            val isLegacyOlympiaAccount = account.isLegacy
             val isUnsecuredLedgerControlledAccount = account.isUnsecuredLedgerControlled
 
             AccountUiItem(

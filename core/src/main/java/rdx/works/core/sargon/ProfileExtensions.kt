@@ -39,7 +39,7 @@ import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.isLegacyOlympia
+import com.radixdlt.sargon.extensions.isLegacy
 import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
@@ -142,14 +142,14 @@ val Profile.babylonFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
         entry.key.isBabylonDeviceFactorSource
     }.mapValues { entry ->
-        entry.value.filter { account -> !account.isLegacyOlympia }
+        entry.value.filter { account -> !account.isLegacy }
     }
 
 val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
         entry.key.supportsOlympia
     }.mapValues { entry ->
-        entry.value.filter { account -> account.isLegacyOlympia }
+        entry.value.filter { account -> account.isLegacy }
     }
 
 /**
