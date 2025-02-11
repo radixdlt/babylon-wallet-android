@@ -257,7 +257,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     text = AnnotatedString(
                         text = when (seedPhraseInputState.seedPhraseValidity) {
-                            SeedPhraseValidity.InvalidMnemonic -> "Invalid Mnemonic"
+                            SeedPhraseValidity.InvalidMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_invalid)
                             SeedPhraseValidity.IncorrectMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
                             else -> ""
                         }
@@ -391,7 +391,7 @@ private fun SkipOption(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                 .height(50.dp),
-            text = "Ignore",
+            text = stringResource(R.string.factorSourceActions_ignore),
             onClick = onClick
         )
         AccessFactorSourceSkipOption.None -> {}
