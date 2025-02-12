@@ -53,7 +53,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             is DetailedManifestClass.ValidatorStake -> true
             is DetailedManifestClass.ValidatorUnstake -> true
             is DetailedManifestClass.DeleteAccounts -> true
-            else -> false
+            is DetailedManifestClass.GeneralSubintent -> false
         }
 
     private val DetailedManifestClass.isSpecific: Boolean
