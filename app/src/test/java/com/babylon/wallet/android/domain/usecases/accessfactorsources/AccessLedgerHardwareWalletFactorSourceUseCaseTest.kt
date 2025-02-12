@@ -34,8 +34,8 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.publicKey
 import com.radixdlt.sargon.extensions.sign
 import com.radixdlt.sargon.extensions.signature
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.factorSourcePerformSpotCheck
 import com.radixdlt.sargon.newLedgerHardwareWalletFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.HdSignature
@@ -489,10 +489,11 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
         )
         mockkStatic("com.radixdlt.sargon.SargonKt")
         every {
-            factorSourcePerformSpotCheck(factorSource = ledger.asGeneral(), input = SpotCheckInput.Ledger(expectedDeviceId))
+            ledger.asGeneral().spotCheck(input = SpotCheckInput.Ledger(expectedDeviceId))
         } returns true
 
         val result = sut.spotCheck(factorSource = ledger.asGeneral()).getOrThrow()
+
         unmockkStatic("com.radixdlt.sargon.SargonKt")
         assertTrue(result)
 //        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) }

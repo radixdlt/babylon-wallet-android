@@ -23,8 +23,8 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.factorSourcePerformSpotCheck
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.HdSignature
 import com.radixdlt.sargon.os.signing.HdSignatureInput
@@ -115,10 +115,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
     override suspend fun spotCheck(factorSource: FactorSource.Ledger): Result<Boolean> = ledgerMessenger.sendDeviceInfoRequest(
         interactionId = UUIDGenerator.uuid().toString()
     ).mapCatching { deviceIdResponse ->
-        factorSourcePerformSpotCheck(
-            factorSource = factorSource,
-            input = SpotCheckInput.Ledger(id = deviceIdResponse.deviceId)
-        )
+        factorSource.spotCheck(input = SpotCheckInput.Ledger(id = deviceIdResponse.deviceId))
     }
 
     private suspend fun signTransaction(

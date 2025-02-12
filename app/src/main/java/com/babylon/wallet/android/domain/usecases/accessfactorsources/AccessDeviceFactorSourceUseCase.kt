@@ -14,8 +14,8 @@ import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.mapError
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.then
-import com.radixdlt.sargon.factorSourcePerformSpotCheck
 import com.radixdlt.sargon.os.driver.BiometricsFailure
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
@@ -89,8 +89,7 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
     override suspend fun spotCheck(factorSource: FactorSource.Device): Result<Boolean> = readMnemonic(
         factorSourceId = factorSource.value.id
     ).mapCatching { mnemonicWithPassphrase ->
-        factorSourcePerformSpotCheck(
-            factorSource = factorSource,
+        factorSource.spotCheck(
             input = SpotCheckInput.Software(mnemonicWithPassphrase = mnemonicWithPassphrase)
         )
     }

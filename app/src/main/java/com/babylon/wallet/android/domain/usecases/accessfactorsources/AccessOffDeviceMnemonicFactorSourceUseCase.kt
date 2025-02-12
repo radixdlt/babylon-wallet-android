@@ -12,7 +12,7 @@ import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.extensions.derivePublicKeys
 import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.factorSourcePerformSpotCheck
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
@@ -87,9 +87,6 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
     override suspend fun spotCheck(factorSource: FactorSource.OffDeviceMnemonic): Result<Boolean> = runCatching {
         val seedPhrase = seedPhraseChannel.receive()
 
-        factorSourcePerformSpotCheck(
-            factorSource = factorSource,
-            input = SpotCheckInput.Software(mnemonicWithPassphrase = seedPhrase)
-        )
+        factorSource.spotCheck(input = SpotCheckInput.Software(mnemonicWithPassphrase = seedPhrase))
     }
 }
