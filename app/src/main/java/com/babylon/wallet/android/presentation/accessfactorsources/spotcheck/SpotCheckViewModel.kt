@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.signatures
+package com.babylon.wallet.android.presentation.accessfactorsources.spotcheck
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
@@ -12,18 +12,14 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.Event
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.NeglectFactorReason
-import com.radixdlt.sargon.NeglectedFactor
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.os.signing.FactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.Signable
+import com.radixdlt.sargon.SpotCheckResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
@@ -34,7 +30,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class GetSignaturesViewModel @Inject constructor(
+class SpotCheckViewModel @Inject constructor(
     private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
     private val accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
     private val accessLedgerHardwareWalletFactorSource: AccessLedgerHardwareWalletFactorSourceUseCase,
@@ -42,27 +38,27 @@ class GetSignaturesViewModel @Inject constructor(
     private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
     private val accessPasswordFactorSourceUseCase: AccessPasswordFactorSourceUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
-    getProfileUseCase: GetProfileUseCase
-) : StateViewModel<GetSignaturesViewModel.State>(),
-    OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
+    getProfileUseCase: GetProfileUseCase,
+) : StateViewModel<SpotCheckViewModel.State>(),
+    OneOffEventHandler<SpotCheckViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val proxyInput = accessFactorSourcesIOHandler.getInput()
-        as AccessFactorSourcesInput.ToSign<out Signable.Payload, out Signable.ID>
+    private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSpotCheck
+
+    override fun initialState(): State = State(
+        factorSource = proxyInput.factorSource,
+        isSkipAllowed = proxyInput.allowSkip,
+        accessState = accessDelegate.state.value,
+    )
 
     private val accessDelegate = AccessFactorSourceDelegate(
         viewModelScope = viewModelScope,
-        id = proxyInput.input.factorSourceId.asGeneral(),
+        factorSource = proxyInput.factorSource,
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,
-        onFailCallback = this::onFailCallback
-    )
-
-    override fun initialState(): State = State(
-        signPurpose = proxyInput.purpose,
-        accessState = accessDelegate.state.value,
+        onFailCallback = {}
     )
 
     init {
@@ -75,55 +71,22 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
-        is FactorSource.Device -> accessDeviceFactorSource.signMono(
-            factorSource = factorSource,
-            input = proxyInput.input
-        )
-
-        is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
-            factorSource = factorSource,
-            input = proxyInput.input
-        )
-
-        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.signMono(
-            factorSource = factorSource,
-            input = proxyInput.input
-        )
-        is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
-            factorSource = factorSource,
-            input = proxyInput.input
-        )
-
-        is FactorSource.Password -> accessPasswordFactorSourceUseCase.signMono(
-            factorSource = factorSource,
-            input = proxyInput.input
-        )
-    }.map { perFactorOutcome ->
-        finishWithSuccess(perFactorOutcome)
+        is FactorSource.Device -> accessDeviceFactorSource.spotCheck(factorSource = factorSource)
+        is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.spotCheck(factorSource = factorSource)
+        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.spotCheck(factorSource = factorSource)
+        is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.spotCheck(factorSource = factorSource)
+        is FactorSource.Password -> accessPasswordFactorSourceUseCase.spotCheck(factorSource = factorSource)
+    }.map { isValidated ->
+        if (isValidated) {
+            sendEvent(event = Event.Completed)
+            accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SpotCheckOutput.Completed(response = SpotCheckResponse.VALID))
+        }
     }
 
     private suspend fun onDismissCallback() {
         // end the signing process and return the output (reject)
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Rejected)
-    }
-
-    private suspend fun onFailCallback() {
-        // end the signing process and return the output (error)
-        sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.SignOutput.Completed(
-                outcome = PerFactorOutcome(
-                    factorSourceId = proxyInput.input.factorSourceId,
-                    outcome = FactorOutcome.Neglected(
-                        factor = NeglectedFactor(
-                            reason = NeglectFactorReason.FAILURE,
-                            factor = proxyInput.input.factorSourceId
-                        )
-                    )
-                )
-            )
-        )
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SpotCheckOutput.Rejected)
     }
 
     fun onDismiss() = accessDelegate.onDismiss()
@@ -138,43 +101,25 @@ class GetSignaturesViewModel @Inject constructor(
 
     fun onInputConfirmed() = accessDelegate.onInputConfirmed()
 
-    fun onSkip() = viewModelScope.launch {
+    fun onIgnore() = viewModelScope.launch {
         accessDelegate.onCancelAccess()
 
-        // end the signing process and return the output (error)
         sendEvent(event = Event.Completed)
-        val outcome = FactorOutcome.Neglected<Signable.ID>(
-            factor = NeglectedFactor(
-                reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED,
-                factor = proxyInput.input.factorSourceId
-            )
-        )
-        accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.SignOutput.Completed(
-                outcome = PerFactorOutcome(
-                    factorSourceId = proxyInput.input.factorSourceId,
-                    outcome = outcome
-                )
-            )
-        )
-    }
-
-    private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
-        sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Completed(outcome = outcome))
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SpotCheckOutput.Completed(SpotCheckResponse.SKIPPED))
     }
 
     data class State(
-        val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
+        val factorSource: FactorSource,
+        private val isSkipAllowed: Boolean,
         val accessState: AccessFactorSourceDelegate.State
     ) : UiState {
 
-        private val canSkipFactor: Boolean
-            get() = signPurpose == AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents ||
-                signPurpose == AccessFactorSourcesInput.ToSign.Purpose.SubIntents
-
         val skipOption: AccessFactorSourceSkipOption
-            get() = if (canSkipFactor) AccessFactorSourceSkipOption.CanSkipFactor else AccessFactorSourceSkipOption.None
+            get() = if (isSkipAllowed) {
+                AccessFactorSourceSkipOption.CanIgnoreFactor
+            } else {
+                AccessFactorSourceSkipOption.None
+            }
     }
 
     sealed interface Event : OneOffEvent {

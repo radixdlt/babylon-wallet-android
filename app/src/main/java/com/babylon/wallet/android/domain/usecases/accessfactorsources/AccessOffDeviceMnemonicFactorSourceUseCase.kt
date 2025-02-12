@@ -8,9 +8,11 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.extensions.derivePublicKeys
 import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
@@ -35,7 +37,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
         val generatedId = seedPhrase.factorSourceId(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC)
 
         return if (generatedId != factorSourceId) {
-            SeedPhraseValidity.DoesNotDeriveFactorSourceId
+            SeedPhraseValidity.WrongMnemonic
         } else {
             seedPhraseChannel.send(seedPhrase)
             SeedPhraseValidity.Valid
@@ -76,11 +78,17 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
         )
     }
 
+    override suspend fun spotCheck(factorSource: FactorSource.OffDeviceMnemonic): Result<Boolean> = runCatching {
+        val seedPhrase = seedPhraseChannel.receive()
+
+        factorSource.spotCheck(input = SpotCheckInput.Software(mnemonicWithPassphrase = seedPhrase))
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+    }
+
     enum class SeedPhraseValidity {
         Valid,
         InvalidMnemonic,
-        DoesNotDeriveFactorSourceId;
-
-        fun isIncorrect(): Boolean = this != Valid
+        WrongMnemonic
     }
 }

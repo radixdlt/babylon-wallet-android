@@ -8,11 +8,13 @@ import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.SecureStorageKey
+import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.mapError
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.os.driver.BiometricsFailure
 import com.radixdlt.sargon.os.signing.FactorOutcome
@@ -58,6 +60,16 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
         }.onSuccess {
             updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
         }
+
+    override suspend fun spotCheck(factorSource: FactorSource.Device): Result<Boolean> = readMnemonic(
+        factorSourceId = factorSource.value.id
+    ).mapCatching { mnemonicWithPassphrase ->
+        factorSource.spotCheck(
+            input = SpotCheckInput.Software(mnemonicWithPassphrase = mnemonicWithPassphrase)
+        )
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+    }
 
     private suspend fun readMnemonic(factorSourceId: FactorSourceIdFromHash): Result<MnemonicWithPassphrase> {
         if (!mnemonicRepository.mnemonicExist(key = factorSourceId.asGeneral())) {

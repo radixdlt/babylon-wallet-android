@@ -27,6 +27,7 @@ import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedReques
 import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorization
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
@@ -219,6 +220,7 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.DerivePublicKeys -> navController.derivePublicKeysDialog()
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
                 AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
+                AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
                 is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
         }

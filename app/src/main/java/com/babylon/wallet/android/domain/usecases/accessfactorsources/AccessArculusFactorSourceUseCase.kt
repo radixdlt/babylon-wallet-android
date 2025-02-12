@@ -23,4 +23,8 @@ class AccessArculusFactorSourceUseCase @Inject constructor() : AccessFactorSourc
     ): Result<PerFactorOutcome<Signable.ID>> {
         TODO("Future implementation")
     }
+
+    override suspend fun spotCheck(factorSource: FactorSource.ArculusCard): Result<Boolean> {
+        TODO("Future implementation")
+    }
 }

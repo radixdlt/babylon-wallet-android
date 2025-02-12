@@ -97,6 +97,19 @@ class AccessDeviceFactorSourceUseCaseTest {
     }
 
     @Test
+    fun spotCheckFailsDueToNoBiometrics() = runTest {
+        mockMnemonicAccess(
+            id = device.id,
+            keyExists = true,
+            biometricsSucceeds = false
+        )
+
+        val result = sut.spotCheck(factorSource = device.asGeneral())
+
+        assertTrue(result.exceptionOrNull() is CommonException.SecureStorageAccessException)
+    }
+
+    @Test
     fun derivePublicKeysFailsDueToNoMnemonic() = runTest {
         mockMnemonicAccess(
             id = device.id,
@@ -130,6 +143,19 @@ class AccessDeviceFactorSourceUseCaseTest {
                 invalidTransactionsIfNeglected = emptyList()
             )
         )
+
+        assertTrue(result.exceptionOrNull() is CommonException.UnableToLoadMnemonicFromSecureStorage)
+    }
+
+    @Test
+    fun spotCheckFailsDueToNoMnemonic() = runTest {
+        coEvery { updateFactorSourceLastUsedUseCase.invoke(factorSourceId = device.id.asGeneral()) } just Runs
+        mockMnemonicAccess(
+            id = device.id,
+            keyExists = false
+        )
+
+        val result = sut.spotCheck(factorSource = device.asGeneral())
 
         assertTrue(result.exceptionOrNull() is CommonException.UnableToLoadMnemonicFromSecureStorage)
     }
@@ -172,6 +198,18 @@ class AccessDeviceFactorSourceUseCaseTest {
     }
 
     @Test
+    fun spotCheckFailsWhenMnemonicShouldExistButFailsToLoad() = runTest {
+        mockMnemonicAccess(
+            id = device.id,
+            mnemonicInRepository = null
+        )
+
+        val result = sut.spotCheck(factorSource = device.asGeneral())
+
+        assertTrue(result.exceptionOrNull() is CommonException.UnableToLoadMnemonicFromSecureStorage)
+    }
+
+    @Test
     fun derivePublicKeysFailsWhenBiometricsSucceedButCouldNotDecrypt() = runTest {
         mockMnemonicAccess(
             id = device.id,
@@ -206,6 +244,19 @@ class AccessDeviceFactorSourceUseCaseTest {
                 invalidTransactionsIfNeglected = emptyList()
             )
         )
+
+        assertTrue(result.exceptionOrNull() is CommonException.SecureStorageReadException)
+    }
+
+    @Test
+    fun spotCheckFailsWhenBiometricsSucceedButCouldNotDecrypt() = runTest {
+        mockMnemonicAccess(
+            id = device.id,
+            mnemonicInRepository = mnemonicWithPassphrase,
+            failsToAccessMnemonicEvenIfBiometricsProvided = true
+        )
+
+        val result = sut.spotCheck(factorSource = device.asGeneral())
 
         assertTrue(result.exceptionOrNull() is CommonException.SecureStorageReadException)
     }
@@ -275,6 +326,23 @@ class AccessDeviceFactorSourceUseCaseTest {
                     producedSignatures = mnemonicWithPassphrase.signInteractorInput(input = input)
                 )
             ),
+            result.getOrNull()
+        )
+        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral()) }
+    }
+
+    @Test
+    fun testSpotCheckSucceeds() = runTest {
+        coEvery { updateFactorSourceLastUsedUseCase.invoke(factorSourceId = device.id.asGeneral()) } just Runs
+        mockMnemonicAccess(
+            id = device.id,
+            mnemonicInRepository = mnemonicWithPassphrase
+        )
+
+        val result = sut.spotCheck(factorSource = device.asGeneral())
+
+        assertEquals(
+            true,
             result.getOrNull()
         )
         coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral()) }
