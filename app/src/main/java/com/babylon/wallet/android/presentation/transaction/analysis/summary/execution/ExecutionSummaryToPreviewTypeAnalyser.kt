@@ -22,7 +22,8 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
         val executionSummary = summary.summary
-        val manifestClass = executionSummary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
+        val classification = executionSummary.detailedClassification.find { it.isSpecific && it.isConforming } ?: executionSummary.detailedClassification.firstOrNull()
+        val manifestClass = classification ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
             is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary, manifestClass)
@@ -37,6 +38,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 manifestClass
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.GeneralSubintent -> PreviewType.NonConforming
         }
     }
 
@@ -52,6 +54,20 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             is DetailedManifestClass.ValidatorUnstake -> true
             is DetailedManifestClass.DeleteAccounts -> true
             else -> false
+        }
+
+    private val DetailedManifestClass.isSpecific: Boolean
+        get() = when (this) {
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> true
+            is DetailedManifestClass.PoolContribution -> true
+            is DetailedManifestClass.PoolRedemption -> true
+            is DetailedManifestClass.Transfer -> true
+            is DetailedManifestClass.ValidatorClaim -> true
+            is DetailedManifestClass.ValidatorStake -> true
+            is DetailedManifestClass.ValidatorUnstake -> true
+            is DetailedManifestClass.DeleteAccounts -> true
+            is DetailedManifestClass.General -> false
+            is DetailedManifestClass.GeneralSubintent -> false
         }
 }
 
