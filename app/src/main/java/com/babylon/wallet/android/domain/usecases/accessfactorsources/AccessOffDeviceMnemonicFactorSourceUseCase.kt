@@ -78,15 +78,17 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
         )
     }
 
-    enum class SeedPhraseValidity {
-        Valid,
-        InvalidMnemonic,
-        WrongMnemonic
-    }
-
     override suspend fun spotCheck(factorSource: FactorSource.OffDeviceMnemonic): Result<Boolean> = runCatching {
         val seedPhrase = seedPhraseChannel.receive()
 
         factorSource.spotCheck(input = SpotCheckInput.Software(mnemonicWithPassphrase = seedPhrase))
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+    }
+
+    enum class SeedPhraseValidity {
+        Valid,
+        InvalidMnemonic,
+        WrongMnemonic
     }
 }

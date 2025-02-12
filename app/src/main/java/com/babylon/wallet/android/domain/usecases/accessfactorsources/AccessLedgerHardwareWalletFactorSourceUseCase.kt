@@ -116,6 +116,8 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         interactionId = UUIDGenerator.uuid().toString()
     ).mapCatching { deviceIdResponse ->
         factorSource.spotCheck(input = SpotCheckInput.Ledger(id = deviceIdResponse.deviceId))
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
     }
 
     private suspend fun signTransaction(

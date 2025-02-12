@@ -477,7 +477,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
     @Test
     fun spotCheckSucceeds() = runTest {
         val expectedDeviceId = Exactly32Bytes.sample()
-//        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) } just Runs
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) } just Runs
         coEvery {
             ledgerMessenger.sendDeviceInfoRequest(interactionId = any())
         } returns Result.success(
@@ -496,6 +496,6 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
 
         unmockkStatic("com.radixdlt.sargon.SargonKt")
         assertTrue(result)
-//        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) }
+        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) }
     }
 }

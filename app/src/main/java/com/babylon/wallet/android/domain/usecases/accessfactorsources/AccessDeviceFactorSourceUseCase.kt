@@ -61,6 +61,16 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
             updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
         }
 
+    override suspend fun spotCheck(factorSource: FactorSource.Device): Result<Boolean> = readMnemonic(
+        factorSourceId = factorSource.value.id
+    ).mapCatching { mnemonicWithPassphrase ->
+        factorSource.spotCheck(
+            input = SpotCheckInput.Software(mnemonicWithPassphrase = mnemonicWithPassphrase)
+        )
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+    }
+
     private suspend fun readMnemonic(factorSourceId: FactorSourceIdFromHash): Result<MnemonicWithPassphrase> {
         if (!mnemonicRepository.mnemonicExist(key = factorSourceId.asGeneral())) {
             return Result.failure(CommonException.UnableToLoadMnemonicFromSecureStorage(badValue = factorSourceId.body.hex))
@@ -84,13 +94,5 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
                     else -> CommonException.Unknown()
                 }
             }
-    }
-
-    override suspend fun spotCheck(factorSource: FactorSource.Device): Result<Boolean> = readMnemonic(
-        factorSourceId = factorSource.value.id
-    ).mapCatching { mnemonicWithPassphrase ->
-        factorSource.spotCheck(
-            input = SpotCheckInput.Software(mnemonicWithPassphrase = mnemonicWithPassphrase)
-        )
     }
 }

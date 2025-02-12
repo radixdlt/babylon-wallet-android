@@ -333,7 +333,7 @@ class AccessDeviceFactorSourceUseCaseTest {
 
     @Test
     fun testSpotCheckSucceeds() = runTest {
-//        coEvery { updateFactorSourceLastUsedUseCase.invoke(factorSourceId = device.id.asGeneral()) } just Runs
+        coEvery { updateFactorSourceLastUsedUseCase.invoke(factorSourceId = device.id.asGeneral()) } just Runs
         mockMnemonicAccess(
             id = device.id,
             mnemonicInRepository = mnemonicWithPassphrase
@@ -345,7 +345,7 @@ class AccessDeviceFactorSourceUseCaseTest {
             true,
             result.getOrNull()
         )
-//        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral()) }
+        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral()) }
     }
 
     private suspend fun mockMnemonicAccess(

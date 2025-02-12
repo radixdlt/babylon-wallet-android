@@ -266,7 +266,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
     @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun testSpotCheck() = runTest {
-//        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } returns Unit
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } returns Unit
         val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
         val offDeviceMnemonicFs = newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase(
             mwp = mnemonicWithPassphrase,
@@ -293,6 +293,6 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         val result = sut.spotCheck(factorSource = offDeviceMnemonicFs.asGeneral()).getOrThrow()
 
         assertTrue(result)
-//        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = offDeviceMnemonicFs.id.asGeneral()) }
+        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = offDeviceMnemonicFs.id.asGeneral()) }
     }
 }
