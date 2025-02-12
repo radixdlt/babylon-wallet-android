@@ -46,6 +46,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
@@ -235,6 +236,8 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
         factorActions = {
+            SecureScreen()
+
             SeedPhraseInputForm(
                 modifier = Modifier
                     .fillMaxWidth()
