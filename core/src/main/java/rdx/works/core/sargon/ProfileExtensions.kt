@@ -567,13 +567,6 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
 
-                    is FactorSource.SecurityQuestions -> factorSource.value.copy(
-                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
-                    ).asGeneral()
-
-                    is FactorSource.TrustedContact -> factorSource.value.copy(
-                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
-                    ).asGeneral()
                     is FactorSource.Password -> error("Password factor source is not yet supported.")
                 }
             }
