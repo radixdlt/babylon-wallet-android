@@ -22,8 +22,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
         val executionSummary = summary.summary
-        val classification = executionSummary.detailedClassification.find { it.isSpecific && it.isConforming } ?: executionSummary.detailedClassification.firstOrNull()
-        val manifestClass = classification ?: return PreviewType.NonConforming
+        val manifestClass = executionSummary.detailedClassification ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
             is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary, manifestClass)
@@ -38,37 +37,9 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 manifestClass
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
-            is DetailedManifestClass.GeneralSubintent -> PreviewType.NonConforming
+            is DetailedManifestClass.SecurifyEntity -> PreviewType.NonConforming
         }
     }
-
-    private val DetailedManifestClass.isConforming: Boolean
-        get() = when (this) {
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> true
-            is DetailedManifestClass.General -> true
-            is DetailedManifestClass.PoolContribution -> true
-            is DetailedManifestClass.PoolRedemption -> true
-            is DetailedManifestClass.Transfer -> true
-            is DetailedManifestClass.ValidatorClaim -> true
-            is DetailedManifestClass.ValidatorStake -> true
-            is DetailedManifestClass.ValidatorUnstake -> true
-            is DetailedManifestClass.DeleteAccounts -> true
-            is DetailedManifestClass.GeneralSubintent -> false
-        }
-
-    private val DetailedManifestClass.isSpecific: Boolean
-        get() = when (this) {
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> true
-            is DetailedManifestClass.PoolContribution -> true
-            is DetailedManifestClass.PoolRedemption -> true
-            is DetailedManifestClass.Transfer -> true
-            is DetailedManifestClass.ValidatorClaim -> true
-            is DetailedManifestClass.ValidatorStake -> true
-            is DetailedManifestClass.ValidatorUnstake -> true
-            is DetailedManifestClass.DeleteAccounts -> true
-            is DetailedManifestClass.General -> false
-            is DetailedManifestClass.GeneralSubintent -> false
-        }
 }
 
 interface PreviewTypeProcessor<C : DetailedManifestClass> {
