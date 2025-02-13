@@ -9,7 +9,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -25,8 +24,7 @@ fun MainScreen(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
-    onNavigateToLinkConnector: () -> Unit,
-    onApplyShield: (AccountAddress) -> Unit,
+    onNavigateToLinkConnector: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -41,8 +39,7 @@ fun MainScreen(
                 showNPSSurvey = showNPSSurvey,
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
-                onNavigateToLinkConnector = onNavigateToLinkConnector,
-                onApplyShield = onApplyShield
+                onNavigateToLinkConnector = onNavigateToLinkConnector
             )
         }
 

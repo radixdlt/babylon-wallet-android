@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.summary.exec
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.SecurifyEntityProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
@@ -178,6 +179,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         accountDeletionProcessor = AccountDeletionProcessor(
             getProfileUseCase = getProfileUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+        ),
+        securifyEntityProcessor = SecurifyEntityProcessor(
+            getProfileUseCase = getProfileUseCase,
+            sargonOsManager = sargonOsManager
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()

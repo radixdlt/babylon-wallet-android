@@ -11,5 +11,4 @@ class MarkEntityAsSecurifiedUseCase @Inject constructor(
     suspend operator fun invoke(entityAddress: AddressOfAccountOrPersona) = runCatching {
         sargonOsManager.sargonOs.markEntitiesAsSecurified(entityAddresses = listOf(entityAddress))
     }
-
 }
