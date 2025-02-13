@@ -8,8 +8,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.accessfactorsources.applyshield.applyShield
-import com.babylon.wallet.android.presentation.accessfactorsources.applyshield.applyShieldDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorizationDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
@@ -89,7 +87,6 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.walletclaimed.claimedByAnotherDevice
-import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.networkId
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
@@ -242,9 +239,6 @@ fun NavigationHost(
             },
             onNavigateToLinkConnector = {
                 navController.linkedConnectorsScreen(shouldShowAddLinkConnectorScreen = true)
-            },
-            onApplyShield = {
-                navController.applyShield(address = AddressOfAccountOrPersona.Account(it))
             }
         )
         account(
@@ -285,11 +279,6 @@ fun NavigationHost(
             }
         )
         requestAuthorizationDialog(
-            onDismiss = {
-                navController.popBackStack()
-            }
-        )
-        applyShieldDialog(
             onDismiss = {
                 navController.popBackStack()
             }

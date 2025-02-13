@@ -344,8 +344,8 @@ class TransactionReviewViewModel @Inject constructor(
 
         private val isRawManifestToggleVisible: Boolean
             get() = previewType !is PreviewType.None &&
-                    previewType !is PreviewType.UnacceptableManifest &&
-                    previewType !is PreviewType.NonConforming
+                previewType !is PreviewType.UnacceptableManifest &&
+                previewType !is PreviewType.NonConforming
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None

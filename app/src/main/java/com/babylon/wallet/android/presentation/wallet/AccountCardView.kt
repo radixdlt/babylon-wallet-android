@@ -55,7 +55,6 @@ fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: AccountUiItem,
     onApplySecuritySettingsClick: () -> Unit,
-    onApplySecurityShield: () -> Unit,
     onLockerDepositClick: (AccountUiItem, AccountLockerDeposit) -> Unit
 ) {
     ConstraintLayout(
@@ -234,14 +233,6 @@ fun AccountCardView(
                 )
             }
 
-            AccountPromptLabel(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = RadixTheme.dimensions.paddingMedium),
-                onClick = onApplySecurityShield,
-                text = "Apply Security Shield"
-            )
-
             accountWithAssets.deposits.forEach { deposit ->
                 AccountPromptLabel(
                     modifier = Modifier
@@ -324,7 +315,6 @@ fun AccountCardPreview() {
                     isLoadingBalance = false,
                 ),
                 onApplySecuritySettingsClick = {},
-                onApplySecurityShield = {},
                 onLockerDepositClick = { _, _ -> }
             )
         }
@@ -358,7 +348,6 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     isLoadingBalance = false
                 ),
                 onApplySecuritySettingsClick = {},
-                onApplySecurityShield = {},
                 onLockerDepositClick = { _, _ -> }
             )
         }
@@ -396,7 +385,6 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     isLoadingBalance = false,
                 ),
                 onApplySecuritySettingsClick = {},
-                onApplySecurityShield = {},
                 onLockerDepositClick = { _, _ -> }
             )
         }
@@ -431,7 +419,6 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         isFiatBalanceVisible = true
                     ),
                     onApplySecuritySettingsClick = {},
-                    onApplySecurityShield = {},
                     onLockerDepositClick = { _, _ -> }
                 )
             }
@@ -461,7 +448,6 @@ fun AccountCardEmptyPreview() {
                         isFiatBalanceVisible = true
                     ),
                     onApplySecuritySettingsClick = {},
-                    onApplySecurityShield = {},
                     onLockerDepositClick = { _, _ -> }
                 )
             }
@@ -494,7 +480,6 @@ fun AccountCardLoadingPreview() {
                     isLoadingBalance = true
                 ),
                 onApplySecuritySettingsClick = {},
-                onApplySecurityShield = {},
                 onLockerDepositClick = { _, _ -> }
             )
         }

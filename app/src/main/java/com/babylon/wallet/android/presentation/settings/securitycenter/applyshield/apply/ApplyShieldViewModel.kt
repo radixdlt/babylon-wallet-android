@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.applyshield.ApplyShieldViewModel.Event
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl

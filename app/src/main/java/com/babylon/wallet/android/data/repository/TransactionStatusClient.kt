@@ -29,6 +29,7 @@ import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LongParameterList")
 @Singleton
 class TransactionStatusClient @Inject constructor(
     private val getTransactionStatusUseCase: GetTransactionStatusUseCase,

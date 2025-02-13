@@ -58,7 +58,6 @@ import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -86,8 +85,7 @@ fun WalletScreen(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
-    onNavigateToLinkConnector: () -> Unit,
-    onApplyShield: (AccountAddress) -> Unit
+    onNavigateToLinkConnector: () -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -103,9 +101,6 @@ fun WalletScreen(
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
-        onApplySecurityShield = {
-            onApplyShield(it.address)
-        },
         onLockerDepositClick = viewModel::onLockerDepositClick,
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose
@@ -182,7 +177,6 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
-    onApplySecurityShield: (Account) -> Unit,
     onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
@@ -247,7 +241,6 @@ private fun WalletContent(
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
                 onLockerDepositClick = onLockerDepositClick,
                 onCardClick = onCardClick,
-                onApplySecurityShield = onApplySecurityShield,
                 onCardCloseClick = onCardCloseClick
             )
 
@@ -273,7 +266,6 @@ private fun WalletAccountList(
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
-    onApplySecurityShield: (Account) -> Unit,
     onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
@@ -330,9 +322,6 @@ private fun WalletAccountList(
                     },
                 accountWithAssets = accountWithAssets,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
-                onApplySecurityShield = {
-                    onApplySecurityShield(accountWithAssets.account)
-                },
                 onLockerDepositClick = onLockerDepositClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -365,7 +354,6 @@ private fun WalletContentPreview(
             onRefresh = { },
             onMessageShown = {},
             onApplySecuritySettingsClick = {},
-            onApplySecurityShield = {},
             onLockerDepositClick = { _, _ -> },
             onCardClick = {},
             onCardCloseClick = {}
