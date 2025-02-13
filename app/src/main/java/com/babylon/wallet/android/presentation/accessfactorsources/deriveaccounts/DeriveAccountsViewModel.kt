@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.accessfactorsources.deriveaccoun
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
@@ -29,13 +28,13 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.bip32String
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
 import com.radixdlt.sargon.extensions.indexInLocalKeySpace
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -255,17 +254,14 @@ class DeriveAccountsViewModel @Inject constructor(
                 ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),
                     keyParameters = derivationPaths.map { derivationPath ->
-                        LedgerInteractionRequest.KeyParameters(
-                            curve = if (input.isForLegacyOlympia) Curve.Secp256k1 else Curve.Curve25519,
-                            derivationPath = derivationPath.string
-                        )
+                        LedgerInteractionRequest.KeyParameters.from(derivationPath)
                     },
                     ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = factorSource)
                 ).mapCatching { derivePublicKeyResponse ->
                     derivePublicKeyResponse.publicKeysHex.map { derived ->
                         HierarchicalDeterministicPublicKey(
                             publicKey = PublicKey.init(derived.publicKeyHex),
-                            derivationPath = derivationPaths.first { it.string == derived.derivationPath }
+                            derivationPath = derivationPaths.first { it.bip32String == derived.derivationPath }
                         )
                     }
                 }

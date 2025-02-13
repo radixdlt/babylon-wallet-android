@@ -4,7 +4,6 @@ package com.babylon.wallet.android.presentation.settings.troubleshooting.importl
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
@@ -24,14 +23,13 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhar
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
-import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.validate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -183,7 +181,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         olympiaAccountsToImport = data.accountData
                             .map {
                                 // truncate the name, max 30 chars
-                                it.copy(accountName = it.accountName.take(ENTITY_NAME_MAX_LENGTH))
+                                it.copy(accountName = it.accountName.take(entityNameMaxLength.toInt()))
                             }
                             .toPersistentList(),
                         importButtonEnabled = !allImported,
@@ -414,7 +412,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = interactionId,
                 keyParameters = hardwareAccountsDerivationPaths.map { derivationPath ->
-                    LedgerInteractionRequest.KeyParameters(Curve.Secp256k1, derivationPath.string)
+                    LedgerInteractionRequest.KeyParameters.from(derivationPath)
                 },
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource)
             ).onFailure {

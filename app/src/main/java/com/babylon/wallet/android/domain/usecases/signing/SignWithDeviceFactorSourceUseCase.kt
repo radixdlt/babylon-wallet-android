@@ -60,6 +60,9 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                         return Result.failure(it)
                     }
                 }
+                is EntitySecurityState.Securified -> {
+                    // Not yet implemented
+                }
             }
         }
         return Result.success(entitiesWithSignaturesList)

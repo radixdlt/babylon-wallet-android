@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.DerivationPath
@@ -14,7 +13,6 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.authenticationSigningFactorInstance
@@ -70,15 +68,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     ): Result<HierarchicalDeterministicFactorInstance> {
         val deriveResult = ledgerMessenger.sendDerivePublicKeyRequest(
             interactionId = UUIDGenerator.uuid().toString(),
-            keyParameters = listOf(
-                LedgerInteractionRequest.KeyParameters(
-                    curve = Curve.Curve25519, // To whoever works on this feature in the future, this curve should not
-                    // be 25519 hardcoded. (Concluded when scouting this part of code during sargon integration)
-                    // We have to calculate the curve from the derivation path. This feature is not yet
-                    // used by the public so it can stay as a reference.
-                    derivationPath = authSigningDerivationPath.string
-                )
-            ),
+            keyParameters = listOf(LedgerInteractionRequest.KeyParameters.from(authSigningDerivationPath)),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerHardwareWalletFactorSource)
         ).mapCatching { derivePublicKeyResponse ->
             derivePublicKeyResponse.publicKeysHex.first().publicKeyHex

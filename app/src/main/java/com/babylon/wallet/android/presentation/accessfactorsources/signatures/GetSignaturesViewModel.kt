@@ -90,13 +90,6 @@ class GetSignaturesViewModel @Inject constructor(
                         // Not implemented yet
                     }
 
-                    is FactorSource.SecurityQuestions -> {
-                        // Not implemented yet
-                    }
-
-                    is FactorSource.TrustedContact -> {
-                        // Not implemented yet
-                    }
                     is FactorSource.Password -> error("Password factor source is not yet supported.")
                 }
             }
@@ -265,13 +258,14 @@ class GetSignaturesViewModel @Inject constructor(
                     }
                     val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
 
-                    if (factorSource.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
-                        if (result[factorSource] != null) {
-                            result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
-                        } else {
-                            result[factorSource] = listOf(signer)
-                        }
+                    if (result[factorSource] != null) {
+                        result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
+                    } else {
+                        result[factorSource] = listOf(signer)
                     }
+                }
+                is EntitySecurityState.Securified -> {
+                    // Not yet implemented
                 }
             }
         }

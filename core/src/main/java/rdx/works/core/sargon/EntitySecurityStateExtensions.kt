@@ -1,5 +1,6 @@
 package rdx.works.core.sargon
 
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.EntitySecurityState
@@ -25,6 +26,7 @@ fun EntitySecurityState.Companion.unsecured(
 val EntitySecurityState.factorSourceId: FactorSourceId
     get() = when (this) {
         is EntitySecurityState.Unsecured -> FactorSourceId.Hash(value.transactionSigning.factorSourceId)
+        is EntitySecurityState.Securified -> throw CommonException.Unknown()
     }
 
 val EntitySecurityState.usesEd25519: Boolean
@@ -34,6 +36,7 @@ val EntitySecurityState.usesEd25519: Boolean
 
             badge is PublicKey.Ed25519
         }
+        is EntitySecurityState.Securified -> throw CommonException.Unknown()
     }
 
 val EntitySecurityState.usesSECP256k1: Boolean
@@ -43,6 +46,7 @@ val EntitySecurityState.usesSECP256k1: Boolean
 
             badge is PublicKey.Secp256k1
         }
+        is EntitySecurityState.Securified -> throw CommonException.Unknown()
     }
 
 val EntitySecurityState.derivationPathScheme: DerivationPathScheme
@@ -53,17 +57,20 @@ val EntitySecurityState.derivationPathScheme: DerivationPathScheme
                 is DerivationPath.Account, is DerivationPath.Identity -> DerivationPathScheme.CAP26
             }
         }
+        is EntitySecurityState.Securified -> throw CommonException.Unknown()
     }
 
 val EntitySecurityState.transactionSigningFactorInstance: HierarchicalDeterministicFactorInstance
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.transactionSigning
+        is EntitySecurityState.Securified -> throw CommonException.Unknown()
     }
 
 val EntitySecurityState.authenticationSigningFactorInstance: HierarchicalDeterministicFactorInstance?
     get() = when (this) {
         // TODO AuthSigningFactorInstance: delete this and all the usages when the replacement is ready
         is EntitySecurityState.Unsecured -> null
+        is EntitySecurityState.Securified -> null
     }
 
 val EntitySecurityState.hasAuthSigning: Boolean

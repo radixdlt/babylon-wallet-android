@@ -25,7 +25,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
         val manifestClass = executionSummary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
-            is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary)
             is DetailedManifestClass.Transfer -> transferProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.PoolContribution -> poolContributionProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.PoolRedemption -> poolRedemptionProcessor.process(executionSummary, manifestClass)
@@ -37,6 +37,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 manifestClass
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
+            DetailedManifestClass.GeneralSubintent -> error("Non-conforming manifest class")
         }
     }
 
@@ -51,6 +52,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             is DetailedManifestClass.ValidatorStake -> true
             is DetailedManifestClass.ValidatorUnstake -> true
             is DetailedManifestClass.DeleteAccounts -> true
+            is DetailedManifestClass.GeneralSubintent -> false
             else -> false
         }
 }
