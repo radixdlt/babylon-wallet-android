@@ -37,7 +37,7 @@ class TransactionFeesTest {
             storageExpansionCost = 0.toDecimal192(),
             royaltyCost = 0.toDecimal192()
         ),
-        detailedClassification = listOf(),
+        detailedClassification = null,
         reservedInstructions = listOf(),
         deposits = mapOf(),
         withdrawals = mapOf(),
@@ -68,9 +68,7 @@ class TransactionFeesTest {
                 storageExpansionCost = 0.2.toDecimal192(),
                 royaltyCost = 0.2.toDecimal192()
             ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
+            detailedClassification = DetailedManifestClass.General,
             reservedInstructions = emptyList()
         )
 
@@ -94,9 +92,7 @@ class TransactionFeesTest {
                 storageExpansionCost = 0.2.toDecimal192(),
                 royaltyCost = 0.2.toDecimal192()
             ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
+            detailedClassification = DetailedManifestClass.General,
             reservedInstructions = emptyList()
         )
 
@@ -120,9 +116,7 @@ class TransactionFeesTest {
                 storageExpansionCost = 0.2.toDecimal192(),
                 royaltyCost = 0.2.toDecimal192()
             ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
+            detailedClassification = DetailedManifestClass.General,
             reservedInstructions = emptyList()
         )
 
@@ -146,9 +140,7 @@ class TransactionFeesTest {
                 storageExpansionCost = 0.2.toDecimal192(),
                 royaltyCost = 0.2.toDecimal192()
             ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
+            detailedClassification = DetailedManifestClass.General,
             reservedInstructions = emptyList()
         )
 
@@ -172,9 +164,7 @@ class TransactionFeesTest {
                 storageExpansionCost = 0.2.toDecimal192(),
                 royaltyCost = 0.2.toDecimal192()
             ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
+            detailedClassification = DetailedManifestClass.General,
             reservedInstructions = emptyList()
         )
 
@@ -205,9 +195,7 @@ class TransactionFeesTest {
                 storageExpansionCost = 0.0343322748.toDecimal192(),
                 royaltyCost = 0.toDecimal192()
             ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
+            detailedClassification = DetailedManifestClass.General,
             reservedInstructions = emptyList()
         )
 
