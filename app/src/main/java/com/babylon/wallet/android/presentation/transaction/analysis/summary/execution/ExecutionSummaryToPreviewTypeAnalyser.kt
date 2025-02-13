@@ -22,7 +22,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
         val executionSummary = summary.summary
-        val manifestClass = executionSummary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
+        val manifestClass = executionSummary.detailedClassification ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
             is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary, manifestClass)
@@ -37,22 +37,9 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 manifestClass
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.SecurifyEntity -> PreviewType.NonConforming
         }
     }
-
-    private val DetailedManifestClass.isConforming: Boolean
-        get() = when (this) {
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> true
-            is DetailedManifestClass.General -> true
-            is DetailedManifestClass.PoolContribution -> true
-            is DetailedManifestClass.PoolRedemption -> true
-            is DetailedManifestClass.Transfer -> true
-            is DetailedManifestClass.ValidatorClaim -> true
-            is DetailedManifestClass.ValidatorStake -> true
-            is DetailedManifestClass.ValidatorUnstake -> true
-            is DetailedManifestClass.DeleteAccounts -> true
-            else -> false
-        }
 }
 
 interface PreviewTypeProcessor<C : DetailedManifestClass> {
