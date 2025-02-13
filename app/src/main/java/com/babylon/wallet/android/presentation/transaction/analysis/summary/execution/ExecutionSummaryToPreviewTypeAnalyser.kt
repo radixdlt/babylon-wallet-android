@@ -25,7 +25,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
         val manifestClass = executionSummary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
-            is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary)
+            is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.Transfer -> transferProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.PoolContribution -> poolContributionProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.PoolRedemption -> poolRedemptionProcessor.process(executionSummary, manifestClass)
