@@ -568,7 +568,7 @@ private fun UnsafeCombinationInfoDialog(
 }
 
 @Composable
-private fun TimePeriod.title(): String {
+fun TimePeriod.title(): String {
     val value = value.toInt()
     val isSingular = value == 1
     return when (unit) {
