@@ -47,7 +47,7 @@ fun SecurityShieldCardView(
             modifier = modifier
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
+                    vertical = RadixTheme.dimensions.paddingSemiLarge
                 )
                 // keep the same height of the card if status message is not present
                 .padding(vertical = if (item.messages.isEmpty()) RadixTheme.dimensions.paddingMedium else 0.dp),
@@ -55,7 +55,7 @@ fun SecurityShieldCardView(
         ) {
             Icon(
                 modifier = Modifier.size(80.dp),
-                painter = painterResource(id = DSR.ic_security_shields),
+                painter = painterResource(id = DSR.ic_shield_not_applied),
                 contentDescription = null,
                 tint = Color.Unspecified
             )
