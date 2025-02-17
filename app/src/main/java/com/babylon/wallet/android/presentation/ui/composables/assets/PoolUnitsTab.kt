@@ -213,27 +213,28 @@ fun PoolResourcesValues(
                             poolUnitPrice?.xrdPrice(resourceWithAmount.key)
                         }
 
-                    if (isLoadingBalance) {
-                        ShimmeringView(
-                            modifier = Modifier
-                                .padding(top = RadixTheme.dimensions.paddingXXXSmall)
-                                .height(12.dp)
-                                .fillMaxWidth(0.3f),
-                            isVisible = true
-                        )
-                    } else if (fiatPrice != null) {
-                        FiatBalanceView(fiatPrice = fiatPrice)
+                        if (isLoadingBalance) {
+                            ShimmeringView(
+                                modifier = Modifier
+                                    .padding(top = RadixTheme.dimensions.paddingXXXSmall)
+                                    .height(12.dp)
+                                    .fillMaxWidth(0.3f),
+                                isVisible = true
+                            )
+                        } else if (fiatPrice != null) {
+                            FiatBalanceView(fiatPrice = fiatPrice)
+                        }
                     }
+
+                    UnknownAmount(
+                        modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                        amount = resourceWithAmount.value
+                    )
                 }
 
-                UnknownAmount(
-                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-                    amount = resourceWithAmount.value
-                )
-            }
-
-            if (index != itemsSize - 1) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                if (index != itemsSize - 1) {
+                    HorizontalDivider(color = RadixTheme.colors.gray4)
+                }
             }
         }
     }
