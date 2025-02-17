@@ -242,7 +242,7 @@ private fun AmountText(
 
         symbol?.let {
             Text(
-                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXSmall),
+                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXXSmall),
                 text = it,
                 style = symbolStyle,
                 color = symbolColor

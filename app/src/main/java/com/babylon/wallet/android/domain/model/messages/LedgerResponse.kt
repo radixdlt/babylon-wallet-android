@@ -58,7 +58,7 @@ sealed class LedgerResponse(val id: String) : IncomingMessage {
 
     data class DerivePublicKeyResponse(
         val interactionId: String,
-        val publicKeysHex: List<DerivedPublicKey>
+        val publicKeys: List<DerivedPublicKey>
     ) : LedgerResponse(interactionId)
 
     data class SignTransactionResponse(

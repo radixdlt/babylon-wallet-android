@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.IconButton
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -164,7 +164,7 @@ fun PersonaDataStringInput(
                                     interactionSource = remember {
                                         MutableInteractionSource()
                                     },
-                                    indication = rememberRipple(bounded = false),
+                                    indication = ripple(bounded = false),
                                     onClick = onDeleteField
                                 )
                                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
@@ -236,7 +236,7 @@ fun PersonaNameInput(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             DefaultSelector(
                 modifier = Modifier.fillMaxWidth(),
                 items = Name.Variant.values().map { SelectorItem(it, it.description()) }.toPersistentList(),

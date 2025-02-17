@@ -23,8 +23,8 @@ import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
-import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceViewModel
-import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ShowLinkConnectorPromptState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceViewModel
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -65,6 +65,7 @@ fun ChooseLedgerScreen(
             when (event) {
                 is ChooseLedgerEvent.LedgerSelected -> goBackToCreateAccount()
                 is ChooseLedgerEvent.RecoverAccounts -> onStartRecovery(event.factorSource, event.isOlympia)
+                is ChooseLedgerEvent.Dismiss -> onBackClick
             }
         }
     }
@@ -76,7 +77,7 @@ fun ChooseLedgerScreen(
                     if (event.isLinkedConnectorAdded) {
                         viewModel.onNewLinkedConnectorAdded()
                     } else {
-                        viewModel.onCloseClick()
+                        viewModel.onAddLedgerClosed()
                     }
                 }
             }
@@ -127,7 +128,7 @@ fun ChooseLedgerScreen(
                 onLinkConnectorClick = {
                     viewModel.onLinkConnectorClick()
                 },
-                onCloseClick = viewModel::onCloseClick
+                onCloseClick = viewModel::onAddLedgerClosed
             )
         }
 
@@ -155,13 +156,12 @@ fun ChooseLedgerScreen(
                 onConfirmLedgerNameClick = {
                     coroutineScope.launch {
                         addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
-                        viewModel.onCloseClick()
+                        viewModel.onAddLedgerClosed()
                     }
                 },
                 backIconType = BackIconType.Back,
-                onClose = viewModel::onCloseClick,
+                onClose = viewModel::onAddLedgerClosed,
                 waitingForLedgerResponse = false,
-                onBackClick = viewModel::onCloseClick,
                 onMessageShown = addLedgerDeviceViewModel::onMessageShown,
                 isAddingLedgerDeviceInProgress = addLedgerDeviceState.isAddingLedgerDeviceInProgress,
                 isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress

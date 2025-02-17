@@ -16,7 +16,6 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.cloudbackup.model.BackupServiceException
-import rdx.works.profile.domain.ProfileException
 
 sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = cause) {
 
@@ -48,9 +47,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object InvalidPersonaOrAccounts : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
-        data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
-            DappRequestException(cause = cause)
-
+        data object FailedToSignAuthChallenge : DappRequestException()
         data class PreviewError(override val cause: Throwable?) : DappRequestException()
         data object InvalidPreAuthorizationExpirationTooClose : DappRequestException()
         data object InvalidPreAuthorizationExpired : DappRequestException()
@@ -92,8 +89,6 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class BuildTransactionHeader(override val cause: Throwable) : PrepareTransactionException(cause)
         data object FailedToFindAccountWithEnoughFundsToLockFee : PrepareTransactionException()
         data object CompileTransactionIntent : PrepareTransactionException()
-        data class SignCompiledTransactionIntent(override val cause: Throwable? = null) :
-            PrepareTransactionException(cause)
 
         data class PrepareNotarizedTransaction(override val cause: Throwable? = null) :
             PrepareTransactionException(cause)
@@ -114,7 +109,6 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 }
 
                 is CompileTransactionIntent -> DappWalletInteractionErrorType.FAILED_TO_COMPILE_TRANSACTION
-                is SignCompiledTransactionIntent -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
                 is ReceivingAccountDoesNotAllowDeposits -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
             }
     }
@@ -186,7 +180,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object FailedToDerivePublicKeys : LedgerCommunicationException()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
         data object FailedToSignAuthChallenge : LedgerCommunicationException()
-        data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationException()
+        data class FailedToSignTransaction(val reason: LedgerErrorCode, override val message: String?) : LedgerCommunicationException()
 
         override val dappWalletInteractionErrorType: DappWalletInteractionErrorType
             get() = when (this) {
@@ -258,7 +252,7 @@ fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(cont
                 R.string.ledgerHardwareDevices_verification_requestFailed
             }
 
-            RadixWalletException.LedgerCommunicationException.FailedToConnect -> R.string.common_somethingWentWrong
+            RadixWalletException.LedgerCommunicationException.FailedToConnect -> R.string.ledgerHardwareDevices_linkConnectorAlert_message
         }
     )
 }
@@ -412,21 +406,6 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
                 R.string.error_transactionFailure_noFundsToApproveTransaction
 
             is RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
-            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ->
-                when (val cause = this.cause) {
-                    is ProfileException.NoMnemonic -> {
-                        R.string.common_noMnemonicAlert_text
-                    }
-
-                    is RadixWalletException.LedgerCommunicationException -> {
-                        return cause.toUserFriendlyMessage(context)
-                    }
-
-                    else -> {
-                        R.string.error_transactionFailure_prepare
-                    }
-                }
-
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
             RadixWalletException.PrepareTransactionException.RequestNotFound -> R.string.error_transactionFailure_prepare

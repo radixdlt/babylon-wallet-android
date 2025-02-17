@@ -64,45 +64,19 @@ sealed interface SettingsItem {
                 LinkedConnectors -> DSR.ic_desktop_connection
                 is SecurityCenter -> DSR.ic_security_center
                 Troubleshooting -> DSR.ic_troubleshooting
-                else -> null
             }
         }
     }
 
     sealed interface SecurityFactorsSettingsItem {
 
-        val count: Int
-
-        data class SeedPhrases(
-            override val count: Int,
+        data class BiometricsPin(
             val securityProblems: ImmutableSet<SecurityProblem> = persistentSetOf()
         ) : SecurityFactorsSettingsItem
-
-        data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem
-
-        @StringRes
-        fun titleRes(): Int {
-            return when (this) {
-                is SeedPhrases -> R.string.securityFactors_seedPhrases_title
-                is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_title
-            }
-        }
-
-        @StringRes
-        fun subtitleRes(): Int {
-            return when (this) {
-                is SeedPhrases -> R.string.securityFactors_seedPhrases_subtitle
-                is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_subtitle
-            }
-        }
-
-        @DrawableRes
-        fun getIcon(): Int? { // add rest of icons
-            return when (this) {
-                is SeedPhrases -> DSR.ic_seed_phrases
-                is LedgerHardwareWallets -> DSR.ic_ledger_hardware_wallets
-            }
-        }
+        data object LedgerNano : SecurityFactorsSettingsItem
+        data object ArculusCard : SecurityFactorsSettingsItem
+        data object Password : SecurityFactorsSettingsItem
+        data object OffDeviceMnemonic : SecurityFactorsSettingsItem
     }
 
     sealed interface Troubleshooting {
@@ -207,12 +181,15 @@ sealed interface SettingsItem {
 
         data object InspectCloudBackups : DebugSettingsItem
 
+        data object SecurityFactorSamples : DebugSettingsItem
+
         @StringRes
         fun titleRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
                 InspectCloudBackups -> R.string.settings_debugSettings_inspectCloudBackups
+                SecurityFactorSamples -> R.string.settings_debugSettings_securityFactorSamples
             }
         }
 
@@ -222,6 +199,7 @@ sealed interface SettingsItem {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 InspectCloudBackups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
+                SecurityFactorSamples -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
             }
         }
 
@@ -229,7 +207,8 @@ sealed interface SettingsItem {
             fun values() = setOf(
                 InspectProfile,
                 LinkConnectionStatusIndicator,
-                InspectCloudBackups
+                InspectCloudBackups,
+                SecurityFactorSamples
             )
         }
     }

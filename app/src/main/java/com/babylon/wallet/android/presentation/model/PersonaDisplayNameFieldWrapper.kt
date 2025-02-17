@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
-import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.extensions.SharedConstants.entityNameMaxLength
 
 data class PersonaDisplayNameFieldWrapper(
     val value: String = "",
@@ -12,7 +12,7 @@ data class PersonaDisplayNameFieldWrapper(
             val valueTrimmed = value.trim()
             return when {
                 valueTrimmed.isEmpty() -> ValidationState.Empty
-                valueTrimmed.length > Constants.ENTITY_NAME_MAX_LENGTH -> ValidationState.TooLong
+                valueTrimmed.length > entityNameMaxLength -> ValidationState.TooLong
                 else -> ValidationState.Valid
             }
         }

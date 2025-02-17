@@ -328,26 +328,25 @@ private fun LSUResourceValue(
                     }
                 }
 
-                val xrdPrice = remember(price, amount) {
-                    (amount as? BoundedAmount.Exact)?.amount?.let { amount ->
-                        price?.xrdPrice(amount)
-                    }
+            val xrdPrice = remember(price, amount) {
+                (amount as? BoundedAmount.Exact)?.amount?.let { amount ->
+                    price?.xrdPrice(amount)
                 }
-                if (isLoadingBalance) {
-                    ShimmeringView(
-                        modifier = Modifier
-                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
-                            .height(12.dp)
-                            .fillMaxWidth(0.3f),
-                        isVisible = true
-                    )
-                }
-                if (xrdPrice != null) {
-                    FiatBalanceView(
-                        fiatPrice = xrdPrice,
-                        textStyle = RadixTheme.typography.body2HighImportance
-                    )
-                }
+            }
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall)
+                        .height(12.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            }
+            if (xrdPrice != null) {
+                FiatBalanceView(
+                    fiatPrice = xrdPrice,
+                    textStyle = RadixTheme.typography.body2HighImportance
+                )
             }
         }
 

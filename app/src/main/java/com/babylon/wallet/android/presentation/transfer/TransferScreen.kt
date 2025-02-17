@@ -47,7 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -236,7 +236,7 @@ fun TransferContent(
                         modifier = Modifier
                             .padding(
                                 horizontal = RadixTheme.dimensions.paddingMedium,
-                                vertical = RadixTheme.dimensions.paddingXSmall
+                                vertical = RadixTheme.dimensions.paddingXXSmall
                             ),
                         text = stringResource(
                             id = R.string.assetTransfer_accountList_fromLabel
@@ -267,7 +267,7 @@ fun TransferContent(
                             .weight(1f)
                             .padding(
                                 horizontal = RadixTheme.dimensions.paddingMedium,
-                                vertical = RadixTheme.dimensions.paddingXSmall
+                                vertical = RadixTheme.dimensions.paddingXXSmall
                             ),
                         text = stringResource(
                             id = R.string.assetTransfer_accountList_toLabel

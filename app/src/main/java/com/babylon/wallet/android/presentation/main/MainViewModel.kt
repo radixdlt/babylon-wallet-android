@@ -24,15 +24,12 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
@@ -41,7 +38,6 @@ import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
-import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -54,15 +50,12 @@ class MainViewModel @Inject constructor(
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkKeystoreIntegrityUseCase: CheckKeystoreIntegrityUseCase,
-    private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
     private val appLockStateProvider: AppLockStateProvider,
     private val incomingRequestsDelegate: IncomingRequestsDelegate
 ) : StateViewModel<MainViewModel.State>(), OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
-
-    private var countdownJob: Job? = null
 
     val observeP2PLinks
         get() = incomingRequestsDelegate.observeP2PLinks
@@ -207,10 +200,6 @@ class MainViewModel @Inject constructor(
         _state.update { it.copy(dappRequestFailure = null) }
     }
 
-    fun clearOlympiaError() {
-        _state.update { it.copy(olympiaErrorState = null) }
-    }
-
     fun onAppToForeground() {
         val isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
         _state.update { state ->
@@ -224,37 +213,6 @@ class MainViewModel @Inject constructor(
     private fun runForegroundChecks() {
         viewModelScope.launch {
             checkKeystoreIntegrityUseCase()
-            if (_state.value.isDeviceSecure) {
-                val checkResult = checkEntitiesCreatedWithOlympiaUseCase()
-                if (checkResult.isAnyEntityCreatedWithOlympia) {
-                    _state.update { state ->
-                        state.copy(
-                            olympiaErrorState = OlympiaErrorState(
-                                affectedAccounts = checkResult.affectedAccounts,
-                                affectedPersonas = checkResult.affectedPersonas
-                            )
-                        )
-                    }
-                    countdownJob?.cancel()
-                    countdownJob = startOlympiaErrorCountdown()
-                    return@launch
-                }
-            }
-        }
-    }
-
-    private fun startOlympiaErrorCountdown(): Job {
-        return viewModelScope.launch {
-            while (isActive && state.value.olympiaErrorState?.isCountdownActive == true) {
-                delay(TICK_MS)
-                _state.update { state ->
-                    state.copy(
-                        olympiaErrorState = state.olympiaErrorState?.copy(
-                            secondsLeft = state.olympiaErrorState.secondsLeft - 1
-                        )
-                    )
-                }
-            }
         }
     }
 
@@ -262,7 +220,6 @@ class MainViewModel @Inject constructor(
         val initialAppState: AppState = AppState.Loading,
         val showDeviceRootedWarning: Boolean = false,
         val dappRequestFailure: UiMessage.ErrorMessage? = null,
-        val olympiaErrorState: OlympiaErrorState? = null,
         val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
         val showMobileConnectWarning: Boolean = false,
         val isAdvancedLockEnabled: Boolean = false,
@@ -284,10 +241,6 @@ class MainViewModel @Inject constructor(
 
     sealed class Event : OneOffEvent {
         data class IncomingRequestEvent(val request: DappToWalletInteraction) : Event()
-    }
-
-    companion object {
-        private const val TICK_MS = 1000L
     }
 }
 

@@ -274,7 +274,7 @@ private fun StakeAmount(
             if (isLoadingBalance) {
                 ShimmeringView(
                     modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                         .height(10.dp)
                         .fillMaxWidth(0.3f),
                     isVisible = true
@@ -308,7 +308,7 @@ fun ValidatorsSize(
             modifier = Modifier
                 .size(24.dp)
                 .dashedCircleBorder(RadixTheme.colors.gray3)
-                .padding(RadixTheme.dimensions.paddingXSmall),
+                .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(id = DSR.ic_validator),
             tint = RadixTheme.colors.gray2,
             contentDescription = null
@@ -369,7 +369,7 @@ fun ValidatorDetails(
                 AssetCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall),
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall),
                     roundTopCorners = false,
                     roundBottomCorners = !validatorWithStakes.hasClaims
                 ) {
@@ -386,7 +386,7 @@ fun ValidatorDetails(
                 AssetCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall),
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall),
                     roundTopCorners = false,
                     roundBottomCorners = true
                 ) {
@@ -598,7 +598,7 @@ private fun StakeClaims(
             val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
             claimItems.forEachIndexed { index, item ->
                 ClaimWorth(
-                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingXSmall else 0.dp),
+                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingXXSmall else 0.dp),
                     claimCollection = claim.nonFungibleResource,
                     claimNft = item,
                     stakeClaimPrice = stakeClaimPrice,
@@ -773,7 +773,7 @@ fun WorthXRD(
             if (isLoadingBalance) {
                 ShimmeringView(
                     modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                         .height(12.dp)
                         .fillMaxWidth(0.3f),
                     isVisible = true

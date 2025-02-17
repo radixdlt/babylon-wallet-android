@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,9 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,15 +29,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -62,49 +56,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.main.MainViewModel
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BottomSheetWrapper(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    onDismissRequest: () -> Unit,
-    bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    // TODO update dependency when this issue is resolved
-    // https://issuetracker.google.com/issues/268432129
-    ModalBottomSheet(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        onDismissRequest = onDismissRequest,
-        shape = RadixTheme.shapes.roundedRectTopDefault,
-        dragHandle = {
-            BottomDialogHeader(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                title = title,
-                onDismissRequest = onDismissRequest
-            )
-        }
-    ) {
-        content()
-    }
-}
 
 /**
  * use this if you want AlertDialog style usage, like BasicPromptAlertDialog - not using new route
@@ -117,27 +75,31 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    sheetBackgroundColor: Color = RadixTheme.colors.defaultBackground,
     headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
     centerContent: Boolean = false,
     onDismiss: () -> Unit,
+    onHeaderBackIconClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    val draggableState = remember {
+    val decay = rememberSplineBasedDecay<Float>()
+    val draggableState = remember(decay) {
         AnchoredDraggableState(
             initialValue = DragState.Collapsed,
-            positionalThreshold = { distance: Float -> distance * 0.4f },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
-            animationSpec = tween(),
             anchors = DraggableAnchors {
                 DragState.Expanded at 0f
                 DragState.Collapsed at 0f
-            }
+            },
+            positionalThreshold = { distance: Float -> distance * 0.9f },
+            velocityThreshold = { with(density) { 100.dp.toPx() } },
+            snapAnimationSpec = tween(),
+            decayAnimationSpec = decay,
         )
     }
     val onDismissRequest = remember(isDismissible) {
@@ -167,7 +129,7 @@ fun BottomSheetDialogWrapper(
             draggableState.updateAnchors(
                 DraggableAnchors {
                     DragState.Expanded at 0f
-                    DragState.Collapsed at contentMaxHeight
+                    DragState.Collapsed at contentMaxHeight * 2
                 }
             )
             LaunchedEffect(draggableState) {
@@ -202,7 +164,10 @@ fun BottomSheetDialogWrapper(
                             }
                     )
                     .animateContentSize()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
+                    .background(
+                        color = sheetBackgroundColor,
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    )
                     .clip(RadixTheme.shapes.roundedRectTopMedium),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -214,9 +179,14 @@ fun BottomSheetDialogWrapper(
                             modifier = Modifier
                                 .padding(top = RadixTheme.dimensions.paddingMedium)
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
+                                .background(
+                                    color = sheetBackgroundColor,
+                                    shape = RadixTheme.shapes.roundedRectTopDefault
+                                ),
                             backIcon = headerBackIcon,
-                            onDismissRequest = { onDismissRequest() },
+                            onDismissRequest = {
+                                onHeaderBackIconClick?.invoke() ?: onDismissRequest()
+                            },
                             title = title
                         )
                     }
@@ -307,80 +277,6 @@ fun BasicPromptAlertDialog(
         shape = RadixTheme.shapes.roundedRectSmall,
         containerColor = RadixTheme.colors.defaultBackground
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BDFSErrorDialog(
-    modifier: Modifier = Modifier,
-    finish: (accepted: Boolean) -> Unit,
-    title: String,
-    message: String,
-    state: MainViewModel.OlympiaErrorState
-) {
-    BasicAlertDialog(modifier = modifier.clip(RadixTheme.shapes.roundedRectMedium), onDismissRequest = { finish(false) }) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
-                .padding(RadixTheme.dimensions.paddingLarge),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-        ) {
-            val confirmText = if (state.isCountdownActive) {
-                stringResource(id = R.string.homePage_profileOlympiaError_okCountdown, state.secondsLeft)
-            } else {
-                stringResource(
-                    id = R.string.common_ok
-                )
-            }
-            Text(
-                text = title,
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
-            )
-            Text(
-                text = message,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
-            )
-            if (state.affectedAccounts.isNotEmpty()) {
-                Text(
-                    text = stringResource(id = R.string.homePage_profileOlympiaError_affectedAccounts),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1
-                )
-                state.affectedAccounts.forEach { account ->
-                    ActionableAddressView(
-                        address = Address.init(account.address.string),
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
-            }
-            if (state.affectedPersonas.isNotEmpty()) {
-                Text(
-                    text = stringResource(id = R.string.homePage_profileOlympiaError_affectedPersonas),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1
-                )
-                state.affectedPersonas.forEach { persona ->
-                    ActionableAddressView(
-                        address = Address.init(persona.address.string),
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                RadixTextButton(text = confirmText, onClick = {
-                    finish(true)
-                }, enabled = !state.isCountdownActive)
-            }
-        }
-    }
 }
 
 @Composable
@@ -509,7 +405,10 @@ fun FailureDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = RadixTheme.colors.gray5)
-                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(
+                        vertical = RadixTheme.dimensions.paddingLarge,
+                        horizontal = RadixTheme.dimensions.paddingXLarge
+                    ),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,

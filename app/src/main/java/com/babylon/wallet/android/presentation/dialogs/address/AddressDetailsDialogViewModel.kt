@@ -16,6 +16,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -25,7 +26,6 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
-import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -78,7 +78,7 @@ class AddressDetailsDialogViewModel @Inject constructor(
             if (actionableAddress is ActionableAddress.Address && actionableAddress.address is Address.Account) {
                 val account = getProfileUseCase().activeAccountsOnCurrentNetwork.find { it.address == actionableAddress.address.v1 }
 
-                if (account?.isLedgerAccount == true) {
+                if (account?.isUnsecuredLedgerControlled == true) {
                     _state.update { state ->
                         state.copy(
                             sections = state.sections.toMutableList().apply {

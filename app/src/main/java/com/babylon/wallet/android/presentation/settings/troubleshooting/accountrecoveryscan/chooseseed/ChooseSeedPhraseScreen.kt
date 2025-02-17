@@ -42,12 +42,11 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
-import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
 @Composable
 fun ChooseSeedPhraseScreen(
@@ -242,7 +241,7 @@ fun SeedPhraseCard(
             )
         }
         if (data.allAccounts.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             data.allAccounts.forEach { account ->
                 SimpleAccountCard(
                     modifier = Modifier.fillMaxWidth(),

@@ -62,7 +62,7 @@ fun LazyListScope.poolUnitsTab(
 
     itemsIndexed(
         items = assetsViewData.poolUnits,
-        key = { index, poolUnitItem -> poolUnitItem.resourceAddress.string }
+        key = { _, poolUnitItem -> poolUnitItem.resourceAddress.string }
     ) { index, poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier
@@ -213,17 +213,16 @@ fun PoolResourcesValues(
                             poolUnitPrice?.xrdPrice(resourceWithAmount.key)
                         }
 
-                        if (isLoadingBalance) {
-                            ShimmeringView(
-                                modifier = Modifier
-                                    .padding(top = RadixTheme.dimensions.paddingXXSmall)
-                                    .height(12.dp)
-                                    .fillMaxWidth(0.3f),
-                                isVisible = true
-                            )
-                        } else if (fiatPrice != null) {
-                            FiatBalanceView(fiatPrice = fiatPrice)
-                        }
+                    if (isLoadingBalance) {
+                        ShimmeringView(
+                            modifier = Modifier
+                                .padding(top = RadixTheme.dimensions.paddingXXXSmall)
+                                .height(12.dp)
+                                .fillMaxWidth(0.3f),
+                            isVisible = true
+                        )
+                    } else if (fiatPrice != null) {
+                        FiatBalanceView(fiatPrice = fiatPrice)
                     }
                 }
 

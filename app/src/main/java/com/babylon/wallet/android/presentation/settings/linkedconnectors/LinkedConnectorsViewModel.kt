@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,10 +80,7 @@ class LinkedConnectorsViewModel @Inject constructor(
     fun onNewConnectorNameChanged(newName: String) {
         _state.update { state ->
             state.copy(
-                renameLinkConnectorItem = state.renameLinkConnectorItem?.copy(
-                    name = newName,
-                    isNameEmpty = newName.isEmpty()
-                )
+                renameLinkConnectorItem = state.renameLinkConnectorItem?.copy(name = newName)
             )
         }
     }
@@ -138,7 +136,6 @@ data class LinkedConnectorsUiState(
 
     data class RenameConnectorInput(
         val id: PublicKeyHash? = null,
-        val name: String = "",
-        val isNameEmpty: Boolean = false
-    )
+        override val name: String = "",
+    ) : RenameInput()
 }

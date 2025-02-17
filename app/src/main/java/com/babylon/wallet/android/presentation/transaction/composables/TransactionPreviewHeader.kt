@@ -39,7 +39,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -99,21 +99,19 @@ fun TransactionPreviewHeader(
                         }
                     }
 
-                    if (proposingDApp !is State.ProposingDApp.Internal) {
-                        val dApp = (proposingDApp as? State.ProposingDApp.Some)?.dApp
-
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    if (someDApp != null) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val dAppName = dApp.displayName()
+                            val dAppName = someDApp.dApp.name.dAppDisplayName()
 
-                            if (dApp?.iconUrl != null) {
+                            if (someDApp.dApp.iconUrl != null) {
                                 Thumbnail.DApp(
                                     modifier = Modifier
                                         .size(24.dp),
-                                    dapp = someDApp?.dApp,
+                                    dapp = someDApp.dApp,
                                     shape = RadixTheme.shapes.roundedRectSmall
                                 )
 

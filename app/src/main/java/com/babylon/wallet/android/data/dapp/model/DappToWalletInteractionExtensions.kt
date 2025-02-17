@@ -26,6 +26,7 @@ import rdx.works.core.mapError
 
 fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntityID) = runCatching {
     val metadata = DappToWalletInteraction.RequestMetadata(
+        version = metadata.version,
         networkId = metadata.networkId,
         origin = metadata.origin,
         dAppDefinitionAddress = metadata.dappDefinitionAddress,
