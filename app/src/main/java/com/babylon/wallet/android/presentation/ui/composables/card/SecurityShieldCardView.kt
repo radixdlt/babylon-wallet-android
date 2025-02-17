@@ -80,8 +80,10 @@ fun SecurityShieldCardView(
 
                 Text(
                     text = linkedEntitiesView(
-                        accounts = item.shieldForDisplay.numberOfLinkedAccounts.toInt(),
-                        personas = item.shieldForDisplay.numberOfLinkedPersonas.toInt()
+                        accountsCount = item.shieldForDisplay.numberOfLinkedAccounts.toInt(),
+                        personasCount = item.shieldForDisplay.numberOfLinkedPersonas.toInt(),
+                        hasAnyHiddenEntities = item.shieldForDisplay.numberOfLinkedHiddenAccounts.toInt() != 0 ||
+                            item.shieldForDisplay.numberOfLinkedHiddenPersonas.toInt() != 0
                     ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
@@ -104,31 +106,30 @@ fun SecurityShieldCardView(
 
 @Composable
 private fun linkedEntitiesView(
-    accounts: Int,
-    personas: Int
+    accountsCount: Int,
+    personasCount: Int,
+    hasAnyHiddenEntities: Boolean
 ): String {
-    val accountsText = when (accounts) {
+    val accountsText = when (accountsCount) {
         0 -> stringResource(id = R.string.empty)
         1 -> stringResource(id = R.string.securityShields_assigned_accountSingular)
-        else -> stringResource(id = R.string.securityShields_assigned_accountPlural, accounts)
+        else -> stringResource(id = R.string.securityShields_assigned_accountPlural, accountsCount)
     }
-    val personasText = when (personas) {
+    val personasText = when (personasCount) {
         0 -> stringResource(id = R.string.empty)
         1 -> stringResource(id = R.string.securityShields_assigned_personaSingular)
-        else -> stringResource(id = R.string.securityShields_assigned_personaPlural, personas)
+        else -> stringResource(id = R.string.securityShields_assigned_personaPlural, personasCount)
     }
-    val linkedText = if (accounts == 0 && personas == 0) {
-        stringResource(R.string.common_none)
-    } else {
-        when {
-            accounts != 0 && personas != 0 -> {
-                accountsText + " " + stringResource(id = R.string.dot_separator) + " " + personasText
-            }
-            accounts != 0 -> accountsText
-            else -> personasText
-        }
+
+    val linkedText = when {
+        accountsCount == 0 && personasCount == 0 && hasAnyHiddenEntities -> "Hidden Accounts or Personas" // TODO
+        accountsCount == 0 && personasCount == 0 -> stringResource(R.string.common_none)
+        accountsCount != 0 && personasCount != 0 -> "$accountsText ${stringResource(id = R.string.dot_separator)} $personasText"
+        accountsCount != 0 -> accountsText
+        else -> personasText
     }
-    return linkedText
+
+    return if (hasAnyHiddenEntities && (accountsCount != 0 || personasCount != 0)) "$linkedText (and some hidden)" else linkedText
 }
 
 @UsesSampleValues
@@ -190,7 +191,7 @@ val otherShieldsForDisplaySample = persistentListOf(
                 flags = emptyList()
             ),
             numberOfLinkedAccounts = 0.toUInt(),
-            numberOfLinkedHiddenAccounts = 0.toUInt(),
+            numberOfLinkedHiddenAccounts = 1.toUInt(),
             numberOfLinkedPersonas = 1.toUInt(),
             numberOfLinkedHiddenPersonas = 0.toUInt()
         ),
@@ -227,6 +228,22 @@ val otherShieldsForDisplaySample = persistentListOf(
             numberOfLinkedHiddenPersonas = 10.toUInt()
         ),
         messages = persistentListOf(SecurityShieldStatusMessage.AppliedAndWorking)
+    ),
+    SecurityShieldCard(
+        ShieldForDisplay(
+            metadata = SecurityStructureMetadata(
+                id = SecurityStructureId.randomUUID(),
+                displayName = DisplayName("ALFZ PSF"),
+                createdOn = Timestamp.now(),
+                lastUpdatedOn = Timestamp.now(),
+                flags = emptyList()
+            ),
+            numberOfLinkedAccounts = 0.toUInt(),
+            numberOfLinkedHiddenAccounts = 0.toUInt(),
+            numberOfLinkedPersonas = 0.toUInt(),
+            numberOfLinkedHiddenPersonas = 1.toUInt()
+        ),
+        messages = persistentListOf()
     )
 )
 
