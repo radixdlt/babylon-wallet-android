@@ -41,8 +41,7 @@ import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
-import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
-import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
+import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
