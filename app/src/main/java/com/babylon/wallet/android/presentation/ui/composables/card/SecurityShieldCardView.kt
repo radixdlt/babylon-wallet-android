@@ -35,7 +35,6 @@ import com.radixdlt.sargon.ShieldForDisplay
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -49,7 +48,9 @@ fun SecurityShieldCardView(
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingLarge
-                ),
+                )
+                // keep the same height of the card if status message is not present
+                .padding(vertical = if (item.messages.isEmpty()) RadixTheme.dimensions.paddingMedium else 0.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -87,7 +88,15 @@ fun SecurityShieldCardView(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
-                MessagesView(messages = item.messages)
+                if (item.messages.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
+                        item.messages.forEach {
+                            StatusMessageText(
+                                message = it.getMessage()
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -120,21 +129,6 @@ private fun linkedEntitiesView(
         }
     }
     return linkedText
-}
-
-@Composable
-private fun MessagesView(messages: PersistentList<SecurityShieldStatusMessage>) {
-    if (messages.isEmpty()) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-    } else {
-        Column(verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
-            messages.forEach {
-                StatusMessageText(
-                    message = it.getMessage()
-                )
-            }
-        }
-    }
 }
 
 @UsesSampleValues
