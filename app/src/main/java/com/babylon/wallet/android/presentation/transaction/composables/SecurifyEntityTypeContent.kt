@@ -28,8 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.title
 import com.babylon.wallet.android.presentation.dialogs.info.DSR
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.title
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
