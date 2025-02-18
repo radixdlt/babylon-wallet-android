@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.State.FactorSourcesToAccess
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
@@ -31,9 +33,9 @@ import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 
 @Suppress("LongParameterList")
-class AccessFactorSourceDelegate(
+class AccessFactorSourceDelegate private constructor(
     private val viewModelScope: CoroutineScope,
-    private val id: FactorSourceId,
+    private val input: DelegateInput,
     private val getProfileUseCase: GetProfileUseCase,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     private val defaultDispatcher: CoroutineDispatcher,
@@ -42,16 +44,66 @@ class AccessFactorSourceDelegate(
     private val onFailCallback: suspend () -> Unit,
 ) {
 
-    private val _state: MutableStateFlow<State> = MutableStateFlow(State(id = id))
+    constructor(
+        viewModelScope: CoroutineScope,
+        id: FactorSourceId,
+        getProfileUseCase: GetProfileUseCase,
+        accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+        defaultDispatcher: CoroutineDispatcher,
+        onAccessCallback: suspend (FactorSource) -> Result<Unit>,
+        onDismissCallback: suspend () -> Unit,
+        onFailCallback: suspend () -> Unit,
+    ) : this(
+        viewModelScope = viewModelScope,
+        input = DelegateInput.WithFactorSourceId(factorSourceId = id),
+        getProfileUseCase = getProfileUseCase,
+        accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        defaultDispatcher = defaultDispatcher,
+        onAccessCallback = onAccessCallback,
+        onDismissCallback = onDismissCallback,
+        onFailCallback = onFailCallback,
+    )
+
+    constructor(
+        viewModelScope: CoroutineScope,
+        factorSource: FactorSource,
+        getProfileUseCase: GetProfileUseCase,
+        accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+        defaultDispatcher: CoroutineDispatcher,
+        onAccessCallback: suspend (FactorSource) -> Result<Unit>,
+        onDismissCallback: suspend () -> Unit,
+        onFailCallback: suspend () -> Unit,
+    ) : this(
+        viewModelScope = viewModelScope,
+        input = DelegateInput.WithFactorSource(factorSource = factorSource),
+        getProfileUseCase = getProfileUseCase,
+        accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        defaultDispatcher = defaultDispatcher,
+        onAccessCallback = onAccessCallback,
+        onDismissCallback = onDismissCallback,
+        onFailCallback = onFailCallback,
+    )
+
+    private val _state: MutableStateFlow<State> = MutableStateFlow(
+        State(
+            factorSourceToAccess = when (input) {
+                is DelegateInput.WithFactorSource -> FactorSourcesToAccess.Mono(factorSource = input.factorSource)
+                is DelegateInput.WithFactorSourceId -> FactorSourcesToAccess.Resolving(id = input.factorSourceId)
+            }
+        )
+    )
     val state: StateFlow<State>
         get() = _state.asStateFlow()
 
-    private var signingJob: Job? = null
+    private var accessJob: Job? = null
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     init {
-        signingJob = viewModelScope.launch {
-            resolveFactorSourcesAndAccess(id = id)
+        accessJob = viewModelScope.launch {
+            when (val factorSourceToAccess = state.value.factorSourceToAccess) {
+                is FactorSourcesToAccess.Mono -> access(factorSource = factorSourceToAccess.factorSource)
+                is FactorSourcesToAccess.Resolving -> resolveFactorSourcesAndAccess(id = factorSourceToAccess.id)
+            }
         }
 
         viewModelScope.launch {
@@ -78,8 +130,8 @@ class AccessFactorSourceDelegate(
     fun onRetry() {
         val factorSource = _state.value.factorSource ?: return
 
-        signingJob?.cancel()
-        signingJob = viewModelScope.launch {
+        accessJob?.cancel()
+        accessJob = viewModelScope.launch {
             access(factorSource)
         }
     }
@@ -98,11 +150,10 @@ class AccessFactorSourceDelegate(
                 )
 
                 _state.update {
-                    val isIncorrect = validity.isIncorrect()
                     it.copy(
                         seedPhraseInputState = it.seedPhraseInputState.copy(
-                            isSeedPhraseInvalidErrorVisible = isIncorrect,
-                            isConfirmButtonEnabled = !isIncorrect
+                            seedPhraseValidity = validity,
+                            isConfirmButtonEnabled = validity == SeedPhraseValidity.Valid
                         )
                     )
                 }
@@ -116,7 +167,7 @@ class AccessFactorSourceDelegate(
     }
 
     fun onCancelAccess() {
-        signingJob?.cancel()
+        accessJob?.cancel()
     }
 
     private suspend fun resolveFactorSourcesAndAccess(id: FactorSourceId) {
@@ -136,7 +187,7 @@ class AccessFactorSourceDelegate(
         _state.update {
             it.copy(
                 isAccessInProgress = true,
-                factorSourceToAccess = State.FactorSourcesToAccess.Mono(factorSource)
+                factorSourceToAccess = FactorSourcesToAccess.Mono(factorSource)
             )
         }
 
@@ -161,7 +212,7 @@ class AccessFactorSourceDelegate(
     }
 
     private suspend fun skipSigning() {
-        signingJob?.cancel()
+        accessJob?.cancel()
         onDismissCallback()
     }
 
@@ -179,13 +230,19 @@ class AccessFactorSourceDelegate(
                     it.copy(
                         seedPhraseInputState = it.seedPhraseInputState.copy(
                             isConfirmButtonEnabled = isComplete,
-                            isSeedPhraseInvalidErrorVisible = false
+                            seedPhraseValidity = null
                         )
                     )
                 }
             }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
+    }
+
+    private sealed interface DelegateInput {
+        data class WithFactorSource(val factorSource: FactorSource) : DelegateInput
+
+        data class WithFactorSourceId(val factorSourceId: FactorSourceId) : DelegateInput
     }
 
     data class State(
@@ -204,10 +261,6 @@ class AccessFactorSourceDelegate(
 
         val isRetryEnabled: Boolean
             get() = !isAccessInProgress || allowRetryWhenAccessInProgress
-
-        constructor(id: FactorSourceId) : this(
-            factorSourceToAccess = FactorSourcesToAccess.Resolving(id = id)
-        )
 
         val factorSource: FactorSource? = when (factorSourceToAccess) {
             is FactorSourcesToAccess.Mono -> factorSourceToAccess.factorSource
@@ -236,9 +289,11 @@ class AccessFactorSourceDelegate(
 
         data class SeedPhraseInputState(
             val delegateState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
-            val isSeedPhraseInvalidErrorVisible: Boolean = false,
+            val seedPhraseValidity: SeedPhraseValidity? = null,
             val isConfirmButtonEnabled: Boolean = false
         ) {
+
+            val errorInSeedPhrase = seedPhraseValidity != null && seedPhraseValidity != SeedPhraseValidity.Valid
 
             val inputWords: ImmutableList<SeedPhraseWord> = delegateState.seedPhraseWords
         }

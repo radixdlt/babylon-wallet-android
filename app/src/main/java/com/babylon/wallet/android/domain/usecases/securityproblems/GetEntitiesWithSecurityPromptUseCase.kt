@@ -13,7 +13,6 @@ import rdx.works.core.domain.cloudbackup.BackupWarning
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isDeleted
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -48,9 +47,9 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         backedUpFactorSourceIds: Set<FactorSourceId.Hash>,
         backupState: BackupState
     ): EntityWithSecurityPrompt? {
-        val factorSourceId = entity.securityState.factorSourceId as? FactorSourceId.Hash ?: return null
-        val factorSource = getProfileUseCase().factorSourceById(factorSourceId) as? FactorSource.Device ?: return null
+        val unsecuredFactorSourceId = entity.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral() ?: return null
 
+        val factorSource = getProfileUseCase().factorSourceById(unsecuredFactorSourceId) as? FactorSource.Device ?: return null
         val prompts = mutableSetOf<SecurityPromptType>().apply {
             backupState.backupWarning?.let { backupWarning ->
                 when (backupWarning) {
@@ -64,7 +63,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 
             if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
                 add(SecurityPromptType.RECOVERY_REQUIRED)
-            } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
+            } else if (!backedUpFactorSourceIds.contains(unsecuredFactorSourceId)) {
                 add(SecurityPromptType.WRITE_DOWN_SEED_PHRASE)
             }
         }.toSet()

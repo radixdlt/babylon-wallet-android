@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
 import com.babylon.wallet.android.presentation.transaction.composables.BoundedAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.UnknownAmount
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -174,57 +175,66 @@ fun PoolResourcesValues(
     Column(modifier = modifier.assetOutlineBorder()) {
         val itemsSize = resources.size
         resources.entries.forEachIndexed { index, resourceWithAmount ->
-            Row(
+            Column(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = if (isCompact) RadixTheme.dimensions.paddingMedium else RadixTheme.dimensions.paddingLarge
-                ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                    vertical = if (isCompact) RadixTheme.dimensions.paddingMedium else RadixTheme.dimensions.paddingDefault
+                )
             ) {
-                Thumbnail.Fungible(
-                    modifier = Modifier.size(if (isCompact) 24.dp else 44.dp),
-                    token = resourceWithAmount.key
-                )
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = resourceWithAmount.key.displayTitleAsPoolUnit(),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 2
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                ) {
+                    Thumbnail.Fungible(
+                        modifier = Modifier.size(if (isCompact) 24.dp else 44.dp),
+                        token = resourceWithAmount.key
+                    )
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = resourceWithAmount.key.displayTitleAsPoolUnit(),
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 2
+                    )
 
-                Column(horizontalAlignment = Alignment.End) {
-                    resourceWithAmount.value?.let {
-                        BoundedAmountSection(
-                            boundedAmount = it,
-                            amountStyle = if (isCompact) {
-                                RadixTheme.typography.body1HighImportance
-                            } else {
-                                RadixTheme.typography.secondaryHeader
-                            }
-                        )
+                    Column(horizontalAlignment = Alignment.End) {
+                        resourceWithAmount.value?.let {
+                            BoundedAmountSection(
+                                boundedAmount = it,
+                                amountStyle = if (isCompact) {
+                                    RadixTheme.typography.body1HighImportance
+                                } else {
+                                    RadixTheme.typography.secondaryHeader
+                                }
+                            )
+                        }
+
+                        val fiatPrice = remember(poolUnitPrice, resourceWithAmount) {
+                            poolUnitPrice?.xrdPrice(resourceWithAmount.key)
+                        }
+
+                        if (isLoadingBalance) {
+                            ShimmeringView(
+                                modifier = Modifier
+                                    .padding(top = RadixTheme.dimensions.paddingXXXSmall)
+                                    .height(12.dp)
+                                    .fillMaxWidth(0.3f),
+                                isVisible = true
+                            )
+                        } else if (fiatPrice != null) {
+                            FiatBalanceView(fiatPrice = fiatPrice)
+                        }
                     }
 
-                    val fiatPrice = remember(poolUnitPrice, resourceWithAmount) {
-                        poolUnitPrice?.xrdPrice(resourceWithAmount.key)
-                    }
-
-                    if (isLoadingBalance) {
-                        ShimmeringView(
-                            modifier = Modifier
-                                .padding(top = RadixTheme.dimensions.paddingXXXSmall)
-                                .height(12.dp)
-                                .fillMaxWidth(0.3f),
-                            isVisible = true
-                        )
-                    } else if (fiatPrice != null) {
-                        FiatBalanceView(fiatPrice = fiatPrice)
-                    }
+                    UnknownAmount(
+                        modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                        amount = resourceWithAmount.value
+                    )
                 }
-            }
-            if (index != itemsSize - 1) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+
+                if (index != itemsSize - 1) {
+                    HorizontalDivider(color = RadixTheme.colors.gray4)
+                }
             }
         }
     }

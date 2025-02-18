@@ -15,11 +15,10 @@ import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
 import com.radixdlt.sargon.extensions.indexInLocalKeySpace
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.lastPathComponent
+import com.radixdlt.sargon.extensions.scheme
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.derivationPathEntityIndex
-import rdx.works.core.sargon.derivationPathScheme
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -49,10 +48,12 @@ class ResolveDerivationPathsForRecoveryScanUseCase @Inject constructor(
             network
                 ?.accounts
                 ?.filter { account ->
-                    account.factorSourceId == factorSourceId && account.derivationPathScheme == derivationPathScheme
+                    val transactionSigning = account.unsecuredControllingFactorInstance ?: return@filter false
+                    transactionSigning.factorSourceId == factorSourceId.value &&
+                        transactionSigning.publicKey.derivationPath.scheme == derivationPathScheme
                 }
-                ?.map { account ->
-                    account.derivationPathEntityIndex.indexInLocalKeySpace
+                ?.mapNotNull { account ->
+                    account.unsecuredControllingFactorInstance?.publicKey?.derivationPath?.lastPathComponent?.indexInLocalKeySpace
                 }
                 ?.toSet().orEmpty()
         } else {

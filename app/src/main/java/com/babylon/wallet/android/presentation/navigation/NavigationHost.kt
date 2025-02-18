@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorizationDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheckDialog
 import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -288,6 +289,11 @@ fun NavigationHost(
             }
         )
         getSignatures(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        spotCheckDialog(
             onDismiss = {
                 navController.popBackStack()
             }

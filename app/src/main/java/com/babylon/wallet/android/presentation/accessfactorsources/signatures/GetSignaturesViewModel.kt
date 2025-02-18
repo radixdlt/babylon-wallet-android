@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedg
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -168,9 +169,12 @@ class GetSignaturesViewModel @Inject constructor(
         val accessState: AccessFactorSourceDelegate.State
     ) : UiState {
 
-        val canSkipFactor: Boolean
+        private val canSkipFactor: Boolean
             get() = signPurpose == AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents ||
                 signPurpose == AccessFactorSourcesInput.ToSign.Purpose.SubIntents
+
+        val skipOption: AccessFactorSourceSkipOption
+            get() = if (canSkipFactor) AccessFactorSourceSkipOption.CanSkipFactor else AccessFactorSourceSkipOption.None
     }
 
     sealed interface Event : OneOffEvent {

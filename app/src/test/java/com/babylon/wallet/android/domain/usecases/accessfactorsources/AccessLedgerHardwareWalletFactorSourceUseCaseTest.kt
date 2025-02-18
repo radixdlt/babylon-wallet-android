@@ -9,6 +9,7 @@ import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.AuthIntent
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceCommon
 import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
@@ -19,6 +20,7 @@ import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.Slip10Curve
+import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntent
@@ -32,6 +34,7 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.publicKey
 import com.radixdlt.sargon.extensions.sign
 import com.radixdlt.sargon.extensions.signature
+import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.newLedgerHardwareWalletFromMnemonicWithPassphrase
 import com.radixdlt.sargon.os.signing.FactorOutcome
@@ -46,8 +49,11 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -202,6 +208,17 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
         )
 
         assertTrue(result.exceptionOrNull() is RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge)
+    }
+
+    @Test
+    fun spotCheckFailsDueToAnyErrorToLedgerMessenger() = runTest {
+        coEvery {
+            ledgerMessenger.sendDeviceInfoRequest(interactionId = any())
+        } returns Result.failure(RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId)
+
+        val result = sut.spotCheck(factorSource = ledger.asGeneral())
+
+        assertTrue(result.exceptionOrNull() is RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId)
     }
 
     @Test
@@ -454,6 +471,31 @@ class AccessLedgerHardwareWalletFactorSourceUseCaseTest {
             ),
             result.getOrNull()
         )
+        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) }
+    }
+
+    @Test
+    fun spotCheckSucceeds() = runTest {
+        val expectedDeviceId = Exactly32Bytes.sample()
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) } just Runs
+        coEvery {
+            ledgerMessenger.sendDeviceInfoRequest(interactionId = any())
+        } returns Result.success(
+            LedgerResponse.GetDeviceInfoResponse(
+                interactionId = "",
+                model = LedgerResponse.LedgerDeviceModel.NanoS,
+                deviceId = expectedDeviceId
+            )
+        )
+        mockkStatic("com.radixdlt.sargon.SargonKt")
+        every {
+            ledger.asGeneral().spotCheck(input = SpotCheckInput.Ledger(expectedDeviceId))
+        } returns true
+
+        val result = sut.spotCheck(factorSource = ledger.asGeneral()).getOrThrow()
+
+        unmockkStatic("com.radixdlt.sargon.SargonKt")
+        assertTrue(result)
         coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = ledger.id.asGeneral()) }
     }
 }

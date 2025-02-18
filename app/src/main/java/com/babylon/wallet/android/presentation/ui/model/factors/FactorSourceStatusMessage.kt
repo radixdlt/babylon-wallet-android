@@ -6,6 +6,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
 import com.babylon.wallet.android.utils.formattedSpans
 
 sealed interface FactorSourceStatusMessage {

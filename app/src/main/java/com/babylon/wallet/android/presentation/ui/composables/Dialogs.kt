@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,8 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,14 +56,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.main.MainViewModel
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -285,80 +277,6 @@ fun BasicPromptAlertDialog(
         shape = RadixTheme.shapes.roundedRectSmall,
         containerColor = RadixTheme.colors.defaultBackground
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BDFSErrorDialog(
-    modifier: Modifier = Modifier,
-    finish: (accepted: Boolean) -> Unit,
-    title: String,
-    message: String,
-    state: MainViewModel.OlympiaErrorState
-) {
-    BasicAlertDialog(modifier = modifier.clip(RadixTheme.shapes.roundedRectMedium), onDismissRequest = { finish(false) }) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
-                .padding(RadixTheme.dimensions.paddingLarge),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-        ) {
-            val confirmText = if (state.isCountdownActive) {
-                stringResource(id = R.string.homePage_profileOlympiaError_okCountdown, state.secondsLeft)
-            } else {
-                stringResource(
-                    id = R.string.common_ok
-                )
-            }
-            Text(
-                text = title,
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
-            )
-            Text(
-                text = message,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
-            )
-            if (state.affectedAccounts.isNotEmpty()) {
-                Text(
-                    text = stringResource(id = R.string.homePage_profileOlympiaError_affectedAccounts),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1
-                )
-                state.affectedAccounts.forEach { account ->
-                    ActionableAddressView(
-                        address = Address.init(account.address.string),
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
-            }
-            if (state.affectedPersonas.isNotEmpty()) {
-                Text(
-                    text = stringResource(id = R.string.homePage_profileOlympiaError_affectedPersonas),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1
-                )
-                state.affectedPersonas.forEach { persona ->
-                    ActionableAddressView(
-                        address = Address.init(persona.address.string),
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                RadixTextButton(text = confirmText, onClick = {
-                    finish(true)
-                }, enabled = !state.isCountdownActive)
-            }
-        }
-    }
 }
 
 @Composable

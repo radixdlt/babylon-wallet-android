@@ -2,7 +2,6 @@ package com.babylon.wallet.android
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -28,6 +27,7 @@ import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedReques
 import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorization
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
@@ -42,7 +42,6 @@ import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.transaction.transactionReview
-import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
@@ -165,20 +164,6 @@ fun WalletApp(
                 dismissText = null
             )
         }
-        val olympiaErrorState = state.olympiaErrorState
-        if (olympiaErrorState != null) {
-            BackHandler {}
-            BDFSErrorDialog(
-                finish = {
-                    if (!olympiaErrorState.isCountdownActive) {
-                        mainViewModel.clearOlympiaError()
-                    }
-                },
-                title = stringResource(id = R.string.homePage_profileOlympiaError_title),
-                message = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-                state = olympiaErrorState
-            )
-        }
         state.dappRequestFailure?.let {
             BasicPromptAlertDialog(
                 finish = {
@@ -235,6 +220,7 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.DerivePublicKeys -> navController.derivePublicKeysDialog()
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
                 AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
+                AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
                 is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
         }

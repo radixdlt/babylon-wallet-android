@@ -220,7 +220,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             storageExpansionCost = 0.toDecimal192(),
             royaltyCost = 0.toDecimal192()
         ),
-        detailedClassification = listOf(),
+        detailedClassification = null,
         reservedInstructions = listOf(),
         deposits = mapOf(),
         withdrawals = mapOf(),
@@ -395,9 +395,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                     storageExpansionCost = 0.2.toDecimal192(),
                     royaltyCost = 0.2.toDecimal192()
                 ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
+                detailedClassification = DetailedManifestClass.General,
                 reservedInstructions = emptyList()
             )
         )
@@ -428,9 +426,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                     storageExpansionCost = 0.2.toDecimal192(),
                     royaltyCost = 0.2.toDecimal192()
                 ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
+                detailedClassification = DetailedManifestClass.General,
                 reservedInstructions = emptyList()
             )
         )
@@ -463,9 +459,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                     storageExpansionCost = 0.2.toDecimal192(),
                     royaltyCost = 0.2.toDecimal192()
                 ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
+                detailedClassification = DetailedManifestClass.General,
                 reservedInstructions = emptyList()
             )
         )

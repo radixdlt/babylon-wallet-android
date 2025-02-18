@@ -461,7 +461,7 @@ private fun TransactionPreviewContent(
                         TransactionExpirationInfo(
                             modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
                             expiration = expiration,
-                            proposingDApp = state.proposingDApp ?: State.ProposingDApp.None,
+                            proposingDApp = state.proposingDApp ?: State.ProposingDApp.Unknown,
                             onInfoClick = onInfoClick
                         )
                     }

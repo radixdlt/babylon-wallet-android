@@ -74,6 +74,8 @@ sealed interface AppEvent {
         data object DerivePublicKeys : AccessFactorSources
 
         data object GetSignatures : AccessFactorSources
+
+        data object SpotCheck : AccessFactorSources
     }
 
     sealed class Status : AppEvent {

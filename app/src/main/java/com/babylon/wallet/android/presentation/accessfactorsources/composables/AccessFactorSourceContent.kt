@@ -40,14 +40,13 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.DerivingAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.ProvingOwnership
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.SignatureRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose.UpdatingFactorConfig
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
@@ -70,7 +69,7 @@ fun AccessDeviceFactorSourceContent(
     purpose: AccessFactorSourcePurpose,
     factorSource: DeviceFactorSource?,
     isRetryEnabled: Boolean,
-    canUseDifferentFactor: Boolean,
+    skipOption: AccessFactorSourceSkipOption,
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
 ) {
@@ -87,9 +86,10 @@ fun AccessDeviceFactorSourceContent(
                 onClick = onRetryClick
             )
 
-            if (canUseDifferentFactor) {
-                UseDifferentFactor(onClick = onSkipClick)
-            }
+            SkipOption(
+                skipOption = skipOption,
+                onClick = onSkipClick
+            )
         }
     )
 }
@@ -100,7 +100,7 @@ fun AccessLedgerHardwareWalletFactorSourceContent(
     purpose: AccessFactorSourcePurpose,
     factorSource: LedgerHardwareWalletFactorSource?,
     isRetryEnabled: Boolean,
-    canUseDifferentFactor: Boolean,
+    skipOption: AccessFactorSourceSkipOption,
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
 ) {
@@ -117,9 +117,10 @@ fun AccessLedgerHardwareWalletFactorSourceContent(
                 onClick = onRetryClick
             )
 
-            if (canUseDifferentFactor) {
-                UseDifferentFactor(onClick = onSkipClick)
-            }
+            SkipOption(
+                skipOption = skipOption,
+                onClick = onSkipClick
+            )
         }
     )
 }
@@ -129,7 +130,7 @@ fun AccessArculusCardFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: ArculusCardFactorSource?,
-    canUseDifferentFactor: Boolean,
+    skipOption: AccessFactorSourceSkipOption,
     onSkipClick: () -> Unit
 ) {
     AccessFactorSourceContent(
@@ -138,9 +139,10 @@ fun AccessArculusCardFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.ARCULUS_CARD,
         factorActions = {
-            if (canUseDifferentFactor) {
-                UseDifferentFactor(onClick = onSkipClick)
-            }
+            SkipOption(
+                skipOption = skipOption,
+                onClick = onSkipClick
+            )
         }
     )
 }
@@ -151,8 +153,8 @@ fun AccessPasswordFactorSourceContent(
     purpose: AccessFactorSourcePurpose,
     factorSource: PasswordFactorSource?,
     passwordState: AccessFactorSourceDelegate.State.PasswordState,
+    skipOption: AccessFactorSourceSkipOption,
     onPasswordTyped: (String) -> Unit,
-    canUseDifferentFactor: Boolean,
     onSkipClick: () -> Unit
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
@@ -208,9 +210,10 @@ fun AccessPasswordFactorSourceContent(
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
             )
 
-            if (canUseDifferentFactor) {
-                UseDifferentFactor(onClick = onSkipClick)
-            }
+            SkipOption(
+                skipOption = skipOption,
+                onClick = onSkipClick
+            )
         }
     )
 }
@@ -221,7 +224,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
     purpose: AccessFactorSourcePurpose,
     factorSource: OffDeviceMnemonicFactorSource?,
     seedPhraseInputState: AccessFactorSourceDelegate.State.SeedPhraseInputState,
-    canUseDifferentFactor: Boolean,
+    skipOption: AccessFactorSourceSkipOption,
     onWordChanged: (Int, String) -> Unit,
     onFocusedWordChanged: (Int) -> Unit,
     onConfirmed: () -> Unit,
@@ -233,6 +236,8 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
         factorActions = {
+            SecureScreen()
+
             SeedPhraseInputForm(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -247,14 +252,18 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
             )
 
             AnimatedVisibility(
-                visible = seedPhraseInputState.isSeedPhraseInvalidErrorVisible
+                visible = seedPhraseInputState.errorInSeedPhrase
             ) {
                 WarningText(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     text = AnnotatedString(
-                        text = stringResource(R.string.factorSourceActions_offDeviceMnemonic_incorrect)
+                        text = when (seedPhraseInputState.seedPhraseValidity) {
+                            SeedPhraseValidity.InvalidMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_invalid)
+                            SeedPhraseValidity.WrongMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
+                            else -> ""
+                        }
                     ),
                     contentColor = RadixTheme.colors.red1,
                     textStyle = RadixTheme.typography.body2HighImportance
@@ -266,14 +275,15 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = "Confirm",
+                text = stringResource(R.string.common_confirm),
                 enabled = seedPhraseInputState.isConfirmButtonEnabled,
                 onClick = onConfirmed
             )
 
-            if (canUseDifferentFactor) {
-                UseDifferentFactor(onClick = onSkipClick)
-            }
+            SkipOption(
+                skipOption = skipOption,
+                onClick = onSkipClick
+            )
         }
     )
 }
@@ -289,10 +299,11 @@ private fun <F : FactorSource> AccessFactorSourceContent(
     AccessContent(
         modifier = modifier.fillMaxWidth(),
         title = when (purpose) {
-            SignatureRequest -> stringResource(R.string.factorSourceActions_signature_title)
-            ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
-            DerivingAccounts -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
-            UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_updatingFactorConfig_title)
+            AccessFactorSourcePurpose.SignatureRequest -> stringResource(R.string.factorSourceActions_signature_title)
+            AccessFactorSourcePurpose.ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
+            AccessFactorSourcePurpose.DerivingAccounts -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
+            AccessFactorSourcePurpose.UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_updatingFactorConfig_title)
+            AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_spotCheck_title)
         },
         message = factorSourceKind.message(purpose),
         content = {
@@ -323,46 +334,71 @@ private fun <F : FactorSource> AccessFactorSourceContent(
 @Composable
 private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): AnnotatedString = when (this) {
     FactorSourceKind.DEVICE -> when (purpose) {
-        SignatureRequest -> stringResource(R.string.factorSourceActions_device_signMessage)
-        ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_device_message)
+        AccessFactorSourcePurpose.SignatureRequest -> stringResource(R.string.factorSourceActions_device_signMessage)
+        AccessFactorSourcePurpose.ProvingOwnership,
+        AccessFactorSourcePurpose.UpdatingFactorConfig,
+        AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_device_message)
     }
 
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> when (purpose) {
-        SignatureRequest -> stringResource(R.string.factorSourceActions_ledger_signMessage)
-        ProvingOwnership -> stringResource(R.string.factorSourceActions_ledger_message)
-        UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_ledger_deriveKeysMessage)
+        AccessFactorSourcePurpose.SignatureRequest -> stringResource(R.string.factorSourceActions_ledger_signMessage)
+        AccessFactorSourcePurpose.ProvingOwnership -> stringResource(R.string.factorSourceActions_ledger_message)
+        AccessFactorSourcePurpose.UpdatingFactorConfig,
+        AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_ledger_deriveKeysMessage)
     }
 
     FactorSourceKind.ARCULUS_CARD -> when (purpose) {
-        SignatureRequest -> stringResource(R.string.factorSourceActions_arculus_signMessage)
-        ProvingOwnership -> stringResource(R.string.factorSourceActions_arculus_message)
-        UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_arculus_deriveKeysMessage)
+        AccessFactorSourcePurpose.SignatureRequest -> stringResource(R.string.factorSourceActions_arculus_signMessage)
+        AccessFactorSourcePurpose.ProvingOwnership -> stringResource(R.string.factorSourceActions_arculus_message)
+        AccessFactorSourcePurpose.UpdatingFactorConfig,
+        AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_arculus_deriveKeysMessage)
     }
 
     FactorSourceKind.OFF_DEVICE_MNEMONIC -> when (purpose) {
-        SignatureRequest -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_signMessage)
-        ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_message)
+        AccessFactorSourcePurpose.SignatureRequest -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_signMessage)
+        AccessFactorSourcePurpose.ProvingOwnership,
+        AccessFactorSourcePurpose.UpdatingFactorConfig,
+        AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_message)
     }
 
     FactorSourceKind.PASSWORD -> when (purpose) {
-        SignatureRequest -> stringResource(R.string.factorSourceActions_password_signMessage)
-        ProvingOwnership, UpdatingFactorConfig, DerivingAccounts -> stringResource(R.string.factorSourceActions_password_message)
+        AccessFactorSourcePurpose.SignatureRequest -> stringResource(R.string.factorSourceActions_password_signMessage)
+        AccessFactorSourcePurpose.ProvingOwnership,
+        AccessFactorSourcePurpose.UpdatingFactorConfig,
+        AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_password_message)
     }
 }.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
 
 @Composable
-private fun UseDifferentFactor(
+private fun SkipOption(
     modifier: Modifier = Modifier,
+    skipOption: AccessFactorSourceSkipOption,
     onClick: () -> Unit
 ) {
-    RadixTextButton(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-            .height(50.dp),
-        text = stringResource(R.string.factorSourceActions_useDifferentFactor),
-        onClick = onClick
-    )
+    when (skipOption) {
+        AccessFactorSourceSkipOption.CanSkipFactor -> RadixTextButton(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                .height(50.dp),
+            text = stringResource(R.string.factorSourceActions_useDifferentFactor),
+            onClick = onClick
+        )
+        AccessFactorSourceSkipOption.CanIgnoreFactor -> RadixTextButton(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                .height(50.dp),
+            text = stringResource(R.string.factorSourceActions_ignore),
+            onClick = onClick
+        )
+        AccessFactorSourceSkipOption.None -> {}
+    }
 }
 
 @Preview(showBackground = true)
@@ -370,10 +406,10 @@ private fun UseDifferentFactor(
 fun UnknownFactorSourcePreview() {
     RadixWalletPreviewTheme {
         AccessDeviceFactorSourceContent(
-            purpose = SignatureRequest,
+            purpose = AccessFactorSourcePurpose.SignatureRequest,
             factorSource = null,
             isRetryEnabled = false,
-            canUseDifferentFactor = false,
+            skipOption = AccessFactorSourceSkipOption.None,
             onSkipClick = {},
             onRetryClick = {}
         )
@@ -386,13 +422,20 @@ fun UnknownFactorSourcePreview() {
 private fun Preview(
     @PreviewParameter(AccessFactorSourcePreviewParameterProvider::class) sample: Pair<AccessFactorSourcePurpose, FactorSource>
 ) {
+    val skipOption = remember(sample.first) {
+        if (sample.first == AccessFactorSourcePurpose.SpotCheck) {
+            AccessFactorSourceSkipOption.CanIgnoreFactor
+        } else {
+            AccessFactorSourceSkipOption.CanSkipFactor
+        }
+    }
     RadixWalletPreviewTheme {
         when (val factorSource = sample.second) {
             is FactorSource.Device -> AccessDeviceFactorSourceContent(
                 purpose = sample.first,
                 factorSource = factorSource.value,
                 isRetryEnabled = false,
-                canUseDifferentFactor = true,
+                skipOption = skipOption,
                 onSkipClick = {},
                 onRetryClick = {}
             )
@@ -401,7 +444,7 @@ private fun Preview(
                 purpose = sample.first,
                 factorSource = factorSource.value,
                 isRetryEnabled = false,
-                canUseDifferentFactor = true,
+                skipOption = skipOption,
                 onSkipClick = {},
                 onRetryClick = {}
             )
@@ -409,7 +452,7 @@ private fun Preview(
             is FactorSource.ArculusCard -> AccessArculusCardFactorSourceContent(
                 purpose = sample.first,
                 factorSource = factorSource.value,
-                canUseDifferentFactor = true,
+                skipOption = skipOption,
                 onSkipClick = {},
             )
 
@@ -418,7 +461,7 @@ private fun Preview(
                 AccessPasswordFactorSourceContent(
                     purpose = sample.first,
                     factorSource = factorSource.value,
-                    canUseDifferentFactor = true,
+                    skipOption = skipOption,
                     passwordState = AccessFactorSourceDelegate.State.PasswordState(
                         input = password,
                         isPasswordInvalidErrorVisible = false
@@ -442,10 +485,10 @@ private fun Preview(
                 AccessOffDeviceMnemonicFactorSourceContent(
                     purpose = sample.first,
                     factorSource = factorSource.value,
-                    canUseDifferentFactor = true,
+                    skipOption = skipOption,
                     seedPhraseInputState = AccessFactorSourceDelegate.State.SeedPhraseInputState(
                         delegateState = state,
-                        isSeedPhraseInvalidErrorVisible = true
+                        seedPhraseValidity = SeedPhraseValidity.WrongMnemonic
                     ),
                     onWordChanged = delegate::onWordChanged,
                     onFocusedWordChanged = {},

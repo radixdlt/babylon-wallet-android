@@ -28,6 +28,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -104,6 +105,32 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
     }
 
     @Test
+    fun testOnSeedPhraseConfirmedIncorrect() = runTest {
+        val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
+        val validFactorSourceId = mnemonicWithPassphrase.factorSourceId(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC)
+
+        val wordsOfDifferentMnemonic = MnemonicWithPassphrase.sample.other().mnemonic.words.map {
+            val index = it.index.inner.toInt()
+            SeedPhraseWord(
+                index = index,
+                value = it.word,
+                state = SeedPhraseWord.State.Valid,
+                lastWord = index == mnemonicWithPassphrase.mnemonic.words.size
+            )
+        }
+
+        val result = sut.onSeedPhraseConfirmed(
+            factorSourceId = validFactorSourceId,
+            words = wordsOfDifferentMnemonic
+        )
+
+        assertEquals(
+            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.WrongMnemonic,
+            result
+        )
+    }
+
+    @Test
     fun testOnSeedPhraseConfirmedDoesNotDeriveFactorSource() = runTest {
         val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
         val words = mnemonicWithPassphrase.mnemonic.words.map {
@@ -123,7 +150,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         )
 
         assertEquals(
-            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.DoesNotDeriveFactorSourceId,
+            AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity.WrongMnemonic,
             result
         )
     }
@@ -233,6 +260,39 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
             ),
             result.getOrNull()
         )
+        coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = offDeviceMnemonicFs.id.asGeneral()) }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    @Test
+    fun testSpotCheck() = runTest {
+        coEvery { updateFactorSourceLastUsedUseCase(factorSourceId = any()) } returns Unit
+        val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
+        val offDeviceMnemonicFs = newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase(
+            mwp = mnemonicWithPassphrase,
+            hint = OffDeviceMnemonicHint(
+                label = DisplayName("test"),
+                wordCount = mnemonicWithPassphrase.mnemonic.wordCount
+            )
+        )
+        val words = mnemonicWithPassphrase.mnemonic.words.map {
+            SeedPhraseWord(
+                index = it.index.inner.toInt(),
+                value = it.word,
+                state = SeedPhraseWord.State.Valid
+            )
+        }
+
+        GlobalScope.launch {
+            sut.onSeedPhraseConfirmed(
+                factorSourceId = offDeviceMnemonicFs.id,
+                words = words
+            )
+        }
+
+        val result = sut.spotCheck(factorSource = offDeviceMnemonicFs.asGeneral()).getOrThrow()
+
+        assertTrue(result)
         coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = offDeviceMnemonicFs.id.asGeneral()) }
     }
 }

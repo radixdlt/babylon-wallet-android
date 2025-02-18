@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOn
@@ -19,8 +21,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SecurityCenterViewModel @Inject constructor(
+    private val sargonOsManager: SargonOsManager,
     getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
-    @DefaultDispatcher dispatcher: CoroutineDispatcher
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SecurityCenterViewModel.SecurityCenterUiState>(),
     OneOffEventHandler<SecurityCenterViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -37,14 +40,15 @@ class SecurityCenterViewModel @Inject constructor(
                     )
                 )
             }
-            .flowOn(dispatcher)
+            .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
     }
 
     fun onSecurityShieldsClick() {
         viewModelScope.launch {
-            // TODO perform the actual check
-            val hasSecurityShields = false
+            val hasSecurityShields = sargonOsManager.callSafely(defaultDispatcher) {
+                getShieldsForDisplay().isNotEmpty()
+            }.getOrElse { false }
             sendEvent(
                 if (hasSecurityShields) {
                     Event.ToSecurityShields

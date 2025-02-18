@@ -12,6 +12,7 @@ import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdSignatureInputOfAuthIntentHash
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
@@ -39,6 +40,7 @@ import com.radixdlt.sargon.SignResponseOfAuthIntentHash
 import com.radixdlt.sargon.SignResponseOfSubintentHash
 import com.radixdlt.sargon.SignResponseOfTransactionIntentHash
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.SpotCheckResponse
 import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
@@ -49,6 +51,7 @@ import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.sign
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.HdSignature
 import com.radixdlt.sargon.os.signing.HdSignatureInput
@@ -64,7 +67,6 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.sargon.transactionSigningFactorInstance
 
 class WalletInteractorTest {
 
@@ -144,7 +146,7 @@ class WalletInteractorTest {
         val instances = accounts.map {
             OwnedFactorInstance(
                 owner = it.asProfileEntity().address,
-                factorInstance = it.securityState.transactionSigningFactorInstance
+                factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
             )
 
         }
@@ -241,7 +243,7 @@ class WalletInteractorTest {
         val instances = accounts.map {
             OwnedFactorInstance(
                 owner = it.asProfileEntity().address,
-                factorInstance = it.securityState.transactionSigningFactorInstance
+                factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
             )
 
         }
@@ -338,7 +340,7 @@ class WalletInteractorTest {
         val instances = accounts.map {
             OwnedFactorInstance(
                 owner = it.asProfileEntity().address,
-                factorInstance = it.securityState.transactionSigningFactorInstance
+                factorInstance = requireNotNull(it.unsecuredControllingFactorInstance)
             )
 
         }
@@ -419,6 +421,25 @@ class WalletInteractorTest {
                     )
                 )
             ),
+            response
+        )
+    }
+
+    @Test
+    fun testSpotCheck() = runTest {
+        val factorSource = FactorSource.sample()
+        val expectedResponse = SpotCheckResponse.VALID
+        coEvery { proxy.spotCheck(factorSource, false) } returns AccessFactorSourcesOutput.SpotCheckOutput.Completed(
+            response = expectedResponse
+        )
+
+        val response = sut.spotCheck(
+            factorSource = factorSource,
+            allowSkip = false
+        )
+
+        assertEquals(
+            expectedResponse,
             response
         )
     }
