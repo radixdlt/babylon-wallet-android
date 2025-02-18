@@ -122,14 +122,20 @@ private fun linkedEntitiesView(
     }
 
     val linkedText = when {
-        accountsCount == 0 && personasCount == 0 && hasAnyHiddenEntities -> "Hidden Accounts or Personas" // TODO
+        accountsCount == 0 && personasCount == 0 && hasAnyHiddenEntities -> stringResource(
+            R.string.securityShields_assigned_onlyHiddenEntities
+        )
         accountsCount == 0 && personasCount == 0 -> stringResource(R.string.common_none)
         accountsCount != 0 && personasCount != 0 -> "$accountsText ${stringResource(id = R.string.dot_separator)} $personasText"
         accountsCount != 0 -> accountsText
         else -> personasText
     }
 
-    return if (hasAnyHiddenEntities && (accountsCount != 0 || personasCount != 0)) "$linkedText (and some hidden)" else linkedText
+    return if (hasAnyHiddenEntities && (accountsCount != 0 || personasCount != 0)) {
+        "$linkedText ${stringResource(R.string.securityShields_assigned_someHiddenEntities)}"
+    } else {
+        linkedText
+    }
 }
 
 @UsesSampleValues
