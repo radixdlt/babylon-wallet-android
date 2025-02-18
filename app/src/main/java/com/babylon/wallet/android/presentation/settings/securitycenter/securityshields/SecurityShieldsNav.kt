@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.applyShieldNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addFactor
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
@@ -70,8 +71,10 @@ fun NavGraphBuilder.securityShieldsScreen(
     ) {
         SecurityShieldsScreen(
             viewModel = hiltViewModel(),
+            onNavigateToSecurityShieldDetails = { /* TODO security shield details screen */ },
+            onCreateNewSecurityShieldClick = { navController.securityShieldOnboarding() },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() },
-            onCreateShieldClick = { navController.securityShieldOnboarding() }
         )
     }
 }

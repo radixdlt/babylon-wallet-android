@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.model.factors
+package com.babylon.wallet.android.presentation.ui.model.shared
 
 import androidx.compose.ui.text.AnnotatedString
 
