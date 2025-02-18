@@ -342,6 +342,10 @@ private fun ChangeMainSecurityShieldContent(
                     onSelect = onSecurityShieldSelect
                 )
             }
+
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
         }
     }
 }
