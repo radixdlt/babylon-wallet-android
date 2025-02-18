@@ -80,10 +80,9 @@ fun SecurityShieldCardView(
 
                 Text(
                     text = linkedEntitiesView(
-                        accountsCount = item.shieldForDisplay.numberOfLinkedAccounts.toInt(),
-                        personasCount = item.shieldForDisplay.numberOfLinkedPersonas.toInt(),
-                        hasAnyHiddenEntities = item.shieldForDisplay.numberOfLinkedHiddenAccounts.toInt() != 0 ||
-                            item.shieldForDisplay.numberOfLinkedHiddenPersonas.toInt() != 0
+                        accountsCount = item.numberOfLinkedAccounts,
+                        personasCount = item.numberOfLinkedPersonas,
+                        hasAnyHiddenEntities = item.hasAnyHiddenLinkedEntities
                     ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2

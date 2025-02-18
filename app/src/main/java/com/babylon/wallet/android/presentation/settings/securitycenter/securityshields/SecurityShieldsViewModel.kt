@@ -93,7 +93,6 @@ class SecurityShieldsViewModel @Inject constructor(
                     Timber.e("Failed to set main security shield: $error")
                 }
             }
-            _state.update { state -> state.copy(isChangingMainSecurityShieldInProgress = false) }
             onDismissMainSecurityShieldBottomSheet()
             resetSecurityShieldsList()
         }
@@ -102,6 +101,7 @@ class SecurityShieldsViewModel @Inject constructor(
     fun onDismissMainSecurityShieldBottomSheet() {
         _state.update { state ->
             state.copy(
+                isChangingMainSecurityShieldInProgress = false,
                 isMainSecurityShieldBottomSheetVisible = false,
                 selectedSecurityShieldId = null
             )
