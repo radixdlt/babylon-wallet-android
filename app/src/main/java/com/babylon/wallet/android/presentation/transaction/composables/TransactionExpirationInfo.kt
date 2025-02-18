@@ -170,3 +170,19 @@ private fun TransactionPreAuthorizationInfoExpiredPreview() {
         )
     }
 }
+
+@UsesSampleValues
+@Composable
+@Preview
+private fun TransactionPreAuthorizationInfoUnknownDAppPreview() {
+    RadixWalletPreviewTheme {
+        TransactionExpirationInfo(
+            expiration = TransactionReviewViewModel.State.Expiration(
+                duration = 0.seconds,
+                startsAfterSign = false
+            ),
+            proposingDApp = TransactionReviewViewModel.State.ProposingDApp.Unknown,
+            onInfoClick = {}
+        )
+    }
+}

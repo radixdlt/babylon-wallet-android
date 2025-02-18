@@ -105,9 +105,9 @@ fun TransactionPreviewHeader(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val dAppName = someDApp.dApp?.name.dAppDisplayName()
+                            val dAppName = someDApp.dApp.name.dAppDisplayName()
 
-                            if (someDApp.dApp?.iconUrl != null) {
+                            if (someDApp.dApp.iconUrl != null) {
                                 Thumbnail.DApp(
                                     modifier = Modifier
                                         .size(24.dp),

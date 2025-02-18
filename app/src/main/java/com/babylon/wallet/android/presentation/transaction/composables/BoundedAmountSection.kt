@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,7 +21,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -132,11 +130,6 @@ fun BoundedAmountSection(
             is BoundedAmount.Exact -> {
                 amount(boundedAmount.amount)
             }
-            is BoundedAmount.Max -> {
-                qualifier(stringResource(id = R.string.interactionReview_noMoreThan))
-
-                amount(boundedAmount.amount)
-            }
             is BoundedAmount.Min -> {
                 qualifier(stringResource(id = R.string.interactionReview_atLeast))
 
@@ -211,13 +204,15 @@ fun UnknownAmount(
     modifier: Modifier = Modifier,
     amount: BoundedAmount?
 ) {
-    val unknownAmount = remember(amount) { amount as? BoundedAmount.Unknown }
+    val unknownAmount = remember(amount) {
+        BoundedAmount.Unknown.takeIf { amount is BoundedAmount.Unknown || amount is BoundedAmount.Max }
+    }
     unknownAmount?.let {
-        WarningText(
+        Text(
             modifier = modifier,
-            text = AnnotatedString(stringResource(id = R.string.interactionReview_unknown_amount)),
-            textStyle = RadixTheme.typography.body2HighImportance,
-            contentColor = RadixTheme.colors.orange1
+            text = stringResource(id = R.string.interactionReview_unknown_amount),
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2
         )
     }
 }
@@ -300,16 +295,35 @@ private fun LargeBoundedAmountSectionPreview(
     }
 }
 
+@Composable
+@Preview
+private fun UnknownAmountSectionPreview() {
+    RadixWalletPreviewTheme {
+        UnknownAmount(
+            amount = BoundedAmount.Unknown
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun UnknownMaxAmountSectionPreview() {
+    RadixWalletPreviewTheme {
+        UnknownAmount(
+            amount = BoundedAmount.Max(Decimal192.sample())
+        )
+    }
+}
+
 @UsesSampleValues
 class BoundedAmountSectionPreviewProvider : PreviewParameterProvider<BoundedAmount> {
 
     override val values: Sequence<BoundedAmount>
         get() = sequenceOf(
             BoundedAmount.Exact(Decimal192.sample()),
-            BoundedAmount.Max(Decimal192.sample()),
             BoundedAmount.Min(Decimal192.sample()),
             BoundedAmount.Range(Decimal192.sample(), Decimal192.sample.other()),
-            BoundedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192()),
-            BoundedAmount.Unknown
+            BoundedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192())
         )
 }
