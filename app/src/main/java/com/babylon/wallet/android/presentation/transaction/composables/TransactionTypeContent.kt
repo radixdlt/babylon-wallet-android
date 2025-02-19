@@ -169,7 +169,7 @@ fun TransactionPreviewTypePreview() {
                 ),
                 newlyCreatedGlobalIds = emptyList(),
                 involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
-                    components = listOf(
+                    components = linkedMapOf(
                         ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
                     )
                 ),

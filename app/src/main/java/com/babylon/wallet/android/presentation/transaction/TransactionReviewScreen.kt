@@ -681,7 +681,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         )
                     ),
                     involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
-                        components = listOf(
+                        components = linkedMapOf(
                             ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
                         )
                     ),
@@ -731,7 +731,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         )
                     ),
                     involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
-                        components = listOf(
+                        components = linkedMapOf(
                             ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
                         ),
                         morePossibleDAppsPresent = true

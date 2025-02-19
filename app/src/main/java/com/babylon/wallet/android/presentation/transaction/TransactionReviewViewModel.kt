@@ -518,15 +518,15 @@ sealed interface PreviewType {
                 }
 
             data class DApps(
-                val components: List<Pair<ManifestEncounteredComponentAddress, DApp?>>,
+                val components: LinkedHashMap<ManifestEncounteredComponentAddress, DApp?>,
                 val morePossibleDAppsPresent: Boolean = false
             ) : InvolvedComponents {
 
                 val verifiedDapps: List<DApp>
-                    get() = components.mapNotNull { it.second }
+                    get() = components.values.filterNotNull().distinctBy { it.dAppAddress }
 
                 val unknownComponents: List<ManifestEncounteredComponentAddress>
-                    get() = components.mapNotNull { if (it.second == null) it.first else null }
+                    get() = components.mapNotNull { if (it.value == null) it.key else null }
             }
 
             data class Validators(

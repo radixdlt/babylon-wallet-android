@@ -18,7 +18,7 @@ class GeneralTransferProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
 
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
-        val dApps = summary.resolveDApps()
+        val dApps = resolveComponentAddressesUseCase(summary.encounteredAddresses).getOrThrow()
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
         val badges = summary.resolveBadges(onLedgerAssets = assets)
 
@@ -34,15 +34,5 @@ class GeneralTransferProcessor @Inject constructor(
             badges = badges,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
-    }
-
-    private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
-        encounteredAddresses
-            .map { address ->
-                async { resolveComponentAddressesUseCase.invoke(address) }
-            }
-            .awaitAll()
-            .mapNotNull { it.getOrNull() }
-            .distinctBy { it.first }
     }
 }
