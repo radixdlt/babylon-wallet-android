@@ -74,7 +74,7 @@ fun MnemonicWordTextField(
 ) {
     var focused by remember { mutableStateOf(hasInitialFocus) }
     val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(hasInitialFocus) {
         if (hasInitialFocus) {
             focusRequester.requestFocus()
         }

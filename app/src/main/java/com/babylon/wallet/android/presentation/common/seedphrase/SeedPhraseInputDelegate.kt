@@ -42,6 +42,14 @@ class SeedPhraseInputDelegate(
         }
     }
 
+    fun setWords(words: List<SeedPhraseWord>) {
+        _state.update { state ->
+            state.copy(
+                seedPhraseWords = words.toPersistentList()
+            )
+        }
+    }
+
     fun onWordSelected(index: Int, value: String) {
         _state.update { state ->
             val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {

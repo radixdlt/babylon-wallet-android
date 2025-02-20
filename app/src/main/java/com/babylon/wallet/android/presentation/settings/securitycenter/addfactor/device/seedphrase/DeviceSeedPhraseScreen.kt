@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,10 +33,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
@@ -45,6 +49,7 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -63,6 +68,7 @@ fun DeviceSeedPhraseScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
+        onMessageDismiss = viewModel::onMessageDismiss,
         onWordChanged = viewModel::onWordChanged,
         onWordSelected = viewModel::onWordSelected,
         onEnterCustomSeedPhraseClick = viewModel::onEnterCustomSeedPhraseClick,
@@ -73,6 +79,7 @@ fun DeviceSeedPhraseScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 DeviceSeedPhraseViewModel.Event.Confirmed -> onConfirmed()
+                DeviceSeedPhraseViewModel.Event.Dismiss -> onDismiss()
             }
         }
     }
@@ -83,13 +90,26 @@ private fun DeviceSeedPhraseContent(
     modifier: Modifier = Modifier,
     state: DeviceSeedPhraseViewModel.State,
     onDismiss: () -> Unit,
+    onMessageDismiss: () -> Unit,
     onWordChanged: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
     onEnterCustomSeedPhraseClick: () -> Unit,
     onConfirmClick: () -> Unit
 ) {
     SecureScreen()
+
+    val scrollState = rememberScrollState()
     var focusedWordIndex by remember { mutableStateOf<Int?>(null) }
+    val isSuggestionsVisible = state.seedPhraseState.rememberSuggestionsVisibilityState()
+
+    HideKeyboardOnFullScroll(scrollState)
+
+    LaunchedEffect(state.isEditingEnabled) {
+        if (state.isEditingEnabled) {
+            scrollState.animateScrollTo(0)
+            focusedWordIndex = 0
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -103,16 +123,14 @@ private fun DeviceSeedPhraseContent(
         },
         containerColor = RadixTheme.colors.defaultBackground,
         bottomBar = {
-            val isSuggestionsVisible = state.seedPhraseState.rememberSuggestionsVisibilityState()
-
             if (isSuggestionsVisible) {
                 SeedPhraseSuggestions(
-                    wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
                         .imePadding()
                         .fillMaxWidth()
                         .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                         .padding(RadixTheme.dimensions.paddingSmall),
+                    wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     onCandidateClick = { candidate ->
                         focusedWordIndex?.let {
                             onWordSelected(it, candidate)
@@ -122,19 +140,17 @@ private fun DeviceSeedPhraseContent(
             } else {
                 RadixBottomBar(
                     onClick = onConfirmClick,
-                    text = stringResource(id = R.string.common_confirm)
+                    text = stringResource(id = R.string.common_confirm),
+                    enabled = state.isConfirmButtonEnabled
                 )
             }
         }
     ) { padding ->
-        val scrollState = rememberScrollState()
-        HideKeyboardOnFullScroll(scrollState)
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -160,11 +176,21 @@ private fun DeviceSeedPhraseContent(
 
             SeedPhraseInputView(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .keyboardVisiblePadding(
+                        padding = PaddingValues(
+                            top = RadixTheme.dimensions.paddingLarge,
+                        ),
+                        bottom = if (isSuggestionsVisible) {
+                            RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
+                        } else {
+                            RadixTheme.dimensions.paddingDefault
+                        }
+                    ),
                 seedPhraseWords = state.seedPhraseState.seedPhraseWords,
                 onWordChanged = onWordChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it },
-                initiallyFocusedIndex = 0,
+                initiallyFocusedIndex = focusedWordIndex,
                 textFieldColors = MnemonicTextFieldColors.default().copy(
                     disabledTextColor = RadixTheme.colors.gray1,
                     disabledBorderColor = Color.Transparent,
@@ -195,6 +221,15 @@ private fun DeviceSeedPhraseContent(
             }
         }
     }
+
+    state.errorMessage?.let { error ->
+        BasicPromptAlertDialog(
+            finish = { onMessageDismiss() },
+            messageText = error.getMessage(),
+            confirmText = "Close", //TODO crowdin
+            dismissText = null
+        )
+    }
 }
 
 @UsesSampleValues
@@ -207,6 +242,7 @@ private fun DeviceSeedPhrasePreview(
         DeviceSeedPhraseContent(
             state = state,
             onDismiss = {},
+            onMessageDismiss = {},
             onWordChanged = { _, _ -> },
             onWordSelected = { _, _ -> },
             onConfirmClick = {},
@@ -242,6 +278,9 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                     }.toPersistentList()
                 ),
                 isEditingEnabled = true
+            ),
+            DeviceSeedPhraseViewModel.State(
+                errorMessage = UiMessage.ErrorMessage(RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse)
             )
         )
 }

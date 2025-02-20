@@ -2,10 +2,12 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.addfacto
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.factors.DeviceFactorSourceAddingClient
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
@@ -25,17 +27,24 @@ class DeviceSeedPhraseViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _state.update { state ->
-                state.copy(
-                    seedPhraseState = state.seedPhraseState.copy(
-                        seedPhraseWords = deviceFactorSourceAddingClient.generateMnemonicWords().toPersistentList()
+            seedPhraseInputDelegate.setWords(deviceFactorSourceAddingClient.generateMnemonicWords())
+
+            seedPhraseInputDelegate.state.collect { delegateState ->
+                _state.update { state ->
+                    state.copy(
+                        seedPhraseState = delegateState
                     )
-                )
+                }
             }
         }
     }
 
     override fun initialState(): State = State()
+
+    fun onMessageDismiss() {
+        _state.update { state -> state.copy(errorMessage = null) }
+        viewModelScope.launch { sendEvent(Event.Dismiss) }
+    }
 
     fun onWordChanged(index: Int, value: String) {
         seedPhraseInputDelegate.onWordChanged(index, value)
@@ -46,18 +55,16 @@ class DeviceSeedPhraseViewModel @Inject constructor(
     }
 
     fun onEnterCustomSeedPhraseClick() {
-        _state.update { state ->
-            state.copy(
-                seedPhraseState = state.seedPhraseState.copy(
-                    seedPhraseWords = state.seedPhraseState.seedPhraseWords.map { word ->
-                        word.copy(
-                            value = "",
-                            state = SeedPhraseWord.State.Empty
-                        )
-                    }.toPersistentList()
+        _state.update { state -> state.copy(isEditingEnabled = true) }
+
+        seedPhraseInputDelegate.setWords(
+            _state.value.seedPhraseState.seedPhraseWords.map { word ->
+                word.copy(
+                    value = "",
+                    state = SeedPhraseWord.State.Empty
                 )
-            )
-        }
+            }
+        )
     }
 
     fun onConfirmClick() {
@@ -73,19 +80,37 @@ class DeviceSeedPhraseViewModel @Inject constructor(
                 }
             }
 
-            if (state.value.seedPhraseState.isInputComplete()) {
-                sendEvent(Event.Confirmed)
-            }
+            deviceFactorSourceAddingClient.isFactorAlreadyInUse()
+                .onSuccess { isFactorAlreadyInUse ->
+                    if (isFactorAlreadyInUse) {
+                        _state.update { state ->
+                            state.copy(
+                                errorMessage = UiMessage.ErrorMessage(RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse)
+                            )
+                        }
+                    } else {
+                        sendEvent(Event.Confirmed)
+                    }
+                }
+                .onFailure {
+                    _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(it)) }
+                }
         }
     }
 
     sealed interface Event : OneOffEvent {
 
         data object Confirmed : Event
+
+        data object Dismiss : Event
     }
 
     data class State(
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
         val isEditingEnabled: Boolean = false,
-    ) : UiState
+        val errorMessage: UiMessage.ErrorMessage? = null
+    ) : UiState {
+
+        val isConfirmButtonEnabled = seedPhraseState.isInputComplete()
+    }
 }

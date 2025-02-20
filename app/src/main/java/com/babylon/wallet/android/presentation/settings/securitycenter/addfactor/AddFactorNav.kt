@@ -21,7 +21,7 @@ internal class AddFactorArgs(
 ) {
 
     constructor(savedStateHandle: SavedStateHandle) : this(
-        kind = FactorSourceKind.entries[requireNotNull(savedStateHandle.get<Int>(ARG_FACTOR_SOURCE_KIND))]
+        kind = FactorSourceKind.entries[requireNotNull(savedStateHandle.get<String>(ARG_FACTOR_SOURCE_KIND)?.toInt())]
     )
 }
 
@@ -29,7 +29,7 @@ fun NavController.addFactor(
     kind: FactorSourceKind,
     navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}
 ) {
-    navigate("$DESTINATION_ADD_FACTOR_GRAPH/$kind", navOptionsBuilder)
+    navigate("$DESTINATION_ADD_FACTOR_GRAPH/${kind.ordinal}", navOptionsBuilder)
 }
 
 fun NavGraphBuilder.addFactor(

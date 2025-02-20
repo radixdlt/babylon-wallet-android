@@ -2,16 +2,20 @@ package com.babylon.wallet.android.data.repository.factors
 
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DeviceMnemonicBuilder
+import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.core.mapWhen
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DeviceFactorSourceAddingClient @Inject constructor(
+    private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
@@ -19,7 +23,7 @@ class DeviceFactorSourceAddingClient @Inject constructor(
 
     suspend fun generateMnemonicWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         executeMutating { generateNewMnemonicWithPassphrase() }
-        getWords(SeedPhraseWord.State.ValidMasked)
+        getWords(SeedPhraseWord.State.ValidDisabled)
     }
 
     suspend fun createMnemonicFromWords(words: List<SeedPhraseWord>): List<SeedPhraseWord> = withContext(dispatcher) {
@@ -37,6 +41,10 @@ class DeviceFactorSourceAddingClient @Inject constructor(
                 )
             }
         )
+    }
+
+    suspend fun isFactorAlreadyInUse(): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
+        isFactorSourceAlreadyInUse(deviceMnemonicBuilder.getFactorSourceId())
     }
 
     private suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
