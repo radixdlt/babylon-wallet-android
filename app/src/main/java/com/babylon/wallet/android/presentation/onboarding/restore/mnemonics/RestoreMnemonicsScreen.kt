@@ -414,16 +414,6 @@ private fun SeedPhraseView(
             style = RadixTheme.typography.title
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-        WarningText(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = AnnotatedString(stringResource(R.string.enterSeedPhrase_warning)),
-            textStyle = RadixTheme.typography.body1Header
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-
         SeedPhraseInputForm(
             modifier = Modifier
                 .fillMaxWidth()

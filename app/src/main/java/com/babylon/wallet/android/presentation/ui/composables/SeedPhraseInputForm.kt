@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.LabelType
+import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.MnemonicWordTextField
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -60,30 +61,12 @@ fun SeedPhraseInputForm(
         var advancedMode by remember {
             mutableStateOf(false)
         }
-        seedPhraseWords.chunked(3).forEach { wordsChunk ->
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-            ) {
-                wordsChunk.forEach { word ->
-                    SeedPhraseWordInput(
-                        onWordChanged = onWordChanged,
-                        word = word,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        onFocusChanged = {
-                            if (it.hasFocus) {
-                                onFocusedWordIndexChanged(word.index)
-                            }
-                        },
-                        enabled = word.inputDisabled.not(),
-                        hasInitialFocus = initiallyFocusedIndex == word.index
-                    )
-                }
-            }
-        }
+        SeedPhraseInputView(
+            seedPhraseWords = seedPhraseWords,
+            onWordChanged = onWordChanged,
+            onFocusedWordIndexChanged = onFocusedWordIndexChanged,
+            initiallyFocusedIndex = initiallyFocusedIndex
+        )
         AnimatedVisibility(visible = advancedMode) {
             RadixTextField(
                 modifier = Modifier
@@ -112,6 +95,47 @@ fun SeedPhraseInputForm(
                     advancedMode = !advancedMode
                 }
             )
+        }
+    }
+}
+
+@Composable
+fun SeedPhraseInputView(
+    seedPhraseWords: ImmutableList<SeedPhraseWord>,
+    onWordChanged: (Int, String) -> Unit,
+    onFocusedWordIndexChanged: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    initiallyFocusedIndex: Int? = null,
+    textFieldColors: MnemonicTextFieldColors = MnemonicTextFieldColors.default()
+) {
+    Column(
+        modifier = modifier
+    ) {
+        seedPhraseWords.chunked(3).forEach { wordsChunk ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            ) {
+                wordsChunk.forEach { word ->
+                    SeedPhraseWordInput(
+                        onWordChanged = onWordChanged,
+                        word = word,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        onFocusChanged = {
+                            if (it.hasFocus) {
+                                onFocusedWordIndexChanged(word.index)
+                            }
+                        },
+                        enabled = word.inputDisabled.not(),
+                        masked = word.masked,
+                        hasInitialFocus = initiallyFocusedIndex == word.index,
+                        colors = textFieldColors
+                    )
+                }
+            }
         }
     }
 }
@@ -154,7 +178,9 @@ private fun SeedPhraseWordInput(
     modifier: Modifier = Modifier,
     onFocusChanged: ((FocusState) -> Unit)?,
     enabled: Boolean,
-    hasInitialFocus: Boolean
+    masked: Boolean,
+    hasInitialFocus: Boolean,
+    colors: MnemonicTextFieldColors = MnemonicTextFieldColors.default()
 ) {
     MnemonicWordTextField(
         modifier = modifier,
@@ -177,7 +203,8 @@ private fun SeedPhraseWordInput(
                 }
             }
 
-            SeedPhraseWord.State.HasValue, SeedPhraseWord.State.Invalid -> {
+            SeedPhraseWord.State.NotEmpty,
+            SeedPhraseWord.State.Invalid -> {
                 {
                     Icon(
                         modifier = Modifier
@@ -194,6 +221,7 @@ private fun SeedPhraseWordInput(
                 }
             }
 
+            SeedPhraseWord.State.ValidMasked,
             SeedPhraseWord.State.ValidDisabled,
             SeedPhraseWord.State.Empty -> {
                 null
@@ -215,8 +243,10 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
+        masked = masked,
         highlightField = false,
-        hasInitialFocus = hasInitialFocus
+        hasInitialFocus = hasInitialFocus,
+        colors = colors
     )
 }
 

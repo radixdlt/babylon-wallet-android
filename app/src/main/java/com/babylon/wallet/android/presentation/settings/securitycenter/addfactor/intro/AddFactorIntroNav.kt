@@ -8,7 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.biometricspin.biometricsPinSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase.deviceSeedPhrase
 
 const val ROUTE_ADD_FACTOR_INTRO = "add_factor_intro"
 
@@ -29,7 +29,7 @@ fun NavGraphBuilder.addFactorIntro(
         AddFactorIntroScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onContinueClick = { navController.biometricsPinSeedPhrase() },
+            onContinueClick = { navController.deviceSeedPhrase() },
             onInfoClick = { navController.infoDialog(it) }
         )
     }

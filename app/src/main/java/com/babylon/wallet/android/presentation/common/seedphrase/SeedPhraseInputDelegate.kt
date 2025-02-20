@@ -73,10 +73,10 @@ class SeedPhraseInputDelegate(
                     _state.update { state ->
                         state.copy(
                             seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
-                                val wordState = if (word.state == SeedPhraseWord.State.ValidDisabled) {
-                                    SeedPhraseWord.State.ValidDisabled
-                                } else {
-                                    SeedPhraseWord.State.Valid
+                                val wordState = when (word.state) {
+                                    SeedPhraseWord.State.ValidMasked -> SeedPhraseWord.State.ValidMasked
+                                    SeedPhraseWord.State.ValidDisabled -> SeedPhraseWord.State.ValidDisabled
+                                    else -> SeedPhraseWord.State.Valid
                                 }
                                 word.copy(value = pastedMnemonic[index], state = wordState)
                             }.toPersistentList()
@@ -95,7 +95,7 @@ class SeedPhraseInputDelegate(
                 wordCandidates.contains(value) -> SeedPhraseWord.State.Valid
                 value.isEmpty() -> SeedPhraseWord.State.Empty
                 wordCandidates.isEmpty() -> SeedPhraseWord.State.Invalid
-                else -> SeedPhraseWord.State.HasValue
+                else -> SeedPhraseWord.State.NotEmpty
             }
             _state.update { state ->
                 val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {

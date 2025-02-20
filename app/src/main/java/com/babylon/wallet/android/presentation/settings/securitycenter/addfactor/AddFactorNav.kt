@@ -5,7 +5,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.biometricspin.biometricsPinSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.confirmseedphrase.confirmDeviceSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase.deviceSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro.ROUTE_ADD_FACTOR_INTRO
 import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro.addFactorIntro
 import com.radixdlt.sargon.FactorSourceKind
@@ -40,6 +41,8 @@ fun NavGraphBuilder.addFactor(
     ) {
         addFactorIntro(navController)
 
-        biometricsPinSeedPhrase(navController)
+        deviceSeedPhrase(navController)
+
+        confirmDeviceSeedPhrase(navController)
     }
 }

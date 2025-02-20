@@ -77,7 +77,7 @@ private fun SeedPhraseWordInput(
         value = word.value,
         label = stringResource(id = R.string.importMnemonic_wordHeading, word.index + 1),
         trailingIcon = when (word.state) {
-            SeedPhraseWord.State.HasValue -> {
+            SeedPhraseWord.State.NotEmpty -> {
                 {
                     Icon(
                         modifier = Modifier
@@ -110,6 +110,7 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
+        masked = !enabled,
         highlightField = true,
         hasInitialFocus = initiallyFocused,
         hintColor = if (enabled.not()) RadixTheme.colors.gray4 else null

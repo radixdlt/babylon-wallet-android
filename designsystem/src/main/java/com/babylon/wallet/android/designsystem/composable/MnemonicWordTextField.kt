@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -65,8 +67,10 @@ fun MnemonicWordTextField(
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false,
     enabled: Boolean = true,
+    masked: Boolean = false,
     highlightField: Boolean = false,
-    hasInitialFocus: Boolean = false
+    hasInitialFocus: Boolean = false,
+    colors: MnemonicTextFieldColors = MnemonicTextFieldColors.default(),
 ) {
     var focused by remember { mutableStateOf(hasInitialFocus) }
     val focusRequester = remember { FocusRequester() }
@@ -88,15 +92,16 @@ fun MnemonicWordTextField(
             backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
         )
         val textColor = when {
-            error != null -> RadixTheme.colors.red1
-            !enabled -> RadixTheme.colors.gray2
-            else -> RadixTheme.colors.gray1
+            error != null -> colors.errorTextColor
+            !enabled -> colors.disabledTextColor
+            else -> colors.textColor
         }
         val borderColor = when {
-            enabled && highlightField -> RadixTheme.colors.gray1
-            error != null -> RadixTheme.colors.red1
-            focused -> RadixTheme.colors.gray1
-            else -> RadixTheme.colors.gray4
+            enabled && highlightField -> colors.highlightedBorderColor
+            error != null -> colors.errorBorderColor
+            focused -> colors.focusedBorderColor
+            !enabled -> colors.disabledBorderColor
+            else -> colors.borderColor
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         var textFieldValueState by remember(value) {
@@ -154,7 +159,7 @@ fun MnemonicWordTextField(
                     }
                 },
                 enabled = enabled,
-                visualTransformation = if (enabled) VisualTransformation.None else MnemonicWordVisualTransformation()
+                visualTransformation = if (masked) MnemonicWordVisualTransformation() else VisualTransformation.None
             )
         }
         if (error != null || errorFixedSize) {
@@ -168,10 +173,10 @@ fun MnemonicWordTextField(
                         modifier = Modifier.size(14.dp),
                         painter = painterResource(id = R.drawable.ic_warning_error),
                         contentDescription = null,
-                        tint = RadixTheme.colors.red1
+                        tint = colors.errorTextColor
                     )
                 }
-                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)
+                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = colors.errorTextColor)
             }
         }
     }
@@ -196,6 +201,37 @@ internal class MnemonicWordVisualTransformation : VisualTransformation {
 
     companion object {
         private const val transformationCharactersLength: Int = 4
+    }
+}
+
+data class MnemonicTextFieldColors(
+    val textColor: Color,
+    val errorTextColor: Color,
+    val disabledTextColor: Color,
+    val highlightedTextColor: Color,
+    val borderColor: Color,
+    val focusedBorderColor: Color,
+    val errorBorderColor: Color,
+    val disabledBorderColor: Color,
+    val highlightedBorderColor: Color,
+) {
+
+    companion object {
+
+        @Composable
+        fun default(): MnemonicTextFieldColors {
+            return MnemonicTextFieldColors(
+                textColor = RadixTheme.colors.gray1,
+                errorTextColor = RadixTheme.colors.red1,
+                disabledTextColor = RadixTheme.colors.gray2,
+                highlightedTextColor = RadixTheme.colors.gray1,
+                borderColor = RadixTheme.colors.gray4,
+                focusedBorderColor = RadixTheme.colors.gray1,
+                errorBorderColor = RadixTheme.colors.red1,
+                disabledBorderColor = RadixTheme.colors.gray4,
+                highlightedBorderColor = RadixTheme.colors.gray1,
+            )
+        }
     }
 }
 

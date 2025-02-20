@@ -1,12 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,23 +10,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.CopySeedPhraseButton
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.SeedPhraseRow
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.SeedPhraseSingleWord
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -39,7 +31,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.FactorSourceId
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -66,7 +57,7 @@ fun RevealSeedPhraseScreen(
         modifier = modifier,
         mnemonicWords = state.mnemonicWordsChunked,
         passphrase = state.passphrase,
-        seedPhraseWordsPerLine = state.seedPhraseWordsPerLine,
+        wordsPerLine = state.seedPhraseWordsPerLine,
         onBackClick = backClickHandler,
     )
     val dialogState = state.showConfirmSeedPhraseDialogState
@@ -99,7 +90,7 @@ private fun RevealSeedPhraseContent(
     modifier: Modifier = Modifier,
     mnemonicWords: PersistentList<PersistentList<String>>,
     passphrase: String,
-    seedPhraseWordsPerLine: Int,
+    wordsPerLine: Int,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -113,97 +104,48 @@ private fun RevealSeedPhraseContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier.padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
         ) {
-            LazyColumn(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
-            ) {
+            item {
+                WarningText(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = AnnotatedString(stringResource(R.string.revealSeedPhrase_warning)),
+                    contentColor = RadixTheme.colors.orange1
+                )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
+
+            itemsIndexed(mnemonicWords) { outerIndex, wordsChunk ->
+                SeedPhraseRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    wordsChunk = wordsChunk,
+                    wordsPerLine = wordsPerLine,
+                    outerIndex = outerIndex
+                )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
+
+            if (passphrase.isNotEmpty()) {
                 item {
-                    WarningText(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = AnnotatedString(stringResource(R.string.revealSeedPhrase_warning)),
-                        contentColor = RadixTheme.colors.orange1
+                    SeedPhraseSingleWord(
+                        label = stringResource(id = R.string.revealSeedPhrase_passphrase),
+                        word = passphrase
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                }
-                itemsIndexed(mnemonicWords) { outerIndex, wordsChunk ->
-                    SeedPhraseRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        wordsChunk = wordsChunk,
-                        seedPhraseWordsPerLine = seedPhraseWordsPerLine,
-                        outerIndex = outerIndex
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                }
-                if (passphrase.isNotEmpty()) {
-                    item {
-                        SingleWord(
-                            modifier = Modifier.weight(1f),
-                            label = stringResource(id = R.string.revealSeedPhrase_passphrase),
-                            word = passphrase
-                        )
-                    }
-                }
-                if (BuildConfig.DEBUG_MODE) {
-                    item {
-                        val clipboardManager = LocalClipboardManager.current
-                        RadixPrimaryButton(text = "(DEBUG) Copy seed phrase", onClick = {
-                            val phrase = mnemonicWords.joinToString(" ") { it.joinToString(" ") }
-                            clipboardManager.setText(buildAnnotatedString { append(phrase) })
-                        })
-                    }
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun SeedPhraseRow(
-    wordsChunk: ImmutableList<String>,
-    outerIndex: Int,
-    seedPhraseWordsPerLine: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-    ) {
-        wordsChunk.forEachIndexed { index, word ->
-            SingleWord(
-                modifier = Modifier.weight(1f),
-                label = stringResource(
-                    id = R.string.revealSeedPhrase_wordLabel,
-                    outerIndex * seedPhraseWordsPerLine + index + 1
-                ),
-                word = word
-            )
+            item {
+                CopySeedPhraseButton(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    mnemonicWords = mnemonicWords
+                )
+            }
         }
-    }
-}
-
-@Composable
-private fun SingleWord(label: String, word: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)) {
-        Text(
-            text = label,
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1
-        )
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
-                .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                .padding(RadixTheme.dimensions.paddingMedium),
-            text = word,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
     }
 }
 
@@ -220,7 +162,7 @@ fun RevealSeedPhrasePreview() {
                 persistentListOf("zoo", "zoo", "zoo")
             ),
             passphrase = "test phrase",
-            seedPhraseWordsPerLine = 3
+            wordsPerLine = 3
         )
     }
 }

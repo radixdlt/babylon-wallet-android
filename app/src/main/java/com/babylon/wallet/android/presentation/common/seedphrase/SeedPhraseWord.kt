@@ -8,12 +8,18 @@ data class SeedPhraseWord(
 ) {
 
     val valid: Boolean
-        get() = state == State.Valid || state == State.ValidDisabled
+        get() = state == State.Valid || state == State.ValidMasked || state == State.ValidDisabled
 
     val inputDisabled: Boolean
-        get() = state == State.ValidDisabled
+        get() = state == State.ValidMasked || state == State.ValidDisabled
+
+    val masked: Boolean
+        get() = state == State.ValidMasked
+
+    val hasValue
+        get() = state == State.NotEmpty || state == State.ValidMasked || state == State.ValidDisabled
 
     enum class State {
-        Valid, Invalid, Empty, HasValue, ValidDisabled
+        Valid, Invalid, Empty, NotEmpty, ValidMasked, ValidDisabled
     }
 }
