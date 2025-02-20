@@ -18,8 +18,6 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +55,6 @@ fun MnemonicWordTextField(
     value: String,
     label: String,
     hint: String? = null,
-    hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     singleLine: Boolean = false,
@@ -82,11 +79,6 @@ fun MnemonicWordTextField(
     Column(
         modifier = modifier
     ) {
-        Text(
-            text = label,
-            style = RadixTheme.typography.body1HighImportance,
-            color = hintColor ?: RadixTheme.colors.gray1
-        )
         val selectionColors = TextSelectionColors(
             handleColor = RadixTheme.colors.gray1,
             backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
@@ -103,6 +95,16 @@ fun MnemonicWordTextField(
             !enabled -> colors.disabledBorderColor
             else -> colors.borderColor
         }
+        val hintColor = when {
+            error != null -> colors.errorHintColor
+            !enabled -> colors.disabledHintColor
+            else -> colors.hintColor
+        }
+        Text(
+            text = label,
+            style = RadixTheme.typography.body1HighImportance,
+            color = hintColor
+        )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         var textFieldValueState by remember(value) {
             mutableStateOf(
@@ -173,10 +175,10 @@ fun MnemonicWordTextField(
                         modifier = Modifier.size(14.dp),
                         painter = painterResource(id = R.drawable.ic_warning_error),
                         contentDescription = null,
-                        tint = colors.errorTextColor
+                        tint = colors.statusMessageColor
                     )
                 }
-                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = colors.errorTextColor)
+                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = colors.statusMessageColor)
             }
         }
     }
@@ -214,6 +216,10 @@ data class MnemonicTextFieldColors(
     val errorBorderColor: Color,
     val disabledBorderColor: Color,
     val highlightedBorderColor: Color,
+    val hintColor: Color,
+    val errorHintColor: Color,
+    val disabledHintColor: Color,
+    val statusMessageColor: Color
 ) {
 
     companion object {
@@ -230,6 +236,10 @@ data class MnemonicTextFieldColors(
                 errorBorderColor = RadixTheme.colors.red1,
                 disabledBorderColor = RadixTheme.colors.gray4,
                 highlightedBorderColor = RadixTheme.colors.gray1,
+                hintColor = RadixTheme.colors.gray1,
+                errorHintColor = RadixTheme.colors.gray1,
+                disabledHintColor = RadixTheme.colors.gray1,
+                statusMessageColor = RadixTheme.colors.red1
             )
         }
     }

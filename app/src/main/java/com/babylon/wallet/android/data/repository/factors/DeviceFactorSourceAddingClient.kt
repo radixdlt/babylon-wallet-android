@@ -4,7 +4,9 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.DeviceMnemonicBuildOutcome
 import com.radixdlt.sargon.DeviceMnemonicBuilder
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -20,15 +22,16 @@ class DeviceFactorSourceAddingClient @Inject constructor(
 ) {
 
     private var deviceMnemonicBuilder = DeviceMnemonicBuilder()
+    private lateinit var mnemonic: MnemonicWithPassphrase
 
     suspend fun generateMnemonicWords(): List<SeedPhraseWord> = withContext(dispatcher) {
-        executeMutating { generateNewMnemonicWithPassphrase() }
+        executeMutating { generateNewMnemonic() }
         getWords(SeedPhraseWord.State.ValidDisabled)
     }
 
     suspend fun createMnemonicFromWords(words: List<SeedPhraseWord>): List<SeedPhraseWord> = withContext(dispatcher) {
         runCatching {
-            executeMutating { createMnemonicWithPassphraseFromWords(words.map { it.value }) }
+            executeMutating { createMnemonicFromWords(words.map { it.value }) }
         }.fold(
             onSuccess = { getWords(SeedPhraseWord.State.Valid) },
             onFailure = { throwable ->
@@ -45,6 +48,24 @@ class DeviceFactorSourceAddingClient @Inject constructor(
 
     suspend fun isFactorAlreadyInUse(): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
         isFactorSourceAlreadyInUse(deviceMnemonicBuilder.getFactorSourceId())
+    }
+
+    suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
+        deviceMnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
+            .map { index ->
+                SeedPhraseWord(
+                    index = index.toInt()
+                )
+            }
+    }
+
+    suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicBuildOutcome = withContext(dispatcher) {
+        deviceMnemonicBuilder.build(words.associate { it.index.toUByte() to it.value })
+            .also { outcome ->
+                (outcome as? DeviceMnemonicBuildOutcome.Confirmed)?.mnemonicWithPassphrase?.let {
+                    mnemonic = it
+                }
+            }
     }
 
     private suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
