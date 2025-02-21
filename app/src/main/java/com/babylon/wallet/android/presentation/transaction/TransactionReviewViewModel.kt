@@ -498,8 +498,8 @@ sealed interface PreviewType {
             get() {
                 val allItems = (from + to).asSequence().map { it.transferables }.flatten().map {
                     when (it) {
-                        is Transferable.NonFungibleType.NFTCollection -> it.amount.certain
-                        is Transferable.NonFungibleType.StakeClaim -> it.amount.certain
+                        is Transferable.NonFungibleType.NFTCollection -> it.amount.all
+                        is Transferable.NonFungibleType.StakeClaim -> it.amount.all
                         else -> emptyList()
                     }
                 }.flatten().associateBy { it.globalId }
