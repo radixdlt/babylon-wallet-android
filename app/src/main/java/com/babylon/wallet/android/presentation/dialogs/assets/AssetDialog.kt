@@ -228,7 +228,7 @@ fun Asset.displayTitle() = when (this) {
     is Asset.NonFungible -> {
         val item = resource.items.firstOrNull()
         if (item != null) {
-            item.nameTruncated
+            item.nameTruncated ?: resource.name
         } else {
             resource.name
         }
