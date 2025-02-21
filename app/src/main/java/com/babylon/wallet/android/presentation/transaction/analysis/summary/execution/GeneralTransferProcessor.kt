@@ -5,9 +5,6 @@ import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddres
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
