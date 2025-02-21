@@ -33,6 +33,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
@@ -149,7 +150,15 @@ private fun DeviceSeedPhraseContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .imePadding()
+                .keyboardVisiblePadding(
+                    padding = padding,
+                    bottom = if (isSuggestionsVisible) {
+                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
+                    } else {
+                        RadixTheme.dimensions.paddingDefault
+                    }
+                )
                 .verticalScroll(scrollState)
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -175,18 +184,7 @@ private fun DeviceSeedPhraseContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
             SeedPhraseInputView(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .keyboardVisiblePadding(
-                        padding = PaddingValues(
-                            top = RadixTheme.dimensions.paddingLarge,
-                        ),
-                        bottom = if (isSuggestionsVisible) {
-                            RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
-                        } else {
-                            RadixTheme.dimensions.paddingDefault
-                        }
-                    ),
+                modifier = Modifier.fillMaxWidth(),
                 seedPhraseWords = state.seedPhraseState.seedPhraseWords,
                 onWordChanged = onWordChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it },

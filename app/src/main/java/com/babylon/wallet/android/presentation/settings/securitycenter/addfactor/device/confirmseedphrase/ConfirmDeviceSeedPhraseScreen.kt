@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,9 +21,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.MnemonicWordTextField
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -30,6 +33,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.persistentListOf
 
@@ -45,6 +49,7 @@ fun ConfirmDeviceSeedPhraseScreen(
         modifier = modifier,
         state = state,
         onConfirmClick = viewModel::onConfirmClick,
+        onFillWordsClick = viewModel::onFillWordsClick,
         onWordChanged = viewModel::onWordChanged,
         onDismiss = onDismiss
     )
@@ -56,6 +61,7 @@ private fun ConfirmDeviceSeedPhraseContent(
     state: ConfirmDeviceSeedPhraseViewModel.State,
     onWordChanged: (Int, String) -> Unit,
     onConfirmClick: () -> Unit,
+    onFillWordsClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     Scaffold(
@@ -73,16 +79,27 @@ private fun ConfirmDeviceSeedPhraseContent(
             RadixBottomBar(
                 onClick = onConfirmClick,
                 text = stringResource(id = R.string.common_confirm),
-                enabled = state.isConfirmButtonEnabled
+                enabled = state.isConfirmButtonEnabled,
+                additionalBottomContent = if (BuildConfig.DEBUG_MODE) {
+                    {
+                        RadixTextButton(
+                            text = "(DEBUG) Fill",
+                            onClick = onFillWordsClick
+                        )
+                    }
+                } else {
+                    null
+                }
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
                 .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                .verticalScroll(rememberScrollState()),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -164,6 +181,7 @@ private fun ConfirmDeviceSeedPhrasePreview() {
                 )
             ),
             onConfirmClick = {},
+            onFillWordsClick = {},
             onWordChanged = { _, _ -> },
             onDismiss = {}
         )

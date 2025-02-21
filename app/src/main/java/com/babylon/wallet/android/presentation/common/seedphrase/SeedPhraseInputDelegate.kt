@@ -146,7 +146,7 @@ class SeedPhraseInputDelegate(
         fun isInputComplete(): Boolean {
             if (isInputEmpty) return false
 
-            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid }
+            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid || it.state == SeedPhraseWord.State.ValidDisabled }
         }
 
         fun shouldDisplayInvalidSeedPhraseWarning(): Boolean {

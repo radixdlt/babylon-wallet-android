@@ -51,12 +51,13 @@ class DeviceFactorSourceAddingClient @Inject constructor(
     }
 
     suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
-        deviceMnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
-            .map { index ->
-                SeedPhraseWord(
-                    index = index.toInt()
-                )
-            }
+        val indices = deviceMnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
+        indices.mapIndexed { i, index ->
+            SeedPhraseWord(
+                index = index.toInt(),
+                lastWord = i == indices.size - 1
+            )
+        }
     }
 
     suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicBuildOutcome = withContext(dispatcher) {
@@ -68,7 +69,7 @@ class DeviceFactorSourceAddingClient @Inject constructor(
             }
     }
 
-    private suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
+    suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
         val bip39Words = deviceMnemonicBuilder.getWords()
         val lastWordIndex = bip39Words.size - 1
         bip39Words.mapIndexed { index, bip39Word ->

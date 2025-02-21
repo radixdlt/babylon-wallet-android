@@ -42,7 +42,16 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
                 state.copy(
                     words = state.words.mapWhen(
                         predicate = { it.index == index },
-                        mutation = { it.copy(value = value.trim()) }
+                        mutation = {
+                            val newValue = value.trim()
+                            it.copy(
+                                value = newValue,
+                                state = when {
+                                    newValue.isBlank() -> SeedPhraseWord.State.Empty
+                                    else -> SeedPhraseWord.State.NotEmpty
+                                }
+                            )
+                        }
                     ).toPersistentList()
                 )
             }
@@ -65,6 +74,19 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    fun onFillWordsClick() {
+        viewModelScope.launch {
+            _state.update { state ->
+                val indicesToConfirm = state.words.map { it.index }
+                state.copy(
+                    words = deviceFactorSourceAddingClient.getWords(SeedPhraseWord.State.NotEmpty)
+                        .filter { it.index in indicesToConfirm }
+                        .toPersistentList()
+                )
             }
         }
     }
