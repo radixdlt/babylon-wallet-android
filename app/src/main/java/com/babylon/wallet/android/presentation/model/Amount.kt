@@ -8,8 +8,11 @@ import rdx.works.core.domain.resources.Resource
 
 data class NonFungibleAmount(
     val certain: List<Resource.NonFungibleResource.Item>,
+    val predicted: List<Resource.NonFungibleResource.Item> = emptyList(),
     val additional: BoundedAmount? = null
 ) {
+
+    fun isPredicted(item: Resource.NonFungibleResource.Item): Boolean = predicted.any { it.globalId == item.globalId }
 
     init {
         additional?.let {
