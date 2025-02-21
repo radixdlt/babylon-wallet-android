@@ -45,6 +45,7 @@ fun TransferableNonFungibleItemContent(
     transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
     nftItem: Resource.NonFungibleResource.Item,
     isHidden: Boolean,
+    isEstimated: Boolean,
     hiddenResourceWarning: String
 ) {
     TransferableNonFungibleContent(
@@ -54,6 +55,7 @@ fun TransferableNonFungibleItemContent(
         nftItem = nftItem,
         additionalAmount = null,
         isHidden = isHidden,
+        isEstimated = isEstimated,
         hiddenResourceWarning = hiddenResourceWarning
     )
 }
@@ -74,6 +76,7 @@ fun TransferableNonFungibleAmountContent(
         nftItem = null,
         additionalAmount = amount,
         isHidden = isHidden,
+        isEstimated = false,
         hiddenResourceWarning = hiddenResourceWarning
     )
 }
@@ -86,6 +89,7 @@ private fun TransferableNonFungibleContent(
     nftItem: Resource.NonFungibleResource.Item?,
     additionalAmount: BoundedAmount?,
     isHidden: Boolean,
+    isEstimated: Boolean,
     hiddenResourceWarning: String
 ) {
     Column(
@@ -135,10 +139,19 @@ private fun TransferableNonFungibleContent(
                 )
             }
 
-            additionalAmount?.let {
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+            if (isEstimated) {
+                Text(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                    text = stringResource(R.string.interactionReview_estimated),
+                    color = RadixTheme.colors.gray1,
+                    style = RadixTheme.typography.body3Regular
+                )
+            } else {
+                additionalAmount?.let {
+                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-                BoundedAmountSection(boundedAmount = it)
+                    BoundedAmountSection(boundedAmount = it)
+                }
             }
         }
 
@@ -179,6 +192,7 @@ private fun TransferableNftItemPreview() {
             nftItem = Resource.NonFungibleResource.sampleMainnet().items.first(),
             shape = RectangleShape,
             isHidden = false,
+            isEstimated = false,
             hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_deposit),
         )
     }

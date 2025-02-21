@@ -247,10 +247,10 @@ class AssetDialogViewModel @Inject constructor(
 
         val claimState: ClaimState?
             get() {
-                val item = (asset as? Asset.NonFungible)?.resource?.items?.firstOrNull()
-                val claimAmount = item?.claimAmountXrd ?: return null
-                val claimEpoch = item.claimEpoch ?: return null
+                val item = (asset as? Asset.NonFungible)?.resource?.items?.firstOrNull() ?: return null
                 val currentEpoch = epoch ?: return null
+                val claimAmount = item.claimAmountXrd ?: return ClaimState.Unknown
+                val claimEpoch = item.claimEpoch ?: return ClaimState.Unknown
 
                 return if (claimEpoch <= currentEpoch) {
                     ClaimState.ReadyToClaim(
@@ -265,21 +265,25 @@ class AssetDialogViewModel @Inject constructor(
                 }
             }
 
-        sealed class ClaimState {
-            abstract val amount: Decimal192
+        sealed interface ClaimState {
 
             data class Unstaking(
-                override val amount: Decimal192,
+                val amount: Decimal192,
                 private val current: Epoch,
                 private val claim: Epoch
-            ) : ClaimState() {
+            ) : ClaimState {
                 val approximateClaimMinutes: Long
                     get() = (claim - current).toMinutes().toLong()
             }
 
             data class ReadyToClaim(
-                override val amount: Decimal192
-            ) : ClaimState()
+                val amount: Decimal192
+            ) : ClaimState
+
+            // In case that the claim NFT is newly created and has no info
+            // yet about the claim amount and epoch.
+            data object Unknown: ClaimState
+
         }
 
         sealed interface HideConfirmationType {

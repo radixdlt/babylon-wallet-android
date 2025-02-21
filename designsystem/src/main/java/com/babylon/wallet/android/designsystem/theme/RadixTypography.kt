@@ -44,6 +44,7 @@ data class RadixTypography(
     var body2Header: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
     var body2HighImportance: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp),
     var body2Regular: TextStyle = regular.copy(fontSize = 14.sp, lineHeight = 18.sp),
+    var body3Regular: TextStyle = regular.copy(fontSize = 12.sp, lineHeight = 23.sp),
     var body2Link: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp),
     var button: TextStyle = bold.copy(fontSize = 16.sp, lineHeight = 18.sp),
 ) {

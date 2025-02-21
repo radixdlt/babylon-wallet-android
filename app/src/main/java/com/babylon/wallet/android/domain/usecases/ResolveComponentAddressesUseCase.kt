@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.DApp
-import rdx.works.core.then
 import javax.inject.Inject
 
 class ResolveComponentAddressesUseCase @Inject constructor(
@@ -18,22 +17,34 @@ class ResolveComponentAddressesUseCase @Inject constructor(
      * - validate that account_type is "dapp definition"
      * - check if componentAddress is within claimed_entities metadata of dAppDefinitionAddress metadata
      */
-    suspend fun invoke(
-        componentAddress: ManifestEncounteredComponentAddress
-    ): Result<Pair<ManifestEncounteredComponentAddress, DApp?>> = stateRepository.getDAppDefinitions(
-        componentAddresses = listOf(componentAddress)
-    ).then { componentsWithDAppDefinitions ->
-        val dAppDefinitionAddress = componentsWithDAppDefinitions[componentAddress]
-        if (dAppDefinitionAddress != null) {
+    suspend operator fun invoke(
+        componentAddresses: List<ManifestEncounteredComponentAddress>
+    ): Result<LinkedHashMap<ManifestEncounteredComponentAddress, DApp?>> = stateRepository.getDAppDefinitions(
+        componentAddresses = componentAddresses
+    ).mapCatching { dAppDefinitionPerComponent ->
+        val distinctDAppDefinitionAddresses = dAppDefinitionPerComponent.values.filterNotNull().toSet()
+
+        val dAppsPerDAppDefinition = if (distinctDAppDefinitionAddresses.isNotEmpty()) {
             stateRepository.getDAppsDetails(
-                definitionAddresses = listOf(dAppDefinitionAddress),
+                definitionAddresses = distinctDAppDefinitionAddresses.toList(),
                 isRefreshing = true
             ).mapCatching { dApps ->
-                val dApp = dApps.first()
-                componentAddress to dApp.takeIf { it.claimedEntities.contains(componentAddress.string) }
-            }
+                dApps.associateBy { it.dAppAddress }
+            }.getOrThrow()
         } else {
-            Result.success(componentAddress to null)
+            emptyMap()
         }
+
+        val dAppsPerComponentAddress = LinkedHashMap<ManifestEncounteredComponentAddress, DApp?>()
+
+        componentAddresses.forEach { componentAddress ->
+            val dAppDefinition = dAppDefinitionPerComponent[componentAddress] ?: return@forEach
+
+            val associatedDApp = dAppsPerDAppDefinition[dAppDefinition]?.takeIf { it.claimedEntities.contains(componentAddress.string) }
+
+            dAppsPerComponentAddress[componentAddress] = associatedDApp
+        }
+
+        dAppsPerComponentAddress
     }
 }
