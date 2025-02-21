@@ -148,7 +148,7 @@ fun MnemonicWordTextField(
                             Text(
                                 text = hint,
                                 style = RadixTheme.typography.body1Regular,
-                                color = hintColor ?: RadixTheme.colors.gray1
+                                color = hintColor
                             )
                         } else {
                             Box(modifier = Modifier.weight(1f)) {

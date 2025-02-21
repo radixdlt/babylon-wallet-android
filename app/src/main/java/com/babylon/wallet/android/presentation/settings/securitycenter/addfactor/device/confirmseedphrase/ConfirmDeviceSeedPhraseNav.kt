@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.name.setFactorName
 
 private const val ROUTE_CONFIRM_DEVICE_SEED_PHRASE = "confirm_device_seed_phrase"
 
@@ -27,6 +28,12 @@ fun NavGraphBuilder.confirmDeviceSeedPhrase(
         ConfirmDeviceSeedPhraseScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
+            onConfirmed = { factorSourceKind, mnemonicWithPassphrase ->
+                navController.setFactorName(
+                    factorSourceKind,
+                    mnemonicWithPassphrase
+                )
+            }
         )
     }
 }

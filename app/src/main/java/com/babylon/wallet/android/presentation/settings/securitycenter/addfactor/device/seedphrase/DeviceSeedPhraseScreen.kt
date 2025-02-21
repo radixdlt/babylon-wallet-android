@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -69,7 +68,7 @@ fun DeviceSeedPhraseScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
-        onMessageDismiss = viewModel::onMessageDismiss,
+        onDismissMessage = viewModel::onDismissMessage,
         onWordChanged = viewModel::onWordChanged,
         onWordSelected = viewModel::onWordSelected,
         onEnterCustomSeedPhraseClick = viewModel::onEnterCustomSeedPhraseClick,
@@ -91,7 +90,7 @@ private fun DeviceSeedPhraseContent(
     modifier: Modifier = Modifier,
     state: DeviceSeedPhraseViewModel.State,
     onDismiss: () -> Unit,
-    onMessageDismiss: () -> Unit,
+    onDismissMessage: () -> Unit,
     onWordChanged: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
     onEnterCustomSeedPhraseClick: () -> Unit,
@@ -165,7 +164,7 @@ private fun DeviceSeedPhraseContent(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                text = "Write Down Seed Phrase", //TODO crowdin
+                text = "Write Down Seed Phrase", // TODO crowdin
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -175,7 +174,7 @@ private fun DeviceSeedPhraseContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                text = "Write down this BIP39 seed phrase and store safely for future use. Avoid storing electronically so no one can steal it online.", //TODO crowdin
+                text = "Write down this BIP39 seed phrase and store safely for future use. Avoid storing electronically so no one can steal it online.", // TODO crowdin
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -211,7 +210,7 @@ private fun DeviceSeedPhraseContent(
 
             if (!state.isEditingEnabled) {
                 RadixTextButton(
-                    text = "Clear and enter custom seed phrase", //TODO crowdin
+                    text = "Clear and enter custom seed phrase", // TODO crowdin
                     onClick = onEnterCustomSeedPhraseClick
                 )
 
@@ -222,9 +221,9 @@ private fun DeviceSeedPhraseContent(
 
     state.errorMessage?.let { error ->
         BasicPromptAlertDialog(
-            finish = { onMessageDismiss() },
+            finish = { onDismissMessage() },
             messageText = error.getMessage(),
-            confirmText = "Close", //TODO crowdin
+            confirmText = "Close", // TODO crowdin
             dismissText = null
         )
     }
@@ -240,7 +239,7 @@ private fun DeviceSeedPhrasePreview(
         DeviceSeedPhraseContent(
             state = state,
             onDismiss = {},
-            onMessageDismiss = {},
+            onDismissMessage = {},
             onWordChanged = { _, _ -> },
             onWordSelected = { _, _ -> },
             onConfirmClick = {},

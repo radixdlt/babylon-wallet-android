@@ -30,7 +30,7 @@ fun NavGraphBuilder.addFactorIntro(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onContinueClick = { navController.deviceSeedPhrase() },
-            onInfoClick = { navController.infoDialog(it) }
+            onInfoClick = { item -> navController.infoDialog(item) }
         )
     }
 }

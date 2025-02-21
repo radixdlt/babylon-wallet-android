@@ -229,6 +229,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     sealed class AddFactorSource : RadixWalletException() {
 
         data object FactorSourceAlreadyInUse : AddFactorSource()
+
+        data object FactorSourceNotCreated : AddFactorSource()
     }
 }
 
@@ -427,7 +429,8 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
 }
 
 fun RadixWalletException.AddFactorSource.toUserFriendlyMessage(): String = when (this) {
-    RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> "Factor Already in Use" //TODO crowdin
+    RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> "Factor Already in Use" // TODO crowdin
+    RadixWalletException.AddFactorSource.FactorSourceNotCreated -> "Factor not created" // TODO crowdin
 }
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {

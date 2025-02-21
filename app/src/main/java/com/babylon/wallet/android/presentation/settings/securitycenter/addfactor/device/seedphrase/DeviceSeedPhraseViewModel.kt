@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.repository.factors.DeviceFactorSourceAddingClient
+import com.babylon.wallet.android.data.repository.factors.DeviceMnemonicBuilderClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeviceSeedPhraseViewModel @Inject constructor(
-    private val deviceFactorSourceAddingClient: DeviceFactorSourceAddingClient
+    private val deviceMnemonicBuilderClient: DeviceMnemonicBuilderClient
 ) : StateViewModel<DeviceSeedPhraseViewModel.State>(),
     OneOffEventHandler<DeviceSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -27,7 +27,7 @@ class DeviceSeedPhraseViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            seedPhraseInputDelegate.setWords(deviceFactorSourceAddingClient.generateMnemonicWords())
+            seedPhraseInputDelegate.setWords(deviceMnemonicBuilderClient.generateMnemonicWords())
 
             seedPhraseInputDelegate.state.collect { delegateState ->
                 _state.update { state ->
@@ -41,7 +41,7 @@ class DeviceSeedPhraseViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    fun onMessageDismiss() {
+    fun onDismissMessage() {
         _state.update { state -> state.copy(errorMessage = null) }
         viewModelScope.launch { sendEvent(Event.Dismiss) }
     }
@@ -73,14 +73,14 @@ class DeviceSeedPhraseViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         seedPhraseState = state.seedPhraseState.copy(
-                            seedPhraseWords = deviceFactorSourceAddingClient.createMnemonicFromWords(state.seedPhraseState.seedPhraseWords)
+                            seedPhraseWords = deviceMnemonicBuilderClient.createMnemonicFromWords(state.seedPhraseState.seedPhraseWords)
                                 .toPersistentList()
                         ),
                     )
                 }
             }
 
-            deviceFactorSourceAddingClient.isFactorAlreadyInUse()
+            deviceMnemonicBuilderClient.isFactorAlreadyInUse()
                 .onSuccess { isFactorAlreadyInUse ->
                     if (isFactorAlreadyInUse) {
                         _state.update { state ->

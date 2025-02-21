@@ -7,19 +7,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
@@ -32,8 +37,12 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.persistentListOf
 
@@ -41,7 +50,8 @@ import kotlinx.collections.immutable.persistentListOf
 fun ConfirmDeviceSeedPhraseScreen(
     modifier: Modifier = Modifier,
     viewModel: ConfirmDeviceSeedPhraseViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onConfirmed: (FactorSourceKind, MnemonicWithPassphrase) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -53,6 +63,14 @@ fun ConfirmDeviceSeedPhraseScreen(
         onWordChanged = viewModel::onWordChanged,
         onDismiss = onDismiss
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is ConfirmDeviceSeedPhraseViewModel.Event.Confirmed -> onConfirmed(state.factorSourceKind, event.mnemonicWithPassphrase)
+            }
+        }
+    }
 }
 
 @Composable
@@ -64,6 +82,9 @@ private fun ConfirmDeviceSeedPhraseContent(
     onFillWordsClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+    HideKeyboardOnFullScroll(scrollState)
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -97,13 +118,25 @@ private fun ConfirmDeviceSeedPhraseContent(
             modifier = Modifier
                 .fillMaxSize()
                 .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                .keyboardVisiblePadding(
+                    padding = padding,
+                    bottom = RadixTheme.dimensions.paddingDefault
+                )
+                .verticalScroll(scrollState)
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Icon(
+                modifier = Modifier.size(80.dp),
+                painter = painterResource(id = state.factorSourceKind.iconRes()),
+                contentDescription = null,
+                tint = RadixTheme.colors.gray1
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
             Text(
-                text = "Confirm Seed Phrase", //TODO crowdin
+                text = "Confirm Seed Phrase", // TODO crowdin
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -112,7 +145,7 @@ private fun ConfirmDeviceSeedPhraseContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             Text(
-                text = "Enter ${state.words.size} words from your seed phrase to confirm you’ve recorded it correctly.", //TODO crowdin
+                text = "Enter ${state.words.size} words from your seed phrase to confirm you’ve recorded it correctly.", // TODO crowdin
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -132,7 +165,7 @@ private fun ConfirmDeviceSeedPhraseContent(
                             else -> ImeAction.Next
                         }
                     ),
-                    error = if (word.state == SeedPhraseWord.State.Invalid) "Incorrect. Try again" else null, //TODO crowdin
+                    error = if (word.state == SeedPhraseWord.State.Invalid) "Incorrect. Try again" else null, // TODO crowdin
                     errorFixedSize = true,
                     singleLine = true,
                     hasInitialFocus = index == 0,

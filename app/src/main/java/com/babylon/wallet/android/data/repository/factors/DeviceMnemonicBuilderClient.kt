@@ -6,23 +6,20 @@ import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DeviceMnemonicBuildOutcome
 import com.radixdlt.sargon.DeviceMnemonicBuilder
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.core.mapWhen
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DeviceFactorSourceAddingClient @Inject constructor(
+class DeviceMnemonicBuilderClient @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
     private var deviceMnemonicBuilder = DeviceMnemonicBuilder()
-    private lateinit var mnemonic: MnemonicWithPassphrase
 
     suspend fun generateMnemonicWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         executeMutating { generateNewMnemonic() }
@@ -62,11 +59,6 @@ class DeviceFactorSourceAddingClient @Inject constructor(
 
     suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicBuildOutcome = withContext(dispatcher) {
         deviceMnemonicBuilder.build(words.associate { it.index.toUByte() to it.value })
-            .also { outcome ->
-                (outcome as? DeviceMnemonicBuildOutcome.Confirmed)?.mnemonicWithPassphrase?.let {
-                    mnemonic = it
-                }
-            }
     }
 
     suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.confirmseedphrase
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.repository.factors.DeviceFactorSourceAddingClient
+import com.babylon.wallet.android.data.repository.factors.DeviceMnemonicBuilderClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.radixdlt.sargon.DeviceMnemonicBuildOutcome
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -20,7 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
-    private val deviceFactorSourceAddingClient: DeviceFactorSourceAddingClient
+    private val deviceMnemonicBuilderClient: DeviceMnemonicBuilderClient
 ) : StateViewModel<ConfirmDeviceSeedPhraseViewModel.State>(),
     OneOffEventHandler<ConfirmDeviceSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -28,7 +30,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { state ->
                 state.copy(
-                    words = deviceFactorSourceAddingClient.generateConfirmationWords().toPersistentList()
+                    words = deviceMnemonicBuilderClient.generateConfirmationWords().toPersistentList()
                 )
             }
         }
@@ -60,8 +62,10 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
 
     fun onConfirmClick() {
         viewModelScope.launch {
-            when (val outcome = deviceFactorSourceAddingClient.confirmWords(state.value.words)) {
-                is DeviceMnemonicBuildOutcome.Confirmed -> sendEvent(Event.Confirmed)
+            when (val outcome = deviceMnemonicBuilderClient.confirmWords(state.value.words)) {
+                is DeviceMnemonicBuildOutcome.Confirmed -> sendEvent(
+                    Event.Confirmed(outcome.mnemonicWithPassphrase)
+                )
                 is DeviceMnemonicBuildOutcome.Unconfirmed -> {
                     val incorrectIndices = outcome.indicesInMnemonic.map { it.toInt() }
 
@@ -83,7 +87,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
             _state.update { state ->
                 val indicesToConfirm = state.words.map { it.index }
                 state.copy(
-                    words = deviceFactorSourceAddingClient.getWords(SeedPhraseWord.State.NotEmpty)
+                    words = deviceMnemonicBuilderClient.getWords(SeedPhraseWord.State.NotEmpty)
                         .filter { it.index in indicesToConfirm }
                         .toPersistentList()
                 )
@@ -93,10 +97,13 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data object Confirmed : Event
+        data class Confirmed(
+            val mnemonicWithPassphrase: MnemonicWithPassphrase
+        ) : Event
     }
 
     data class State(
+        val factorSourceKind: FactorSourceKind = FactorSourceKind.DEVICE,
         val words: ImmutableList<SeedPhraseWord> = persistentListOf(),
     ) : UiState {
 

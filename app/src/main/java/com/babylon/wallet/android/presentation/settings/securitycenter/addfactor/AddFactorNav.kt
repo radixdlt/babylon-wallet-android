@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor
 import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase.deviceSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro.ROUTE_ADD_FACTOR_INTRO
 import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro.addFactorIntro
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.name.setFactorName
 import com.radixdlt.sargon.FactorSourceKind
 
 private const val DESTINATION_ADD_FACTOR_GRAPH = "add_factor_graph"
@@ -44,5 +45,7 @@ fun NavGraphBuilder.addFactor(
         deviceSeedPhrase(navController)
 
         confirmDeviceSeedPhrase(navController)
+
+        setFactorName(navController)
     }
 }
