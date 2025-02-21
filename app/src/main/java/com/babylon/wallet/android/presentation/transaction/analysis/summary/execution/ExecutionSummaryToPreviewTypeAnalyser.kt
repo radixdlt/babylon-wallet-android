@@ -17,7 +17,8 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val validatorStakeProcessor: ValidatorStakeProcessor,
     private val validatorClaimProcessor: ValidatorClaimProcessor,
     private val validatorUnstakeProcessor: ValidatorUnstakeProcessor,
-    private val accountDeletionProcessor: AccountDeletionProcessor
+    private val accountDeletionProcessor: AccountDeletionProcessor,
+    private val securifyEntityProcessor: SecurifyEntityProcessor
 ) : SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
@@ -37,10 +38,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 manifestClass
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
-            is DetailedManifestClass.SecurifyEntity -> {
-                // Not yet implemented
-                return PreviewType.NonConforming
-            }
+            is DetailedManifestClass.SecurifyEntity -> securifyEntityProcessor.process(executionSummary, manifestClass)
         }
     }
 }

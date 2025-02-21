@@ -82,12 +82,16 @@ fun FactorSourceKindCardView(
 
 @Composable
 fun FactorSourceCardView(
-    item: FactorSourceCard,
     modifier: Modifier = Modifier,
+    item: FactorSourceCard,
+    isOutlined: Boolean = false,
+    castsShadow: Boolean = true,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
-        modifier = modifier
+        modifier = modifier,
+        castsShadow = castsShadow,
+        isOutlined = isOutlined
     ) {
         SimpleFactorCardView(
             iconRes = item.kind.iconRes(),

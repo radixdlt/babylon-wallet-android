@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -17,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -24,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -33,12 +37,13 @@ import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -196,59 +201,89 @@ fun TransactionAccountCardHeader(
     shape: Shape = RadixTheme.shapes.roundedRectTopMedium
 ) {
     AccountCardHeader(
-        displayName = when (val involvedAccount = accountWithTransferables.account) {
-            is InvolvedAccount.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
-            is InvolvedAccount.Owned -> involvedAccount.account.displayName.value
-        },
+        modifier = modifier,
+        account = accountWithTransferables.account,
+        shape = shape
+    )
+}
+
+@Composable
+fun AccountCardHeader(
+    modifier: Modifier = Modifier,
+    account: InvolvedAccount,
+    shape: Shape = RadixTheme.shapes.roundedRectTopMedium
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxWidth()
             .background(
-                brush = when (val involvedAccount = accountWithTransferables.account) {
+                brush = when (account) {
                     is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2)
-                    is InvolvedAccount.Owned -> involvedAccount.account.appearanceId.gradient()
+                    is InvolvedAccount.Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape
             )
             .padding(RadixTheme.dimensions.paddingMedium),
-        address = accountWithTransferables.account.address
-    )
-}
-
-@Composable
-fun AccountDepositAccountCardHeader(account: Account, modifier: Modifier = Modifier) {
-    AccountCardHeader(
-        displayName = account.displayName.value,
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                brush = account.appearanceId.gradient(),
-                shape = RadixTheme.shapes.roundedRectTopMedium
-            )
-            .padding(RadixTheme.dimensions.paddingMedium),
-        address = account.address
-    )
-}
-
-@Composable
-fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: AccountAddress) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier,
         verticalAlignment = CenterVertically
     ) {
         Text(
-            text = displayName,
+            text = when (account) {
+                is InvolvedAccount.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
+                is InvolvedAccount.Owned -> account.account.displayName.value
+            },
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             modifier = Modifier.weight(1f, false),
             color = RadixTheme.colors.white
         )
+
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
         ActionableAddressView(
-            address = Address.Account(address),
+            address = Address.Account(account.address),
             textStyle = RadixTheme.typography.body2Regular,
             textColor = RadixTheme.colors.white,
             iconColor = RadixTheme.colors.white
+        )
+    }
+}
+
+@Composable
+fun PersonaCardHeader(
+    modifier: Modifier = Modifier,
+    persona: Persona,
+    containerColor: Color = RadixTheme.colors.gray5
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = containerColor,
+                shape = RadixTheme.shapes.roundedRectTopMedium
+            )
+            .border(
+                width = 1.dp,
+                color = RadixTheme.colors.gray4,
+                shape = RadixTheme.shapes.roundedRectTopMedium
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingLarge,
+                vertical = RadixTheme.dimensions.paddingMedium
+            ),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+        verticalAlignment = CenterVertically
+    ) {
+        Thumbnail.Persona(
+            modifier = Modifier.size(44.dp),
+            persona = persona,
+        )
+
+        Text(
+            text = persona.displayName.value,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1,
+            style = RadixTheme.typography.secondaryHeader,
         )
     }
 }

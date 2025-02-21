@@ -48,7 +48,7 @@ import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
-fun TransactionPreviewHeader(
+fun TransactionReviewHeader(
     modifier: Modifier = Modifier,
     isPreAuthorization: Boolean,
     isRawManifestPreviewable: Boolean,
@@ -186,7 +186,7 @@ fun TransactionPreviewHeader(
 @Composable
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
-        TransactionPreviewHeader(
+        TransactionReviewHeader(
             isPreAuthorization = false,
             proposingDApp = State.ProposingDApp.Some(
                 dApp = DApp(

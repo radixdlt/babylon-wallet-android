@@ -34,6 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
@@ -64,7 +65,7 @@ fun AccountDepositSettingsTypeContent(
         }
         preview.accountsWithDepositSettingsChanges.filter { it.defaultDepositRule != null }.forEach { accountWithSettings ->
             CardColumn {
-                AccountDepositAccountCardHeader(account = accountWithSettings.account)
+                AccountCardHeader(account = InvolvedAccount.Owned(accountWithSettings.account))
                 accountWithSettings.defaultDepositRule?.let { newRule ->
                     val ruleText = stringResource(
                         id = when (newRule) {
@@ -112,7 +113,7 @@ fun AccountDepositSettingsTypeContent(
                 it.depositorChanges.isNotEmpty() || it.assetChanges.isNotEmpty()
             }.forEach { accountWithSettings ->
                 CardColumn {
-                    AccountDepositAccountCardHeader(account = accountWithSettings.account)
+                    AccountCardHeader(account = InvolvedAccount.Owned(accountWithSettings.account))
                     accountWithSettings.assetChanges.forEachIndexed { index, assetChange ->
                         val lastItem = accountWithSettings.assetChanges.lastIndex == index && accountWithSettings.depositorChanges.isEmpty()
                         val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
