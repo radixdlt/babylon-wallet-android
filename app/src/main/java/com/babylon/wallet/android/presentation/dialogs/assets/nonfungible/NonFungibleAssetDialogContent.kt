@@ -173,7 +173,7 @@ fun NonFungibleAssetDialogContent(
                 }
             }
 
-            if (asset is StakeClaim && item?.claimEpoch != null && item.claimAmountXrd != null) {
+            if (asset is StakeClaim && item != null) {
                 ClaimNFTInfo(
                     claimState = claimState,
                     item = item,
@@ -400,7 +400,12 @@ private fun ClaimNFTInfo(
         }
         WorthXRD(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            amount = claimState?.amount,
+            amount = when (claimState) {
+                is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> claimState.amount
+                is AssetDialogViewModel.State.ClaimState.Unstaking -> claimState.amount
+                else -> null
+            },
+            isLoadingAmount = claimState == null,
             fiatPrice = fiatPrice,
             isLoadingBalance = isLoadingBalance,
             iconSize = 44.dp,
@@ -444,7 +449,7 @@ private fun ClaimNFTInfo(
                 }
             }
 
-            null -> {}
+            else -> {}
         }
     }
 }
