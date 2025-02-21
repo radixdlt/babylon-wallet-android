@@ -13,6 +13,7 @@ import com.radixdlt.sargon.UnstakeData
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
@@ -56,33 +57,46 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val transferables = accountWithTransferables.transferables.map tr@{ transferable ->
             val transferableClaim = (transferable as? Transferable.NonFungibleType.StakeClaim) ?: return@tr transferable
 
-            val nfts = transferableClaim.amount.all.map nf@{ nft ->
-                val data = claimsData[nft.globalId] ?: return@nf nft
+            val certainNFTs = transferableClaim.amount.certain.withClaimData(claimsData)
+            val predictedNFTs = transferableClaim.amount.predicted.withClaimData(claimsData)
 
-                nft.copy(
-                    metadata = listOf(
-                        Metadata.Primitive(
-                            ExplicitMetadataKey.NAME.key,
-                            data.name,
-                            MetadataType.String
-                        ),
-                        Metadata.Primitive(
-                            ExplicitMetadataKey.CLAIM_AMOUNT.key,
-                            data.claimAmount.string,
-                            MetadataType.Decimal
-                        ),
-                        Metadata.Primitive(
-                            ExplicitMetadataKey.CLAIM_EPOCH.key,
-                            data.claimEpoch.toString(),
-                            MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
-                        )
+            transferableClaim.copy(
+                asset = transferableClaim.asset.copy(
+                    nonFungibleResource = transferableClaim.asset.nonFungibleResource.copy(
+                        items = certainNFTs + predictedNFTs
                     )
+                ),
+                amount = NonFungibleAmount(
+                    certain = certainNFTs,
+                    predicted = predictedNFTs
                 )
-            }
-
-            transferableClaim.copy(amount = NonFungibleAmount(nfts))
+            )
         }
 
         accountWithTransferables.update(transferables)
+    }
+
+    private fun List<Resource.NonFungibleResource.Item>.withClaimData(claimsData: Map<NonFungibleGlobalId, UnstakeData>) = map { nft ->
+        val data = claimsData[nft.globalId] ?: return@map nft
+
+        nft.copy(
+            metadata = listOf(
+                Metadata.Primitive(
+                    ExplicitMetadataKey.NAME.key,
+                    data.name,
+                    MetadataType.String
+                ),
+                Metadata.Primitive(
+                    ExplicitMetadataKey.CLAIM_AMOUNT.key,
+                    data.claimAmount.string,
+                    MetadataType.Decimal
+                ),
+                Metadata.Primitive(
+                    ExplicitMetadataKey.CLAIM_EPOCH.key,
+                    data.claimEpoch.toString(),
+                    MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
+                )
+            )
+        )
     }
 }
