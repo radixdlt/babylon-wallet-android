@@ -282,8 +282,7 @@ class AssetDialogViewModel @Inject constructor(
 
             // In case that the claim NFT is newly created and has no info
             // yet about the claim amount and epoch.
-            data object Unknown: ClaimState
-
+            data object Unknown : ClaimState
         }
 
         sealed interface HideConfirmationType {

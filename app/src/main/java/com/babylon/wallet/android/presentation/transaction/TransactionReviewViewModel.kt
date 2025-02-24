@@ -179,16 +179,10 @@ class TransactionReviewViewModel @Inject constructor(
                 analysis.analyse()
                     .onSuccess { analysis ->
                         data.update { it.copy(txSummary = analysis.summary) }
-                    }
-                    .then { analysis ->
+
                         when (request.kind) {
                             is TransactionRequest.Kind.PreAuthorized -> processExpiration(request.kind.expiration)
                             is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis)
-                        }
-                        if (!request.kind.isPreAuthorized) {
-                            fees.resolveFees(analysis)
-                        } else {
-                            Result.success(Unit)
                         }
                     }
             }
