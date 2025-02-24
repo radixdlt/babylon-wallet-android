@@ -66,7 +66,7 @@ import kotlinx.collections.immutable.toPersistentList
 fun SecurityShieldsScreen(
     modifier: Modifier = Modifier,
     viewModel: SecurityShieldsViewModel,
-    onNavigateToSecurityShieldDetails: (securityShieldId: SecurityStructureId) -> Unit,
+    onNavigateToSecurityShieldDetails: (securityShieldId: SecurityStructureId, securityShieldName: String) -> Unit,
     onCreateNewSecurityShieldClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit,
@@ -115,7 +115,7 @@ fun SecurityShieldsContent(
     state: SecurityShieldsViewModel.State,
     onBackClick: () -> Unit,
     onChangeMainSecurityShieldClick: () -> Unit,
-    onSecurityShieldClick: (SecurityStructureId) -> Unit,
+    onSecurityShieldClick: (SecurityStructureId, securityShieldName: String) -> Unit,
     onCreateNewSecurityShieldClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -157,7 +157,7 @@ private fun SecurityShieldsList(
     mainSecurityShield: SecurityShieldCard?,
     otherSecurityShields: PersistentList<SecurityShieldCard>,
     onChangeMainSecurityShieldClick: () -> Unit,
-    onSecurityShieldClick: (SecurityStructureId) -> Unit,
+    onSecurityShieldClick: (SecurityStructureId, securityShieldName: String) -> Unit,
     onCreateNewSecurityShieldClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -165,7 +165,7 @@ private fun SecurityShieldsList(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
-        mainSecurityShield?.let {
+        mainSecurityShield?.let { securityShieldCard ->
             item {
                 if (otherSecurityShields.isNotEmpty()) {
                     Row(
@@ -193,9 +193,7 @@ private fun SecurityShieldsList(
                 }
 
                 SecurityShieldCardView(
-                    modifier = Modifier
-                        .padding(bottom = RadixTheme.dimensions.paddingMedium)
-                        .clickable { onSecurityShieldClick(it.id) },
+                    modifier = Modifier.clickable { onSecurityShieldClick(securityShieldCard.id, securityShieldCard.name) },
                     item = mainSecurityShield
                 )
                 if (otherSecurityShields.isEmpty()) {
@@ -238,10 +236,10 @@ private fun SecurityShieldsList(
             }
         }
 
-        items(otherSecurityShields) {
+        items(otherSecurityShields) { securityShieldCard ->
             SecurityShieldCardView(
-                modifier = Modifier.clickable { onSecurityShieldClick(it.id) },
-                item = it
+                modifier = Modifier.clickable { onSecurityShieldClick(securityShieldCard.id, securityShieldCard.name) },
+                item = securityShieldCard
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -364,7 +362,7 @@ private fun SecurityShieldsWithMainAndOthersPreview() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = {},
+            onSecurityShieldClick = { _, _ -> },
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -400,7 +398,7 @@ private fun SecurityShieldsWithMainPreview() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = {},
+            onSecurityShieldClick = { _, _ -> },
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -421,7 +419,7 @@ private fun SecurityShieldsWithOthersPreview() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = {},
+            onSecurityShieldClick = { _, _ -> },
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
