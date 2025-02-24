@@ -42,6 +42,8 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.CollapsibleCommonCard
+import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
@@ -114,7 +116,7 @@ private fun StakingSummary(
     action: AssetsViewAction,
 ) {
     val stakeSummary = assetsViewData.stakeSummary
-    AssetCard(
+    CommonCard(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(top = RadixTheme.dimensions.paddingSemiLarge),
@@ -347,7 +349,7 @@ fun ValidatorDetails(
             cards
         }
         val isCollapsed = state.isCollapsed(validatorWithStakes.validator.address.string)
-        CollapsibleAssetCard(
+        CollapsibleCommonCard(
             modifier = modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             isCollapsed = isCollapsed,
@@ -366,7 +368,7 @@ fun ValidatorDetails(
 
         if (!isCollapsed) {
             if (validatorWithStakes.hasLSU) {
-                AssetCard(
+                CommonCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(top = RadixTheme.dimensions.paddingXXXSmall),
@@ -383,7 +385,7 @@ fun ValidatorDetails(
             }
 
             if (validatorWithStakes.hasClaims) {
-                AssetCard(
+                CommonCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(top = RadixTheme.dimensions.paddingXXXSmall),
