@@ -1505,6 +1505,10 @@ Code: %s</string>
   <string name="renameLabel_factorSource_subtitle">Enter a new name for this Factor Source</string>
   <string name="renameLabel_factorSource_empty">Factor Source name required</string>
   <string name="renameLabel_factorSource_tooLong">Factor Source name too long</string>
+  <string name="renameLabel_securityShield_title">Rename</string>
+  <string name="renameLabel_securityShield_subtitle">Enter a new name for this Security Shield</string>
+  <string name="renameLabel_securityShield_empty">Security Shield name required</string>
+  <string name="renameLabel_securityShield_tooLong">Security Shield name too long</string>
   <string name="renameLabel_connector_title">Rename Connector</string>
   <string name="renameLabel_connector_subtitle">Enter a new name for this Linked Connector</string>
   <string name="renameLabel_connector_empty">Linked Connector name required</string>
@@ -1604,4 +1608,11 @@ Code: %s</string>
   <string name="securityShields_changeMain_title">Change Default Shield</string>
   <string name="securityShields_changeMain_subtitle">Choose which Security Shield will be pre-selected when you want to use one for an Account or Persona.</string>
   <string name="securityShields_createShieldButton">Create New Security Shield</string>
+  <string name="securityShields_applied_accountsAndPersonas">This Security Shield is applied to these Accounts and Personas</string>
+  <string name="securityShields_accounts">Accounts</string>
+  <string name="securityShields_personas">Personas</string>
+  <string name="securityShields_noAccounts">No Accounts</string>
+  <string name="securityShields_noPersonas">No Personas</string>
+  <string name="securityShields_hiddenAccountsOrPersonas">Hidden Accounts or Personas</string>
+  <string name="securityShields_editFactors">Edit Factors</string>
 </resources>
