@@ -1615,4 +1615,21 @@ Code: %s</string>
   <string name="securityShields_noPersonas">No Personas</string>
   <string name="securityShields_hiddenAccountsOrPersonas">Hidden Accounts or Personas</string>
   <string name="securityShields_editFactors">Edit Factors</string>
+  <string name="newBiometricFactor_intro_title">Add a New Biometrics/PIN Seed Phrase</string>
+  <string name="newBiometricFactor_intro_subtitle">This factor is a seed phrase held by your phone and unlocked by your biometrics/PIN.</string>
+  <string name="newBiometricFactor_seedPhrase_title">Write Down Seed Phrase</string>
+  <string name="newBiometricFactor_seedPhrase_subtitle">Write down this BIP39 seed phrase and store safely for future use. Avoid storing electronically so no one can steal it online.</string>
+  <string name="newBiometricFactor_seedPhrase_enterCustomButton">Clear and enter custom seed phrase</string>
+  <string name="newBiometricFactor_seedPhrase_wordLabel">Word %d</string>
+  <string name="newBiometricFactor_confirmSeedPhrase_title">Confirm Seed Phrase</string>
+  <string name="newBiometricFactor_confirmSeedPhrase_subtitle">Enter %d words from your seed phrase to confirm you’ve recorded it correctly.</string>
+  <string name="newBiometricFactor_confirmSeedPhrase_incorrectWord">Incorrect. Try again.</string>
+  <string name="newBiometricFactor_name_title">Name your New Biometrics/PIN Seed Phrase</string>
+  <string name="newBiometricFactor_name_label">Enter name</string>
+  <string name="newBiometricFactor_name_note">This can be changed any time</string>
+  <string name="newBiometricFactor_name_saveButton">Save</string>
+  <string name="newFactor_error_alreadyInUse">Factor Already In Use</string>
+  <string name="newFactor_error_notCreated">Factor not created</string>
+  <string name="newFactor_success_title">Success</string>
+  <string name="newFactor_success_subtitle">Security factor added successfully</string>
 </resources>
