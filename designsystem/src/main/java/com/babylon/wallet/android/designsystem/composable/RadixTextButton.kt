@@ -66,7 +66,7 @@ fun RadixTextButton(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RadixTextButtonPreview() {
     RadixWalletTheme {
@@ -74,7 +74,7 @@ fun RadixTextButtonPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RadixTextButtonDisabledPreview() {
     RadixWalletTheme {
