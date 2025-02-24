@@ -18,7 +18,6 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.extensions.SharedConstants
-import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -36,10 +35,13 @@ class SetFactorSourceNameViewModel @Inject constructor(
     OneOffEventHandler<SetFactorSourceNameViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = SetFactorNameArgs(savedStateHandle)
+    private lateinit var addedFactorSourceId: FactorSourceId
 
     override fun initialState(): State = State(args.factorSourceKind)
 
     fun onSaveClick() {
+        _state.update { state -> state.copy(saveInProgress = true) }
+
         viewModelScope.launch {
             sargonOsManager.callSafely(dispatcher) {
                 addNewMnemonicFactorSource(
@@ -47,11 +49,14 @@ class SetFactorSourceNameViewModel @Inject constructor(
                     mnemonicWithPassphrase = args.mnemonicWithPassphrase,
                     name = state.value.name
                 )
-            }.onSuccess {
-                // TODO replace with sargon
-                val fsid = FactorSourceId.Hash(args.mnemonicWithPassphrase.factorSourceId(args.factorSourceKind))
-                addFactorSourceIOHandler.setOutput(AddFactorSourceOutput.Id(fsid))
-                sendEvent(Event.Saved)
+            }.onSuccess { factorSourceId ->
+                addedFactorSourceId = factorSourceId
+                _state.update { state ->
+                    state.copy(
+                        saveInProgress = false,
+                        showSuccess = true
+                    )
+                }
             }.onFailure { throwable ->
                 when {
                     throwable is CommonException.SecureStorageAccessException &&
@@ -61,7 +66,8 @@ class SetFactorSourceNameViewModel @Inject constructor(
                 }?.let { error ->
                     _state.update { state ->
                         state.copy(
-                            errorMessage = UiMessage.ErrorMessage(error)
+                            errorMessage = UiMessage.ErrorMessage(error),
+                            saveInProgress = false
                         )
                     }
                 }
@@ -85,6 +91,17 @@ class SetFactorSourceNameViewModel @Inject constructor(
         }
     }
 
+    fun onDismissSuccessMessage() {
+        viewModelScope.launch {
+            _state.update { state ->
+                state.copy(showSuccess = false)
+            }
+
+            addFactorSourceIOHandler.setOutput(AddFactorSourceOutput.Id(addedFactorSourceId))
+            sendEvent(Event.Saved)
+        }
+    }
+
     sealed interface Event : OneOffEvent {
 
         data object Saved : Event
@@ -92,8 +109,10 @@ class SetFactorSourceNameViewModel @Inject constructor(
 
     data class State(
         val factorSourceKind: FactorSourceKind,
+        val saveInProgress: Boolean = false,
         val name: String = "",
-        val errorMessage: UiMessage.ErrorMessage? = null
+        val errorMessage: UiMessage.ErrorMessage? = null,
+        val showSuccess: Boolean = false
     ) : UiState {
 
         val isNameTooLong = name.trim().length > SharedConstants.displayNameMaxLength

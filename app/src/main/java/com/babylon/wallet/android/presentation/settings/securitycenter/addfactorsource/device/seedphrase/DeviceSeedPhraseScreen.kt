@@ -163,7 +163,7 @@ private fun DeviceSeedPhraseContent(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = "Write Down Seed Phrase", // TODO crowdin
+                text = stringResource(id = R.string.newBiometricFactor_seedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -173,7 +173,7 @@ private fun DeviceSeedPhraseContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = "Write down this BIP39 seed phrase and store safely for future use. Avoid storing electronically so no one can steal it online.", // TODO crowdin
+                text = stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -209,7 +209,7 @@ private fun DeviceSeedPhraseContent(
 
             if (!state.isEditingEnabled) {
                 RadixTextButton(
-                    text = "Clear and enter custom seed phrase", // TODO crowdin
+                    text = stringResource(id = R.string.newBiometricFactor_seedPhrase_enterCustomButton),
                     onClick = onEnterCustomSeedPhraseClick
                 )
 
@@ -222,7 +222,7 @@ private fun DeviceSeedPhraseContent(
         BasicPromptAlertDialog(
             finish = { onDismissMessage() },
             messageText = error.getMessage(),
-            confirmText = "Close", // TODO crowdin
+            confirmText = stringResource(id = R.string.common_close),
             dismissText = null
         )
     }

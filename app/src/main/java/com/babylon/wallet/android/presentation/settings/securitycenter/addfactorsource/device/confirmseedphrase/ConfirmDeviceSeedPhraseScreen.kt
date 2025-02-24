@@ -39,7 +39,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -82,9 +81,6 @@ private fun ConfirmDeviceSeedPhraseContent(
     onFillWordsClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
-    HideKeyboardOnFullScroll(scrollState)
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -122,7 +118,7 @@ private fun ConfirmDeviceSeedPhraseContent(
                     padding = padding,
                     bottom = RadixTheme.dimensions.paddingDefault
                 )
-                .verticalScroll(scrollState)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -136,7 +132,7 @@ private fun ConfirmDeviceSeedPhraseContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Text(
-                text = "Confirm Seed Phrase", // TODO crowdin
+                text = stringResource(id = R.string.newBiometricFactor_confirmSeedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -145,7 +141,7 @@ private fun ConfirmDeviceSeedPhraseContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             Text(
-                text = "Enter ${state.words.size} words from your seed phrase to confirm you’ve recorded it correctly.", // TODO crowdin
+                text = stringResource(id = R.string.newBiometricFactor_confirmSeedPhrase_subtitle, state.words.size),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -165,7 +161,13 @@ private fun ConfirmDeviceSeedPhraseContent(
                             else -> ImeAction.Next
                         }
                     ),
-                    error = if (word.state == SeedPhraseWord.State.Invalid) "Incorrect. Try again" else null, // TODO crowdin
+                    error = if (word.state == SeedPhraseWord.State.Invalid) {
+                        stringResource(
+                            id = R.string.newBiometricFactor_confirmSeedPhrase_incorrectWord
+                        )
+                    } else {
+                        null
+                    },
                     errorFixedSize = true,
                     singleLine = true,
                     hasInitialFocus = index == 0,

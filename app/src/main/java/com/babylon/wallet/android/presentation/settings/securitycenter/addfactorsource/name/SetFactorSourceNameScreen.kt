@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.name
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,9 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -39,6 +45,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
@@ -60,6 +68,7 @@ fun SetFactorSourceNameScreen(
         state = state,
         onDismiss = onDismiss,
         onDismissMessage = viewModel::onDismissMessage,
+        onDismissSuccessMessage = viewModel::onDismissSuccessMessage,
         onNameChange = viewModel::onNameChange,
         onSaveClick = viewModel::onSaveClick
     )
@@ -73,12 +82,14 @@ fun SetFactorSourceNameScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SetFactorSourceNameContent(
     modifier: Modifier = Modifier,
     state: SetFactorSourceNameViewModel.State,
     onDismiss: () -> Unit,
     onDismissMessage: () -> Unit,
+    onDismissSuccessMessage: () -> Unit,
     onNameChange: (String) -> Unit,
     onSaveClick: () -> Unit
 ) {
@@ -97,16 +108,25 @@ private fun SetFactorSourceNameContent(
             RadixBottomBar(
                 modifier = Modifier.imePadding(),
                 onClick = onSaveClick,
-                text = stringResource(id = R.string.common_save),
+                text = stringResource(id = R.string.newBiometricFactor_name_saveButton),
                 insets = if (isKeyboardVisible()) WindowInsets.none else WindowInsets.navigationBars,
-                enabled = state.isButtonEnabled
+                enabled = state.isButtonEnabled,
+                isLoading = state.saveInProgress
             )
         }
     ) { padding ->
         val inputFocusRequester = remember { FocusRequester() }
+        val keyboardController = LocalSoftwareKeyboardController.current
 
         LaunchedEffect(Unit) {
             inputFocusRequester.requestFocus()
+        }
+
+        LaunchedEffect(state.saveInProgress) {
+            if (state.saveInProgress) {
+                inputFocusRequester.freeFocus()
+                keyboardController?.hide()
+            }
         }
 
         Column(
@@ -150,25 +170,46 @@ private fun SetFactorSourceNameContent(
                 value = state.name,
                 singleLine = true,
                 hintColor = RadixTheme.colors.gray2,
-                hint = "Enter name", // TODO crowdin
+                hint = stringResource(id = R.string.newBiometricFactor_name_label),
                 error = stringResource(id = R.string.renameLabel_factorSource_tooLong).takeIf { state.isNameTooLong }
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
             Text(
-                text = "This can be changed any time", // TODO crowdin
+                text = stringResource(id = R.string.newBiometricFactor_name_note),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
             )
         }
     }
 
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(state.showSuccess) {
+        if (state.showSuccess) {
+            bottomSheetState.show()
+        }
+    }
+
+    if (state.showSuccess) {
+        DefaultModalSheetLayout(
+            wrapContent = true,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                SuccessSheetContent(
+                    onCloseClick = onDismissSuccessMessage
+                )
+            },
+            onDismissRequest = onDismissSuccessMessage
+        )
+    }
+
     state.errorMessage?.let { error ->
         BasicPromptAlertDialog(
             finish = { onDismissMessage() },
             messageText = error.getMessage(),
-            confirmText = "Close", // TODO crowdin
+            confirmText = stringResource(id = R.string.common_close),
             dismissText = null
         )
     }
@@ -176,11 +217,56 @@ private fun SetFactorSourceNameContent(
 
 @Composable
 private fun FactorSourceKind.nameTitle() = when (this) {
-    FactorSourceKind.DEVICE -> "Name your New Biometrics/PIN Seed Phrase"
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Name your New Ledger Nano"
+    FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_title)
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Name your New Ledger Nano" // TODO crowdin
     FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Name your New Mnemonic Seed Phrase"
     FactorSourceKind.ARCULUS_CARD -> "Name your New Arculus Card"
     FactorSourceKind.PASSWORD -> "Name your New Password"
+}
+
+@Composable
+private fun SuccessSheetContent(
+    onCloseClick: () -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(color = RadixTheme.colors.defaultBackground),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    ) {
+        RadixCenteredTopAppBar(
+            title = "",
+            backIconType = BackIconType.Close,
+            onBackClick = onCloseClick
+        )
+
+        Image(
+            painter = painterResource(DSR.check_circle_outline),
+            contentDescription = null
+        )
+
+        Text(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = stringResource(id = R.string.newFactor_success_title),
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = stringResource(id = R.string.newFactor_success_subtitle),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+
+        RadixBottomBar(
+            onClick = onCloseClick,
+            text = stringResource(id = R.string.common_close)
+        )
+    }
 }
 
 @Composable
@@ -193,6 +279,7 @@ private fun SetFactorSourceNamePreview(
             state = state,
             onDismiss = {},
             onDismissMessage = {},
+            onDismissSuccessMessage = {},
             onNameChange = {},
             onSaveClick = {}
         )
@@ -206,5 +293,8 @@ class SetFactorSourceNamePreviewProvider : PreviewParameterProvider<SetFactorSou
             SetFactorSourceNameViewModel.State(
                 factorSourceKind = kind
             )
-        }.asSequence()
+        }.asSequence() + SetFactorSourceNameViewModel.State(
+            factorSourceKind = FactorSourceKind.DEVICE,
+            showSuccess = true
+        )
 }

@@ -137,6 +137,7 @@ private fun FactorSourceKind.addTitle() = when (this) {
     FactorSourceKind.PASSWORD -> "Add a New Password"
 }
 
+@Suppress("MaxLineLength")
 @Composable
 private fun FactorSourceKind.addSubtitle() = when (this) {
     FactorSourceKind.DEVICE -> "This factor is a seed phrase held by your phone and unlocked by your biometrics/PIN."

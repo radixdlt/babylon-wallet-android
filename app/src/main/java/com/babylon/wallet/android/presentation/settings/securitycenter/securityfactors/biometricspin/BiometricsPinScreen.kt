@@ -189,7 +189,11 @@ private fun ChangeMainDeviceFactorSourceContent(
                 .background(RadixTheme.colors.defaultBackground)
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+            contentPadding = PaddingValues(
+                start = RadixTheme.dimensions.paddingDefault,
+                end = RadixTheme.dimensions.paddingDefault,
+                bottom = RadixTheme.dimensions.paddingDefault
+            ),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             item {
