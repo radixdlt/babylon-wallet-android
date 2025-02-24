@@ -78,6 +78,8 @@ sealed interface AppEvent {
         data object SpotCheck : AccessFactorSources
     }
 
+    data object AddFactorSource : AppEvent
+
     sealed class Status : AppEvent {
 
         abstract val requestId: String

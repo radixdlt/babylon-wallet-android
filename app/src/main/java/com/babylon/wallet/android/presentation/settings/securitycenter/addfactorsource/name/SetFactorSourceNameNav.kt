@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.name
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.name
 
 import android.net.Uri
 import android.os.Bundle
@@ -12,7 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.ROUTE_ADD_FACTOR_GRAPH
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.ROUTE_ADD_FACTOR_SOURCE_GRAPH
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.fromJson
@@ -61,10 +61,10 @@ fun NavGraphBuilder.setFactorName(
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        SetFactorNameScreen(
+        SetFactorSourceNameScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onSaved = { navController.popBackStack(ROUTE_ADD_FACTOR_GRAPH, true) }
+            onSaved = { navController.popBackStack(ROUTE_ADD_FACTOR_SOURCE_GRAPH, true) }
         )
     }
 }

@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.utils.callSafely
@@ -20,6 +21,7 @@ import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
@@ -46,6 +48,7 @@ class BiometricsPinViewModel @Inject constructor(
     getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val sargonOsManager: SargonOsManager,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -126,6 +129,12 @@ class BiometricsPinViewModel @Inject constructor(
             }
             _state.update { state -> state.copy(isChangingMainDeviceFactorSourceInProgress = false) }
             onDismissMainDeviceFactorSourceBottomSheet()
+        }
+    }
+
+    fun onAddBiometricsPinClick() {
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(FactorSourceKind.DEVICE)
         }
     }
 

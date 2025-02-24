@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.name
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.name
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -49,14 +49,14 @@ import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.FactorSourceKind
 
 @Composable
-fun SetFactorNameScreen(
-    viewModel: SetFactorNameViewModel,
+fun SetFactorSourceNameScreen(
+    viewModel: SetFactorSourceNameViewModel,
     onDismiss: () -> Unit,
     onSaved: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    SetFactorNameContent(
+    SetFactorSourceNameContent(
         state = state,
         onDismiss = onDismiss,
         onDismissMessage = viewModel::onDismissMessage,
@@ -67,16 +67,16 @@ fun SetFactorNameScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                SetFactorNameViewModel.Event.Saved -> onSaved()
+                SetFactorSourceNameViewModel.Event.Saved -> onSaved()
             }
         }
     }
 }
 
 @Composable
-private fun SetFactorNameContent(
+private fun SetFactorSourceNameContent(
     modifier: Modifier = Modifier,
-    state: SetFactorNameViewModel.State,
+    state: SetFactorSourceNameViewModel.State,
     onDismiss: () -> Unit,
     onDismissMessage: () -> Unit,
     onNameChange: (String) -> Unit,
@@ -185,11 +185,11 @@ private fun FactorSourceKind.nameTitle() = when (this) {
 
 @Composable
 @Preview
-private fun SetFactorNamePreview(
-    @PreviewParameter(SetFactorNamePreviewProvider::class) state: SetFactorNameViewModel.State
+private fun SetFactorSourceNamePreview(
+    @PreviewParameter(SetFactorSourceNamePreviewProvider::class) state: SetFactorSourceNameViewModel.State
 ) {
     RadixWalletPreviewTheme {
-        SetFactorNameContent(
+        SetFactorSourceNameContent(
             state = state,
             onDismiss = {},
             onDismissMessage = {},
@@ -199,11 +199,11 @@ private fun SetFactorNamePreview(
     }
 }
 
-class SetFactorNamePreviewProvider : PreviewParameterProvider<SetFactorNameViewModel.State> {
+class SetFactorSourceNamePreviewProvider : PreviewParameterProvider<SetFactorSourceNameViewModel.State> {
 
-    override val values: Sequence<SetFactorNameViewModel.State>
+    override val values: Sequence<SetFactorSourceNameViewModel.State>
         get() = FactorSourceKind.entries.map { kind ->
-            SetFactorNameViewModel.State(
+            SetFactorSourceNameViewModel.State(
                 factorSourceKind = kind
             )
         }.asSequence()

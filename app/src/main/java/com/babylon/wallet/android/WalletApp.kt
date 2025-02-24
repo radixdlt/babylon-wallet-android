@@ -41,6 +41,7 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
@@ -138,6 +139,10 @@ fun WalletApp(
         HandleDeletedAccountsDetectedEvent(
             viewModel = mainViewModel
         )
+        HandleAddFactorSourceEvents(
+            navController = navController,
+            addFactorSourceEvents = mainViewModel.addFactorSourceEvents
+        )
         ObserveHighPriorityScreens(
             navController = navController,
             onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -223,6 +228,18 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
                 is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
+        }
+    }
+}
+
+@Composable
+private fun HandleAddFactorSourceEvents(
+    navController: NavController,
+    addFactorSourceEvents: Flow<AppEvent.AddFactorSource>
+) {
+    LaunchedEffect(Unit) {
+        addFactorSourceEvents.collect { _ ->
+            navController.addFactorSource()
         }
     }
 }

@@ -62,7 +62,6 @@ fun BiometricsPinScreen(
     viewModel: BiometricsPinViewModel,
     onBackClick: () -> Unit,
     onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddBiometricPin: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -81,7 +80,7 @@ fun BiometricsPinScreen(
         state = state,
         onBackClick = onBackClick,
         onDeviceFactorSourceClick = viewModel::onDeviceFactorSourceClick,
-        onAddBiometricsPinClick = onNavigateToAddBiometricPin,
+        onAddBiometricsPinClick = viewModel::onAddBiometricsPinClick,
         onChangeMainDeviceFactorSourceClick = viewModel::onChangeMainDeviceFactorSourceClick,
         onInfoClick = onInfoClick
     )

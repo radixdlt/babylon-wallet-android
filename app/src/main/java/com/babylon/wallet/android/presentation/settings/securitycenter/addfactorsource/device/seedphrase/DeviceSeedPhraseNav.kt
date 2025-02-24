@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.device.seedphrase
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -7,7 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.confirmseedphrase.confirmDeviceSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.device.confirmseedphrase.confirmDeviceSeedPhrase
 
 private const val ROUTE_DEVICE_SEED_PHRASE = "device_seed_phrase"
 

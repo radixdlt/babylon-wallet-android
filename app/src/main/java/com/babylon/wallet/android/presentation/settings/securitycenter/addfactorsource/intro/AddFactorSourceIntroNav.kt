@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.intro
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -8,7 +8,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase.deviceSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.device.seedphrase.deviceSeedPhrase
+import com.radixdlt.sargon.FactorSourceKind
+import timber.log.Timber
 
 const val ROUTE_ADD_FACTOR_INTRO = "add_factor_intro"
 
@@ -26,10 +28,19 @@ fun NavGraphBuilder.addFactorIntro(
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) }
     ) {
-        AddFactorIntroScreen(
+        AddFactorSourceIntroScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onContinueClick = { navController.deviceSeedPhrase() },
+            onContinueClick = { factorSourceKind ->
+                // TODO handle all factor source kinds
+                when (factorSourceKind) {
+                    FactorSourceKind.DEVICE -> navController.deviceSeedPhrase()
+                    else -> {
+                        navController.popBackStack()
+                        Timber.w("Not yet implemented")
+                    }
+                }
+            },
             onInfoClick = { item -> navController.infoDialog(item) }
         )
     }

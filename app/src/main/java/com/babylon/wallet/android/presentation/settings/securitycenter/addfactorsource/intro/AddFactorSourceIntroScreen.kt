@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.intro
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.intro
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,16 +39,16 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.radixdlt.sargon.FactorSourceKind
 
 @Composable
-fun AddFactorIntroScreen(
+fun AddFactorSourceIntroScreen(
     modifier: Modifier = Modifier,
-    viewModel: AddFactorIntroViewModel,
+    viewModel: AddFactorSourceIntroViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: (FactorSourceKind) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    AddFactorIntroContent(
+    AddFactorSourceIntroContent(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
@@ -58,9 +58,9 @@ fun AddFactorIntroScreen(
 }
 
 @Composable
-private fun AddFactorIntroContent(
+private fun AddFactorSourceIntroContent(
     modifier: Modifier = Modifier,
-    state: AddFactorIntroViewModel.State,
+    state: AddFactorSourceIntroViewModel.State,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit
@@ -116,7 +116,7 @@ private fun AddFactorIntroContent(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             InfoButton(
                 text = state.factorSourceKind.infoButtonTitle(),
@@ -148,11 +148,11 @@ private fun FactorSourceKind.addSubtitle() = when (this) {
 
 @Composable
 @Preview
-private fun AddFactorIntroPreview(
-    @PreviewParameter(AddFactorIntroPreviewProvider::class) state: AddFactorIntroViewModel.State
+private fun AddFactorSourceIntroPreview(
+    @PreviewParameter(AddFactoSourcerIntroPreviewProvider::class) state: AddFactorSourceIntroViewModel.State
 ) {
     RadixWalletPreviewTheme {
-        AddFactorIntroContent(
+        AddFactorSourceIntroContent(
             state = state,
             onDismiss = {},
             onInfoClick = {},
@@ -161,11 +161,11 @@ private fun AddFactorIntroPreview(
     }
 }
 
-class AddFactorIntroPreviewProvider : PreviewParameterProvider<AddFactorIntroViewModel.State> {
+class AddFactoSourcerIntroPreviewProvider : PreviewParameterProvider<AddFactorSourceIntroViewModel.State> {
 
-    override val values: Sequence<AddFactorIntroViewModel.State>
+    override val values: Sequence<AddFactorSourceIntroViewModel.State>
         get() = FactorSourceKind.entries.map { kind ->
-            AddFactorIntroViewModel.State(
+            AddFactorSourceIntroViewModel.State(
                 factorSourceKind = kind
             )
         }.asSequence()

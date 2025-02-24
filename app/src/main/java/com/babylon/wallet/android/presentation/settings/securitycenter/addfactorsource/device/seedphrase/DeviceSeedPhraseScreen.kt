@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactor.device.seedphrase
+package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.device.seedphrase
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,7 +32,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
@@ -163,7 +162,7 @@ private fun DeviceSeedPhraseContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = "Write Down Seed Phrase", // TODO crowdin
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -173,14 +172,14 @@ private fun DeviceSeedPhraseContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
             Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = "Write down this BIP39 seed phrase and store safely for future use. Avoid storing electronically so no one can steal it online.", // TODO crowdin
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
 
             SeedPhraseInputView(
                 modifier = Modifier.fillMaxWidth(),
