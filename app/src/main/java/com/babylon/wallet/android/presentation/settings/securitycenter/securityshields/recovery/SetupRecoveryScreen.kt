@@ -39,6 +39,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.displayName
+import com.babylon.wallet.android.presentation.common.title
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
@@ -565,30 +567,6 @@ private fun UnsafeCombinationInfoDialog(
         dismissText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_cancel),
         confirmTextColor = RadixTheme.colors.red1
     )
-}
-
-@Composable
-private fun TimePeriod.title(): String {
-    val value = value.toInt()
-    val isSingular = value == 1
-    return when (unit) {
-        TimePeriodUnit.DAYS -> if (isSingular) {
-            stringResource(id = R.string.shieldWizardRecovery_fallback_day_period)
-        } else {
-            stringResource(id = R.string.shieldWizardRecovery_fallback_days_period, value)
-        }
-        TimePeriodUnit.WEEKS -> if (isSingular) {
-            stringResource(id = R.string.shieldWizardRecovery_fallback_week_period)
-        } else {
-            stringResource(id = R.string.shieldWizardRecovery_fallback_weeks_period, value)
-        }
-    }
-}
-
-@Composable
-private fun TimePeriodUnit.displayName(): String = when (this) {
-    TimePeriodUnit.DAYS -> stringResource(id = R.string.shieldWizardRecovery_fallback_days_label)
-    TimePeriodUnit.WEEKS -> stringResource(id = R.string.shieldWizardRecovery_fallback_weeks_label)
 }
 
 @Composable

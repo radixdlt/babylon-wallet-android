@@ -59,10 +59,11 @@ import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
+import com.babylon.wallet.android.presentation.transaction.composables.SecurifyEntityTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.SigningFailedSheet
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionExpirationInfo
-import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
+import com.babylon.wallet.android.presentation.transaction.composables.TransactionReviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
@@ -119,7 +120,7 @@ fun TransactionReviewScreen(
         }
     }
 
-    TransactionPreviewContent(
+    TransactionReviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
         onApproveTransaction = viewModel::onSignAndSubmitTransaction,
@@ -158,7 +159,7 @@ fun TransactionReviewScreen(
 @Suppress("CyclomaticComplexMethod")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TransactionPreviewContent(
+private fun TransactionReviewContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     state: State,
@@ -251,10 +252,10 @@ private fun TransactionPreviewContent(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if (!state.isLoading) {
-                TransactionPreviewHeader(
+                TransactionReviewHeader(
                     onBackClick = onBackClick,
                     isPreAuthorization = state.isPreAuthorization,
-                    isRawManifestPreviewable = state.rawManifestIsPreviewable,
+                    isRawManifestPreviewable = state.isRawManifestToggleInHeader,
                     isRawManifestVisible = state.isRawManifestVisible,
                     proposingDApp = state.proposingDApp,
                     onRawManifestClick = onRawManifestToggle,
@@ -319,7 +320,7 @@ private fun TransactionPreviewContent(
                     androidx.compose.animation.AnimatedVisibility(
                         modifier = Modifier
                             .applyIf(
-                                state.isPreAuthorization,
+                                state.isRawManifestToggleInPreview,
                                 Modifier.padding(top = RadixTheme.dimensions.paddingLarge)
                             ),
                         visible = !state.isRawManifestVisible,
@@ -348,6 +349,10 @@ private fun TransactionPreviewContent(
                                 hiddenResourceIds = state.hiddenResourceIds,
                                 onTransferableFungibleClick = onTransferableFungibleClick,
                                 onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick
+                            )
+
+                            is PreviewType.SecurifyEntity -> SecurifyEntityTypeContent(
+                                preview = preview
                             )
 
                             else -> {}
@@ -400,7 +405,7 @@ private fun TransactionPreviewContent(
                             }
                         }
 
-                        if (state.isPreAuthorization && state.rawManifestIsPreviewable) {
+                        if (state.isRawManifestToggleInPreview) {
                             TransactionRawManifestToggle(
                                 isToggleOn = state.isRawManifestVisible,
                                 onRawManifestClick = onRawManifestToggle
@@ -625,7 +630,7 @@ private fun TransactionPreviewContentPreview(
     @PreviewParameter(TransactionReviewPreviewProvider::class) state: State
 ) {
     RadixWalletPreviewTheme {
-        TransactionPreviewContent(
+        TransactionReviewContent(
             state = state,
             onBackClick = {},
             onApproveTransaction = {},
