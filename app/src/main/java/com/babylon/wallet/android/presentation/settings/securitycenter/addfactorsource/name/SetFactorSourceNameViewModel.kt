@@ -78,7 +78,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
     fun onNameChange(value: String) {
         viewModelScope.launch {
             _state.update { state ->
-                state.copy(name = value.trim())
+                state.copy(name = value)
             }
         }
     }

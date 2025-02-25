@@ -82,8 +82,8 @@ class SeedPhraseInputDelegate(
                         state.copy(
                             seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
                                 val wordState = when (word.state) {
-                                    SeedPhraseWord.State.ValidMasked -> SeedPhraseWord.State.ValidMasked
-                                    SeedPhraseWord.State.ValidDisabled -> SeedPhraseWord.State.ValidDisabled
+                                    SeedPhraseWord.State.ValidMasked,
+                                    SeedPhraseWord.State.ValidDisabled -> word.state
                                     else -> SeedPhraseWord.State.Valid
                                 }
                                 word.copy(value = pastedMnemonic[index], state = wordState)

@@ -238,7 +238,8 @@ private fun SuccessSheetContent(
         RadixCenteredTopAppBar(
             title = "",
             backIconType = BackIconType.Close,
-            onBackClick = onCloseClick
+            onBackClick = onCloseClick,
+            windowInsets = WindowInsets(0.dp)
         )
 
         Image(

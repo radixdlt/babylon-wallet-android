@@ -49,7 +49,7 @@ class DeviceMnemonicBuilderClient @Inject constructor(
 
     suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         val indices = deviceMnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
-        val lastWordIndex = indices.size - 1
+        val lastWordIndex = indices.lastIndex
         indices.mapIndexed { i, index ->
             SeedPhraseWord(
                 index = index.toInt(),
@@ -64,7 +64,7 @@ class DeviceMnemonicBuilderClient @Inject constructor(
 
     suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
         val bip39Words = deviceMnemonicBuilder.getWords()
-        val lastWordIndex = bip39Words.size - 1
+        val lastWordIndex = bip39Words.lastIndex
         bip39Words.mapIndexed { index, bip39Word ->
             SeedPhraseWord(
                 index = index,

@@ -31,7 +31,7 @@ interface UiModule {
     ): AddFactorSourceIOHandler
 
     @Binds
-    fun bindAddFactorSourcesProxy(
+    fun bindAddFactorSourceProxy(
         addFactorSourceProxyImpl: AddFactorSourceProxyImpl
     ): AddFactorSourceProxy
 }

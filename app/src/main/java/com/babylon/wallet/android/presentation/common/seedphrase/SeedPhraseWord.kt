@@ -20,6 +20,34 @@ data class SeedPhraseWord(
         get() = state == State.NotEmpty || state == State.ValidMasked || state == State.ValidDisabled
 
     enum class State {
-        Valid, Invalid, Empty, NotEmpty, ValidMasked, ValidDisabled
+        /**
+         * Represents a word that has been validated and is correct, usually displayed with a checkmark
+         */
+        Valid,
+
+        /**
+         * Represents a word that has been validated and is incorrect, usually displayed in red along with an error
+         */
+        Invalid,
+
+        /**
+         * The word has not been entered yet
+         */
+        Empty,
+
+        /**
+         * The word has been entered but wasn't validated yet
+         */
+        NotEmpty,
+
+        /**
+         * The word has been validated and is correct, but should be masked, usually with asterisks like this `****`
+         */
+        ValidMasked,
+
+        /**
+         * The word has been validated and is correct and cannot be edited by the user
+         */
+        ValidDisabled
     }
 }
