@@ -548,7 +548,6 @@
   <string name="common_dismiss">Dismiss</string>
   <string name="common_noMnemonicAlert_title">Could Not Complete</string>
   <string name="common_noMnemonicAlert_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
-  <string name="common_close">Close</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
