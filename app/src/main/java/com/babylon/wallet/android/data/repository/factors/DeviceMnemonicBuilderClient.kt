@@ -49,10 +49,11 @@ class DeviceMnemonicBuilderClient @Inject constructor(
 
     suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         val indices = deviceMnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
+        val lastWordIndex = indices.size - 1
         indices.mapIndexed { i, index ->
             SeedPhraseWord(
                 index = index.toInt(),
-                lastWord = i == indices.size - 1
+                lastWord = i == lastWordIndex
             )
         }
     }
