@@ -41,6 +41,7 @@ import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
+import rdx.works.core.sargon.authorizedDApps
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
@@ -86,7 +87,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
             ).asList()
         )
     }
-    private val authorizedDapp = profile.currentNetwork!!.authorizedDapps.first()
+    private val authorizedDapp = profile.currentNetwork!!.authorizedDApps().first()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
         this.savedDApp = authorizedDapp
         state = DAppConnectionRepositoryFake.InitialState.SavedDapp
