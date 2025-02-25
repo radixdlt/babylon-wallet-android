@@ -1,17 +1,17 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.name
+package com.babylon.wallet.android.presentation.addfactorsource.name
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceOutput
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.AddFactorSourceIOHandler
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.AddFactorSourceOutput
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSourceId

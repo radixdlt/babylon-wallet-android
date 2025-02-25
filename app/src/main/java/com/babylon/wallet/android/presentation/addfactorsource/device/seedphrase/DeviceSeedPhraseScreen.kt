@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.device.seedphrase
+package com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

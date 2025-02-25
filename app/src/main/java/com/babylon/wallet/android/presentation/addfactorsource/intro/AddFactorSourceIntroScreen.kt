@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.intro
+package com.babylon.wallet.android.presentation.addfactorsource.intro
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

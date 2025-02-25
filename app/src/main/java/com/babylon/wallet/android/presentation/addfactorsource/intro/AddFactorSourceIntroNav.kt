@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.intro
+package com.babylon.wallet.android.presentation.addfactorsource.intro
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -7,8 +7,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase.deviceSeedPhrase
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.device.seedphrase.deviceSeedPhrase
 import com.radixdlt.sargon.FactorSourceKind
 import timber.log.Timber
 

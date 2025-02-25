@@ -29,6 +29,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.derivepublick
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
+import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -41,7 +42,6 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen

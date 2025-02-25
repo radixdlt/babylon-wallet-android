@@ -1,9 +1,9 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.intro
+package com.babylon.wallet.android.presentation.addfactorsource.intro
 
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.AddFactorSourceIOHandler
-import com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.AddFactorSourceInput
 import com.radixdlt.sargon.FactorSourceKind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

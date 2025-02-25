@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.addfactorsource.name
+package com.babylon.wallet.android.presentation.addfactorsource.name
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
