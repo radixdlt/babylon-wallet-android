@@ -97,10 +97,10 @@ fun SecurityShieldDetailsScreen(
         RenameBottomSheet(
             sheetState = bottomSheetState,
             renameInput = state.renameSecurityShieldInput,
-            titleRes = R.string.renameLabel_factorSource_title, // TODO crowdin
-            subtitleRes = R.string.renameLabel_factorSource_subtitle, // TODO crowdin
-            errorValidationMessageRes = R.string.renameLabel_factorSource_empty, // TODO crowdin
-            errorTooLongNameMessageRes = R.string.renameLabel_factorSource_tooLong, // TODO crowdin
+            titleRes = R.string.renameLabel_securityShield_title,
+            subtitleRes = R.string.renameLabel_securityShield_subtitle,
+            errorValidationMessageRes = R.string.renameLabel_securityShield_empty,
+            errorTooLongNameMessageRes = R.string.renameLabel_securityShield_tooLong,
             onNameChange = viewModel::onRenameSecurityShieldChanged,
             onUpdateNameClick = viewModel::onRenameSecurityShieldUpdateClick,
             onDismiss = viewModel::onRenameSecurityShieldDismissed,
@@ -156,7 +156,7 @@ private fun SecurityShieldDetailsContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = "Edit Factors", // TODO crowdin
+                        text = stringResource(R.string.securityShields_editFactors),
                         onClick = onEditFactorsClick
                     )
                 }
@@ -180,7 +180,7 @@ private fun SecurityShieldDetailsContent(
 
                 RadixTextButton(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                    text = "Rename", // TODO crowdin
+                    text = stringResource(R.string.renameLabel_securityShield_title),
                     isWithoutPadding = true,
                     onClick = onRenameSecurityShieldClick
                 )
@@ -600,7 +600,7 @@ private fun SecurityShieldStatusText() {
             tint = Color.Unspecified
         )
         Text(
-            text = "This Security Shield is applied to these Accounts and Personas", // TODO crowdin
+            text = stringResource(R.string.securityShields_applied_accountsAndPersonas),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray1
         )
@@ -612,7 +612,7 @@ private fun LinkedAccountsView(linkedAccounts: PersistentList<Account>) {
     Column {
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = "Accounts", // TODO crowdin
+            text = stringResource(R.string.securityShields_accounts),
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
@@ -633,7 +633,7 @@ private fun LinkedAccountsView(linkedAccounts: PersistentList<Account>) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = "No Accounts", // TODO crowdin
+                text = stringResource(R.string.securityShields_noAccounts),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
@@ -648,7 +648,7 @@ private fun LinkedPersonasView(linkedPersonas: PersistentList<Persona>) {
     Column {
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = "Personas", // TODO crowdin
+            text = stringResource(R.string.securityShields_personas),
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
@@ -666,7 +666,7 @@ private fun LinkedPersonasView(linkedPersonas: PersistentList<Persona>) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = "No Personas", // TODO crowdin
+                text = stringResource(R.string.securityShields_noPersonas),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
@@ -682,7 +682,7 @@ private fun LinkedHiddenEntitiesText() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(RadixTheme.dimensions.paddingDefault),
-        text = stringResource(R.string.securityShields_assigned_onlyHiddenEntities), // TODO crowdin
+        text = stringResource(R.string.common_hiddenAccountsOrPersonas),
         style = RadixTheme.typography.body1Header,
         color = RadixTheme.colors.gray2,
         textAlign = TextAlign.Center

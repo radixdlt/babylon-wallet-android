@@ -24,6 +24,7 @@ import com.babylon.wallet.android.presentation.common.title
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.TimePeriod
+import java.util.Locale
 
 @Composable
 fun ConfirmationDelay(
@@ -80,7 +81,7 @@ fun ConfirmationDelay(
 
 @Composable
 fun Threshold.display(): String = when (this) {
-    is Threshold.All -> "ALL"
+    is Threshold.All -> stringResource(R.string.common_all).uppercase(Locale.getDefault())
     is Threshold.Specific -> "${v1.toInt()}"
 }
 
