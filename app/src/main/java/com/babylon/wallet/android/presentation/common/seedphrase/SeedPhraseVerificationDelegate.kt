@@ -28,7 +28,7 @@ class SeedPhraseVerificationDelegate(
                 index,
                 lastWord = index == seedSize - 1,
                 value = randomEnglishWord().word,
-                state = SeedPhraseWord.State.ValidDisabled
+                state = SeedPhraseWord.State.ValidMasked
             )
         }.toPersistentList()
         // always ask for last word
@@ -60,7 +60,7 @@ class SeedPhraseVerificationDelegate(
             delay(DEBOUNCE_DELAY_MS)
             val wordState = when {
                 value.isEmpty() -> SeedPhraseWord.State.Empty
-                else -> SeedPhraseWord.State.HasValue
+                else -> SeedPhraseWord.State.NotEmpty
             }
             _state.update { state ->
                 val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -87,7 +87,7 @@ class SeedPhraseVerificationDelegate(
             get() = blankIndices.associateWith { seedPhraseWords[it].value }
 
         val allFieldsHaveValue: Boolean
-            get() = seedPhraseWords.all { it.state == SeedPhraseWord.State.HasValue || it.state == SeedPhraseWord.State.ValidDisabled }
+            get() = seedPhraseWords.all { it.hasValue }
     }
 
     override fun initialState(): State {

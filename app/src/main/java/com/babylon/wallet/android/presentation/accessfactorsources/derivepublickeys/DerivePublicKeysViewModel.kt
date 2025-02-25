@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -85,30 +86,32 @@ class DerivePublicKeysViewModel @Inject constructor(
 
     fun onInputConfirmed() = accessDelegate.onInputConfirmed()
 
-    private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
-        is FactorSource.Device -> accessDeviceFactorSource.derivePublicKeys(
-            factorSource = factorSource,
-            input = proxyInput.request
-        )
-        is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.derivePublicKeys(
-            factorSource = factorSource,
-            input = proxyInput.request
-        )
-        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.derivePublicKeys(
-            factorSource = factorSource,
-            input = proxyInput.request
-        )
-        is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.derivePublicKeys(
-            factorSource = factorSource,
-            input = proxyInput.request
-        )
-        is FactorSource.Password -> accessPasswordFactorSourceUseCase.derivePublicKeys(
-            factorSource = factorSource,
-            input = proxyInput.request
-        )
-    }.mapCatching { factorInstances ->
-        finishWithSuccess(factorInstances)
-    }.toUnit()
+    private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = withContext(defaultDispatcher) {
+        when (factorSource) {
+            is FactorSource.Device -> accessDeviceFactorSource.derivePublicKeys(
+                factorSource = factorSource,
+                input = proxyInput.request
+            )
+            is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.derivePublicKeys(
+                factorSource = factorSource,
+                input = proxyInput.request
+            )
+            is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.derivePublicKeys(
+                factorSource = factorSource,
+                input = proxyInput.request
+            )
+            is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.derivePublicKeys(
+                factorSource = factorSource,
+                input = proxyInput.request
+            )
+            is FactorSource.Password -> accessPasswordFactorSourceUseCase.derivePublicKeys(
+                factorSource = factorSource,
+                input = proxyInput.request
+            )
+        }.mapCatching { factorInstances ->
+            finishWithSuccess(factorInstances)
+        }.toUnit()
+    }
 
     private suspend fun onDismissCallback() {
         // end the signing process and return the output (error)

@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
@@ -106,7 +107,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         biometricsPin(
             onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddBiometricPin = { }, // TODO next task
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )
@@ -156,5 +156,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
             }
         )
         securityShieldsNavGraph(navController)
+        addFactorSource(navController)
     }
 }

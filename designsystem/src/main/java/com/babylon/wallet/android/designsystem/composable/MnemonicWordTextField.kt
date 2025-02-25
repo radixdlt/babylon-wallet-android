@@ -55,7 +55,6 @@ fun MnemonicWordTextField(
     value: String,
     label: String,
     hint: String? = null,
-    hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     singleLine: Boolean = false,
@@ -65,12 +64,14 @@ fun MnemonicWordTextField(
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false,
     enabled: Boolean = true,
+    masked: Boolean = false,
     highlightField: Boolean = false,
-    hasInitialFocus: Boolean = false
+    hasInitialFocus: Boolean = false,
+    colors: MnemonicTextFieldColors = MnemonicTextFieldColors.default(),
 ) {
     var focused by remember { mutableStateOf(hasInitialFocus) }
     val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(hasInitialFocus) {
         if (hasInitialFocus) {
             focusRequester.requestFocus()
         }
@@ -78,26 +79,32 @@ fun MnemonicWordTextField(
     Column(
         modifier = modifier
     ) {
-        Text(
-            text = label,
-            style = RadixTheme.typography.body1HighImportance,
-            color = hintColor ?: RadixTheme.colors.gray1
-        )
         val selectionColors = TextSelectionColors(
             handleColor = RadixTheme.colors.gray1,
             backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
         )
         val textColor = when {
-            error != null -> RadixTheme.colors.red1
-            !enabled -> RadixTheme.colors.gray2
-            else -> RadixTheme.colors.gray1
+            error != null -> colors.errorTextColor
+            !enabled -> colors.disabledTextColor
+            else -> colors.textColor
         }
         val borderColor = when {
-            enabled && highlightField -> RadixTheme.colors.gray1
-            error != null -> RadixTheme.colors.red1
-            focused -> RadixTheme.colors.gray1
-            else -> RadixTheme.colors.gray4
+            enabled && highlightField -> colors.highlightedBorderColor
+            error != null -> colors.errorBorderColor
+            focused -> colors.focusedBorderColor
+            !enabled -> colors.disabledBorderColor
+            else -> colors.borderColor
         }
+        val hintColor = when {
+            error != null -> colors.errorHintColor
+            !enabled -> colors.disabledHintColor
+            else -> colors.hintColor
+        }
+        Text(
+            text = label,
+            style = RadixTheme.typography.body1HighImportance,
+            color = hintColor
+        )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         var textFieldValueState by remember(value) {
             mutableStateOf(
@@ -141,7 +148,7 @@ fun MnemonicWordTextField(
                             Text(
                                 text = hint,
                                 style = RadixTheme.typography.body1Regular,
-                                color = hintColor ?: RadixTheme.colors.gray1
+                                color = hintColor
                             )
                         } else {
                             Box(modifier = Modifier.weight(1f)) {
@@ -154,7 +161,7 @@ fun MnemonicWordTextField(
                     }
                 },
                 enabled = enabled,
-                visualTransformation = if (enabled) VisualTransformation.None else MnemonicWordVisualTransformation()
+                visualTransformation = if (masked) MnemonicWordVisualTransformation() else VisualTransformation.None
             )
         }
         if (error != null || errorFixedSize) {
@@ -168,10 +175,10 @@ fun MnemonicWordTextField(
                         modifier = Modifier.size(14.dp),
                         painter = painterResource(id = R.drawable.ic_warning_error),
                         contentDescription = null,
-                        tint = RadixTheme.colors.red1
+                        tint = colors.statusMessageColor
                     )
                 }
-                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)
+                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = colors.statusMessageColor)
             }
         }
     }
@@ -196,6 +203,45 @@ internal class MnemonicWordVisualTransformation : VisualTransformation {
 
     companion object {
         private const val transformationCharactersLength: Int = 4
+    }
+}
+
+data class MnemonicTextFieldColors(
+    val textColor: Color,
+    val errorTextColor: Color,
+    val disabledTextColor: Color,
+    val highlightedTextColor: Color,
+    val borderColor: Color,
+    val focusedBorderColor: Color,
+    val errorBorderColor: Color,
+    val disabledBorderColor: Color,
+    val highlightedBorderColor: Color,
+    val hintColor: Color,
+    val errorHintColor: Color,
+    val disabledHintColor: Color,
+    val statusMessageColor: Color
+) {
+
+    companion object {
+
+        @Composable
+        fun default(): MnemonicTextFieldColors {
+            return MnemonicTextFieldColors(
+                textColor = RadixTheme.colors.gray1,
+                errorTextColor = RadixTheme.colors.red1,
+                disabledTextColor = RadixTheme.colors.gray2,
+                highlightedTextColor = RadixTheme.colors.gray1,
+                borderColor = RadixTheme.colors.gray4,
+                focusedBorderColor = RadixTheme.colors.gray1,
+                errorBorderColor = RadixTheme.colors.red1,
+                disabledBorderColor = RadixTheme.colors.gray4,
+                highlightedBorderColor = RadixTheme.colors.gray1,
+                hintColor = RadixTheme.colors.gray1,
+                errorHintColor = RadixTheme.colors.gray1,
+                disabledHintColor = RadixTheme.colors.gray1,
+                statusMessageColor = RadixTheme.colors.red1
+            )
+        }
     }
 }
 

@@ -68,11 +68,10 @@ fun NavGraphBuilder.addFactor(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            toFactorSetup = { kind ->
-                // TODO navigate to specific factor setup screen based on the kind
-                navController.factorsReady()
-            },
-            toRegularAccess = { navController.regularAccess() }
+            onAddAnotherFactor = { navController.addAnyFactor() },
+            onAddHardwareDevice = { navController.addHardwareDevice() },
+            toRegularAccess = { navController.regularAccess() },
+            onFactorsReady = { navController.factorsReady() }
         )
     }
 }

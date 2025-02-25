@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -12,17 +13,25 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.SecurityShieldPrerequisitesStatus
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.di.DefaultDispatcher
 import javax.inject.Inject
 
 @HiltViewModel
 class AddFactorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val securityShieldBuilderClient: SecurityShieldBuilderClient
+    private val securityShieldBuilderClient: SecurityShieldBuilderClient,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
+    private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<AddFactorViewModel.State>(),
     OneOffEventHandler<AddFactorViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -36,7 +45,10 @@ class AddFactorViewModel @Inject constructor(
 
     fun onButtonClick() {
         val selectedKind = state.value.selected ?: error("No factor source selected")
-        viewModelScope.launch { sendEvent(Event.ToFactorSetup(selectedKind)) }
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(selectedKind)
+            checkShieldPrerequisites()
+        }
     }
 
     fun onMessageShown() {
@@ -47,6 +59,22 @@ class AddFactorViewModel @Inject constructor(
         viewModelScope.launch {
             securityShieldBuilderClient.newSecurityShieldBuilder()
             sendEvent(Event.ToRegularAccess)
+        }
+    }
+
+    private fun checkShieldPrerequisites() {
+        viewModelScope.launch {
+            sargonOsManager.callSafely(dispatcher) {
+                securityShieldPrerequisitesStatus()
+            }.onSuccess { status ->
+                when (status) {
+                    SecurityShieldPrerequisitesStatus.SUFFICIENT -> sendEvent(Event.FactorReady)
+                    SecurityShieldPrerequisitesStatus.HARDWARE_REQUIRED -> sendEvent(Event.AddHardwareDevice)
+                    SecurityShieldPrerequisitesStatus.ANY_REQUIRED -> sendEvent(Event.AddAnotherFactor)
+                }
+            }.onFailure {
+                _state.update { state -> state.copy(message = UiMessage.ErrorMessage(it)) }
+            }
         }
     }
 
@@ -107,10 +135,12 @@ class AddFactorViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data class ToFactorSetup(
-            val kind: FactorSourceKind
-        ) : Event
+        data object AddHardwareDevice : Event
+
+        data object AddAnotherFactor : Event
 
         data object ToRegularAccess : Event
+
+        data object FactorReady : Event
     }
 }

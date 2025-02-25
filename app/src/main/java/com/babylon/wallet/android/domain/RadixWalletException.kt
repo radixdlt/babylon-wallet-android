@@ -225,6 +225,13 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
             )
         )
     }
+
+    sealed class AddFactorSource : RadixWalletException() {
+
+        data object FactorSourceAlreadyInUse : AddFactorSource()
+
+        data object FactorSourceNotCreated : AddFactorSource()
+    }
 }
 
 interface DappWalletInteractionThrowable {
@@ -421,6 +428,13 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
     is BackupServiceException.Unknown -> "Unknown error occurred cause: ${cause?.message}"
 }
 
+fun RadixWalletException.AddFactorSource.toUserFriendlyMessage(context: Context): String = context.getString(
+    when (this) {
+        RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> R.string.newFactor_error_alreadyInUse
+        RadixWalletException.AddFactorSource.FactorSourceNotCreated -> R.string.newFactor_error_notCreated
+    }
+)
+
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
         is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> context.getString(
@@ -435,6 +449,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
         is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
+        is RadixWalletException.AddFactorSource -> toUserFriendlyMessage(context)
     }
 }
 

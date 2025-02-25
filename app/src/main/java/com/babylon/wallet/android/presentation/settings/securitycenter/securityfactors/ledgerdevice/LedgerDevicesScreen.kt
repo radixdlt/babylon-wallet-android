@@ -201,7 +201,7 @@ private fun LedgerDevicesContent(
                 mainFactorSource = null,
                 factorSources = ledgerFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_ledgerDescription,
-                glossaryItem = GlossaryItem.ledgernano,
+                factorSourceKind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 addFactorSourceButtonContent = {
                     RadixSecondaryButton(
                         modifier = Modifier

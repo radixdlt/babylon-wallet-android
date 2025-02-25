@@ -3,6 +3,9 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxyImpl
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxyImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -21,4 +24,14 @@ interface UiModule {
     fun bindAccessFactorSourcesProxy(
         accessFactorSourcesProxyImpl: AccessFactorSourcesProxyImpl
     ): AccessFactorSourcesProxy
+
+    @Binds
+    fun bindAddFactorSourceIOHandler(
+        addFactorSourceProxyImpl: AddFactorSourceProxyImpl
+    ): AddFactorSourceIOHandler
+
+    @Binds
+    fun bindAddFactorSourceProxy(
+        addFactorSourceProxyImpl: AddFactorSourceProxyImpl
+    ): AddFactorSourceProxy
 }

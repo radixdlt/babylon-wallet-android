@@ -42,6 +42,14 @@ class SeedPhraseInputDelegate(
         }
     }
 
+    fun setWords(words: List<SeedPhraseWord>) {
+        _state.update { state ->
+            state.copy(
+                seedPhraseWords = words.toPersistentList()
+            )
+        }
+    }
+
     fun onWordSelected(index: Int, value: String) {
         _state.update { state ->
             val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -73,10 +81,10 @@ class SeedPhraseInputDelegate(
                     _state.update { state ->
                         state.copy(
                             seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
-                                val wordState = if (word.state == SeedPhraseWord.State.ValidDisabled) {
-                                    SeedPhraseWord.State.ValidDisabled
-                                } else {
-                                    SeedPhraseWord.State.Valid
+                                val wordState = when (word.state) {
+                                    SeedPhraseWord.State.ValidMasked,
+                                    SeedPhraseWord.State.ValidDisabled -> word.state
+                                    else -> SeedPhraseWord.State.Valid
                                 }
                                 word.copy(value = pastedMnemonic[index], state = wordState)
                             }.toPersistentList()
@@ -95,7 +103,7 @@ class SeedPhraseInputDelegate(
                 wordCandidates.contains(value) -> SeedPhraseWord.State.Valid
                 value.isEmpty() -> SeedPhraseWord.State.Empty
                 wordCandidates.isEmpty() -> SeedPhraseWord.State.Invalid
-                else -> SeedPhraseWord.State.HasValue
+                else -> SeedPhraseWord.State.NotEmpty
             }
             _state.update { state ->
                 val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -138,7 +146,7 @@ class SeedPhraseInputDelegate(
         fun isInputComplete(): Boolean {
             if (isInputEmpty) return false
 
-            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid }
+            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid || it.state == SeedPhraseWord.State.ValidDisabled }
         }
 
         fun shouldDisplayInvalidSeedPhraseWarning(): Boolean {

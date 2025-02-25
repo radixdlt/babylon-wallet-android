@@ -29,6 +29,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.derivepublick
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
+import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -138,6 +139,10 @@ fun WalletApp(
         HandleDeletedAccountsDetectedEvent(
             viewModel = mainViewModel
         )
+        HandleAddFactorSourceEvents(
+            navController = navController,
+            addFactorSourceEvents = mainViewModel.addFactorSourceEvents
+        )
         ObserveHighPriorityScreens(
             navController = navController,
             onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -223,6 +228,18 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
                 is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
+        }
+    }
+}
+
+@Composable
+private fun HandleAddFactorSourceEvents(
+    navController: NavController,
+    addFactorSourceEvents: Flow<AppEvent.AddFactorSource>
+) {
+    LaunchedEffect(Unit) {
+        addFactorSourceEvents.collect { _ ->
+            navController.addFactorSource()
         }
     }
 }

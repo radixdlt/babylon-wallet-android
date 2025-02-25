@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -20,6 +21,7 @@ import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
@@ -46,6 +48,7 @@ class BiometricsPinViewModel @Inject constructor(
     getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val sargonOsManager: SargonOsManager,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -126,6 +129,12 @@ class BiometricsPinViewModel @Inject constructor(
             }
             _state.update { state -> state.copy(isChangingMainDeviceFactorSourceInProgress = false) }
             onDismissMainDeviceFactorSourceBottomSheet()
+        }
+    }
+
+    fun onAddBiometricsPinClick() {
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(FactorSourceKind.DEVICE)
         }
     }
 

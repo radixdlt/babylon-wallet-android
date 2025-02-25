@@ -50,7 +50,9 @@ fun AddFactorScreen(
     viewModel: AddFactorViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    toFactorSetup: (FactorSourceKind) -> Unit,
+    onAddAnotherFactor: () -> Unit,
+    onAddHardwareDevice: () -> Unit,
+    onFactorsReady: () -> Unit,
     toRegularAccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -69,8 +71,10 @@ fun AddFactorScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is AddFactorViewModel.Event.ToFactorSetup -> toFactorSetup(event.kind)
+                AddFactorViewModel.Event.AddAnotherFactor -> onAddAnotherFactor()
+                AddFactorViewModel.Event.AddHardwareDevice -> onAddHardwareDevice()
                 AddFactorViewModel.Event.ToRegularAccess -> toRegularAccess()
+                is AddFactorViewModel.Event.FactorReady -> onFactorsReady()
             }
         }
     }

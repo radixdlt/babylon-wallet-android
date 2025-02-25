@@ -62,7 +62,6 @@ fun BiometricsPinScreen(
     viewModel: BiometricsPinViewModel,
     onBackClick: () -> Unit,
     onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddBiometricPin: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -81,7 +80,7 @@ fun BiometricsPinScreen(
         state = state,
         onBackClick = onBackClick,
         onDeviceFactorSourceClick = viewModel::onDeviceFactorSourceClick,
-        onAddBiometricsPinClick = onNavigateToAddBiometricPin,
+        onAddBiometricsPinClick = viewModel::onAddBiometricsPinClick,
         onChangeMainDeviceFactorSourceClick = viewModel::onChangeMainDeviceFactorSourceClick,
         onInfoClick = onInfoClick
     )
@@ -144,7 +143,7 @@ private fun BiometricsPinContent(
                 factorSources = state.otherDeviceFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
-                glossaryItem = GlossaryItem.biometricspin,
+                factorSourceKind = FactorSourceKind.DEVICE,
                 onFactorSourceClick = onDeviceFactorSourceClick,
                 onAddFactorSourceClick = onAddBiometricsPinClick,
                 onChangeMainFactorSourceClick = onChangeMainDeviceFactorSourceClick,
@@ -190,7 +189,11 @@ private fun ChangeMainDeviceFactorSourceContent(
                 .background(RadixTheme.colors.defaultBackground)
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+            contentPadding = PaddingValues(
+                start = RadixTheme.dimensions.paddingDefault,
+                end = RadixTheme.dimensions.paddingDefault,
+                bottom = RadixTheme.dimensions.paddingDefault
+            ),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             item {
