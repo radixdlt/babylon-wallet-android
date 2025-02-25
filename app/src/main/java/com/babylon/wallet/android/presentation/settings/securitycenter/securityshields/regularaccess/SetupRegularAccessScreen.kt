@@ -450,7 +450,7 @@ private fun NumberOfFactorsView(
     ) {
         Text(
             text = when (threshold) {
-                Threshold.All -> stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_all)
+                Threshold.All -> stringResource(id = R.string.common_all)
                 is Threshold.Specific -> threshold.v1.toString()
             },
             style = RadixTheme.typography.body2Link,

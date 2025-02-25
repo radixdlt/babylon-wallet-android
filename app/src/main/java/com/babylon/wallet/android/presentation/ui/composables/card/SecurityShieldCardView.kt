@@ -122,7 +122,7 @@ private fun linkedEntitiesView(
 
     val linkedText = when {
         accountsCount == 0 && personasCount == 0 && hasAnyHiddenEntities -> stringResource(
-            R.string.securityShields_assigned_onlyHiddenEntities
+            R.string.common_hiddenAccountsOrPersonas
         )
         accountsCount == 0 && personasCount == 0 -> stringResource(R.string.common_none)
         accountsCount != 0 && personasCount != 0 -> "$accountsText ${stringResource(id = R.string.dot_separator)} $personasText"

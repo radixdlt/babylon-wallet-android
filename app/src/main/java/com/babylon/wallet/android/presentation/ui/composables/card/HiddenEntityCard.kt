@@ -35,7 +35,7 @@ fun HiddenEntityCard(
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
-            text = stringResource(id = R.string.factorSources_card_hiddenAccountsOrPersonas),
+            text = stringResource(id = R.string.common_hiddenAccountsOrPersonas),
             style = RadixTheme.typography.body1HighImportance,
             maxLines = 1,
             color = RadixTheme.colors.gray2,
