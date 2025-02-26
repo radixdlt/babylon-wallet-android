@@ -14,6 +14,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FungibleResourceIndicator
 import com.radixdlt.sargon.NewlyCreatedResource
 import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleResourceIndicator
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.ResourceOrNonFungible
@@ -266,13 +267,25 @@ private fun ResourceIndicator.Fungible.amount(
 private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonFungibleAmount {
     val onLedgerItems = asset.resource.items
 
-    val items = indicator.ids.map { localId ->
-        onLedgerItems.find { it.localId == localId } ?: Item(
-            collectionAddress = asset.resource.address, localId = localId
+    return when (val ind = indicator) {
+        is NonFungibleResourceIndicator.Guaranteed -> NonFungibleAmount(
+            certain = ind.ids.map { localId ->
+                onLedgerItems.find { it.localId == localId } ?: Item(
+                    collectionAddress = asset.resource.address, localId = localId
+                )
+            },
+            additional = null
+        )
+        is NonFungibleResourceIndicator.Predicted -> NonFungibleAmount(
+            certain = emptyList(),
+            predicted = ind.predictedIds.value.map { localId ->
+                onLedgerItems.find { it.localId == localId } ?: Item(
+                    collectionAddress = asset.resource.address, localId = localId
+                )
+            },
+            additional = null
         )
     }
-
-    return NonFungibleAmount(certain = items)
 }
 
 private fun ExecutionSummary.resolveAsset(

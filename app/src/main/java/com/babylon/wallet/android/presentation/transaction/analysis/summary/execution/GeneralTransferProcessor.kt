@@ -5,9 +5,6 @@ import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddres
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -18,7 +15,7 @@ class GeneralTransferProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
 
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
-        val dApps = summary.resolveDApps()
+        val dApps = resolveComponentAddressesUseCase(summary.encounteredAddresses).getOrThrow()
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
         val badges = summary.resolveBadges(onLedgerAssets = assets)
 
@@ -34,15 +31,5 @@ class GeneralTransferProcessor @Inject constructor(
             badges = badges,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
-    }
-
-    private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
-        encounteredAddresses
-            .map { address ->
-                async { resolveComponentAddressesUseCase.invoke(address) }
-            }
-            .awaitAll()
-            .mapNotNull { it.getOrNull() }
-            .distinctBy { it.first }
     }
 }

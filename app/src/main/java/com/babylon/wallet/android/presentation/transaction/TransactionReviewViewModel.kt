@@ -180,16 +180,10 @@ class TransactionReviewViewModel @Inject constructor(
                 analysis.analyse()
                     .onSuccess { analysis ->
                         data.update { it.copy(txSummary = analysis.summary) }
-                    }
-                    .then { analysis ->
+
                         when (request.kind) {
                             is TransactionRequest.Kind.PreAuthorized -> processExpiration(request.kind.expiration)
                             is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis)
-                        }
-                        if (!request.kind.isPreAuthorized) {
-                            fees.resolveFees(analysis)
-                        } else {
-                            Result.success(Unit)
                         }
                     }
             }
@@ -547,8 +541,8 @@ sealed interface PreviewType {
             get() {
                 val allItems = (from + to).asSequence().map { it.transferables }.flatten().map {
                     when (it) {
-                        is Transferable.NonFungibleType.NFTCollection -> it.amount.certain
-                        is Transferable.NonFungibleType.StakeClaim -> it.amount.certain
+                        is Transferable.NonFungibleType.NFTCollection -> it.amount.all
+                        is Transferable.NonFungibleType.StakeClaim -> it.amount.all
                         else -> emptyList()
                     }
                 }.flatten().associateBy { it.globalId }
@@ -567,15 +561,15 @@ sealed interface PreviewType {
                 }
 
             data class DApps(
-                val components: List<Pair<ManifestEncounteredComponentAddress, DApp?>>,
+                val components: LinkedHashMap<ManifestEncounteredComponentAddress, DApp?>,
                 val morePossibleDAppsPresent: Boolean = false
             ) : InvolvedComponents {
 
                 val verifiedDapps: List<DApp>
-                    get() = components.mapNotNull { it.second }
+                    get() = components.values.filterNotNull().distinctBy { it.dAppAddress }
 
                 val unknownComponents: List<ManifestEncounteredComponentAddress>
-                    get() = components.mapNotNull { if (it.second == null) it.first else null }
+                    get() = components.mapNotNull { if (it.value == null) it.key else null }
             }
 
             data class Validators(

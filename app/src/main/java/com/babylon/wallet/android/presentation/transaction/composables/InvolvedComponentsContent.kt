@@ -388,7 +388,7 @@ private fun InvolvedComponent(
 @Composable
 fun UsingDAppsPreview() {
     val components = remember(Unit) {
-        listOf(
+        linkedMapOf(
             ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet(),
             ManifestEncounteredComponentAddress.sampleMainnet.other() to null
         )
@@ -410,7 +410,7 @@ fun UsingDAppsPreview() {
 @Composable
 fun UsingDAppsWithPossibleOtherDAppsPreview() {
     val components = remember(Unit) {
-        listOf(
+        linkedMapOf(
             ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet(),
             ManifestEncounteredComponentAddress.sampleMainnet.other() to null
         )

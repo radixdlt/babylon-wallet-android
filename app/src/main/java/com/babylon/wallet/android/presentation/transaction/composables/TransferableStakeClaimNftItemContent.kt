@@ -73,6 +73,9 @@ fun TransferableStakeClaimNftItemContent(
             ) {
                 TransferableStakeClaimItemHeader(
                     transferableStakeClaim = transferableStakeClaim,
+                    isEstimated = remember(transferableStakeClaim.amount, item) {
+                        transferableStakeClaim.amount.isPredicted(item)
+                    },
                     additionalAmount = null
                 )
 
@@ -103,8 +106,6 @@ fun TransferableStakeClaimNftItemContent(
                         Row(
                             verticalAlignment = CenterVertically,
                         ) {
-                            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
                             Icon(
                                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                                 contentDescription = null,
@@ -136,6 +137,14 @@ fun TransferableStakeClaimNftItemContent(
                                 maxLines = 2
                             )
                         }
+
+                        if (item.claimAmountXrd == null) {
+                            UnknownAmount(
+                                modifier = Modifier
+                                    .padding(top = RadixTheme.dimensions.paddingSmall),
+                                amount = BoundedAmount.Unknown
+                            )
+                        }
                     }
                 }
             }
@@ -157,10 +166,11 @@ fun TransferableStakeClaimNftItemContent(
 fun TransferableStakeClaimItemHeader(
     modifier: Modifier = Modifier,
     transferableStakeClaim: Transferable.NonFungibleType.StakeClaim,
+    isEstimated: Boolean,
     additionalAmount: BoundedAmount?
 ) {
     Column(
-        modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium)
+        modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -192,10 +202,19 @@ fun TransferableStakeClaimItemHeader(
                 )
             }
 
-            additionalAmount?.let {
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+            if (isEstimated) {
+                Text(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                    text = stringResource(R.string.interactionReview_estimated),
+                    color = RadixTheme.colors.gray1,
+                    style = RadixTheme.typography.body3Regular
+                )
+            } else {
+                additionalAmount?.let {
+                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-                BoundedAmountSection(boundedAmount = it)
+                    BoundedAmountSection(boundedAmount = it)
+                }
             }
         }
 

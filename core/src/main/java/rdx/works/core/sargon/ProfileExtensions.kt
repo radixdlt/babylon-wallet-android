@@ -40,6 +40,7 @@ import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isLegacy
+import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
@@ -165,6 +166,16 @@ fun Profile.claim(
     header = header.copy(lastUsedOnDevice = deviceInfo)
 )
 
+/**
+ * Simple extension on `ProfileNetwork` that filters out dApps with dAppDefinitionAddress
+ * on another network. All AuthorizedDApps are supposed to be under the same `ProfileNetwork::networkId`
+ * but due to an old bug that was later fixed on `VerifyDAppUseCase`, there seems to be some profiles that
+ * have authorized dApps with dApp definition address pointing to another network. A user with
+ * **Developer Mode ON** could "verify" any dApp and store it in profile.
+ */
+fun ProfileNetwork.authorizedDApps(): List<AuthorizedDapp> =
+    authorizedDapps.filter { it.dappDefinitionAddress.networkId == id }
+
 fun Profile.addAccounts(
     accounts: List<Account>,
     onNetwork: NetworkId
@@ -175,7 +186,7 @@ fun Profile.addAccounts(
             ProfileNetwork(
                 id = network.id,
                 accounts = Accounts(network.accounts + accounts).asList(),
-                authorizedDapps = network.authorizedDapps,
+                authorizedDapps = network.authorizedDApps(),
                 personas = network.personas,
                 resourcePreferences = network.resourcePreferences
             )
@@ -227,7 +238,7 @@ fun Profile.updatePersona(
 fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: Boolean): Profile {
     val networkId = currentNetwork?.id ?: return this
     val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
-        val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
+        val updatedAuthorizedDapps = network.authorizedDApps().mapWhen(predicate = { authorizedDapp ->
             authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(identityAddress) != null
         }, mutation = { authorizedDapp ->
             authorizedDapp.copy(
@@ -261,7 +272,7 @@ fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: 
 fun Profile.changeAccountVisibility(accountAddress: AccountAddress, hide: Boolean): Profile {
     val networkId = currentNetwork?.id ?: return this
     val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
-        val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
+        val updatedAuthorizedDapps = network.authorizedDApps().mapWhen(predicate = { authorizedDapp ->
             authorizedDapp.referencesToAuthorizedPersonas.any { reference ->
                 reference.sharedAccounts?.ids.orEmpty().any { it == accountAddress }
             }
@@ -478,9 +489,9 @@ fun Profile.nextAppearanceId(forNetworkId: NetworkId): AppearanceId {
 }
 
 fun Profile.getAuthorizedDApp(dAppDefinitionAddress: AccountAddress): AuthorizedDapp? =
-    currentNetwork?.authorizedDapps?.asIdentifiable()?.getBy(dAppDefinitionAddress)
+    currentNetwork?.authorizedDApps()?.asIdentifiable()?.getBy(dAppDefinitionAddress)
 
-fun Profile.getAuthorizedDApps(): List<AuthorizedDapp> = currentNetwork?.authorizedDapps.orEmpty()
+fun Profile.getAuthorizedDApps(): List<AuthorizedDapp> = currentNetwork?.authorizedDApps().orEmpty()
 
 fun Profile.createOrUpdateAuthorizedDApp(
     unverifiedAuthorizedDApp: AuthorizedDapp
@@ -488,7 +499,7 @@ fun Profile.createOrUpdateAuthorizedDApp(
     val updatedNetworks = networks.mapWhen(
         predicate = { it.id == unverifiedAuthorizedDApp.networkId },
         mutation = { network ->
-            val authorizedDapps = network.authorizedDapps.asIdentifiable()
+            val authorizedDapps = network.authorizedDApps().asIdentifiable()
             val existingDApp = authorizedDapps.getBy(unverifiedAuthorizedDApp.dappDefinitionAddress)
             if (existingDApp == null) {
                 network.copy(authorizedDapps = authorizedDapps.append(unverifiedAuthorizedDApp).asList())
@@ -513,7 +524,7 @@ fun Profile.deleteAuthorizedDApp(
     val updatedNetwork = networks.mapWhen(
         predicate = { it.id == dApp.networkId },
         mutation = { network ->
-            network.copy(authorizedDapps = network.authorizedDapps.asIdentifiable().removeBy(dApp.dappDefinitionAddress).asList())
+            network.copy(authorizedDapps = network.authorizedDApps().asIdentifiable().removeBy(dApp.dappDefinitionAddress).asList())
         }
     )
 
@@ -542,7 +553,7 @@ fun Profile.changeDAppLockersVisibility(dApp: AuthorizedDapp, isVisible: Boolean
     val updatedNetwork = networks.mapWhen(
         predicate = { it.id == dApp.networkId },
         mutation = { network ->
-            val authorizedDapps = network.authorizedDapps.asIdentifiable()
+            val authorizedDapps = network.authorizedDApps().asIdentifiable()
             val updatedDApps = authorizedDapps.asList().mapWhen(
                 predicate = { it.dappDefinitionAddress == dApp.dappDefinitionAddress },
                 mutation = {

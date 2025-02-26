@@ -483,8 +483,10 @@ private fun LiquidStakeUnit(
             validatorWithStakes.stakeValue()?.let { lsuPrice?.xrdPrice(it) }
         }
 
+        val amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() }
         WorthXRD(
-            amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() },
+            amount = amount,
+            isLoadingAmount = amount == null,
             fiatPrice = fiatPrice,
             isLoadingBalance = isLoadingBalance
         )
@@ -671,6 +673,7 @@ private fun ClaimWorth(
     val fiatPrice = remember(stakeClaimPrice, claimNft) {
         stakeClaimPrice?.xrdPrice(claimNft)
     }
+    val amount = remember(claimNft) { claimNft.claimAmountXrd }
     WorthXRD(
         modifier = modifier.throttleClickable {
             when (action) {
@@ -687,7 +690,8 @@ private fun ClaimWorth(
                 }
             }
         },
-        amount = remember(claimNft) { claimNft.claimAmountXrd },
+        amount = amount,
+        isLoadingAmount = amount == null,
         fiatPrice = fiatPrice,
         trailingContent = if (action is AssetsViewAction.Selection) {
             {
@@ -715,6 +719,7 @@ private fun ClaimWorth(
 @Composable
 fun WorthXRD(
     modifier: Modifier = Modifier,
+    isLoadingAmount: Boolean,
     amount: Decimal192?,
     fiatPrice: FiatPrice?,
     isLoadingBalance: Boolean,
@@ -722,7 +727,7 @@ fun WorthXRD(
     symbolStyle: TextStyle = RadixTheme.typography.body2HighImportance,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
-    Row(
+    Column(
         modifier = modifier
             .assetOutlineBorder()
             .padding(
@@ -733,62 +738,75 @@ fun WorthXRD(
                 }
             )
             .padding(start = RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            painter = painterResource(id = DSR.ic_xrd_token),
-            contentDescription = null,
-            modifier = Modifier
-                .size(iconSize)
-                .clip(RadixTheme.shapes.circle),
-            tint = Color.Unspecified
-        )
-
-        Text(
-            modifier = Modifier.padding(
-                horizontal = RadixTheme.dimensions.paddingSmall
-            ),
-            text = XrdResource.SYMBOL,
-            style = symbolStyle,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1
-        )
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(
-                    end = if (trailingContent == null || amount == null) RadixTheme.dimensions.paddingDefault else 0.dp
-                )
-                .assetPlaceholder(visible = amount == null),
-            horizontalAlignment = Alignment.End
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = amount?.formatted().orEmpty(),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 2
+            Icon(
+                painter = painterResource(id = DSR.ic_xrd_token),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(iconSize)
+                    .clip(RadixTheme.shapes.circle),
+                tint = Color.Unspecified
             )
 
-            if (isLoadingBalance) {
-                ShimmeringView(
-                    modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXXXSmall)
-                        .height(12.dp)
-                        .fillMaxWidth(0.3f),
-                    isVisible = true
+            Text(
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingSmall
+                ),
+                text = XrdResource.SYMBOL,
+                style = symbolStyle,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(
+                        end = if (trailingContent == null || amount == null) RadixTheme.dimensions.paddingDefault else 0.dp
+                    )
+                    .assetPlaceholder(visible = isLoadingAmount),
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = amount?.formatted().orEmpty(),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End,
+                    maxLines = 2
                 )
-            } else if (fiatPrice != null) {
-                FiatBalanceView(
-                    fiatPrice = fiatPrice,
-                    textStyle = RadixTheme.typography.body2HighImportance
-                )
+
+                if (isLoadingBalance) {
+                    ShimmeringView(
+                        modifier = Modifier
+                            .padding(top = RadixTheme.dimensions.paddingXXXSmall)
+                            .height(12.dp)
+                            .fillMaxWidth(0.3f),
+                        isVisible = true
+                    )
+                } else if (fiatPrice != null) {
+                    FiatBalanceView(
+                        fiatPrice = fiatPrice,
+                        textStyle = RadixTheme.typography.body2HighImportance
+                    )
+                }
             }
+
+            trailingContent?.invoke()
         }
 
-        trailingContent?.invoke()
+        if (amount == null && !isLoadingAmount) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+            Text(
+                text = stringResource(id = R.string.interactionReview_unknown_amount),
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+        }
     }
 }
 
@@ -825,6 +843,7 @@ fun WorthXRDPreview() {
     RadixWalletPreviewTheme {
         WorthXRD(
             amount = 4362.67.toDecimal192(),
+            isLoadingAmount = false,
             fiatPrice = null,
             isLoadingBalance = true,
         )

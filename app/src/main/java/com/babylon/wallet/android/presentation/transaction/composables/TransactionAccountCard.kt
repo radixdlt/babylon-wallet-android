@@ -110,6 +110,9 @@ fun TransactionAccountCard(
                                 item,
                                 hiddenResourceIds
                             ) { item.collectionAddress in hiddenResourceIds.nonFungibles() },
+                            isEstimated = remember(transferable.amount, item) {
+                                transferable.amount.isPredicted(item)
+                            },
                             hiddenResourceWarning = hiddenResourceWarning
                         )
 
@@ -177,6 +180,7 @@ fun TransactionAccountCard(
                                 .padding(vertical = RadixTheme.dimensions.paddingMedium)
                                 .throttleClickable { onTransferableNonFungibleByAmountClick(transferable, amount) },
                             transferableStakeClaim = transferable,
+                            isEstimated = false,
                             additionalAmount = amount
                         )
                     }
