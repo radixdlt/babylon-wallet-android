@@ -21,6 +21,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formattedTextField
@@ -33,6 +34,7 @@ import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -52,7 +54,6 @@ import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -583,7 +584,7 @@ sealed class TargetAccount {
         }
 
     val factorSourceId: FactorSourceId.Hash?
-        get() = (this as? Owned)?.account?.factorSourceId as? FactorSourceId.Hash
+        get() = (this as? Owned)?.account?.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral()
 
     fun amountSpent(fungibleAsset: SpendingAsset.Fungible): Decimal192 = spendingAssets
         .filterIsInstance<SpendingAsset.Fungible>()

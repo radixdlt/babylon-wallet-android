@@ -32,6 +32,8 @@ import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.CollapsibleCommonCard
+import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
@@ -93,7 +95,7 @@ private fun NFTItem(
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    AssetCard(
+    CommonCard(
         modifier = Modifier
             .padding(top = 1.dp)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -130,7 +132,7 @@ private fun NFTHeader(
     modifier: Modifier = Modifier
 ) {
     val isCollapsed = state.isCollapsed(collection.resource.address.string)
-    CollapsibleAssetCard(
+    CollapsibleCommonCard(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         isCollapsed = isCollapsed,
@@ -203,7 +205,7 @@ private fun NonFungibleResourceItem(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = RadixTheme.dimensions.paddingXSmall),
+                        .padding(bottom = RadixTheme.dimensions.paddingXXSmall),
                     text = name,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1

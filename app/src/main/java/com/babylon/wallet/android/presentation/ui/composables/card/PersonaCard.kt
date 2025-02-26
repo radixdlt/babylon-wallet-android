@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -25,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
@@ -47,6 +52,42 @@ fun SimplePersonaCard(
     Column(modifier) {
         Row(
             Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingDefault),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Thumbnail.Persona(
+                modifier = Modifier.size(54.dp),
+                persona = persona
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = persona.displayName.value,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1
+            )
+        }
+    }
+}
+
+@Composable
+fun SimplePersonaCardWithShadow(
+    modifier: Modifier = Modifier,
+    persona: Persona,
+) {
+    Column(modifier) {
+        Row(
+            Modifier
+                .defaultCardShadow(elevation = 6.dp)
+                .background(
+                    brush = SolidColor(RadixTheme.colors.gray5),
+                    shape = RadixTheme.shapes.roundedRectMedium
+                )
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .clip(RadixTheme.shapes.roundedRectMedium)
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
@@ -141,33 +182,15 @@ private fun SecurityPromptType.toText() = when (this) {
 fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (Persona) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     Column(modifier) {
-        Row(
-            Modifier
+        SimplePersonaSelectionCard(
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(paddingDefault),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Thumbnail.Persona(
-                modifier = Modifier.size(44.dp),
-                persona = persona.persona
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = persona.persona.displayName.value,
-                textAlign = TextAlign.Start,
-                maxLines = 2,
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
-            )
-            RadixRadioButton(
-                selected = persona.selected,
-                onClick = {
-                    onSelectPersona(persona.persona)
-                },
-                colors = RadixRadioButtonDefaults.darkColors(),
-            )
-        }
+            persona = persona.persona,
+            checked = persona.selected,
+            isSingleChoice = true,
+            onSelectPersona = onSelectPersona
+        )
         persona.lastUsedOn?.let {
             Column(modifier = Modifier.fillMaxWidth()) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -184,12 +207,69 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
     }
 }
 
+@Composable
+fun SimplePersonaSelectionCard(
+    modifier: Modifier,
+    persona: Persona,
+    checked: Boolean,
+    isSingleChoice: Boolean,
+    onSelectPersona: (Persona) -> Unit
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Thumbnail.Persona(
+            modifier = Modifier.size(44.dp),
+            persona = persona
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = persona.displayName.value,
+            textAlign = TextAlign.Start,
+            maxLines = 2,
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1
+        )
+        if (isSingleChoice) {
+            RadixRadioButton(
+                selected = checked,
+                onClick = { onSelectPersona(persona) },
+                colors = RadixRadioButtonDefaults.darkColors(),
+            )
+        } else {
+            Checkbox(
+                checked = checked,
+                colors = CheckboxDefaults.colors().copy(
+                    checkedCheckmarkColor = RadixTheme.colors.white,
+                    checkedBorderColor = RadixTheme.colors.gray1,
+                    checkedBoxColor = RadixTheme.colors.gray1,
+                    uncheckedCheckmarkColor = Color.Transparent,
+                    uncheckedBorderColor = RadixTheme.colors.gray2,
+                    uncheckedBoxColor = RadixTheme.colors.gray5
+                ),
+                onCheckedChange = null
+            )
+        }
+    }
+}
+
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SimplePersonaCardPreview() {
     RadixWalletTheme {
         SimplePersonaCard(persona = Persona.sampleMainnet())
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SimplePersonaCardWithShadowPreview() {
+    RadixWalletTheme {
+        SimplePersonaCardWithShadow(persona = Persona.sampleMainnet())
     }
 }
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -64,12 +66,14 @@ fun AddFieldSheet(
                 title = stringResource(id = R.string.editPersona_addAField_title),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1,
-                backIconType = BackIconType.Close
+                backIconType = BackIconType.Close,
+                windowInsets = WindowInsets.none
             )
             HorizontalDivider(color = RadixTheme.colors.gray4)
         }
     }, bottomBar = {
         RadixBottomBar(
+            insets = WindowInsets.none,
             onClick = onAddFields,
             text = stringResource(id = R.string.editPersona_addAField_add),
             enabled = anyFieldSelected
@@ -98,7 +102,6 @@ fun AddFieldSheet(
                     onSelectionChanged = onSelectionChanged,
                     field = field,
                     modifier = Modifier
-                        .animateItemPlacement()
                         .throttleClickable {
                             onSelectionChanged(field.id, !field.selected)
                         }
@@ -154,7 +157,7 @@ private fun AddFieldCheckbox(
     ) {
         AnimatedVisibility(visible = checked, enter = fadeIn(), exit = fadeOut()) {
             Icon(
-                modifier = Modifier.padding(dimensions.paddingXXSmall),
+                modifier = Modifier.padding(dimensions.paddingXXXSmall),
                 painter = painterResource(id = DSR.ic_check),
                 contentDescription = null,
                 tint = RadixTheme.colors.white

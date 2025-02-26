@@ -61,7 +61,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
-import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.ImportLegacyWalletUiState.Page
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
@@ -78,12 +78,12 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
-import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -267,6 +267,8 @@ private fun ImportLegacyWalletContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
+
+    val isSuggestionsVisible = seedPhraseInputState.rememberSuggestionsVisibilityState()
     Box(modifier = modifier) {
         Scaffold(
             topBar = {
@@ -284,7 +286,7 @@ private fun ImportLegacyWalletContent(
                 )
             },
             bottomBar = {
-                if (seedPhraseSuggestionsVisible(seedPhraseInputState.wordAutocompleteCandidates)) {
+                if (isSuggestionsVisible) {
                     SeedPhraseSuggestions(
                         wordAutocompleteCandidates = seedPhraseInputState.wordAutocompleteCandidates,
                         modifier = Modifier
@@ -336,7 +338,7 @@ private fun ImportLegacyWalletContent(
                                 .fillMaxSize()
                                 .keyboardVisiblePadding(
                                     padding = padding,
-                                    bottom = if (seedPhraseSuggestionsVisible(seedPhraseInputState.wordAutocompleteCandidates)) {
+                                    bottom = if (isSuggestionsVisible) {
                                         RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                                     } else {
                                         RadixTheme.dimensions.paddingDefault
@@ -405,7 +407,6 @@ private fun ImportLegacyWalletContent(
                 backIconType = BackIconType.Back,
                 onClose = onCloseSettings,
                 waitingForLedgerResponse = waitingForLedgerResponse,
-                onBackClick = onCloseSettings,
                 isAddingLedgerDeviceInProgress = false
 
             )
@@ -413,12 +414,6 @@ private fun ImportLegacyWalletContent(
     }
 }
 
-@Composable
-private fun seedPhraseSuggestionsVisible(wordAutocompleteCandidates: ImmutableList<String>): Boolean {
-    return wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
-}
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,
@@ -793,7 +788,7 @@ private fun VerifyWithYourSeedPhrasePage(
                 modifier = Modifier.fillMaxWidth(),
                 text = AnnotatedString(stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning))
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             SeedPhraseInputForm(
                 seedPhraseWords = seedPhraseWords,
                 onWordChanged = onWordChanged,

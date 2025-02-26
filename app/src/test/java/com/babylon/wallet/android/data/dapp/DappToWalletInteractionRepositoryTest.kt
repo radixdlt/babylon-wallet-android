@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
@@ -32,7 +33,13 @@ class DappToWalletInteractionRepositoryTest {
     private val sampleIncomingRequest = WalletAuthorizedRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = "",
+            isInternal = false
+        ),
         authRequestItem = WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = true,

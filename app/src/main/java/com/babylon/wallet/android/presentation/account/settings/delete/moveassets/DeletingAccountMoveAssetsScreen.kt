@@ -120,7 +120,7 @@ private fun DeletingAccountMoveAssetsContent(
         },
         bottomBar = {
             RadixBottomBar(
-                additionalContent = {
+                additionalTopContent = {
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -233,7 +233,7 @@ private fun DeletingAccountMoveAssetsContent(
                     modifier = Modifier
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingLarge,
-                            vertical = RadixTheme.dimensions.paddingXSmall
+                            vertical = RadixTheme.dimensions.paddingXXSmall
                         )
                         .background(
                             account.appearanceId.gradient(alpha = if (isEnabled) 1f else 0.3f),

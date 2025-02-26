@@ -147,7 +147,7 @@ fun ChooseLedgerDeviceSection(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun FullscreenCircularProgressContentPreview() {
+private fun ChooseLedgerDeviceSectionPreview() {
     RadixWalletPreviewTheme {
         ChooseLedgerDeviceSection(
             modifier = Modifier,

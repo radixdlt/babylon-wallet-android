@@ -23,12 +23,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
@@ -40,6 +41,7 @@ import com.radixdlt.sargon.Address
  * TODO
  * Not removing this for now as it might be used when we propery revisit collapsing toolbar scrolling with MotionLayout
  */
+@OptIn(ExperimentalMotionApi::class)
 @Composable
 fun AccountTopBar(
     modifier: Modifier = Modifier,

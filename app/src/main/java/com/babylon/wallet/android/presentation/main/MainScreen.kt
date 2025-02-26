@@ -39,7 +39,7 @@ fun MainScreen(
                 showNPSSurvey = showNPSSurvey,
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
-                onNavigateToLinkConnector = onNavigateToLinkConnector,
+                onNavigateToLinkConnector = onNavigateToLinkConnector
             )
         }
 

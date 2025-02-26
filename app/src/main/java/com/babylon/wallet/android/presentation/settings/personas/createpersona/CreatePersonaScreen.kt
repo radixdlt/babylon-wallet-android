@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -52,7 +50,6 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
-import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -92,15 +89,11 @@ fun CreatePersonaScreen(
         onBackClick = onBackClick,
     )
 
-    LaunchedEffect(state.shouldNavigateToCompletion) {
-        if (state.shouldNavigateToCompletion) {
-            viewModel.onNavigationEventHandled()
-            onContinueClick()
-        }
-    }
-    if (state.isNoMnemonicErrorVisible) {
-        NoMnemonicAlertDialog {
-            viewModel.dismissNoMnemonicError()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                CreatePersonaViewModel.Event.NavigateToCompletion -> onContinueClick()
+            }
         }
     }
 }
@@ -109,7 +102,7 @@ fun CreatePersonaScreen(
 @Composable
 fun CreatePersonaContent(
     modifier: Modifier,
-    state: CreatePersonaViewModel.CreatePersonaUiState,
+    state: CreatePersonaViewModel.State,
     onPersonaNameChange: (String) -> Unit,
     onPersonaCreateClick: () -> Unit,
     onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
@@ -152,6 +145,7 @@ fun CreatePersonaContent(
             RadixBottomBar(
                 onClick = onPersonaCreateClick,
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
+                isLoading = state.isPersonaCreating,
                 enabled = state.isContinueButtonEnabled,
                 insets = WindowInsets.navigationBars.union(WindowInsets.ime)
             )
@@ -186,7 +180,6 @@ fun CreatePersonaContent(
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
-            windowInsets = WindowInsets.systemBars.exclude(WindowInsets.navigationBars),
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
@@ -323,7 +316,10 @@ private fun CreatePersonaContentList(
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .animateItemPlacement(),
+                    .animateItem(
+                        fadeInSpec = null,
+                        fadeOutSpec = null
+                    ),
                 label = stringResource(id = field.entry.value.kind.toDisplayResource()),
                 field = field.entry.value,
                 onValueChanged = {
@@ -361,7 +357,7 @@ private fun CreatePersonaContentList(
 fun CreateAccountContentPreview() {
     RadixWalletTheme {
         CreatePersonaContent(
-            state = CreatePersonaViewModel.CreatePersonaUiState(
+            state = CreatePersonaViewModel.State(
                 currentFields = persistentListOf(),
                 fieldsToAdd = persistentListOf(),
                 personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),

@@ -5,13 +5,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -34,7 +35,10 @@ fun DefaultModalSheetLayout(
     sheetContent: @Composable () -> Unit,
     showDragHandle: Boolean = true,
     containerColor: Color = RadixTheme.colors.defaultBackground,
-    windowInsets: WindowInsets = WindowInsets.systemBars,
+    windowInsets: @Composable () -> WindowInsets = {
+        // Defaults to insets at the bottom of the screen
+        BottomSheetDefaults.windowInsets
+    },
     onDismissRequest: () -> Unit,
 ) {
     BoxWithConstraints(
@@ -42,6 +46,8 @@ fun DefaultModalSheetLayout(
     ) {
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
+            // The sheet should expand until the status bar and banner
+            modifier = Modifier.padding(WindowInsets.statusBarsAndBanner.asPaddingValues()),
             sheetState = sheetState,
             containerColor = containerColor,
             scrimColor = Color.Black.copy(alpha = 0.3f),
@@ -52,7 +58,7 @@ fun DefaultModalSheetLayout(
             },
             // The insets are the system bars (nav bars + status bars), no need to inset the dev banner since the
             // modal is rendered above it in the z-axis.
-            windowInsets = windowInsets,
+            contentWindowInsets = windowInsets,
             shape = RadixTheme.shapes.roundedRectTopDefault,
             content = {
                 Box(

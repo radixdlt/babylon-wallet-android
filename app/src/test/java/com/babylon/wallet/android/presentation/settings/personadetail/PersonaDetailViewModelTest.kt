@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -34,7 +33,6 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailViewModel>() {
@@ -43,10 +41,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
-    private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
-    private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
-    private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
 
     val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
@@ -56,10 +51,6 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
         return PersonaDetailViewModel(
             dAppConnectionRepository,
             getProfileUseCase,
-            eventBus,
-            addAuthSigningFactorInstanceUseCase,
-            rolaClient,
-            incomingRequestRepository,
             getDAppsUseCase,
             savedStateHandle,
             changeEntityVisibilityUseCase

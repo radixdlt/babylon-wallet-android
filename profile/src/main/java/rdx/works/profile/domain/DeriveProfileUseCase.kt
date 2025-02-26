@@ -1,11 +1,13 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.PrivateHierarchicalDeterministicFactorSource
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.babylon
+import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
@@ -25,7 +27,6 @@ class DeriveProfileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        deviceFactorSource: FactorSource.Device,
         mnemonicWithPassphrase: MnemonicWithPassphrase,
         accounts: Accounts
     ): Result<Unit> = when (profileRepository.profileState.first()) {
@@ -36,15 +37,19 @@ class DeriveProfileUseCase @Inject constructor(
             keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
             runCatching {
+                val hostInfo = sargonOs.resolveHostInfo()
+
                 sargonOs.newWalletWithDerivedBdfs(
-                    hdFactorSource = PrivateHierarchicalDeterministicFactorSource(
+                    hdFactorSource = PrivateHierarchicalDeterministicFactorSource.babylon(
+                        isMain = true,
                         mnemonicWithPassphrase = mnemonicWithPassphrase,
-                        factorSource = deviceFactorSource.value
+                        hostInfo = hostInfo
                     ),
                     accounts = accounts.asList()
                 )
             }.onSuccess {
-                preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
+                val factorSourceId = mnemonicWithPassphrase.factorSourceId(kind = FactorSourceKind.DEVICE).asGeneral()
+                preferencesManager.markFactorSourceBackedUp(factorSourceId)
             }
         }
     }

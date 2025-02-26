@@ -16,14 +16,15 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonEmptyMax64Bytes
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.samples.sample
@@ -47,7 +48,6 @@ import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.changeGatewayToNetworkId
-import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.profile.domain.GetProfileUseCase
 import kotlin.random.Random
 
@@ -107,7 +107,9 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
             profileRepository.saveProfile(it)
         }
 
-        val account = profile.activeAccountsOnCurrentNetwork.find { it.isLedgerAccount } ?: error("Expected ledger account but none found")
+        val account = profile.activeAccountsOnCurrentNetwork.find {
+            it.isUnsecuredLedgerControlled
+        } ?: error("Expected ledger account but none found")
         provideInput(Address.Account(account.address))
         val vm = vm.value
         advanceUntilIdle()
@@ -346,8 +348,9 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
             val profile = Profile.sampleWithLedgerAccount().also {
                 profileRepository.saveProfile(it)
             }
-            val account =
-                profile.activeAccountsOnCurrentNetwork.find { it.isLedgerAccount } ?: error("Expected Ledger account but none found")
+            val account = profile.activeAccountsOnCurrentNetwork.find {
+                it.isUnsecuredLedgerControlled
+            } ?: error("Expected Ledger account but none found")
             provideInput(Address.Account(account.address))
 
             coEvery { verifyAddressOnLedgerUseCase(address = account.address) } returns Result.success(Unit)
@@ -371,8 +374,9 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
             val profile = Profile.sampleWithLedgerAccount().also {
                 profileRepository.saveProfile(it)
             }
-            val account =
-                profile.activeAccountsOnCurrentNetwork.find { it.isLedgerAccount } ?: error("Expected Ledger account but none found")
+            val account = profile.activeAccountsOnCurrentNetwork.find {
+                it.isUnsecuredLedgerControlled
+            } ?: error("Expected Ledger account but none found")
             provideInput(Address.Account(account.address))
 
             coEvery { verifyAddressOnLedgerUseCase(address = account.address) } returns Result.failure(RuntimeException("An error"))
@@ -459,7 +463,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
     @Test
     fun `test full address section for ruid based global id`() {
         val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:" +
-            "{bce508b789ed38e4-9a8552cb3142fdc5-3491317d130e6483-46df034d5ffbd210}"
+                "{bce508b789ed38e4-9a8552cb3142fdc5-3491317d130e6483-46df034d5ffbd210}"
         val globalId = NonFungibleGlobalId.init(rawAddress)
 
         val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true, isOnlyLocalIdVisible = true)

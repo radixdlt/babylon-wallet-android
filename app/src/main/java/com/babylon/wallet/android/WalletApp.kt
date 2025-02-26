@@ -2,7 +2,6 @@ package com.babylon.wallet.android
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -25,10 +24,12 @@ import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorization
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
+import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -42,7 +43,6 @@ import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.transaction.transactionReview
-import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
@@ -139,6 +139,10 @@ fun WalletApp(
         HandleDeletedAccountsDetectedEvent(
             viewModel = mainViewModel
         )
+        HandleAddFactorSourceEvents(
+            navController = navController,
+            addFactorSourceEvents = mainViewModel.addFactorSourceEvents
+        )
         ObserveHighPriorityScreens(
             navController = navController,
             onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -163,20 +167,6 @@ fun WalletApp(
                     Text(text = stringResource(id = R.string.homePage_secureFolder_warning))
                 },
                 dismissText = null
-            )
-        }
-        val olympiaErrorState = state.olympiaErrorState
-        if (olympiaErrorState != null) {
-            BackHandler {}
-            BDFSErrorDialog(
-                finish = {
-                    if (!olympiaErrorState.isCountdownActive) {
-                        mainViewModel.clearOlympiaError()
-                    }
-                },
-                title = stringResource(id = R.string.homePage_profileOlympiaError_title),
-                message = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-                state = olympiaErrorState
             )
         }
         state.dappRequestFailure?.let {
@@ -232,11 +222,24 @@ private fun HandleAccessFactorSourcesEvents(
     LaunchedEffect(Unit) {
         accessFactorSourcesEvents.collect { event ->
             when (event) {
-                AppEvent.AccessFactorSources.DerivePublicKey -> navController.derivePublicKeyDialog()
-                is AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
+                AppEvent.AccessFactorSources.DerivePublicKeys -> navController.derivePublicKeysDialog()
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
-                is AppEvent.AccessFactorSources.SelectedLedgerDevice -> {}
+                AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
+                AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
+                is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
+        }
+    }
+}
+
+@Composable
+private fun HandleAddFactorSourceEvents(
+    navController: NavController,
+    addFactorSourceEvents: Flow<AppEvent.AddFactorSource>
+) {
+    LaunchedEffect(Unit) {
+        addFactorSourceEvents.collect { _ ->
+            navController.addFactorSource()
         }
     }
 }

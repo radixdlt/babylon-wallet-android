@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.domain.usecases.ResolveDerivationPathsForRecoveryScanUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -18,12 +18,19 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.DerivePublicKeysSource
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdPathComponent
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.KeySpace
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.OnLedgerSettings
+import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.Accounts
+import com.radixdlt.sargon.extensions.accountRecoveryScanned
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -31,133 +38,116 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapWhen
-import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.factorSourceById
-import rdx.works.profile.data.repository.HostInfoRepository
+import rdx.works.core.sargon.initBabylon
+import rdx.works.core.sargon.toFactorSourceId
+import rdx.works.core.then
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.DeriveProfileUseCase
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
 class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val deriveProfileUseCase: DeriveProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
-    private val hostInfoRepository: HostInfoRepository
-) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+    private val resolveDerivationPathsForRecoveryScanUseCase: ResolveDerivationPathsForRecoveryScanUseCase,
+    private val sargonOsManager: SargonOsManager,
+) : StateViewModel<AccountRecoveryScanViewModel.State>(),
+    OneOffEventHandler<AccountRecoveryScanViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
 
-    // used only when account recovery scan is from onboarding
-    private var givenTempMnemonic: MnemonicWithPassphrase? = null
     private var nextDerivationPathIndex: HdPathComponent = HdPathComponent.init(
         localKeySpace = 0u,
         keySpace = KeySpace.Unsecurified(isHardened = true)
     )
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(
+        isOlympiaSeedPhrase = args.isOlympia == true
+    )
 
     init {
         viewModelScope.launch {
-            val factorSource = args.factorSourceId?.let { factorSourceId ->
-                getProfileUseCase().factorSourceById(factorSourceId)
-            }
-            _state.update { state ->
-                state.copy(
-                    recoveryFactorSource = factorSource,
-                    isOlympiaSeedPhrase = args.isOlympia == true
-                )
+            val recoverySource = if (args.factorSourceId != null) {
+                DerivePublicKeysSource.FactorSource(args.factorSourceId.value)
+            } else {
+                val mnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase() ?: error("No mnemonic provided")
+                DerivePublicKeysSource.Mnemonic(mnemonic)
             }
 
-            // if true it is account scan from recovery in onboarding with a given main babylon seed phrase
-            if (factorSource == null) {
-                givenTempMnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase()
-                givenTempMnemonic?.let { mnemonic ->
-                    val hostInfo = hostInfoRepository.getHostInfo()
-                    val mainBabylonDeviceFactorSource = FactorSource.Device.babylon(
-                        mnemonicWithPassphrase = mnemonic,
-                        hostInfo = hostInfo,
-                        createdAt = TimestampGenerator(),
-                        isMain = true
-                    )
-                    _state.update { state ->
-                        state.copy(recoveryFactorSource = mainBabylonDeviceFactorSource)
-                    }
-                    startRecoveryScan(
-                        isMainBabylonFactorSource = true,
-                        factorSource = mainBabylonDeviceFactorSource,
-                        isOlympia = false
-                    )
-                }
-            } else { // else it is account scan from account settings
-                val recoveryFactorSource = state.value.recoveryFactorSource
-                if (recoveryFactorSource != null) { // this is always true
-                    startRecoveryScan(
-                        isMainBabylonFactorSource = false,
-                        factorSource = recoveryFactorSource,
-                        isOlympia = args.isOlympia == true
-                    )
-                }
-            }
+            scan(recoverySource)
         }
     }
 
     fun onScanMoreClick() {
-        val recoveryFactorSource = state.value.recoveryFactorSource
-        if (recoveryFactorSource != null) { // this is always true
-            startRecoveryScan(
-                isMainBabylonFactorSource = args.factorSourceId == null && givenTempMnemonic != null,
-                factorSource = recoveryFactorSource,
-                isOlympia = args.isOlympia == true
-            )
+        val recoverySource = _state.value.recoverySource ?: return
+
+        viewModelScope.launch {
+            scan(recoverySource)
         }
     }
 
     @Suppress("UnsafeCallOnNullableType")
-    private fun startRecoveryScan(
-        isMainBabylonFactorSource: Boolean,
-        factorSource: FactorSource,
-        isOlympia: Boolean
-    ) {
+    private fun scan(recoverySource: DerivePublicKeysSource) {
         viewModelScope.launch {
-            val output = if (isMainBabylonFactorSource) { // account scan from onboarding with a given main babylon seed phrase
-                accessFactorSourcesProxy.reDeriveAccounts(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToReDeriveAccounts.WithGivenMnemonic(
-                        mnemonicWithPassphrase = givenTempMnemonic!!,
-                        factorSource = factorSource,
-                        nextDerivationPathIndex = nextDerivationPathIndex
-                    )
+            _state.update { it.copy(recoverySource = recoverySource, isScanningNetwork = true) }
+
+            val pathsToResolve = resolveDerivationPathsForRecoveryScanUseCase(
+                source = recoverySource,
+                isOlympia = _state.value.isOlympiaSeedPhrase,
+                currentPathIndex = nextDerivationPathIndex,
+                maxIndicesToResolve = ACCOUNTS_PER_SCAN
+            )
+
+            runCatching {
+                sargonOsManager.sargonOs.derivePublicKeys(
+                    derivationPaths = pathsToResolve.derivationPaths,
+                    source = recoverySource
                 )
-            } else {
-                accessFactorSourcesProxy.reDeriveAccounts(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToReDeriveAccounts.WithGivenFactorSource(
-                        factorSource = factorSource,
-                        isForLegacyOlympia = isOlympia,
-                        nextDerivationPathIndex = nextDerivationPathIndex
-                    )
+            }.then { hdPublicKeys ->
+                deriveAccounts(
+                    networkId = pathsToResolve.networkId,
+                    source = recoverySource,
+                    derivedKeys = hdPublicKeys
                 )
-            }
-            output.onSuccess { derivedAccountsWithNextDerivationPath ->
-                if (isActive) {
-                    nextDerivationPathIndex = derivedAccountsWithNextDerivationPath.nextDerivationPathIndex
-                    resolveStateFromDerivedAccounts(derivedAccountsWithNextDerivationPath.derivedAccounts)
-                }
-            }.onFailure { e ->
-                if (e is ProfileException.NoMnemonic) {
-                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+            }.onSuccess { accountsWithOnLedgerStatus ->
+                val allRecoveredAccounts = state.value.recoveredAccounts + accountsWithOnLedgerStatus
+                val activeAccounts = allRecoveredAccounts
+                    .filter { it.status == AccountWithOnLedgerStatus.Status.Active }
+                    .map { it.account }.toPersistentList()
+
+                val maxActiveIndex = allRecoveredAccounts.indexOfLast { it.status == AccountWithOnLedgerStatus.Status.Active }
+                val inactiveAccounts = if (maxActiveIndex == -1) {
+                    persistentListOf()
                 } else {
-                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(e)) }
+                    allRecoveredAccounts.subList(0, maxActiveIndex)
+                        .filter { it.status == AccountWithOnLedgerStatus.Status.Inactive }
+                        .map { it.account }
+                        .toPersistentList()
+                }
+
+                nextDerivationPathIndex = pathsToResolve.nextIndex
+
+                _state.update { state ->
+                    state.copy(
+                        contentState = State.ContentState.ScanComplete,
+                        recoveredAccounts = allRecoveredAccounts.toPersistentList(),
+                        activeAccounts = activeAccounts,
+                        inactiveAccounts = inactiveAccounts.map { Selectable(it) }.toPersistentList(),
+                        isScanningNetwork = false
+                    )
+                }
+            }.onFailure { error ->
+                if (error is CommonException.HostInteractionAborted) {
+                    _state.update { state -> state.copy(isScanningNetwork = false) }
+                } else {
+                    _state.update { state -> state.copy(isScanningNetwork = false, uiMessage = UiMessage.ErrorMessage(error)) }
                     delay(Constants.SNACKBAR_SHOW_DURATION_MS)
                     sendEvent(Event.CloseScan)
                 }
@@ -165,79 +155,58 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    private suspend fun resolveStateFromDerivedAccounts(derivedAccounts: List<Account>) {
-        _state.update { it.copy(isScanningNetwork = true) }
+    private suspend fun deriveAccounts(
+        networkId: NetworkId,
+        source: DerivePublicKeysSource,
+        derivedKeys: List<HierarchicalDeterministicPublicKey>
+    ): Result<List<AccountWithOnLedgerStatus>> = runCatching {
+        val factorSourceId = source.toFactorSourceId()
 
-        val accountsWithLedgerState = resolveAccountsLedgerStateRepository(derivedAccounts)
-
-        accountsWithLedgerState.onSuccess { accounts ->
-            val allRecoveredAccounts = state.value.recoveredAccounts + accounts
-            val activeAccounts = allRecoveredAccounts
-                .filter { it.status == AccountWithOnLedgerStatus.Status.Active }
-                .map { it.account }.toPersistentList()
-
-            val maxActiveIndex = allRecoveredAccounts.indexOfLast { it.status == AccountWithOnLedgerStatus.Status.Active }
-            val inactiveAccounts = if (maxActiveIndex == -1) {
-                persistentListOf()
-            } else {
-                allRecoveredAccounts.subList(0, maxActiveIndex)
-                    .filter { it.status == AccountWithOnLedgerStatus.Status.Inactive }
-                    .map { it.account }
-                    .toPersistentList()
-            }
-
-            _state.update { state ->
-                state.copy(
-                    contentState = State.ContentState.ScanComplete,
-                    recoveredAccounts = allRecoveredAccounts.toPersistentList(),
-                    activeAccounts = activeAccounts,
-                    inactiveAccounts = inactiveAccounts.map { Selectable(it) }.toPersistentList(),
-                    isScanningNetwork = false
-                )
-            }
-        }.onFailure {
-            _state.update { state -> state.copy(isScanningNetwork = false) }
-            sendEvent(Event.CloseScan)
+        derivedKeys.map { hdPublicKey ->
+            Account.initBabylon(
+                networkId = networkId,
+                displayName = DisplayName.init(Constants.DEFAULT_ACCOUNT_NAME),
+                hdPublicKey = hdPublicKey,
+                factorSourceId = factorSourceId,
+                onLedgerSettings = OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.accountRecoveryScanned())
+            )
         }
-    }
-
-    fun dismissNoMnemonicError() {
-        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
-        viewModelScope.launch {
-            sendEvent(Event.CloseScan)
-        }
+    }.then { derivedAccounts ->
+        resolveAccountsLedgerStateRepository(derivedAccounts)
     }
 
     @Suppress("UnsafeCallOnNullableType")
     fun onContinueClick() {
+        val source = _state.value.recoverySource ?: return
         viewModelScope.launch {
-            if (givenTempMnemonic != null) { // account scan from onboarding with a given main babylon seed phrase
-                _state.update { it.copy(isScanningNetwork = true) }
-                val bdfs = state.value.recoveryFactorSource
-                val accounts = state.value.activeAccounts +
-                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                deriveProfileUseCase(
-                    deviceFactorSource = bdfs as FactorSource.Device,
-                    mnemonicWithPassphrase = givenTempMnemonic!!,
-                    accounts = Accounts(accounts)
-                ).onSuccess {
-                    sendEvent(Event.RecoverComplete)
-                }.onFailure { error ->
-                    if (error is CommonException.SecureStorageWriteException) {
-                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                    } else {
-                        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+            _state.update { it.copy(isScanningNetwork = true) }
+            val accountsToRecover = state.value.activeAccounts +
+                state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+            when (source) {
+                is DerivePublicKeysSource.Mnemonic -> {
+                    deriveProfileUseCase(
+                        mnemonicWithPassphrase = source.v1,
+                        accounts = Accounts(accountsToRecover)
+                    ).onSuccess {
+                        _state.update { state -> state.copy(isScanningNetwork = false) }
+                        sendEvent(Event.RecoverComplete)
+                    }.onFailure { error ->
+                        if (error is CommonException.SecureStorageWriteException) {
+                            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                        } else {
+                            _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                        }
+                        _state.update { it.copy(isScanningNetwork = false) }
                     }
+                }
+                is DerivePublicKeysSource.FactorSource -> {
+                    if (accountsToRecover.isNotEmpty()) {
+                        addRecoveredAccountsToProfileUseCase(accounts = accountsToRecover)
+                    }
+
                     _state.update { it.copy(isScanningNetwork = false) }
+                    sendEvent(Event.RecoverComplete)
                 }
-            } else {
-                _state.update { it.copy(isScanningNetwork = true) }
-                val accounts = state.value.activeAccounts +
-                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                if (accounts.isNotEmpty()) {
-                    addRecoveredAccountsToProfileUseCase(accounts = accounts)
-                }
-                sendEvent(Event.RecoverComplete)
             }
         }
     }
@@ -271,26 +240,28 @@ class AccountRecoveryScanViewModel @Inject constructor(
     }
 
     data class State(
-        val recoveryFactorSource: FactorSource? = null,
+        val recoverySource: DerivePublicKeysSource? = null,
         val isOlympiaSeedPhrase: Boolean = false,
         val contentState: ContentState = ContentState.ScanInProgress,
         val recoveredAccounts: ImmutableList<AccountWithOnLedgerStatus> = persistentListOf(),
         val activeAccounts: PersistentList<Account> = persistentListOf(),
         val inactiveAccounts: PersistentList<Selectable<Account>> = persistentListOf(),
         val isScanningNetwork: Boolean = false,
-        val isNoMnemonicErrorVisible: Boolean = false,
         val uiMessage: UiMessage? = null
     ) : UiState {
+
+        val isLedgerFactorSource: Boolean
+            get() = recoverySource?.toFactorSourceId()?.value?.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
 
         enum class ContentState {
             ScanInProgress,
             ScanComplete
         }
     }
-}
 
-sealed interface Event : OneOffEvent {
-    data object CloseScan : Event
-    data object RecoverComplete : Event
-    data object OnBackClick : Event
+    sealed interface Event : OneOffEvent {
+        data object CloseScan : Event
+        data object RecoverComplete : Event
+        data object OnBackClick : Event
+    }
 }

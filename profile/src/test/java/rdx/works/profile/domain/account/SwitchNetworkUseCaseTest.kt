@@ -49,10 +49,10 @@ internal class SwitchNetworkUseCaseTest {
     @Test
     fun `switching network changes profile current network`() = testScope.runTest {
         val networkId = NetworkId.HAMMUNET
-        val urlToSwitch = "https://hammunet-network.radixdlt.com/"
-        profileRepository.updateProfile { it.addGateway(Gateway.init(urlToSwitch, networkId)) }
+        profileRepository.updateProfile { it.addGateway(Gateway.init("https://hammunet-network.radixdlt.com/", networkId)) }
 
-        useCase(urlToSwitch.toUrl())
-        assertEquals(urlToSwitch, profileRepository.profile.first().currentGateway.string)
+        useCase(networkId)
+
+        assertEquals(networkId, profileRepository.profile.first().currentGateway.network.id)
     }
 }

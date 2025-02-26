@@ -42,6 +42,8 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.CollapsibleCommonCard
+import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
@@ -114,7 +116,7 @@ private fun StakingSummary(
     action: AssetsViewAction,
 ) {
     val stakeSummary = assetsViewData.stakeSummary
-    AssetCard(
+    CommonCard(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(top = RadixTheme.dimensions.paddingSemiLarge),
@@ -274,7 +276,7 @@ private fun StakeAmount(
             if (isLoadingBalance) {
                 ShimmeringView(
                     modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                         .height(10.dp)
                         .fillMaxWidth(0.3f),
                     isVisible = true
@@ -308,7 +310,7 @@ fun ValidatorsSize(
             modifier = Modifier
                 .size(24.dp)
                 .dashedCircleBorder(RadixTheme.colors.gray3)
-                .padding(RadixTheme.dimensions.paddingXSmall),
+                .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(id = DSR.ic_validator),
             tint = RadixTheme.colors.gray2,
             contentDescription = null
@@ -347,7 +349,7 @@ fun ValidatorDetails(
             cards
         }
         val isCollapsed = state.isCollapsed(validatorWithStakes.validator.address.string)
-        CollapsibleAssetCard(
+        CollapsibleCommonCard(
             modifier = modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             isCollapsed = isCollapsed,
@@ -366,10 +368,10 @@ fun ValidatorDetails(
 
         if (!isCollapsed) {
             if (validatorWithStakes.hasLSU) {
-                AssetCard(
+                CommonCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall),
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall),
                     roundTopCorners = false,
                     roundBottomCorners = !validatorWithStakes.hasClaims
                 ) {
@@ -383,10 +385,10 @@ fun ValidatorDetails(
             }
 
             if (validatorWithStakes.hasClaims) {
-                AssetCard(
+                CommonCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall),
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall),
                     roundTopCorners = false,
                     roundBottomCorners = true
                 ) {
@@ -600,7 +602,7 @@ private fun StakeClaims(
             val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
             claimItems.forEachIndexed { index, item ->
                 ClaimWorth(
-                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingXSmall else 0.dp),
+                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingXXSmall else 0.dp),
                     claimCollection = claim.nonFungibleResource,
                     claimNft = item,
                     stakeClaimPrice = stakeClaimPrice,
@@ -780,7 +782,7 @@ fun WorthXRD(
                 if (isLoadingBalance) {
                     ShimmeringView(
                         modifier = Modifier
-                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                            .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                             .height(12.dp)
                             .fillMaxWidth(0.3f),
                         isVisible = true

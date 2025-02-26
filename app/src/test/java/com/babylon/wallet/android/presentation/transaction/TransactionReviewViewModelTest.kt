@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.summary.exec
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.SecurifyEntityProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
@@ -67,6 +68,7 @@ import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -177,6 +179,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         accountDeletionProcessor = AccountDeletionProcessor(
             getProfileUseCase = getProfileUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+        ),
+        securifyEntityProcessor = SecurifyEntityProcessor(
+            getProfileUseCase = getProfileUseCase,
+            sargonOsManager = sargonOsManager
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
@@ -197,9 +203,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         interactionId = sampleRequestId,
         unvalidatedManifestData = sampleUnvalidatedManifestData,
         requestMetadata = DappToWalletInteraction.RequestMetadata(
+            version = newWalletInteractionVersionCurrent(),
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
-            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
+            dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
             isInternal = false
         ),
         kind = TransactionRequest.Kind.Regular(
@@ -320,7 +327,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     fun `transaction approval success`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
-        vm.onApproveTransaction()
+        vm.onSignAndSubmitTransaction()
         advanceUntilIdle()
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithSuccessTransactionIntent(
@@ -335,7 +342,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
         val vm = vm.value
         advanceUntilIdle()
-        vm.onApproveTransaction()
+        vm.onSignAndSubmitTransaction()
         advanceUntilIdle()
         val errorSlot = slot<DappWalletInteractionErrorType>()
         coVerify(exactly = 1) {
@@ -358,7 +365,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         val vm = vm.value
         advanceUntilIdle()
-        vm.onApproveTransaction()
+        vm.onSignAndSubmitTransaction()
         advanceUntilIdle()
         val state = vm.state.first()
         val errorSlot = slot<DappWalletInteractionErrorType>()
