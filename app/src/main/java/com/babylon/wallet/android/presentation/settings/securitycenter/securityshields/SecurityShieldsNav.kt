@@ -19,6 +19,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactors
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldcreated.shieldCreated
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shielddetails.securityShieldDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shieldname.setupShieldName
 
 const val ROUTE_SECURITY_SHIELDS = "security_shields"
@@ -32,6 +33,8 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         route = ROUTE_SECURITY_SHIELDS_GRAPH
     ) {
         securityShieldsScreen(navController)
+
+        securityShieldDetails(navController)
 
         securityShieldOnboarding(navController)
 
@@ -71,7 +74,9 @@ fun NavGraphBuilder.securityShieldsScreen(
     ) {
         SecurityShieldsScreen(
             viewModel = hiltViewModel(),
-            onNavigateToSecurityShieldDetails = { /* TODO security shield details screen */ },
+            onNavigateToSecurityShieldDetails = { securityShieldId, securityShieldName ->
+                navController.securityShieldDetails(securityShieldId, securityShieldName)
+            },
             onCreateNewSecurityShieldClick = { navController.securityShieldOnboarding() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() },

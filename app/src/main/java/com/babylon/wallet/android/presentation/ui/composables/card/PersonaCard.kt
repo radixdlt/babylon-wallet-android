@@ -17,7 +17,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +52,42 @@ fun SimplePersonaCard(
     Column(modifier) {
         Row(
             Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingDefault),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Thumbnail.Persona(
+                modifier = Modifier.size(54.dp),
+                persona = persona
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = persona.displayName.value,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1
+            )
+        }
+    }
+}
+
+@Composable
+fun SimplePersonaCardWithShadow(
+    modifier: Modifier = Modifier,
+    persona: Persona,
+) {
+    Column(modifier) {
+        Row(
+            Modifier
+                .defaultCardShadow(elevation = 6.dp)
+                .background(
+                    brush = SolidColor(RadixTheme.colors.gray5),
+                    shape = RadixTheme.shapes.roundedRectMedium
+                )
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .clip(RadixTheme.shapes.roundedRectMedium)
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
@@ -223,6 +261,15 @@ fun SimplePersonaSelectionCard(
 fun SimplePersonaCardPreview() {
     RadixWalletTheme {
         SimplePersonaCard(persona = Persona.sampleMainnet())
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SimplePersonaCardWithShadowPreview() {
+    RadixWalletTheme {
+        SimplePersonaCardWithShadow(persona = Persona.sampleMainnet())
     }
 }
 

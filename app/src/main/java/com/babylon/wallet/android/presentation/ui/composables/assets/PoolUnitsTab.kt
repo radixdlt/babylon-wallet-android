@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.UnknownAm
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
@@ -84,7 +85,7 @@ private fun PoolUnitItem(
     isLoadingBalance: Boolean,
     action: AssetsViewAction,
 ) {
-    AssetCard(
+    CommonCard(
         modifier = modifier
             .throttleClickable {
                 when (action) {

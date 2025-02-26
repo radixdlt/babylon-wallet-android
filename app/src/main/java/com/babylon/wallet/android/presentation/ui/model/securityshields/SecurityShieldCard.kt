@@ -10,6 +10,8 @@ data class SecurityShieldCard(
 ) {
     val id: SecurityStructureId = shieldForDisplay.metadata.id
 
+    val name: String = shieldForDisplay.metadata.displayName.value
+
     val numberOfLinkedAccounts: Int = shieldForDisplay.numberOfLinkedAccounts.toInt()
 
     val numberOfLinkedPersonas: Int = shieldForDisplay.numberOfLinkedPersonas.toInt()
