@@ -4,11 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -22,9 +19,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.title
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.TimePeriod
-import java.util.Locale
 
 @Composable
 fun ConfirmationDelay(
@@ -77,25 +72,4 @@ fun ConfirmationDelay(
             )
         }
     }
-}
-
-@Composable
-fun Threshold.display(): String = when (this) {
-    is Threshold.All -> stringResource(R.string.common_all).uppercase(Locale.getDefault())
-    is Threshold.Specific -> "${v1.toInt()}"
-}
-
-@Suppress("ModifierMissing")
-@Composable
-fun ColumnScope.OrView() {
-    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
-    Text(
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-        text = stringResource(R.string.transactionReview_updateShield_combinationLabel),
-        style = RadixTheme.typography.body2Regular,
-        color = RadixTheme.colors.gray2
-    )
-
-    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 }
