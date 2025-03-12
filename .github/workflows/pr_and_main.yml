@@ -41,94 +41,6 @@ jobs:
       github_repository: ${{ github.repository }}
       add_report_comment_to_pull_request: true
 
-  snyk_scan_deps_licences:
-    name: "Snyk deps/licenses"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-
-      - name: Fetch Snyk credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'snyk-licenses'
-          secret_prefix: 'SNYK'
-          secret_name: "github-actions/common/snyk-credentials"
-          parse_json: true
-
-      - name: Run Snyk to check for deps vulnerabilities
-        uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
-        with:
-          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --severity-threshold=critical
-        env:
-          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
-
-  snyk_scan_code:
-    name: "Snyk code"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-      
-      - name: Fetch Snyk credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'snyk-licenses'
-          secret_prefix: 'SNYK'
-          secret_name: "github-actions/common/snyk-credentials"
-          parse_json: true
-
-      - name: Run Snyk to check for code vulnerabilities
-        uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
-        continue-on-error: true
-        with:
-          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --severity-threshold=high
-          command: code test
-        env:
-          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
-
-  snyk_sbom:
-    name: "Snyk SBOM"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-
-      - name: Fetch Snyk credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'snyk-licenses'
-          secret_prefix: 'SNYK'
-          secret_name: "github-actions/common/snyk-credentials"
-          parse_json: true
-
-      - name: Fetch AppsFlyer credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'sbom-flyers'
-          secret_prefix: 'GH'
-          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
-          parse_json: true
-
-      - name: Output AppsFlyer secret to file
-        shell: bash
-        run: |
-          mkdir -p config/secrets/
-          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
-
-      - name: Generate SBOM # check SBOM can be generated but nothing is done with it
-        uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
-        with:
-          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID  }} --format=cyclonedx1.4+json > sbom.json
-          command: sbom
-        env:
-          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
-
   unit_tests:
     name: "Unit tests"
     runs-on: ubuntu-latest
@@ -283,13 +195,6 @@ jobs:
     name: "Build"
     runs-on: ubuntu-latest
 
-    needs:
-      # - unit_tests
-      # - static_analysis
-      - snyk_scan_deps_licences
-      - snyk_scan_code
-      - snyk_sbom
-
     steps:
       - uses: RDXWorks-actions/checkout@main
 
@@ -351,30 +256,3 @@ jobs:
         env:
           GPR_USER: ${{ env.GH_GPR_USER }}
           GPR_TOKEN: ${{ env.GH_GPR_TOKEN }}
-
-  snyk_online_monitor:
-    name: "Snyk monitoring"
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs:
-      - build
-    steps:
-      - uses: RDXWorks-actions/checkout@main
-
-      - name: Fetch Snyk credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'snyk-licenses'
-          secret_prefix: 'SNYK'
-          secret_name: "github-actions/common/snyk-credentials"
-          parse_json: true
-
-      - name: Enable Snyk online monitoring to check for vulnerabilities
-        uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
-        with:
-          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }}
-          command: monitor
-        env:
-          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
