@@ -181,7 +181,7 @@ jobs:
       - name: "Run detekt"
         run: |
           env
-          ./gradlew detektMain
+          ./gradlew detektDebug
 
       - name: "Run jacoco"
         run: |
