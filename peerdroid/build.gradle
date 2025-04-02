@@ -23,7 +23,6 @@ android {
     buildTypes {
         debugAlpha {}
         release {
-            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField "boolean", "DEBUG_MODE", "false"
