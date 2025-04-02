@@ -53,10 +53,7 @@ workManagerRuntimeKtx = "2.9.0"
 androidXHiltWorker = "1.2.0"
 androidApplicationPlugin = "8.9.0"
 androidLibraryPlugin = "8.9.0"
-kotlinAndroidPlugin = "2.0.21"
-kotlinSerializationPlugin = "2.0.21"
-kotlinJvmPlugin = "2.0.21"
-composeCompilerPlugin = "2.0.21"
+kotlin = "2.0.21"
 kspPlugin = "2.0.21-1.0.28"
 benManesVersionsPlugin = "0.51.0"
 versionCatalogUpdatePlugin = "0.8.4"
@@ -155,10 +152,10 @@ markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
 android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidPlugin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinJvmPlugin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompilerPlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersionsPlugin" }
 version-catalog-update = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdatePlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
