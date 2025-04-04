@@ -59,7 +59,7 @@ class DeviceMnemonicBuilderClient @Inject constructor(
     }
 
     suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicBuildOutcome = withContext(dispatcher) {
-        deviceMnemonicBuilder.build(words.associate { it.index.toUByte() to it.value })
+        deviceMnemonicBuilder.build(words.associate { it.index.toUShort() to it.value })
     }
 
     suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
