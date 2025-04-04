@@ -8,6 +8,7 @@ import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.TrackedValidatorStake
+import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -64,11 +65,15 @@ class ValidatorStakeProcessor @Inject constructor(
 
             lsu.copy(
                 xrdWorth = lsu.amount.calculateWith { decimal ->
-                    lsu.asset.stakeValueXRD(
-                        lsu = decimal,
-                        totalStaked = totalStaked,
-                        totalStakedInXrd = totalStakedXrd
-                    ).orZero()
+                    if (totalStaked.isZero) {
+                        totalStakedXrd
+                    } else {
+                        lsu.asset.stakeValueXRD(
+                            lsu = decimal,
+                            totalStaked = totalStaked,
+                            totalStakedInXrd = totalStakedXrd
+                        ).orZero()
+                    }
                 }
             )
         }
