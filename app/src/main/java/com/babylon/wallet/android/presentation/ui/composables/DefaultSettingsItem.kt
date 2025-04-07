@@ -25,6 +25,7 @@ import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -35,6 +36,8 @@ fun DefaultSettingsItem(
     modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit,
+    isErrorText: Boolean = false,
+    isEnabled: Boolean = true,
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
     infoView: @Composable (ColumnScope.() -> Unit)? = null,
     leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
@@ -51,7 +54,7 @@ fun DefaultSettingsItem(
         modifier = modifier
             .fillMaxWidth()
             .background(RadixTheme.colors.defaultBackground)
-            .throttleClickable(onClick = onClick)
+            .throttleClickable(onClick = onClick, enabled = isEnabled)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
     ) {
         val (leadingIconRef, contentRef, trailingIconRef, warningRef) = createRefs()
@@ -60,6 +63,7 @@ fun DefaultSettingsItem(
             Box(
                 modifier = Modifier
                     .size(32.dp)
+                    .enabledOpacity(isEnabled)
                     .constrainAs(leadingIconRef) {
                         start.linkTo(parent.start)
                         end.linkTo(contentRef.start, paddingMedium)
@@ -72,33 +76,41 @@ fun DefaultSettingsItem(
             }
         }
         Column(
-            modifier = Modifier.constrainAs(contentRef) {
-                start.linkTo(if (leadingIcon == null) parent.start else leadingIconRef.end)
-                end.linkTo(if (trailingIcon == null) parent.end else trailingIconRef.start)
-                top.linkTo(parent.top)
-                if (warningView == null) {
-                    bottom.linkTo(parent.bottom)
-                }
-                width = Dimension.fillToConstraints
-            },
+            modifier = Modifier
+                .enabledOpacity(isEnabled)
+                .constrainAs(contentRef) {
+                    start.linkTo(if (leadingIcon == null) parent.start else leadingIconRef.end)
+                    end.linkTo(if (trailingIcon == null) parent.end else trailingIconRef.start)
+                    top.linkTo(parent.top)
+                    if (warningView == null) {
+                        bottom.linkTo(parent.bottom)
+                    }
+                    width = Dimension.fillToConstraints
+                },
             verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = title,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = if (isErrorText) {
+                    RadixTheme.colors.red1
+                } else {
+                    RadixTheme.colors.gray1
+                }
             )
             subtitleView?.let { subtitle ->
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                 subtitle()
             }
             infoView?.let { info ->
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
                 info()
             }
         }
         trailingIcon?.let { trailing ->
             Box(
                 modifier = Modifier
+                    .enabledOpacity(isEnabled, 0.1f)
                     .constrainAs(trailingIconRef) {
                         start.linkTo(contentRef.end, paddingMedium)
                         end.linkTo(parent.end)
@@ -132,6 +144,8 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
+    isErrorText: Boolean = false,
+    isEnabled: Boolean = true,
     warningView: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = {
@@ -146,12 +160,18 @@ fun DefaultSettingsItem(
         modifier = modifier,
         title = title,
         onClick = onClick,
+        isErrorText = isErrorText,
+        isEnabled = isEnabled,
         subtitleView = subtitle?.let {
             {
                 Text(
                     text = it,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = if (isErrorText) {
+                        RadixTheme.colors.red1
+                    } else {
+                        RadixTheme.colors.gray1
+                    }
                 )
             }
         },
@@ -177,6 +197,7 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
+    isErrorText: Boolean = false,
     warnings: ImmutableList<String>? = null,
     @DrawableRes leadingIconRes: Int? = null,
     trailingIcon: @Composable (() -> Unit)? = {
@@ -193,13 +214,14 @@ fun DefaultSettingsItem(
         onClick = onClick,
         subtitle = subtitle,
         info = info,
+        isErrorText = isErrorText,
         warningView = if (warnings.isNullOrEmpty()) {
             null
         } else {
             {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
                 ) {
                     Spacer(modifier = Modifier)
                     warnings.forEach { warning ->
@@ -216,7 +238,11 @@ fun DefaultSettingsItem(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = it),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = if (isErrorText) {
+                        RadixTheme.colors.red1
+                    } else {
+                        RadixTheme.colors.gray1
+                    }
                 )
             }
         },

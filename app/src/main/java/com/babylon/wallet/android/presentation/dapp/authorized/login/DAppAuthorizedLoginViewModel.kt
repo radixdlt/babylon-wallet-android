@@ -26,6 +26,7 @@ import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import com.radixdlt.sargon.AuthorizedDappPreferences
@@ -794,7 +795,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onRequestedEntitiesVerified(entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>) {
+    fun onRequestedEntitiesVerified(entitiesWithSignatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey>) {
         _state.update { state ->
             state.copy(verifiedEntities = entitiesWithSignatures)
         }
@@ -931,6 +932,6 @@ data class DAppLoginUiState(
     val selectedOnetimePersonaData: PersonaData? = null,
     val personaRequiredProofOfOwnership: IdentityAddress? = null,
     val accountsRequiredProofOfOwnership: List<AccountAddress>? = null,
-    val verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
+    val verifiedEntities: Map<AddressOfAccountOrPersona, SignatureWithPublicKey> = emptyMap(),
     val isNoMnemonicErrorVisible: Boolean = false
 ) : UiState

@@ -23,12 +23,15 @@ fun WarningText(
     text: AnnotatedString,
     textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
     contentColor: Color = RadixTheme.colors.orange1,
-    iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+    iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterHorizontally)
+        horizontalArrangement = Arrangement.spacedBy(
+            space = RadixTheme.dimensions.paddingSmall,
+            alignment = Alignment.CenterHorizontally
+        )
     ) {
         Icon(
             painter = painterResource(

@@ -42,6 +42,14 @@ class SeedPhraseInputDelegate(
         }
     }
 
+    fun setWords(words: List<SeedPhraseWord>) {
+        _state.update { state ->
+            state.copy(
+                seedPhraseWords = words.toPersistentList()
+            )
+        }
+    }
+
     fun onWordSelected(index: Int, value: String) {
         _state.update { state ->
             val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -73,10 +81,10 @@ class SeedPhraseInputDelegate(
                     _state.update { state ->
                         state.copy(
                             seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
-                                val wordState = if (word.state == SeedPhraseWord.State.ValidDisabled) {
-                                    SeedPhraseWord.State.ValidDisabled
-                                } else {
-                                    SeedPhraseWord.State.Valid
+                                val wordState = when (word.state) {
+                                    SeedPhraseWord.State.ValidMasked,
+                                    SeedPhraseWord.State.ValidDisabled -> word.state
+                                    else -> SeedPhraseWord.State.Valid
                                 }
                                 word.copy(value = pastedMnemonic[index], state = wordState)
                             }.toPersistentList()
@@ -95,7 +103,7 @@ class SeedPhraseInputDelegate(
                 wordCandidates.contains(value) -> SeedPhraseWord.State.Valid
                 value.isEmpty() -> SeedPhraseWord.State.Empty
                 wordCandidates.isEmpty() -> SeedPhraseWord.State.Invalid
-                else -> SeedPhraseWord.State.HasValue
+                else -> SeedPhraseWord.State.NotEmpty
             }
             _state.update { state ->
                 val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -135,6 +143,12 @@ class SeedPhraseInputDelegate(
         private val isSeedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
 
+        fun isInputComplete(): Boolean {
+            if (isInputEmpty) return false
+
+            return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid || it.state == SeedPhraseWord.State.ValidDisabled }
+        }
+
         fun shouldDisplayInvalidSeedPhraseWarning(): Boolean {
             if (isInputEmpty) {
                 return false
@@ -146,15 +160,12 @@ class SeedPhraseInputDelegate(
             if (isInputEmpty) {
                 return false
             }
-            return isSeedPhraseInputValid && runCatching {
-                Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
-            }.getOrNull() != null
+            return isSeedPhraseInputValid && seedPhraseWords.toMnemonic().getOrNull() != null
         }
 
-        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = Mnemonic.init(seedPhraseWords.joinToString(separator = " ") { it.value }),
-            passphrase = bip39Passphrase
-        )
+        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = seedPhraseWords
+            .toMnemonicWithPassphrase(passphrase = bip39Passphrase)
+            .getOrThrow()
     }
 
     override fun initialState(): State {
@@ -165,3 +176,18 @@ class SeedPhraseInputDelegate(
         private const val DEBOUNCE_DELAY_MS = 75L
     }
 }
+
+fun List<SeedPhraseWord>.toMnemonic(): Result<Mnemonic> = runCatching {
+    Mnemonic.init(phrase = joinToString(separator = " ") { it.value })
+}
+
+fun List<SeedPhraseWord>.toMnemonicWithPassphrase(passphrase: String = ""): Result<MnemonicWithPassphrase> = toMnemonic()
+    .mapCatching { mnemonic ->
+        MnemonicWithPassphrase(
+            mnemonic = mnemonic,
+            passphrase = passphrase
+        )
+    }
+
+fun List<SeedPhraseWord>.toMnemonicWithPassphraseOrNull(passphrase: String = ""): MnemonicWithPassphrase? =
+    toMnemonicWithPassphrase(passphrase = passphrase).getOrNull()

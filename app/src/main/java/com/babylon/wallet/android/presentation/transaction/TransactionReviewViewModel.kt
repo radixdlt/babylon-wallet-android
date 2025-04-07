@@ -40,6 +40,7 @@ import com.radixdlt.sargon.DappToWalletInteractionSubintentExpirationStatus
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
+import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
@@ -285,6 +286,14 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(showRawTransactionWarning = false) }
     }
 
+    fun onFailedSigningRestart() {
+        submit.onRestartSignAndSubmitTransaction()
+    }
+
+    fun onFailedSigningCancel() {
+        submit.onSigningCanceled()
+    }
+
     data class Data(
         private val txRequest: TransactionRequest? = null,
         private val txSummary: Summary? = null,
@@ -321,8 +330,16 @@ class TransactionReviewViewModel @Inject constructor(
 
         val isPreviewDisplayable: Boolean = previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
 
-        val rawManifestIsPreviewable: Boolean
-            get() = previewType is PreviewType.Transaction
+        val isRawManifestToggleInHeader: Boolean
+            get() = !isPreAuthorization && isRawManifestToggleVisible
+
+        val isRawManifestToggleInPreview: Boolean
+            get() = isPreAuthorization && isRawManifestToggleVisible
+
+        private val isRawManifestToggleVisible: Boolean
+            get() = previewType !is PreviewType.None &&
+                previewType !is PreviewType.UnacceptableManifest &&
+                previewType !is PreviewType.NonConforming
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
@@ -397,7 +414,13 @@ class TransactionReviewViewModel @Inject constructor(
             data class Some(val dApp: DApp) : ProposingDApp
         }
 
-        interface Sheet {
+        sealed interface Sheet {
+
+            val sheetHeightPercent: Float
+                get() = when (this) {
+                    is SigningFailed -> HEIGHT_80_PERCENT
+                    else -> HEIGHT_90_PERCENT
+                }
 
             data object None : Sheet
 
@@ -434,6 +457,27 @@ class TransactionReviewViewModel @Inject constructor(
             data class UnknownAddresses(
                 val unknownAddresses: ImmutableList<Address>
             ) : Sheet
+
+            data class SigningFailed(
+                val type: Type
+            ) : Sheet {
+
+                enum class Type {
+                    Transaction,
+                    PreAuthorization
+                }
+
+                companion object {
+
+                    fun from(isPreAuthorization: Boolean) = SigningFailed(
+                        type = if (isPreAuthorization) {
+                            Type.PreAuthorization
+                        } else {
+                            Type.Transaction
+                        }
+                    )
+                }
+            }
         }
 
         data class SelectFeePayerInput(
@@ -441,6 +485,11 @@ class TransactionReviewViewModel @Inject constructor(
             val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
             val fee: String
         )
+
+        companion object {
+            private const val HEIGHT_80_PERCENT = 0.8f
+            private const val HEIGHT_90_PERCENT = 0.9f
+        }
     }
 
     sealed interface Event : OneOffEvent {
@@ -559,6 +608,13 @@ sealed interface PreviewType {
     data class DeleteAccount(
         val deletingAccount: Account,
         val to: AccountWithTransferables?
+    ) : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
+
+    data class SecurifyEntity(
+        val entity: ProfileEntity,
+        val provisionalConfig: SecurityStructureOfFactorSources
     ) : PreviewType {
         override val badges: List<Badge> = emptyList()
     }

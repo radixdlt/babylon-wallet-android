@@ -58,13 +58,14 @@ import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AppearanceId
@@ -346,6 +347,7 @@ private fun PersonaDetailsSheet(
     Box(modifier = modifier) {
         Column(Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
+                windowInsets = WindowInsets.none,
                 title = persona.persona.displayName.value,
                 onBackClick = onCloseClick,
                 contentColor = RadixTheme.colors.gray1,

@@ -5,6 +5,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.asRadixWalletException
+import com.babylon.wallet.android.domain.toMessage
 import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import com.radixdlt.sargon.CommonException
 import kotlinx.serialization.SerialName
@@ -42,6 +43,17 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @SerialName("nps_survey_submitted")
         data object NpsSurveySubmitted : InfoMessage()
 
+        @Serializable
+        @SerialName("spot_check_outcome")
+        data class SpotCheckOutcome(
+            @SerialName("is_success")
+            val isSuccess: Boolean
+        ) : InfoMessage()
+
+        @Serializable
+        @SerialName("rename_successful")
+        data object RenameSuccessful : InfoMessage()
+
         @Composable
         override fun getMessage(): String = when (this) {
             InvalidPayload -> stringResource(id = R.string.importOlympiaAccounts_invalidPayload)
@@ -51,6 +63,14 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             is LedgerAlreadyExist -> stringResource(id = R.string.addLedgerDevice_alreadyAddedAlert_message, label)
             WalletExported -> stringResource(id = R.string.profileBackup_manualBackups_successMessage)
             NpsSurveySubmitted -> "Thank you!"
+            is SpotCheckOutcome -> stringResource(
+                id = if (isSuccess) {
+                    R.string.factorSources_detail_spotCheckSuccess
+                } else {
+                    R.string.factorSources_detail_spotCheckFailure
+                }
+            )
+            RenameSuccessful -> stringResource(R.string.renameLabel_success)
         }
     }
 
@@ -62,7 +82,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         override fun getMessage(): String {
             val message = when (error) {
                 is ProfileException -> return error.toUserFriendlyMessage()
-                is CommonException.SecureStorageAccessException -> error.errorMessage
+                is CommonException -> return error.toMessage()
                 else -> error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
             }
             return if (message.isNullOrEmpty()) {

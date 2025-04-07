@@ -8,9 +8,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.authorization.requestAuthorizationDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheckDialog
 import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -75,8 +76,6 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
-import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
@@ -209,11 +208,6 @@ fun NavigationHost(
                 navController.recoveryScanComplete()
             }
         )
-        confirmSeedPhrase(onMnemonicBackedUp = {
-            navController.popBackStack(ROUTE_REVEAL_SEED_PHRASE, inclusive = true)
-        }, onDismiss = {
-            navController.popBackStack()
-        })
         main(
             mainUiState = state,
             onMenuClick = {
@@ -284,17 +278,22 @@ fun NavigationHost(
                 navController.infoDialog(glossaryItem)
             }
         )
-        derivePublicKeyDialog(
+        requestAuthorizationDialog(
             onDismiss = {
                 navController.popBackStack()
             }
         )
-        deriveAccounts(
+        derivePublicKeysDialog(
             onDismiss = {
                 navController.popBackStack()
             }
         )
         getSignatures(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        spotCheckDialog(
             onDismiss = {
                 navController.popBackStack()
             }

@@ -22,12 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -44,8 +42,6 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -63,7 +59,6 @@ fun PersonaDetailScreen(
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
@@ -97,13 +92,6 @@ fun PersonaDetailScreen(
         onBackClick = onBackClick,
         onEditPersona = onEditPersona,
         onDAppClick = onDAppClick,
-        onCreateAndUploadAuthKey = {
-            context.biometricAuthenticate { result ->
-                if (result == BiometricAuthenticationResult.Succeeded) {
-                    viewModel.onCreateAndUploadAuthKey()
-                }
-            }
-        },
         onHidePersona = {
             showHidePersonaPrompt = true
         }
@@ -117,7 +105,6 @@ private fun PersonaDetailContent(
     onBackClick: () -> Unit,
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onCreateAndUploadAuthKey: () -> Unit,
     onHidePersona: () -> Unit
 ) {
     Scaffold(
@@ -158,9 +145,6 @@ private fun PersonaDetailContent(
                 persona = state.persona,
                 authorizedDapps = state.authorizedDapps,
                 onDAppClick = onDAppClick,
-                hasAuthKey = state.hasAuthKey,
-                onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                loading = state.loading,
                 onEditPersona = onEditPersona
             )
         } else {
@@ -175,9 +159,6 @@ private fun PersonaDetailList(
     persona: Persona,
     authorizedDapps: ImmutableList<DApp>,
     onDAppClick: (DApp) -> Unit,
-    hasAuthKey: Boolean,
-    onCreateAndUploadAuthKey: () -> Unit,
-    loading: Boolean,
     onEditPersona: (IdentityAddress) -> Unit
 ) {
     LazyColumn(
@@ -272,18 +253,6 @@ private fun PersonaDetailList(
                 }
             }
         }
-        if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-            item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                RadixSecondaryButton(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                    onClick = onCreateAndUploadAuthKey,
-                    enabled = !loading,
-                    throttleClicks = true
-                )
-            }
-        }
     }
 }
 
@@ -300,13 +269,10 @@ fun PersonaDetailContentPreview() {
                     DApp.sampleMainnet.other()
                 ),
                 persona = Persona.sampleMainnet(),
-                loading = false,
-                hasAuthKey = false
             ),
             onBackClick = {},
             onEditPersona = {},
             onDAppClick = {},
-            onCreateAndUploadAuthKey = {},
             onHidePersona = {}
         )
     }

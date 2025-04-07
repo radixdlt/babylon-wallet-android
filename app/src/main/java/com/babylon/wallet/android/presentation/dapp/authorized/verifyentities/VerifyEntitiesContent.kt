@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,8 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,12 +28,11 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCardWithAddress
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.card.SimplePersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCardWithAddress
+import com.babylon.wallet.android.presentation.ui.composables.card.SimplePersonaCardWithShadow
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Persona
@@ -124,16 +120,7 @@ fun VerifyEntitiesContent(
             items(profileEntities) { entity ->
                 when (entity) {
                     is ProfileEntity.PersonaEntity -> {
-                        SimplePersonaCard(
-                            modifier = Modifier.defaultCardShadow(elevation = 6.dp)
-                                .background(
-                                    brush = SolidColor(RadixTheme.colors.gray5),
-                                    shape = RadixTheme.shapes.roundedRectMedium
-                                )
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                                .clip(RadixTheme.shapes.roundedRectMedium),
-                            persona = entity.persona
-                        )
+                        SimplePersonaCardWithShadow(persona = entity.persona)
                     }
                     is ProfileEntity.AccountEntity -> {
                         SimpleAccountCardWithAddress(

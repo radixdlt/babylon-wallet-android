@@ -102,7 +102,7 @@ class GatewaysViewModelTest {
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
-            assert(item is GatewaysViewModel.Event.CreateProfileOnNetwork)
+            assert(item is GatewaysViewModel.Event.CreateAccountOnNetwork)
         }
     }
 

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.MarkEntityAsSecurifiedUseCase
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
@@ -28,6 +29,7 @@ import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("LongParameterList")
 @Singleton
 class TransactionStatusClient @Inject constructor(
     private val getTransactionStatusUseCase: GetTransactionStatusUseCase,
@@ -35,6 +37,7 @@ class TransactionStatusClient @Inject constructor(
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
+    private val markEntityAsSecurifiedUseCase: MarkEntityAsSecurifiedUseCase,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
@@ -67,10 +70,20 @@ class TransactionStatusClient @Inject constructor(
             val isSuccess = result.result is TransactionStatusData.Status.Success
 
             if (isSuccess) {
-                if (transactionType is TransactionType.DeleteAccount) {
-                    // When a delete account transaction is successful, the first thing to do is to tombstone the account.
-                    // Before any other update takes place in wallet.
-                    tombstoneAccountUseCase(transactionType.accountAddress)
+                when (transactionType) {
+                    is TransactionType.DeleteAccount -> {
+                        // When a delete account transaction is successful, the first thing to do is to tombstone the account.
+                        // Before any other update takes place in wallet.
+                        tombstoneAccountUseCase(transactionType.accountAddress)
+                    }
+                    is TransactionType.SecurifyEntity -> {
+                        // When a securify entity transaction is successful, the first thing to do is to mark it as such in profile.
+                        // Before any other update takes place in wallet.
+                        markEntityAsSecurifiedUseCase(transactionType.entityAddress)
+                    }
+                    else -> {
+                        // Do nothing
+                    }
                 }
             }
 

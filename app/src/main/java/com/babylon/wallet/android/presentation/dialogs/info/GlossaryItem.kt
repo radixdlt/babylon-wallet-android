@@ -32,5 +32,14 @@ enum class GlossaryItem {
     bridging,
     gateways,
     preauthorizations,
-    possibledappcalls
+    possibledappcalls,
+    securityshields,
+    buildingshield,
+    emergencyfallback,
+    biometricspin,
+    arculus,
+    ledgernano,
+    passwords,
+    mnemonics,
+    nohardwaredevice, // TODO pending the right glossary item
 }

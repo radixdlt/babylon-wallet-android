@@ -5,20 +5,20 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
@@ -33,7 +33,7 @@ class VerifyEntitiesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
+    private val signAuthUseCase: SignAuthUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<VerifyEntitiesViewModel.State>(),
     OneOffEventHandler<VerifyEntitiesViewModel.Event> by OneOffEventHandlerImpl() {
@@ -69,9 +69,10 @@ class VerifyEntitiesViewModel @Inject constructor(
     }
 
     private suspend fun getRequestedEntitiesToVerify() {
-        val entitiesForProofWithSignatures = args.entitiesForProofWithSignatures
         val profile = getProfileUseCase()
+        val entitiesForProofWithSignatures = args.entitiesForProofWithSignatures
         val activeAccountsOnCurrentNetwork = profile.activeAccountsOnCurrentNetwork
+
         _state.update { state ->
             state.copy(
                 requestedPersona = entitiesForProofWithSignatures.personaAddress?.let { identityAddress ->
@@ -79,7 +80,8 @@ class VerifyEntitiesViewModel @Inject constructor(
                 },
                 requestedAccounts = activeAccountsOnCurrentNetwork.filter { activeAccount ->
                     activeAccount.address in entitiesForProofWithSignatures.accountAddresses
-                }.map { it.asProfileEntity() }
+                }.map { it.asProfileEntity() },
+                collectedSignatures = entitiesForProofWithSignatures.signatures
             )
         }
     }
@@ -87,52 +89,95 @@ class VerifyEntitiesViewModel @Inject constructor(
     fun onContinueClick() {
         state.value.walletAuthorizedRequest?.let { request ->
             viewModelScope.launch {
-                setSigningInProgress(true)
-                val signRequest = request.proofOfOwnershipRequestItem?.challenge?.hex?.let { challengeHex ->
-                    SignRequest.RolaSignRequest(
-                        challengeHex = challengeHex,
-                        origin = request.metadata.origin,
-                        dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+                val item = request.proofOfOwnershipRequestItem ?: return@launch
+
+                val requestedPersona = state.value.requestedPersona
+                if (requestedPersona != null) {
+                    signPersona(
+                        interactionId = request.interactionId,
+                        challenge = item.challenge,
+                        metadata = request.requestMetadata,
+                        persona = requestedPersona
+                    )
+                } else {
+                    signAccounts(
+                        challenge = item.challenge,
+                        metadata = request.requestMetadata,
+                        accounts = state.value.requestedAccounts
                     )
                 }
-
-                signRequest?.let {
-                    accessFactorSourcesProxy.getSignatures(
-                        accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                            signPurpose = SignPurpose.SignAuth,
-                            signRequest = signRequest,
-                            signers = state.value.nextEntitiesForProof
-                        )
-                    ).onSuccess { result ->
-                        _state.update { state ->
-                            state.copy(signatures = result.signersWithSignatures)
-                        }
-
-                        val isPersona = result.signersWithSignatures.keys.first() is ProfileEntity.PersonaEntity
-                        if (isPersona && state.value.requestedAccounts.isNotEmpty()) {
-                            sendEvent(
-                                Event.NavigateToVerifyAccounts(
-                                    walletAuthorizedRequestInteractionId = request.interactionId,
-                                    entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
-                                        accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
-                                        signatures = result.signersWithSignatures.mapKeys { it.key.address }
-                                    )
-                                )
-                            )
-                        } else {
-                            sendEvent(Event.EntitiesVerified)
-                        }
-                        setSigningInProgress(false)
-                    }.onFailure { exception ->
-                        sendEvent(
-                            Event.AuthorizationFailed(
-                                throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception)
-                            )
-                        )
-                        setSigningInProgress(false)
-                    }
-                }
             }
+        }
+    }
+
+    private suspend fun signPersona(
+        interactionId: WalletInteractionId,
+        challenge: Exactly32Bytes,
+        metadata: DappToWalletInteraction.RequestMetadata,
+        persona: ProfileEntity.PersonaEntity
+    ) {
+        setSigningInProgress(true)
+        signAuthUseCase.persona(
+            challenge = challenge,
+            persona = persona.persona,
+            metadata = metadata
+        ).onSuccess { signature ->
+            _state.update { state ->
+                state.copy(collectedSignatures = mapOf(persona.address to signature))
+            }
+
+            if (state.value.requestedAccounts.isNotEmpty()) {
+                sendEvent(
+                    Event.NavigateToVerifyAccounts(
+                        walletAuthorizedRequestInteractionId = interactionId,
+                        entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                            accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
+                            signatures = mapOf(
+                                AddressOfAccountOrPersona.Identity(persona.identityAddress) to signature
+                            )
+                        )
+                    )
+                )
+            }
+            setSigningInProgress(false)
+        }.onFailure {
+            sendEvent(
+                Event.AuthorizationFailed(
+                    throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
+                )
+            )
+            setSigningInProgress(false)
+        }
+    }
+
+    private suspend fun signAccounts(
+        challenge: Exactly32Bytes,
+        metadata: DappToWalletInteraction.RequestMetadata,
+        accounts: List<ProfileEntity.AccountEntity>
+    ) {
+        if (accounts.isNotEmpty()) {
+            setSigningInProgress(true)
+            signAuthUseCase.accounts(
+                challenge = challenge,
+                accounts = accounts.map { it.account },
+                metadata = metadata
+            ).onSuccess { signatures ->
+                _state.update { state ->
+                    state.addSignatures(signatures.mapKeys { AddressOfAccountOrPersona.Account(it.key.address) })
+                }
+
+                sendEvent(state.value.entitiesVerifiedEvent())
+                setSigningInProgress(false)
+            }.onFailure {
+                sendEvent(
+                    Event.AuthorizationFailed(
+                        throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
+                    )
+                )
+                setSigningInProgress(false)
+            }
+        } else {
+            sendEvent(state.value.entitiesVerifiedEvent())
         }
     }
 
@@ -142,7 +187,7 @@ class VerifyEntitiesViewModel @Inject constructor(
         val walletAuthorizedRequest: WalletAuthorizedRequest? = null,
         val requestedPersona: ProfileEntity.PersonaEntity? = null,
         val requestedAccounts: List<ProfileEntity.AccountEntity> = emptyList(),
-        val signatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
+        private val collectedSignatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey> = emptyMap(),
         val canNavigateBack: Boolean = false,
         val isSigningInProgress: Boolean = false
     ) : UiState {
@@ -166,13 +211,21 @@ class VerifyEntitiesViewModel @Inject constructor(
             } else {
                 emptyList()
             }
+
+        fun addSignatures(signatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey>) = copy(
+            collectedSignatures = this.collectedSignatures.toMutableMap().apply {
+                putAll(signatures)
+            }
+        )
+
+        fun entitiesVerifiedEvent() = Event.EntitiesVerified(collectedSignatures)
     }
 
     sealed interface Event : OneOffEvent {
 
         data object TerminateVerification : Event
 
-        data object EntitiesVerified : Event
+        data class EntitiesVerified(val signatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey>) : Event
 
         data class NavigateToVerifyAccounts(
             val walletAuthorizedRequestInteractionId: String,

@@ -10,11 +10,11 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
-import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.accountPrompts
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -29,6 +29,8 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.HomeCard
+import com.radixdlt.sargon.extensions.isLegacy
+import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -61,8 +63,6 @@ import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
-import rdx.works.core.sargon.isLedgerAccount
-import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -385,6 +385,8 @@ class WalletViewModel @Inject constructor(
                 (accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance)
 
             val account = accountWithAssets.account
+            val isLegacyOlympiaAccount = account.isLegacy
+            val isUnsecuredLedgerControlledAccount = account.isUnsecuredLedgerControlled
 
             AccountUiItem(
                 account = account,
@@ -392,11 +394,11 @@ class WalletViewModel @Inject constructor(
                 securityPrompts = accountsWithSecurityPrompts[account.address]?.toPersistentList(),
                 deposits = accountsWithLockerDeposits[account.address].orEmpty().toPersistentList(),
                 tag = when {
-                    !accountWithAssets.isDappDefinitionAccountType && !account.isOlympia && !account.isLedgerAccount -> null
+                    !accountWithAssets.isDappDefinitionAccountType && !isLegacyOlympiaAccount && !isUnsecuredLedgerControlledAccount -> null
                     accountWithAssets.isDappDefinitionAccountType -> AccountTag.DAPP_DEFINITION
-                    account.isOlympia && account.isLedgerAccount -> AccountTag.LEDGER_LEGACY
-                    account.isOlympia && !account.isLedgerAccount -> AccountTag.LEGACY_SOFTWARE
-                    !account.isOlympia && account.isLedgerAccount -> AccountTag.LEDGER_BABYLON
+                    isLegacyOlympiaAccount && isUnsecuredLedgerControlledAccount -> AccountTag.LEDGER_LEGACY
+                    isLegacyOlympiaAccount && !isUnsecuredLedgerControlledAccount -> AccountTag.LEGACY_SOFTWARE
+                    !isLegacyOlympiaAccount && isUnsecuredLedgerControlledAccount -> AccountTag.LEDGER_BABYLON
                     else -> null
                 },
                 isFiatBalanceVisible = isFiatBalanceVisible,

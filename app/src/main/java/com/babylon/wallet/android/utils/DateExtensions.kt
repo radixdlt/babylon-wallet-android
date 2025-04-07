@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.utils
 
+import android.text.format.DateUtils
 import com.radixdlt.sargon.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
@@ -8,6 +9,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import kotlin.time.Duration.Companion.seconds
 
 const val LAST_USED_DATE_FORMAT_SHORT_MONTH = "d MMM yyyy"
 const val LAST_USED_DATE_FORMAT_THIS_YEAR_SHORT_MONTH = "d MMM"
@@ -56,6 +58,11 @@ fun Instant.toDateString(): String {
 fun Timestamp.toDateString(): String {
     val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT_SHORT_MONTH).withZone(ZoneId.systemDefault())
     return formatter.format(this)
+}
+
+fun Timestamp.relativeTimeFormatted(): String {
+    val millis = toEpochSecond().seconds.inWholeMilliseconds
+    return DateUtils.getRelativeTimeSpanString(millis).toString()
 }
 
 fun ZonedDateTime.toMonthString(): String {

@@ -336,7 +336,7 @@ private fun LSUResourceValue(
                 if (isLoadingBalance) {
                     ShimmeringView(
                         modifier = Modifier
-                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                            .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                             .height(12.dp)
                             .fillMaxWidth(0.3f),
                         isVisible = true
@@ -349,12 +349,12 @@ private fun LSUResourceValue(
                     )
                 }
             }
-        }
 
-        UnknownAmount(
-            modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-            amount = amount
-        )
+            UnknownAmount(
+                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                amount = amount
+            )
+        }
     }
 }
 

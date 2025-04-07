@@ -270,7 +270,7 @@ fun DescriptionSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                    .padding(top = RadixTheme.dimensions.paddingXSmall),
+                    .padding(top = RadixTheme.dimensions.paddingXXSmall),
                 url = infoUrl
             )
         }
@@ -393,7 +393,7 @@ fun TagsSection(
                     tags.forEach { tag ->
                         Tag(
                             modifier = Modifier
-                                .padding(RadixTheme.dimensions.paddingXSmall)
+                                .padding(RadixTheme.dimensions.paddingXXSmall)
                                 .border(
                                     width = 1.dp,
                                     color = RadixTheme.colors.gray4,

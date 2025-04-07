@@ -1,16 +1,18 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.EntityKind
+import com.radixdlt.sargon.AuthorizationPurpose
+import com.radixdlt.sargon.AuthorizationResponse
+import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.HdPathComponent
-import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.SpotCheckResponse
+import com.radixdlt.sargon.os.signing.PerFactorOutcome
+import com.radixdlt.sargon.os.signing.PerFactorSourceInput
+import com.radixdlt.sargon.os.signing.Signable
 
 /**
  * Interface for the callers (ViewModels or UseCases) that need access to factor sources.
@@ -22,25 +24,19 @@ import com.radixdlt.sargon.extensions.ProfileEntity
  */
 interface AccessFactorSourcesProxy {
 
-    suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.HDPublicKey>
+    suspend fun requestAuthorization(
+        input: AccessFactorSourcesInput.ToRequestAuthorization
+    ): AccessFactorSourcesOutput.RequestAuthorization
 
-    suspend fun reDeriveAccounts(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
-    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
+    suspend fun derivePublicKeys(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
+    ): AccessFactorSourcesOutput.DerivedPublicKeys
 
-    /**
-     * This method is used for signing, and based on [SignPurpose] it can be
-     * - either for signing a transaction
-     * - or proving ownership.
-     *
-     * The output is a map of entities and their signatures.
-     *
-     */
-    suspend fun getSignatures(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): Result<AccessFactorSourcesOutput.EntitiesWithSignatures>
+    suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
+    ): AccessFactorSourcesOutput.SignOutput<ID>
+
+    suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -86,39 +82,31 @@ interface AccessFactorSourcesIOHandler {
  */
 sealed interface AccessFactorSourcesInput {
 
-    data class ToDerivePublicKey(
-        val entityKind: EntityKind,
-        val forNetworkId: NetworkId,
-        val factorSource: FactorSource,
-        // Need this information only when a new profile is created, meaning that biometrics have been provided
-        // No need to ask the user for authentication again.
-        val isBiometricsProvided: Boolean
+    data class ToRequestAuthorization(
+        val purpose: AuthorizationPurpose
     ) : AccessFactorSourcesInput
 
-    sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
+    data class ToDerivePublicKeys(
+        val purpose: DerivationPurpose,
+        val request: KeyDerivationRequestPerFactorSource
+    ) : AccessFactorSourcesInput
 
-        val factorSource: FactorSource
-        val isForLegacyOlympia: Boolean
-        val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
+    data class ToSign<SP : Signable.Payload, ID : Signable.ID>(
+        val purpose: Purpose,
+        val kind: FactorSourceKind,
+        val input: PerFactorSourceInput<SP, ID>
+    ) : AccessFactorSourcesInput {
 
-        data class WithGivenMnemonic(
-            override val factorSource: FactorSource,
-            override val isForLegacyOlympia: Boolean = false,
-            override val nextDerivationPathIndex: HdPathComponent,
-            val mnemonicWithPassphrase: MnemonicWithPassphrase,
-        ) : ToReDeriveAccounts
-
-        data class WithGivenFactorSource(
-            override val factorSource: FactorSource,
-            override val isForLegacyOlympia: Boolean,
-            override val nextDerivationPathIndex: HdPathComponent,
-        ) : ToReDeriveAccounts
+        enum class Purpose {
+            TransactionIntents,
+            SubIntents,
+            AuthIntents
+        }
     }
 
-    data class ToGetSignatures(
-        val signPurpose: SignPurpose,
-        val signers: List<ProfileEntity>,
-        val signRequest: SignRequest
+    data class ToSpotCheck(
+        val factorSource: FactorSource,
+        val allowSkip: Boolean
     ) : AccessFactorSourcesInput
 
     data object Init : AccessFactorSourcesInput
@@ -134,22 +122,34 @@ sealed interface AccessFactorSourcesInput {
  */
 sealed interface AccessFactorSourcesOutput {
 
-    data class HDPublicKey(
-        val value: HierarchicalDeterministicPublicKey
+    data class RequestAuthorization(
+        val output: AuthorizationResponse
     ) : AccessFactorSourcesOutput
 
-    data class DerivedAccountsWithNextDerivationPath(
-        val derivedAccounts: List<Account>,
-        val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
-    ) : AccessFactorSourcesOutput
+    sealed interface DerivedPublicKeys : AccessFactorSourcesOutput {
+        data class Success(
+            val factorSourceId: FactorSourceIdFromHash,
+            val factorInstances: List<HierarchicalDeterministicFactorInstance>
+        ) : DerivedPublicKeys
 
-    data class EntitiesWithSignatures(
-        val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
-    ) : AccessFactorSourcesOutput
+        data object Rejected : DerivedPublicKeys
+    }
 
-    data class Failure(
-        val error: Throwable
-    ) : AccessFactorSourcesOutput
+    sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
+        data class Completed<ID : Signable.ID>(
+            val outcome: PerFactorOutcome<ID>
+        ) : SignOutput<ID>
+
+        data object Rejected : SignOutput<Signable.ID>
+    }
+
+    sealed interface SpotCheckOutput : AccessFactorSourcesOutput {
+        data class Completed(
+            val response: SpotCheckResponse
+        ) : SpotCheckOutput
+
+        data object Rejected : SpotCheckOutput
+    }
 
     data object Init : AccessFactorSourcesOutput
 }

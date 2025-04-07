@@ -67,7 +67,7 @@ fun RadixCenteredTopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
             ) {
                 titleIcon?.invoke()
 

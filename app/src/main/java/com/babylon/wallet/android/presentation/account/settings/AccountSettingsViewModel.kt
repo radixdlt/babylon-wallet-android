@@ -12,14 +12,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -37,7 +36,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("LongParameterList")
 class AccountSettingsViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
@@ -89,7 +88,7 @@ class AccountSettingsViewModel @Inject constructor(
                 val thirdPartyDefaultDepositRule = account.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->
                     state.copy(
-                        accountNameChanged = account.displayName.value,
+                        renameAccountInput = state.renameAccountInput.copy(name = account.displayName.value),
                         account = account,
                         settingsSections = state.settingsSections.mapWhen(
                             predicate = { it is AccountSettingsSection.AccountSection },
@@ -114,9 +113,7 @@ class AccountSettingsViewModel @Inject constructor(
     fun onRenameAccountNameChange(accountNameChanged: String) {
         _state.update { accountPreferenceUiState ->
             accountPreferenceUiState.copy(
-                accountNameChanged = accountNameChanged,
-                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= ENTITY_NAME_MAX_LENGTH,
-                isNewNameLengthMoreThanTheMaximum = accountNameChanged.count() > ENTITY_NAME_MAX_LENGTH
+                renameAccountInput = accountPreferenceUiState.renameAccountInput.copy(name = accountNameChanged)
             )
         }
     }
@@ -126,14 +123,19 @@ class AccountSettingsViewModel @Inject constructor(
             val accountToRename = getProfileUseCase().activeAccountsOnCurrentNetwork.find {
                 args.address == it.address
             }
+            _state.update { state ->
+                state.copy(
+                    renameAccountInput = state.renameAccountInput.copy(isUpdating = true)
+                )
+            }
             accountToRename?.let {
-                val newAccountName = _state.value.accountNameChanged.trim()
+                val newAccountName = _state.value.renameAccountInput.name.trim()
                 renameAccountDisplayNameUseCase(
                     accountToRename = it,
                     newDisplayName = DisplayName(newAccountName)
                 )
-                _state.update { state -> state.copy(isAccountNameUpdated = true) }
                 onDismissBottomSheet()
+                _state.update { state -> state.copy(isAccountNameUpdated = true) }
             } ?: Timber.d("Couldn't find account to rename the display name!")
         }
     }
@@ -145,8 +147,11 @@ class AccountSettingsViewModel @Inject constructor(
     }
 
     fun onRenameAccountRequest() {
-        _state.update {
-            it.copy(bottomSheetContent = State.BottomSheetContent.RenameAccount)
+        _state.update { state ->
+            state.copy(
+                renameAccountInput = State.RenameAccountInput(name = state.account?.displayName?.value.orEmpty()),
+                bottomSheetContent = State.BottomSheetContent.RenameAccount
+            )
         }
     }
 
@@ -203,15 +208,18 @@ class AccountSettingsViewModel @Inject constructor(
     data class State(
         val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
         val account: Account? = null,
-        val accountNameChanged: String = "",
-        val isNewNameValid: Boolean = false,
-        val isNewNameLengthMoreThanTheMaximum: Boolean = false,
+        val renameAccountInput: RenameAccountInput = RenameAccountInput(),
         val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
         val error: UiMessage? = null,
         val faucetState: FaucetState = FaucetState.Unavailable,
         val isAccountNameUpdated: Boolean = false,
         val isFreeXRDLoading: Boolean = false
     ) : UiState {
+
+        data class RenameAccountInput(
+            override val name: String = "",
+            override val isUpdating: Boolean = false
+        ) : RenameInput()
 
         val isBottomSheetVisible: Boolean
             get() = bottomSheetContent != BottomSheetContent.None

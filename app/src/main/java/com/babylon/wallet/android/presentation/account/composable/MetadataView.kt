@@ -242,7 +242,7 @@ fun MetadataValueView(
                 }
                 Icon(
                     modifier = Modifier
-                        .padding(start = RadixTheme.dimensions.paddingXSmall)
+                        .padding(start = RadixTheme.dimensions.paddingXXSmall)
                         .size(iconSize),
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
                     contentDescription = null,

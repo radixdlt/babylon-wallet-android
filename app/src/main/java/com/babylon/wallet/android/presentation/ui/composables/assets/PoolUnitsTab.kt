@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.UnknownAm
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
@@ -62,7 +63,7 @@ fun LazyListScope.poolUnitsTab(
 
     itemsIndexed(
         items = assetsViewData.poolUnits,
-        key = { index, poolUnitItem -> poolUnitItem.resourceAddress.string }
+        key = { _, poolUnitItem -> poolUnitItem.resourceAddress.string }
     ) { index, poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier
@@ -84,7 +85,7 @@ private fun PoolUnitItem(
     isLoadingBalance: Boolean,
     action: AssetsViewAction,
 ) {
-    AssetCard(
+    CommonCard(
         modifier = modifier
             .throttleClickable {
                 when (action) {
@@ -216,7 +217,7 @@ fun PoolResourcesValues(
                         if (isLoadingBalance) {
                             ShimmeringView(
                                 modifier = Modifier
-                                    .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                                    .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                                     .height(12.dp)
                                     .fillMaxWidth(0.3f),
                                 isVisible = true
@@ -225,16 +226,16 @@ fun PoolResourcesValues(
                             FiatBalanceView(fiatPrice = fiatPrice)
                         }
                     }
+
+                    UnknownAmount(
+                        modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                        amount = resourceWithAmount.value
+                    )
                 }
 
-                UnknownAmount(
-                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-                    amount = resourceWithAmount.value
-                )
-            }
-
-            if (index != itemsSize - 1) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                if (index != itemsSize - 1) {
+                    HorizontalDivider(color = RadixTheme.colors.gray4)
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ShowLinkConnectorPromptState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.FactorSource
@@ -67,6 +67,11 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
+    fun onDismiss() = viewModelScope.launch {
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.SelectLedgerOutcome.Rejected)
+        sendEvent(ChooseLedgerEvent.Dismiss)
+    }
+
     fun onLedgerDeviceSelected(selectedLedgerDevice: FactorSource.Ledger) {
         _state.update { uiState ->
             uiState.copy(
@@ -118,7 +123,7 @@ class ChooseLedgerViewModel @Inject constructor(
                 when (args.ledgerSelectionPurpose) {
                     LedgerSelectionPurpose.DerivePublicKey -> {
                         appEventBus.sendEvent(
-                            event = AppEvent.AccessFactorSources.SelectedLedgerDevice(
+                            event = AppEvent.AccessFactorSources.SelectLedgerOutcome.Selected(
                                 ledgerFactorSource = ledgerFactorSource.data
                             )
                         )
@@ -176,7 +181,7 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onCloseClick() {
+    fun onAddLedgerClosed() {
         _state.update {
             it.copy(showContent = ChooseLedgerUiState.ShowContent.ChooseLedger)
         }
@@ -207,5 +212,6 @@ data class ChooseLedgerUiState(
 
 internal sealed interface ChooseLedgerEvent : OneOffEvent {
     data object LedgerSelected : ChooseLedgerEvent
+    data object Dismiss : ChooseLedgerEvent
     data class RecoverAccounts(val factorSource: FactorSourceId.Hash, val isOlympia: Boolean) : ChooseLedgerEvent
 }

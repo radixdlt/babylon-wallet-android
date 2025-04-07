@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NetworkId
@@ -72,7 +73,7 @@ fun LazyListScope.tokensTab(
 
     item {
         if (assetsViewData.xrd != null) {
-            AssetCard(
+            CommonCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge)
@@ -91,7 +92,7 @@ fun LazyListScope.tokensTab(
         items = assetsViewData.nonXrdTokens,
         key = { _, token -> token.resource.address.string },
         itemContent = { index, token ->
-            AssetCard(
+            CommonCard(
                 modifier = Modifier
                     .padding(top = if (index == 0) RadixTheme.dimensions.paddingSemiLarge else 0.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -171,7 +172,7 @@ private fun TokenItem(
                 if (isLoadingBalance) {
                     ShimmeringView(
                         modifier = Modifier
-                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                            .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                             .height(12.dp)
                             .fillMaxWidth(0.3f),
                         isVisible = true

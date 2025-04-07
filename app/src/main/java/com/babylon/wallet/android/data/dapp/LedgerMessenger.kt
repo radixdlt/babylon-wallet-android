@@ -106,7 +106,7 @@ class LedgerMessengerImpl @Inject constructor(
             mode = LedgerInteractionRequest.SignTransaction.Mode.Summary
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code)
+            RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code, it.message)
         })
     }
 
@@ -125,7 +125,7 @@ class LedgerMessengerImpl @Inject constructor(
             subintentHash = subintentHash
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code)
+            RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code, it.message)
         })
     }
 

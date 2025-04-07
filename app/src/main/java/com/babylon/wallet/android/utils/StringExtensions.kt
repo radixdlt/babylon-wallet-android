@@ -49,13 +49,7 @@ fun String.removeTrailingSlash(): String {
 fun String.formattedSpans(
     boldStyle: SpanStyle
 ): AnnotatedString {
-    val singleAsteriskRegex = "(?<!\\*)\\*(?!\\*).*?(?<!\\*)\\*(?!\\*)".toRegex()
-    val doubleAsteriskRegex = "(?<!\\*\\*)\\*\\*(?!\\*\\*).*?(?<!\\*\\*)\\*\\*(?!\\*\\*)".toRegex()
-    val annotatedWords = doubleAsteriskRegex.findAll(input = this).map {
-        it.value
-    }.toList() + singleAsteriskRegex.findAll(input = this).map {
-        it.value
-    }.toList()
+    val annotatedWords = annotatedParts()
     return buildAnnotatedString {
         var startIndex = 0
         val inputText = this@formattedSpans
@@ -71,6 +65,16 @@ fun String.formattedSpans(
         }
         append(inputText.substring(startIndex, inputText.length))
     }
+}
+
+fun String.annotatedParts(): List<String> {
+    val singleAsteriskRegex = "(?<!\\*)\\*(?!\\*).*?(?<!\\*)\\*(?!\\*)".toRegex()
+    val doubleAsteriskRegex = "(?<!\\*\\*)\\*\\*(?!\\*\\*).*?(?<!\\*\\*)\\*\\*(?!\\*\\*)".toRegex()
+    return doubleAsteriskRegex.findAll(input = this).map {
+        it.value
+    }.toList() + singleAsteriskRegex.findAll(input = this).map {
+        it.value
+    }.toList()
 }
 
 // TODO this does not work for IPv6 thus we can't add a IPv6 address in gateway settings

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.MnemonicWordTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -77,7 +78,7 @@ private fun SeedPhraseWordInput(
         value = word.value,
         label = stringResource(id = R.string.importMnemonic_wordHeading, word.index + 1),
         trailingIcon = when (word.state) {
-            SeedPhraseWord.State.HasValue -> {
+            SeedPhraseWord.State.NotEmpty -> {
                 {
                     Icon(
                         modifier = Modifier
@@ -110,9 +111,12 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
+        masked = !enabled,
         highlightField = true,
         hasInitialFocus = initiallyFocused,
-        hintColor = if (enabled.not()) RadixTheme.colors.gray4 else null
+        colors = MnemonicTextFieldColors.default().copy(
+            disabledHintColor = RadixTheme.colors.gray4
+        )
     )
 }
 

@@ -1,34 +1,45 @@
 import io.gitlab.arturbosch.detekt.Detekt
 
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext {
-        minSdk = 27
-        compileSdk = 34
-        targetSdk = 34
-        internalVersionName = "babylon"
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
     dependencies {
-        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.5"
+        // Since version catalog is not available in buildscript, hardcode these dependencies
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8"
         classpath "org.jacoco:org.jacoco.core:0.8.11"
     }
-}// Top-level build file where you can add configuration options common to all sub-projects/modules.
+}
+
 plugins {
-    alias libs.plugins.android.application apply false
-    alias libs.plugins.android.library apply false
-    alias libs.plugins.kotlin.android apply false
-    alias libs.plugins.kotlin.serialization
-    alias libs.plugins.kotlin.jvm apply false
-    alias libs.plugins.ben.manes.versions
-    alias libs.plugins.version.catalog.update
-    alias libs.plugins.google.services apply false
-    alias libs.plugins.firebase.crashlytics apply false
-    alias libs.plugins.hilt apply false
-    alias libs.plugins.ksp apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.ben.manes.versions)
+    alias(libs.plugins.version.catalog.update)
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.ksp) apply false
+}
+
+ext {
+    minSdk = 27
+    compileSdk = 34
+    targetSdk = 34
+    internalVersionName = "babylon"
+    kotlinCompilerExtensionVersion = "1.5.15"  // Get version from catalog
 }
 
 allprojects {
     apply from: "$rootDir/config/detekt.gradle"
+
+    // Enable dependency locking for all configurations in all projects
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
     tasks.withType(Detekt).configureEach {
         exclude("**/test/**")
         exclude("**/generated/**")
@@ -45,5 +56,101 @@ def isNonStable = { String version ->
 tasks.named("dependencyUpdates").configure {
     rejectVersionIf {
         isNonStable(it.candidate.version)
+    }
+}
+
+/**
+ * Compares the current project dependencies with the ones stored in the dependencies.lock file
+ * Fails if the dependencies do no match and outputs the difference
+ */
+task compareDependencies {
+    dependsOn "generateCurrentDependencies"
+
+    def lockFile = new File(rootProject.rootDir, "dependencies.lock")
+
+    doFirst {
+        if (!lockFile.exists()) throw new IllegalStateException("${lockFile.path} file is missing. You may want to execute the 'generateDependenciesLockFile' task")
+    }
+
+    doLast {
+        println "Comparing current project dependencies with the one locked in the ${lockFile.path} file..."
+
+        def tmpLockFile = generateCurrentDependencies.outputs.getFiles().getSingleFile()
+        if (lockFile.text != tmpLockFile.text) {
+            println "diff ${lockFile.path} ${tmpLockFile.path}".execute().text
+            throw new IllegalStateException("""Project dependencies and lock dependencies are different. You may want to :
+                                                |- check why there is a difference
+                                                |- or execute the 'generateDependenciesLockFile' task to overwrite the current file""".stripMargin())
+        }
+
+        println "Dependencies match, all good !"
+    }
+}
+
+/**
+ * Generates a temporary file in the [buildDirectory] folder containing the tree structure of the app:dependencies command
+ * @returns tmpLockFile a RegularFileProperty
+ */
+abstract class GenerateCurrentDependencies extends DefaultTask {
+    @OutputFile
+    final abstract RegularFileProperty tmpLockFile = project.objects.fileProperty().convention(project.layout.buildDirectory.file('dependencies.lock.tmp'))
+
+    GenerateCurrentDependencies() {
+        outputs.upToDateWhen { false }
+    }
+
+    @TaskAction
+    void generateLockfile() {
+        println "Fetching project dependencies"
+
+        // Fetching the dependencies output for releaseRuntimeClasspath
+        def output = "./gradlew app:dependencies --configuration releaseRuntimeClasspath".execute().text
+        def startIndex = output.indexOf("releaseRuntimeClasspath")
+        def endIndex = output.indexOf("BUILD SUCCESSFUL")
+
+        def tmpFile = tmpLockFile.get().asFile
+        tmpFile.delete()
+
+        // Extracting and processing the dependency tree
+        def dependencies = output.substring(startIndex, endIndex).split("\n").findAll { it.contains("\\---") || it.contains("+---") }
+
+        dependencies.each { line ->
+            // Clean the line by removing any '|' characters, tabulation, version conflict markers '->', and symbols like (*) (c) FAILED
+            def cleanLine = line.replaceAll("[|\\t]", "").replaceAll("->.*", "").replaceAll("\\(\\*\\)", "").replaceAll("\\(c\\)", "").replaceAll("FAILED", "").trim()
+
+
+            // Process the remaining dependency info (group:artifact:version)
+            def parts = cleanLine.replaceFirst("(\\+---|\\|---|\\\\---)", "").split(":")
+            if (parts.size() == 3) {
+                def group = parts[0].trim()
+                def artifact = parts[1].trim()
+                def version = parts[2].trim()
+
+                // Write the formatted entry to the lockfile
+                tmpFile << "${group}:${artifact}:${version}=releaseRuntimeClasspath\n"
+            }
+        }
+    }
+}
+
+tasks.register('generateCurrentDependencies', GenerateCurrentDependencies)  
+
+/**
+ * Generates a dependencies.lock file containing the tree structure of the app:dependencies command
+ */
+task generateDependenciesLockFile {
+    dependsOn "generateCurrentDependencies"
+
+    def lockFile = new File(rootProject.rootDir, "dependencies.lock")
+
+    doLast {
+        println "Locking project dependencies..."
+
+        def tmpLockFile = generateCurrentDependencies.outputs.getFiles().getSingleFile()
+
+        lockFile.delete()
+        lockFile << tmpLockFile.text
+
+        println "Dependencies written down to ${lockFile.path}"
     }
 }

@@ -226,6 +226,15 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.gateways -> stringResource(R.string.infoLink_glossary_gateways)
     GlossaryItem.preauthorizations -> stringResource(id = R.string.infoLink_glossary_preauthorizations)
     GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
+    GlossaryItem.securityshields -> stringResource(id = R.string.infoLink_glossary_securityshields)
+    GlossaryItem.buildingshield -> stringResource(id = R.string.infoLink_glossary_buildingshield)
+    GlossaryItem.biometricspin -> stringResource(id = R.string.infoLink_glossary_biometricspin)
+    GlossaryItem.arculus -> stringResource(id = R.string.infoLink_glossary_arculus)
+    GlossaryItem.ledgernano -> stringResource(id = R.string.infoLink_glossary_ledgernano)
+    GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
+    GlossaryItem.mnemonics -> stringResource(id = R.string.infoLink_glossary_passphrases)
+    GlossaryItem.emergencyfallback -> stringResource(id = R.string.infoLink_glossary_emergencyfallback)
+    GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 
 @Composable

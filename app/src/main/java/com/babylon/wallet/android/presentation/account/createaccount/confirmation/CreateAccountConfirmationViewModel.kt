@@ -29,10 +29,13 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val account = getProfileUseCase().activeAccountOnCurrentNetwork(args.accountId)
-            requireNotNull(account) {
-                "account is null"
+            val account = getProfileUseCase().activeAccountOnCurrentNetwork(args.accountId) ?: run {
+                // There is a chance that an account, just created, was found to be deleted on ledger,
+                // invoking the automatic deletion from profile. If this screen is just opening, then we can shut it down.
+                accountConfirmed()
+                return@launch
             }
+
             _state.update {
                 AccountConfirmationUiState(
                     accountName = account.displayName.value,

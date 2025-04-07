@@ -89,7 +89,7 @@ fun DepositAccountContent(
                 if (hasCustomisableGuarantees) {
                     RadixTextButton(
                         modifier = Modifier
-                            .padding(top = RadixTheme.dimensions.paddingXSmall),
+                            .padding(top = RadixTheme.dimensions.paddingXXSmall),
                         text = stringResource(id = R.string.interactionReview_customizeGuaranteesButtonTitle),
                         onClick = onEditGuaranteesClick
                     )
