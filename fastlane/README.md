@@ -21,6 +21,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Deploy alpha to Firebase
 
+### deployFirebaseRelease
+
+```sh
+[bundle exec] fastlane deployFirebaseRelease
+```
+
+Deploy Firebase Release App
+
 ### deployRelease
 
 ```sh
