@@ -187,14 +187,14 @@ private fun SecurityCenterContent(
                         RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
                     }
 
-                    SecurityCenterCard(
-                        onClick = onSecurityShieldsClick,
-                        title = stringResource(id = R.string.securityCenter_securityShieldsItem_title),
-                        subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
-                        iconRes = DSR.ic_security_shields,
-                        needsAction = state.hasSecurityShieldsProblems,
-                        positiveStatus = stringResource(id = R.string.securityCenter_securityShieldsItem_shieldedStatus)
-                    )
+//                    SecurityCenterCard(
+//                        onClick = onSecurityShieldsClick,
+//                        title = stringResource(id = R.string.securityCenter_securityShieldsItem_title),
+//                        subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
+//                        iconRes = DSR.ic_security_shields,
+//                        needsAction = state.hasSecurityShieldsProblems,
+//                        positiveStatus = stringResource(id = R.string.securityCenter_securityShieldsItem_shieldedStatus)
+//                    )
 
                     SecurityCenterCard(
                         onClick = onSecurityFactorsClick,
