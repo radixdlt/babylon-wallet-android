@@ -136,17 +136,17 @@ fun FactorSourcesList(
                     )
                 }
 
-            InfoButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingLarge
-                    ),
-                text = factorSourceKind.infoButtonTitle(),
-                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
-            )
+//            InfoButton(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .wrapContentWidth(align = Alignment.CenterHorizontally)
+//                    .padding(
+//                        horizontal = RadixTheme.dimensions.paddingDefault,
+//                        vertical = RadixTheme.dimensions.paddingLarge
+//                    ),
+//                text = factorSourceKind.infoButtonTitle(),
+//                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
+//            )
         }
     }
 }

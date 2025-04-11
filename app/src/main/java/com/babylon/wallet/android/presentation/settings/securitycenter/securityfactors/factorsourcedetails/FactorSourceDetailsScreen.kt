@@ -157,20 +157,20 @@ private fun FactorSourceDetailsContent(
 
             HorizontalDivider(color = RadixTheme.colors.gray4)
 
-            Text(
-                text = "Test",
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
-            )
-
-            DefaultSettingsItem(
-                title = stringResource(id = R.string.factorSources_detail_spotCheck),
-                subtitle = stringResource(id = R.string.factorSources_detail_testCanUse),
-                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_check_circle_outline,
-                onClick = onSpotCheckClick
-            )
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+//            Text(
+//                text = "Test",
+//                style = RadixTheme.typography.body1Header,
+//                color = RadixTheme.colors.gray2,
+//                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+//            )
+//
+//            DefaultSettingsItem(
+//                title = stringResource(id = R.string.factorSources_detail_spotCheck),
+//                subtitle = stringResource(id = R.string.factorSources_detail_testCanUse),
+//                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_check_circle_outline,
+//                onClick = onSpotCheckClick
+//            )
+//            HorizontalDivider(color = RadixTheme.colors.gray4)
         }
     }
 }
