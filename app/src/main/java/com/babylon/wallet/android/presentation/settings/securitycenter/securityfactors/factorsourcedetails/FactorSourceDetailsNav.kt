@@ -28,6 +28,7 @@ fun NavController.factorSourceDetails(factorSourceId: FactorSourceId) {
 
 fun NavGraphBuilder.factorSourceDetails(
     navigateToViewSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
+    navigateToViewSeedPhraseRestore: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     composable(
@@ -48,6 +49,7 @@ fun NavGraphBuilder.factorSourceDetails(
         FactorSourceDetailsScreen(
             viewModel = hiltViewModel(),
             navigateToViewSeedPhrase = navigateToViewSeedPhrase,
+            navigateToViewSeedPhraseRestore = navigateToViewSeedPhraseRestore,
             onBackClick = onBackClick
         )
     }
