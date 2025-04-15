@@ -118,10 +118,10 @@ private fun AddFactorSourceIntroContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-            InfoButton(
-                text = state.factorSourceKind.infoButtonTitle(),
-                onClick = { onInfoClick(state.factorSourceKind.infoGlossaryItem()) }
-            )
+//            InfoButton(
+//                text = state.factorSourceKind.infoButtonTitle(),
+//                onClick = { onInfoClick(state.factorSourceKind.infoGlossaryItem()) }
+//            )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         }
