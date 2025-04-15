@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -36,6 +37,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
     private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
+    private val mnemonicRepository: MnemonicRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<FactorSourceDetailsViewModel.State>(),
     OneOffEventHandler<FactorSourceDetailsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -46,7 +48,8 @@ class FactorSourceDetailsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val factorSourceId = FactorSourceDetailsArgs(savedStateHandle = savedStateHandle).factorSourceId
+            val factorSourceId =
+                FactorSourceDetailsArgs(savedStateHandle = savedStateHandle).factorSourceId
 
             getProfileUseCase.flow
                 .mapNotNull { profile ->
@@ -56,10 +59,18 @@ class FactorSourceDetailsViewModel @Inject constructor(
                 }
                 .collectLatest { factorSource ->
                     currentFactorSource = factorSource
+
+                    val deviceMnemonicLost = if (factorSource is FactorSource.Device) {
+                        !mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())
+                    } else {
+                        false
+                    }
+
                     _state.update { state ->
                         state.copy(
                             factorSourceName = factorSource.name,
-                            factorSourceKind = factorSource.kind
+                            factorSourceKind = factorSource.kind,
+                            isDeviceFactorSourceMnemonicNotAvailable = deviceMnemonicLost
                         )
                     }
                 }
@@ -121,20 +132,27 @@ class FactorSourceDetailsViewModel @Inject constructor(
             }.onSuccess { isChecked ->
                 _state.update { it.copy(uiMessage = UiMessage.InfoMessage.SpotCheckOutcome(isSuccess = isChecked)) }
             }.onFailure {
-                _state.update { state -> state.copy(uiMessage = UiMessage.InfoMessage.SpotCheckOutcome(isSuccess = false)) }
+                _state.update { state ->
+                    state.copy(
+                        uiMessage = UiMessage.InfoMessage.SpotCheckOutcome(
+                            isSuccess = false
+                        )
+                    )
+                }
             }
         }
     }
 
     fun onViewSeedPhraseClick() {
         viewModelScope.launch {
-            // TODO if factor source is lost then navigate to restore mnemonic
             val deviceFactorSource = currentFactorSource as? FactorSource.Device
             deviceFactorSource?.let {
-                if (biometricsAuthenticateUseCase()) {
-                    sendEvent(Event.NavigateToSeedPhrase(factorSourceId = deviceFactorSource.value.id.asGeneral()))
-                } else {
-                    return@launch
+                val id = deviceFactorSource.value.id.asGeneral()
+
+                if (state.value.isDeviceFactorSourceMnemonicNotAvailable) {
+                    sendEvent(Event.NavigateToSeedPhraseRestore)
+                } else if (biometricsAuthenticateUseCase()) {
+                    sendEvent(Event.NavigateToSeedPhrase(factorSourceId = id))
                 }
             }
         }
@@ -160,6 +178,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
         val isFactorSourceNameUpdated: Boolean = false,
         val isRenameBottomSheetVisible: Boolean = false,
         val isArculusPinEnabled: Boolean = false,
+        val isDeviceFactorSourceMnemonicNotAvailable: Boolean = false,
         val uiMessage: UiMessage? = null
     ) : UiState
 
@@ -173,5 +192,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
         data object NavigateBack : Event
 
         data class NavigateToSeedPhrase(val factorSourceId: FactorSourceId.Hash) : Event
+
+        data object NavigateToSeedPhraseRestore : Event
     }
 }

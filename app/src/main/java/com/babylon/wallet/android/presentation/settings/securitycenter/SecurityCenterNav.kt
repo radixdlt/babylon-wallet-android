@@ -137,6 +137,13 @@ fun NavGraphBuilder.securityCenterNavGraph(
             navigateToViewSeedPhrase = { factorSourceId ->
                 navController.revealSeedPhrase(factorSourceId = factorSourceId)
             },
+            navigateToViewSeedPhraseRestore = {
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs(
+                        requestSource = RestoreMnemonicsRequestSource.FactorSourceDetails
+                    )
+                )
+            },
             onBackClick = { navController.navigateUp() }
         )
         revealSeedPhrase(

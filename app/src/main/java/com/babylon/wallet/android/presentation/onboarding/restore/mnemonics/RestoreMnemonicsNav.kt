@@ -24,7 +24,9 @@ private const val ARGS_BACKUP_TYPE = "backup_type"
 private const val ROUTE = "restore_mnemonics?$ARGS_BACKUP_TYPE={$ARGS_BACKUP_TYPE}&$ARGS_REQUEST_SOURCE={$ARGS_REQUEST_SOURCE}"
 
 enum class RestoreMnemonicsRequestSource {
-    Onboarding, Settings
+    Onboarding,
+    Settings,
+    FactorSourceDetails
 }
 
 fun NavController.restoreMnemonics(
@@ -81,7 +83,7 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
             slideOutOfContainer(
                 when (initialState.getRequestSource()) {
                     RestoreMnemonicsRequestSource.Onboarding -> AnimatedContentTransitionScope.SlideDirection.Left
-                    RestoreMnemonicsRequestSource.Settings -> AnimatedContentTransitionScope.SlideDirection.Right
+                    else -> AnimatedContentTransitionScope.SlideDirection.Right
                 }
             )
         }

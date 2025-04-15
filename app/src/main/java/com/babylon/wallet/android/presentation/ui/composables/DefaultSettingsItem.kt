@@ -204,7 +204,7 @@ fun DefaultSettingsItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = RadixTheme.colors.gray1
+            tint = if (isErrorText) RadixTheme.colors.red1 else RadixTheme.colors.gray1
         )
     }
 ) {
@@ -254,13 +254,25 @@ fun DefaultSettingsItem(
 @Composable
 fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
-        DefaultSettingsItem(
-            title = "Title",
-            onClick = {},
-            subtitle = "Subtitle",
-            info = "Info",
-            warnings = persistentListOf("Warning"),
-            leadingIconRes = R.drawable.ic_gateways
-        )
+        Column {
+            DefaultSettingsItem(
+                title = "Title",
+                onClick = {},
+                subtitle = "Subtitle",
+                info = "Info",
+                warnings = persistentListOf("Warning"),
+                leadingIconRes = R.drawable.ic_gateways
+            )
+
+            DefaultSettingsItem(
+                title = "Title",
+                onClick = {},
+                subtitle = "Subtitle",
+                info = "Info",
+                isErrorText = true,
+                warnings = persistentListOf("Warning"),
+                leadingIconRes = R.drawable.ic_gateways
+            )
+        }
     }
 }
