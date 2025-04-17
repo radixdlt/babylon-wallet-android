@@ -84,6 +84,7 @@ private fun SecurityCenterContent(
     modifier: Modifier = Modifier,
     state: SecurityCenterViewModel.SecurityCenterUiState,
     onBackClick: () -> Unit,
+    @Suppress("UNUSED_PARAMETER")
     onSecurityShieldsClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
