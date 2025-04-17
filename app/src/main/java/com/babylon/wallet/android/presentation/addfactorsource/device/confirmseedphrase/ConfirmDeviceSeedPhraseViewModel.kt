@@ -82,7 +82,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
         }
     }
 
-    fun onFillWordsClick() {
+    fun onDebugFillWordsClick() {
         viewModelScope.launch {
             _state.update { state ->
                 val indicesToConfirm = state.words.map { it.index }
