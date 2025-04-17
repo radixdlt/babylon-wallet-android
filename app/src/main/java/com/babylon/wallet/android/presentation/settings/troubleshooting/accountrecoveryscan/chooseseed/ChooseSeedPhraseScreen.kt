@@ -213,7 +213,7 @@ fun SeedPhraseCard(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(id = R.string.seedPhrases_seedPhrase_headingScan),
+                    text = data.deviceFactorSource.value.hint.label,
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
