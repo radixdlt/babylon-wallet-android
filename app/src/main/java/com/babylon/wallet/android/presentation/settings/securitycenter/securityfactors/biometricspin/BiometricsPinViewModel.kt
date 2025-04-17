@@ -34,11 +34,12 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -49,6 +50,7 @@ class BiometricsPinViewModel @Inject constructor(
     getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val sargonOsManager: SargonOsManager,
     private val addFactorSourceProxy: AddFactorSourceProxy,
+    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -56,40 +58,46 @@ class BiometricsPinViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        @Suppress("OPT_IN_USAGE")
-        getFactorSourcesOfTypeUseCase<FactorSource.Device>()
-            .mapLatest { deviceFactorSources ->
-                resetDeviceFactorSourceList()
+        combine(
+            getFactorSourcesOfTypeUseCase<FactorSource.Device>(),
+            preferencesManager.getBackedUpFactorSourceIds()
+        ) { deviceFactorSources, _ ->
+            resetDeviceFactorSourceList()
 
-                deviceFactorSources.forEach { deviceFactorSource ->
-                    val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
+            deviceFactorSources.forEach { deviceFactorSource ->
+                val entitiesLinkedToDeviceFactorSource =
+                    getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                         ?: return@forEach
-                    val securityMessages = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
+                val securityMessages =
+                    getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
                         deviceFactorSourceId = deviceFactorSource.id,
                         entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
                     )
-                    val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
-                        messages = securityMessages.toPersistentList(),
-                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                    )
-                    val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
+                val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
+                    messages = securityMessages.toPersistentList(),
+                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                )
+                val isMainDeviceFactorSource =
+                    deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
 
-                    if (isMainDeviceFactorSource) {
-                        _state.update { state ->
-                            state.copy(mainDeviceFactorSource = factorSourceCard)
-                        }
-                    } else {
-                        _state.update { state ->
-                            state.copy(
-                                otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
+                if (isMainDeviceFactorSource) {
+                    _state.update { state ->
+                        state.copy(mainDeviceFactorSource = factorSourceCard)
+                    }
+                } else {
+                    _state.update { state ->
+                        state.copy(
+                            otherDeviceFactorSources = state.otherDeviceFactorSources.add(
+                                factorSourceCard
                             )
-                        }
+                        )
                     }
                 }
             }
+        }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
     }
@@ -179,12 +187,13 @@ class BiometricsPinViewModel @Inject constructor(
         val isContinueButtonEnabled: Boolean
             get() = selectableDeviceFactorIds.any { it.selected }
 
-        val selectableDeviceFactorIds: ImmutableList<Selectable<FactorSourceCard>> = otherDeviceFactorSources.map {
-            Selectable(
-                data = it,
-                selected = selectedDeviceFactorSourceId == it.id
-            )
-        }.toImmutableList()
+        val selectableDeviceFactorIds: ImmutableList<Selectable<FactorSourceCard>> =
+            otherDeviceFactorSources.map {
+                Selectable(
+                    data = it,
+                    selected = selectedDeviceFactorSourceId == it.id
+                )
+            }.toImmutableList()
     }
 
     sealed interface Event : OneOffEvent {

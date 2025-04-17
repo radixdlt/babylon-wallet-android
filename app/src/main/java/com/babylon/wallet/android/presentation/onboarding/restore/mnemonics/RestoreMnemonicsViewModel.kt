@@ -271,7 +271,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     private suspend fun onRestorationComplete() {
         homeCardsRepository.walletRestored()
-        sendEvent(Event.FinishRestoration(isMovingToMain = true))
+        sendEvent(
+            Event.FinishRestoration(
+                isMovingToMain = args.requestSource != RestoreMnemonicsRequestSource.FactorSourceDetails
+            )
+        )
     }
 
     private fun updateSecondaryButtonLoading(isLoading: Boolean) {

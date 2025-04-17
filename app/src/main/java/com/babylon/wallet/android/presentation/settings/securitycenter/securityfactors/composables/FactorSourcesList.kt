@@ -23,9 +23,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoButtonTitle
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoGlossaryItem
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
@@ -35,6 +32,7 @@ import kotlinx.collections.immutable.PersistentList
 @Composable
 fun FactorSourcesList(
     modifier: Modifier = Modifier,
+    @Suppress("UNUSED_PARAMETER")
     factorSourceKind: FactorSourceKind,
     mainFactorSource: FactorSourceCard?,
     factorSources: PersistentList<FactorSourceCard>,
@@ -44,6 +42,7 @@ fun FactorSourcesList(
     onFactorSourceClick: (FactorSourceId) -> Unit,
     onAddFactorSourceClick: (() -> Unit)? = null,
     onChangeMainFactorSourceClick: () -> Unit = {},
+    @Suppress("UNUSED_PARAMETER")
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
     LazyColumn(
@@ -136,17 +135,17 @@ fun FactorSourcesList(
                     )
                 }
 
-            InfoButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingLarge
-                    ),
-                text = factorSourceKind.infoButtonTitle(),
-                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
-            )
+//            InfoButton(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .wrapContentWidth(align = Alignment.CenterHorizontally)
+//                    .padding(
+//                        horizontal = RadixTheme.dimensions.paddingDefault,
+//                        vertical = RadixTheme.dimensions.paddingLarge
+//                    ),
+//                text = factorSourceKind.infoButtonTitle(),
+//                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
+//            )
         }
     }
 }
