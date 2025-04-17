@@ -69,7 +69,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
             }.onFailure { throwable ->
                 val uiMessage = when {
                     throwable is CommonException.SecureStorageAccessException &&
-                            throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
+                        throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
 
                     throwable is CommonException.FileAlreadyExists -> RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
                     else -> RadixWalletException.AddFactorSource.FactorSourceNotCreated
