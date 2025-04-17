@@ -23,12 +23,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 
 @HiltViewModel
 class SetFactorSourceNameViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
+    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<SetFactorSourceNameViewModel.State>(),
@@ -51,6 +53,13 @@ class SetFactorSourceNameViewModel @Inject constructor(
                 )
             }.onSuccess { factorSourceId ->
                 addedFactorSourceId = factorSourceId
+
+                if (factorSourceId is FactorSourceId.Hash &&
+                    factorSourceId.value.kind == FactorSourceKind.DEVICE
+                ) {
+                    preferencesManager.markFactorSourceBackedUp(factorSourceId)
+                }
+
                 _state.update { state ->
                     state.copy(
                         saveInProgress = false,
@@ -60,7 +69,8 @@ class SetFactorSourceNameViewModel @Inject constructor(
             }.onFailure { throwable ->
                 val uiMessage = when {
                     throwable is CommonException.SecureStorageAccessException &&
-                        throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
+                            throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
+
                     throwable is CommonException.FileAlreadyExists -> RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
                     else -> RadixWalletException.AddFactorSource.FactorSourceNotCreated
                 }?.let { error -> UiMessage.ErrorMessage(error) }
