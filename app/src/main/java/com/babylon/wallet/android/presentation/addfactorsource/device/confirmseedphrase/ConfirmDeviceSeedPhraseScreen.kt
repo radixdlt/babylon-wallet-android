@@ -58,7 +58,7 @@ fun ConfirmDeviceSeedPhraseScreen(
         modifier = modifier,
         state = state,
         onConfirmClick = viewModel::onConfirmClick,
-        onFillWordsClick = viewModel::onFillWordsClick,
+        onDebugFillWordsClick = viewModel::onDebugFillWordsClick,
         onWordChanged = viewModel::onWordChanged,
         onDismiss = onDismiss
     )
@@ -78,7 +78,7 @@ private fun ConfirmDeviceSeedPhraseContent(
     state: ConfirmDeviceSeedPhraseViewModel.State,
     onWordChanged: (Int, String) -> Unit,
     onConfirmClick: () -> Unit,
-    onFillWordsClick: () -> Unit,
+    onDebugFillWordsClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     Scaffold(
@@ -101,7 +101,7 @@ private fun ConfirmDeviceSeedPhraseContent(
                     {
                         RadixTextButton(
                             text = "(DEBUG) Fill",
-                            onClick = onFillWordsClick
+                            onClick = onDebugFillWordsClick
                         )
                     }
                 } else {
@@ -216,7 +216,7 @@ private fun ConfirmDeviceSeedPhrasePreview() {
                 )
             ),
             onConfirmClick = {},
-            onFillWordsClick = {},
+            onDebugFillWordsClick = {},
             onWordChanged = { _, _ -> },
             onDismiss = {}
         )
