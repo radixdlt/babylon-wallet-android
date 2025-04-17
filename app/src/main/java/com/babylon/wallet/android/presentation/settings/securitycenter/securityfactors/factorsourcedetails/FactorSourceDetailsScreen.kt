@@ -100,6 +100,7 @@ private fun FactorSourceDetailsContent(
     onViewSeedPhraseClick: () -> Unit,
     onArculusPinCheckedChange: (Boolean) -> Unit,
     onChangeArculusPinClick: () -> Unit,
+    @Suppress("UNUSED_PARAMETER")
     onSpotCheckClick: () -> Unit,
     onMessageShown: () -> Unit,
     onBackClick: () -> Unit,

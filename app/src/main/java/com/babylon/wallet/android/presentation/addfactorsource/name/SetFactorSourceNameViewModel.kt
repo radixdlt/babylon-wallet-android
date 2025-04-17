@@ -63,7 +63,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
                         throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
                     throwable is CommonException.FileAlreadyExists -> RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
                     else -> RadixWalletException.AddFactorSource.FactorSourceNotCreated
-                }?.let { error -> UiMessage. ErrorMessage(error) }
+                }?.let { error -> UiMessage.ErrorMessage(error) }
 
                 _state.update { state ->
                     state.copy(

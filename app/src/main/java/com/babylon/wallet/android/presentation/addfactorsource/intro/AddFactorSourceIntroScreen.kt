@@ -27,11 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoButtonTitle
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoGlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
@@ -62,6 +59,7 @@ private fun AddFactorSourceIntroContent(
     modifier: Modifier = Modifier,
     state: AddFactorSourceIntroViewModel.State,
     onDismiss: () -> Unit,
+    @Suppress("UNUSED_PARAMETER")
     onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit
 ) {
