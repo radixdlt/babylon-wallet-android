@@ -30,8 +30,13 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
+import com.radixdlt.sargon.ArculusCardFactorSource
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.samples.sample
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -256,8 +261,7 @@ private fun DeviceFactorSourceDetailsPreview() {
     RadixWalletPreviewTheme {
         FactorSourceDetailsContent(
             state = FactorSourceDetailsViewModel.State(
-                factorSourceName = "My factor source",
-                factorSourceKind = FactorSourceKind.DEVICE,
+                factorSource = DeviceFactorSource.sample().asGeneral(),
                 uiMessage = null,
                 isArculusPinEnabled = true,
             ),
@@ -278,8 +282,7 @@ private fun LedgerFactorSourceDetailsPreview() {
     RadixWalletPreviewTheme {
         FactorSourceDetailsContent(
             state = FactorSourceDetailsViewModel.State(
-                factorSourceName = "My factor source",
-                factorSourceKind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                factorSource = LedgerHardwareWalletFactorSource.sample().asGeneral(),
                 uiMessage = null,
                 isArculusPinEnabled = true,
             ),
@@ -300,8 +303,7 @@ private fun ArculusFactorSourceDetailsPreview() {
     RadixWalletPreviewTheme {
         FactorSourceDetailsContent(
             state = FactorSourceDetailsViewModel.State(
-                factorSourceName = "My factor source",
-                factorSourceKind = FactorSourceKind.ARCULUS_CARD,
+                factorSource = ArculusCardFactorSource.sample().asGeneral(),
                 uiMessage = null,
                 isArculusPinEnabled = true,
             ),
