@@ -64,7 +64,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
         viewModelScope.launch {
             when (val outcome = deviceMnemonicBuilderClient.confirmWords(state.value.words)) {
                 DeviceMnemonicValidationOutcome.Valid -> {
-                    Event.Confirmed(deviceMnemonicBuilderClient.getMnemonicWithPassphrase())
+                    sendEvent(Event.Confirmed(deviceMnemonicBuilderClient.getMnemonicWithPassphrase()))
                 }
                 is DeviceMnemonicValidationOutcome.Invalid -> {
                     val incorrectIndices = outcome.indicesInMnemonic.map { it.toInt() }
