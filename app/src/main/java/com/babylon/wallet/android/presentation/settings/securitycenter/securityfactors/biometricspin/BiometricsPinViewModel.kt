@@ -26,6 +26,7 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.extensions.supportsBabylon
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -78,7 +79,7 @@ class BiometricsPinViewModel @Inject constructor(
                     accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
                     personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
                     hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
                 )
                 val isMainDeviceFactorSource =
                     deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
@@ -172,6 +173,7 @@ class BiometricsPinViewModel @Inject constructor(
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
+            supportsBabylon = this.asGeneral().supportsBabylon,
             isEnabled = true
         )
     }
@@ -188,12 +190,14 @@ class BiometricsPinViewModel @Inject constructor(
             get() = selectableDeviceFactorIds.any { it.selected }
 
         val selectableDeviceFactorIds: ImmutableList<Selectable<FactorSourceCard>> =
-            otherDeviceFactorSources.map {
-                Selectable(
-                    data = it,
-                    selected = selectedDeviceFactorSourceId == it.id
-                )
-            }.toImmutableList()
+            otherDeviceFactorSources
+                .filter { it.supportsBabylon }
+                .map {
+                    Selectable(
+                        data = it,
+                        selected = selectedDeviceFactorSourceId == it.id
+                    )
+                }.toImmutableList()
     }
 
     sealed interface Event : OneOffEvent {

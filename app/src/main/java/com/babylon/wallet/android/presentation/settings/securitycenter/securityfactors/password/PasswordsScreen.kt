@@ -122,6 +122,7 @@ private fun PasswordsScreenPreview() {
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 FactorSourceCard(
@@ -137,6 +138,7 @@ private fun PasswordsScreenPreview() {
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 FactorSourceCard(
@@ -152,6 +154,7 @@ private fun PasswordsScreenPreview() {
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             ),

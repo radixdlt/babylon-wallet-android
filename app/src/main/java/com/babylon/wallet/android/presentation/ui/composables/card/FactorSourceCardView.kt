@@ -467,6 +467,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleStokenet()
                 ),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -492,6 +493,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 ),
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -511,6 +513,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 ),
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = false
             ),
             FactorSourceCard(
@@ -529,6 +532,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleStokenet()
                 ),
                 hasHiddenEntities = false,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -544,6 +548,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 accounts = persistentListOf(),
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = true
             )
         )

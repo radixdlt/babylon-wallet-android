@@ -184,6 +184,7 @@ private fun SecurityFactorSamplesPreview() {
                             Persona.sampleStokenet()
                         ),
                         hasHiddenEntities = true,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -226,6 +227,7 @@ private fun SecurityFactorSamplesPreview() {
                             accounts = persistentListOf(),
                             personas = persistentListOf(),
                             hasHiddenEntities = false,
+                            supportsBabylon = true,
                             isEnabled = true
                         )
                     )
@@ -245,6 +247,7 @@ private fun SecurityFactorSamplesPreview() {
                             accounts = persistentListOf(),
                             personas = persistentListOf(),
                             hasHiddenEntities = false,
+                            supportsBabylon = true,
                             isEnabled = true
                         )
                     )

@@ -243,6 +243,7 @@ private val otherDeviceFactorSources = persistentListOf(
             Persona.sampleStokenet()
         ),
         hasHiddenEntities = true,
+        supportsBabylon = true,
         isEnabled = true
     ),
     FactorSourceCard(
@@ -258,6 +259,7 @@ private val otherDeviceFactorSources = persistentListOf(
         accounts = persistentListOf(),
         personas = persistentListOf(),
         hasHiddenEntities = true,
+        supportsBabylon = true,
         isEnabled = true
     )
 )
@@ -285,6 +287,7 @@ private fun BiometricsPinPreview() {
                         Persona.sampleStokenet()
                     ),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 otherDeviceFactorSources = otherDeviceFactorSources,

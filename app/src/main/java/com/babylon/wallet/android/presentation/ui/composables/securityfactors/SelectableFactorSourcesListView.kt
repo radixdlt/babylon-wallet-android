@@ -144,6 +144,7 @@ private fun SelectableFactorSourcesListPreview() {
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -163,6 +164,7 @@ private fun SelectableFactorSourcesListPreview() {
                         ),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 )

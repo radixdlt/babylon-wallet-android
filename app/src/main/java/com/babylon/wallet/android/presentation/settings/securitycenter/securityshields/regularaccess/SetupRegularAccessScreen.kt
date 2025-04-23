@@ -612,6 +612,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -627,6 +628,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -644,6 +646,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -659,6 +662,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -675,6 +679,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
             ),
@@ -717,6 +722,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -732,6 +738,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),

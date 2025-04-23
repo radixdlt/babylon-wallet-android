@@ -233,6 +233,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                         Persona.sampleStokenet()
                     ),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             ),
@@ -255,6 +256,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                         Persona.sampleStokenet()
                     ),
                     hasHiddenEntities = true,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             ),
@@ -272,6 +274,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             ),
@@ -293,6 +296,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                         Persona.sampleMainnet(),
                     ),
                     hasHiddenEntities = true,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             )
@@ -316,6 +320,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                         Persona.sampleMainnet()
                     ),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             ),
@@ -333,6 +338,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = true,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             )
