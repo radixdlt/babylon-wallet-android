@@ -303,6 +303,8 @@ private fun <F : FactorSource> AccessFactorSourceContent(
             AccessFactorSourcePurpose.ProvingOwnership -> stringResource(R.string.factorSourceActions_proveOwnership_title)
             AccessFactorSourcePurpose.DerivingAccounts -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
             AccessFactorSourcePurpose.UpdatingFactorConfig -> stringResource(R.string.factorSourceActions_updatingFactorConfig_title)
+            AccessFactorSourcePurpose.CreatingAccount -> stringResource(R.string.authorization_createAccount_title)
+            AccessFactorSourcePurpose.CreatingPersona -> stringResource(R.string.authorization_createPersona_title)
             AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_spotCheck_title)
         },
         message = factorSourceKind.message(purpose),
@@ -338,6 +340,8 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
         AccessFactorSourcePurpose.ProvingOwnership,
         AccessFactorSourcePurpose.UpdatingFactorConfig,
         AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.CreatingAccount,
+        AccessFactorSourcePurpose.CreatingPersona,
         AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_device_message)
     }
 
@@ -346,6 +350,8 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
         AccessFactorSourcePurpose.ProvingOwnership -> stringResource(R.string.factorSourceActions_ledger_message)
         AccessFactorSourcePurpose.UpdatingFactorConfig,
         AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.CreatingAccount,
+        AccessFactorSourcePurpose.CreatingPersona,
         AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_ledger_deriveKeysMessage)
     }
 
@@ -354,6 +360,8 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
         AccessFactorSourcePurpose.ProvingOwnership -> stringResource(R.string.factorSourceActions_arculus_message)
         AccessFactorSourcePurpose.UpdatingFactorConfig,
         AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.CreatingAccount,
+        AccessFactorSourcePurpose.CreatingPersona,
         AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_arculus_deriveKeysMessage)
     }
 
@@ -362,6 +370,8 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
         AccessFactorSourcePurpose.ProvingOwnership,
         AccessFactorSourcePurpose.UpdatingFactorConfig,
         AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.CreatingAccount,
+        AccessFactorSourcePurpose.CreatingPersona,
         AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_message)
     }
 
@@ -370,6 +380,8 @@ private fun FactorSourceKind.message(purpose: AccessFactorSourcePurpose): Annota
         AccessFactorSourcePurpose.ProvingOwnership,
         AccessFactorSourcePurpose.UpdatingFactorConfig,
         AccessFactorSourcePurpose.DerivingAccounts,
+        AccessFactorSourcePurpose.CreatingAccount,
+        AccessFactorSourcePurpose.CreatingPersona,
         AccessFactorSourcePurpose.SpotCheck -> stringResource(R.string.factorSourceActions_password_message)
     }
 }.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))

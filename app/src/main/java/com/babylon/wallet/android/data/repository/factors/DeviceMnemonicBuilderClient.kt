@@ -4,8 +4,9 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.DeviceMnemonicBuildOutcome
 import com.radixdlt.sargon.DeviceMnemonicBuilder
+import com.radixdlt.sargon.DeviceMnemonicValidationOutcome
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -58,8 +59,12 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         }
     }
 
-    suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicBuildOutcome = withContext(dispatcher) {
-        deviceMnemonicBuilder.build(words.associate { it.index.toUShort() to it.value })
+    suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicValidationOutcome = withContext(dispatcher) {
+        deviceMnemonicBuilder.validateWords(words.associate { it.index.toUShort() to it.value })
+    }
+
+    suspend fun getMnemonicWithPassphrase(): MnemonicWithPassphrase = withContext(dispatcher) {
+        deviceMnemonicBuilder.getMnemonicWithPassphrase()
     }
 
     suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
