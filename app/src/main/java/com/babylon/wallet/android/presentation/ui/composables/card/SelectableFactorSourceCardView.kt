@@ -241,6 +241,7 @@ private fun SelectableSingleChoiceFactorSourceCardPreview() {
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = true
@@ -270,6 +271,7 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = true
@@ -299,6 +301,7 @@ private fun SimpleSelectableSingleChoiceFactorSourceCardPreview() {
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = true
@@ -341,6 +344,7 @@ private fun RemovableFactorSourceCardPreview() {
                 accounts = persistentListOf(),
                 personas = persistentListOf(),
                 hasHiddenEntities = false,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             onRemoveClick = {}

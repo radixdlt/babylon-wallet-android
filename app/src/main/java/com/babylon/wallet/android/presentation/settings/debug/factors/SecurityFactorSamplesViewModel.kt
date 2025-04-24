@@ -19,6 +19,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.extensions.supportsBabylon
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
@@ -154,6 +155,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = true,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = false
@@ -226,6 +228,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
+            supportsBabylon = this.asGeneral().supportsBabylon,
             isEnabled = true
         )
     }
@@ -247,6 +250,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
+            supportsBabylon = this.asGeneral().supportsBabylon,
             isEnabled = true
         )
     }

@@ -545,7 +545,17 @@ class StateRepositoryImpl @Inject constructor(
             ) { page ->
                 page.items.map { item ->
                     val componentAddress = ManifestEncounteredComponentAddress.init(item.address)
-                    val dAppDefinitionAddress = item.explicitMetadata?.toMetadata()?.dAppDefinition()?.let { AccountAddress.init(it) }
+                    val dAppDefinitionAddress = item.explicitMetadata
+                        ?.toMetadata()
+                        ?.dAppDefinition()
+                        ?.let {
+                            // Return an account address or null if the dApp developer
+                            // has defined a different kind of address as dApp definition.
+                            // This will not early exit this function as the goal is to associate
+                            // a component address with a valid dApp definition or null if none
+                            // exists or is invalid.
+                            runCatching { AccountAddress.init(it) }.getOrNull()
+                        }
 
                     result[componentAddress] = dAppDefinitionAddress
                 }

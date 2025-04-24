@@ -244,6 +244,7 @@ fun LedgerDevicesScreenPreview() {
                         Persona.sampleStokenet()
                     ),
                     hasHiddenEntities = true,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 FactorSourceCard(
@@ -259,6 +260,7 @@ fun LedgerDevicesScreenPreview() {
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 FactorSourceCard(
@@ -274,6 +276,7 @@ fun LedgerDevicesScreenPreview() {
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 )
             ),

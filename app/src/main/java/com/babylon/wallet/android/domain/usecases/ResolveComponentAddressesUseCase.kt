@@ -38,9 +38,11 @@ class ResolveComponentAddressesUseCase @Inject constructor(
         val dAppsPerComponentAddress = LinkedHashMap<ManifestEncounteredComponentAddress, DApp?>()
 
         componentAddresses.forEach { componentAddress ->
-            val dAppDefinition = dAppDefinitionPerComponent[componentAddress] ?: return@forEach
-
-            val associatedDApp = dAppsPerDAppDefinition[dAppDefinition]?.takeIf { it.claimedEntities.contains(componentAddress.string) }
+            val associatedDApp = dAppDefinitionPerComponent[componentAddress]?.let { dAppDefinition ->
+                dAppsPerDAppDefinition[dAppDefinition]?.takeIf {
+                    it.claimedEntities.contains(componentAddress.string)
+                }
+            }
 
             dAppsPerComponentAddress[componentAddress] = associatedDApp
         }

@@ -18,6 +18,7 @@ import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
+import com.radixdlt.sargon.extensions.supportsBabylon
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
@@ -117,6 +118,7 @@ class SelectFactorsViewModel @Inject constructor(
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = supportsBabylon,
                     isEnabled = true
                 ),
                 selected = false

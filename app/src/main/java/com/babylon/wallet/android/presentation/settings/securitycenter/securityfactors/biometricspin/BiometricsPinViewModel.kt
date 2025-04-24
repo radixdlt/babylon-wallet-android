@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
@@ -14,6 +15,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
@@ -26,6 +28,7 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.extensions.supportsBabylon
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -34,11 +37,12 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -47,8 +51,10 @@ class BiometricsPinViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val sargonOsManager: SargonOsManager,
     private val addFactorSourceProxy: AddFactorSourceProxy,
+    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -56,40 +62,46 @@ class BiometricsPinViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        @Suppress("OPT_IN_USAGE")
-        getFactorSourcesOfTypeUseCase<FactorSource.Device>()
-            .mapLatest { deviceFactorSources ->
-                resetDeviceFactorSourceList()
+        combine(
+            getFactorSourcesOfTypeUseCase<FactorSource.Device>(),
+            preferencesManager.getBackedUpFactorSourceIds()
+        ) { deviceFactorSources, _ ->
+            resetDeviceFactorSourceList()
 
-                deviceFactorSources.forEach { deviceFactorSource ->
-                    val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
+            deviceFactorSources.forEach { deviceFactorSource ->
+                val entitiesLinkedToDeviceFactorSource =
+                    getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                         ?: return@forEach
-                    val securityMessages = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
+                val securityMessages =
+                    getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
                         deviceFactorSourceId = deviceFactorSource.id,
                         entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
                     )
-                    val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
-                        messages = securityMessages.toPersistentList(),
-                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                    )
-                    val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
+                val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
+                    messages = securityMessages.toPersistentList(),
+                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                )
+                val isMainDeviceFactorSource =
+                    deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
 
-                    if (isMainDeviceFactorSource) {
-                        _state.update { state ->
-                            state.copy(mainDeviceFactorSource = factorSourceCard)
-                        }
-                    } else {
-                        _state.update { state ->
-                            state.copy(
-                                otherDeviceFactorSources = state.otherDeviceFactorSources.add(factorSourceCard)
+                if (isMainDeviceFactorSource) {
+                    _state.update { state ->
+                        state.copy(mainDeviceFactorSource = factorSourceCard)
+                    }
+                } else {
+                    _state.update { state ->
+                        state.copy(
+                            otherDeviceFactorSources = state.otherDeviceFactorSources.add(
+                                factorSourceCard
                             )
-                        }
+                        )
                     }
                 }
             }
+        }
             .flowOn(defaultDispatcher)
             .launchIn(viewModelScope)
     }
@@ -106,6 +118,22 @@ class BiometricsPinViewModel @Inject constructor(
     fun onDeviceFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
             sendEvent(Event.NavigateToDeviceFactorSourceDetails(factorSourceId))
+        }
+    }
+
+    fun onSecurityPromptMessageClicked(id: FactorSourceId, message: SecurityPrompt) {
+        val hashFactorSourceId = id as? FactorSourceId.Hash ?: return
+        when (message) {
+            SecurityPrompt.EntitiesNotRecoverable,
+            SecurityPrompt.WriteDownSeedPhrase -> viewModelScope.launch {
+                if (biometricsAuthenticateUseCase()) {
+                    sendEvent(Event.NavigateToWriteDownSeedPhrase(hashFactorSourceId))
+                }
+            }
+            SecurityPrompt.LostFactorSource,
+            SecurityPrompt.SeedPhraseNeedRecovery -> viewModelScope.launch {
+                sendEvent(Event.NavigateToSeedPhraseRestore)
+            }
         }
     }
 
@@ -164,6 +192,7 @@ class BiometricsPinViewModel @Inject constructor(
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
+            supportsBabylon = this.asGeneral().supportsBabylon,
             isEnabled = true
         )
     }
@@ -179,16 +208,21 @@ class BiometricsPinViewModel @Inject constructor(
         val isContinueButtonEnabled: Boolean
             get() = selectableDeviceFactorIds.any { it.selected }
 
-        val selectableDeviceFactorIds: ImmutableList<Selectable<FactorSourceCard>> = otherDeviceFactorSources.map {
-            Selectable(
-                data = it,
-                selected = selectedDeviceFactorSourceId == it.id
-            )
-        }.toImmutableList()
+        val selectableDeviceFactorIds: ImmutableList<Selectable<FactorSourceCard>> =
+            otherDeviceFactorSources
+                .filter { it.supportsBabylon }
+                .map {
+                    Selectable(
+                        data = it,
+                        selected = selectedDeviceFactorSourceId == it.id
+                    )
+                }.toImmutableList()
     }
 
     sealed interface Event : OneOffEvent {
 
         data class NavigateToDeviceFactorSourceDetails(val factorSourceId: FactorSourceId) : Event
+        data class NavigateToWriteDownSeedPhrase(val factorSourceId: FactorSourceId.Hash) : Event
+        data object NavigateToSeedPhraseRestore : Event
     }
 }

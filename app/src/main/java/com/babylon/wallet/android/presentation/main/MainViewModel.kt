@@ -38,6 +38,8 @@ import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
+import rdx.works.profile.domain.FirstAccountCreationStatus
+import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -45,6 +47,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
+    private val createInitialAccountStatusSemaphore: FirstAccountCreationStatusManager,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val appEventBus: AppEventBus,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
@@ -55,7 +58,8 @@ class MainViewModel @Inject constructor(
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
     private val appLockStateProvider: AppLockStateProvider,
     private val incomingRequestsDelegate: IncomingRequestsDelegate
-) : StateViewModel<MainViewModel.State>(), OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<MainViewModel.State>(),
+    OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
 
     val observeP2PLinks
         get() = incomingRequestsDelegate.observeP2PLinks
@@ -117,9 +121,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 getProfileUseCase.state,
+                createInitialAccountStatusSemaphore.firstAccountCreationStatus,
                 preferencesManager.isDeviceRootedDialogShown,
                 cloudBackupErrorStream.errors
-            ) { profileState, isDeviceRootedDialogShown, backupError ->
+            ) { profileState, firstAccountCreationStatus, isDeviceRootedDialogShown, backupError ->
                 val isAdvancedLockEnabled = if (profileState is ProfileState.Loaded) {
                     profileState.v1.isAdvancedLockEnabled
                 } else {
@@ -129,7 +134,8 @@ class MainViewModel @Inject constructor(
                 _state.update {
                     State(
                         initialAppState = AppState.from(
-                            profileState = profileState
+                            profileState = profileState,
+                            firstAccountCreationStatus = firstAccountCreationStatus
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
                         claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
@@ -256,10 +262,14 @@ sealed interface AppState {
 
     companion object {
         fun from(
-            profileState: ProfileState
+            profileState: ProfileState,
+            firstAccountCreationStatus: FirstAccountCreationStatus
         ) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.v1)
-            is ProfileState.Loaded -> if (profileState.v1.hasNetworks) {
+            is ProfileState.Loaded -> if (
+                profileState.v1.hasNetworks &&
+                firstAccountCreationStatus == FirstAccountCreationStatus.None
+            ) {
                 Wallet
             } else {
                 OnBoarding

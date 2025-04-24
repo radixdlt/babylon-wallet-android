@@ -1,5 +1,4 @@
 @file:Suppress("TooManyFunctions")
-@file:OptIn(ExperimentalFoundationApi::class)
 
 package com.babylon.wallet.android.presentation.ui.composables
 
@@ -42,6 +41,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.wallet.cards.allowsDismiss
+import com.babylon.wallet.android.presentation.wallet.cards.opensExternalLink
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.ImmutableList
@@ -217,19 +218,21 @@ private fun CardView(
                 }
             )
 
-            Icon(
-                modifier = Modifier
-                    .throttleClickable(onClick = onCloseClick)
-                    .padding(RadixTheme.dimensions.paddingSmall)
-                    .size(16.dp)
-                    .constrainAs(closeIconView) {
-                        top.linkTo(parent.top)
-                        end.linkTo(parent.end)
-                    },
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                contentDescription = null,
-                tint = RadixTheme.colors.gray2
-            )
+            if (card.allowsDismiss()) {
+                Icon(
+                    modifier = Modifier
+                        .throttleClickable(onClick = onCloseClick)
+                        .padding(RadixTheme.dimensions.paddingSmall)
+                        .size(16.dp)
+                        .constrainAs(closeIconView) {
+                            top.linkTo(parent.top)
+                            end.linkTo(parent.end)
+                        },
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray2
+                )
+            }
         }
     }
 }
@@ -293,8 +296,6 @@ private fun HomeCard.EndGraphicRes() = when (this) {
 }
 
 private const val INLINE_LINK_ICON = "link_icon"
-
-private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.DiscoverRadixDapps
 
 @Preview
 @Composable

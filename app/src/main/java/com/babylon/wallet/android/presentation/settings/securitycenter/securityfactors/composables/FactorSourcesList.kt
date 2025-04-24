@@ -23,11 +23,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoButtonTitle
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoGlossaryItem
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.collections.immutable.PersistentList
@@ -35,6 +33,7 @@ import kotlinx.collections.immutable.PersistentList
 @Composable
 fun FactorSourcesList(
     modifier: Modifier = Modifier,
+    @Suppress("UNUSED_PARAMETER")
     factorSourceKind: FactorSourceKind,
     mainFactorSource: FactorSourceCard?,
     factorSources: PersistentList<FactorSourceCard>,
@@ -42,8 +41,10 @@ fun FactorSourcesList(
     @StringRes addFactorSourceButtonTitle: Int? = null,
     addFactorSourceButtonContent: @Composable (() -> Unit)? = null,
     onFactorSourceClick: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: ((FactorSourceId, SecurityPrompt) -> Unit)? = null,
     onAddFactorSourceClick: (() -> Unit)? = null,
     onChangeMainFactorSourceClick: () -> Unit = {},
+    @Suppress("UNUSED_PARAMETER")
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
     LazyColumn(
@@ -97,7 +98,12 @@ fun FactorSourcesList(
                     modifier = Modifier
                         .padding(bottom = RadixTheme.dimensions.paddingMedium)
                         .clickable { onFactorSourceClick(it.id) },
-                    item = it
+                    item = it,
+                    onSecurityPromptMessageClicked = if (onSecurityPromptMessageClick != null) {
+                        { message -> onSecurityPromptMessageClick(it.id, message) }
+                    } else {
+                        null
+                    }
                 )
             }
         }
@@ -136,17 +142,17 @@ fun FactorSourcesList(
                     )
                 }
 
-            InfoButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingLarge
-                    ),
-                text = factorSourceKind.infoButtonTitle(),
-                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
-            )
+//            InfoButton(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .wrapContentWidth(align = Alignment.CenterHorizontally)
+//                    .padding(
+//                        horizontal = RadixTheme.dimensions.paddingDefault,
+//                        vertical = RadixTheme.dimensions.paddingLarge
+//                    ),
+//                text = factorSourceKind.infoButtonTitle(),
+//                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
+//            )
         }
     }
 }

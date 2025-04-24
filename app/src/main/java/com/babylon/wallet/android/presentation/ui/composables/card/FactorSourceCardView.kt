@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.ui.composables.card
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,9 @@ import com.babylon.wallet.android.presentation.ui.composables.shared.CardContain
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
@@ -86,6 +89,7 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
+    onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
@@ -106,7 +110,8 @@ fun FactorSourceCardView(
         )
 
         MessagesView(
-            messages = item.messages
+            messages = item.messages,
+            onSecurityPromptMessageClicked = onSecurityPromptMessageClicked
         )
 
         LinkedEntitiesView(
@@ -194,7 +199,8 @@ fun SimpleFactorCardView(
 
 @Composable
 private fun MessagesView(
-    messages: PersistentList<FactorSourceStatusMessage>
+    messages: PersistentList<FactorSourceStatusMessage>,
+    onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null
 ) {
     if (messages.isEmpty()) {
         return
@@ -209,9 +215,17 @@ private fun MessagesView(
         ),
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
     ) {
-        messages.forEach {
+        messages.forEach { message ->
             StatusMessageText(
-                message = it.getMessage()
+                modifier = Modifier
+                    .applyIf(
+                        condition = message is SecurityPrompt && onSecurityPromptMessageClicked != null,
+                        modifier = Modifier.clickable {
+                            val securityPromptMessage = message as? SecurityPrompt ?: return@clickable
+                            onSecurityPromptMessageClicked?.invoke(securityPromptMessage)
+                        }
+                    ),
+                message = message.getMessage()
             )
         }
     }
@@ -244,9 +258,22 @@ private fun LinkedEntitiesView(
                 accountsText,
                 personasText
             )
-            accounts.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, accountsText)
-            personas.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, personasText)
-            else -> stringResource(id = R.string.factorSources_card_linkedAccountsAndPersonasSomeHidden, accountsText, personasText)
+
+            accounts.isNotEmpty() -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden,
+                accountsText
+            )
+
+            personas.isNotEmpty() -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden,
+                personasText
+            )
+
+            else -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsAndPersonasSomeHidden,
+                accountsText,
+                personasText
+            )
         }
     } else {
         when {
@@ -255,8 +282,17 @@ private fun LinkedEntitiesView(
                 accountsText,
                 personasText
             )
-            accounts.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
-            personas.isNotEmpty() -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
+
+            accounts.isNotEmpty() -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsOrPersonas,
+                accountsText
+            )
+
+            personas.isNotEmpty() -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsOrPersonas,
+                personasText
+            )
+
             else -> ""
         }
     }
@@ -400,7 +436,8 @@ private fun FactorSourceCardPreview(
 ) {
     RadixWalletPreviewTheme {
         FactorSourceCardView(
-            item = item
+            item = item,
+            onSecurityPromptMessageClicked = {}
         )
     }
 }
@@ -467,6 +504,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleStokenet()
                 ),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -492,6 +530,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 ),
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -511,6 +550,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 ),
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = false
             ),
             FactorSourceCard(
@@ -529,6 +569,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleStokenet()
                 ),
                 hasHiddenEntities = false,
+                supportsBabylon = true,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -544,6 +585,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 accounts = persistentListOf(),
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
+                supportsBabylon = true,
                 isEnabled = true
             )
         )

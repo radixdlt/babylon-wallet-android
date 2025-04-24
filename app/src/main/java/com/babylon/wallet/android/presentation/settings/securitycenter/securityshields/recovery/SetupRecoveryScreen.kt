@@ -616,6 +616,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -631,6 +632,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -648,6 +650,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -663,6 +666,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -683,6 +687,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),
@@ -700,6 +705,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         accounts = persistentListOf(),
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
+                        supportsBabylon = true,
                         isEnabled = true
                     )
                 ),

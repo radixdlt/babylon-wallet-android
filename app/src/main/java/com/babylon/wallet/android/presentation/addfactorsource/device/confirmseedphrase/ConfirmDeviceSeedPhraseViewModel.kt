@@ -8,7 +8,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
-import com.radixdlt.sargon.DeviceMnemonicBuildOutcome
+import com.radixdlt.sargon.DeviceMnemonicValidationOutcome
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,10 +63,10 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
     fun onConfirmClick() {
         viewModelScope.launch {
             when (val outcome = deviceMnemonicBuilderClient.confirmWords(state.value.words)) {
-                is DeviceMnemonicBuildOutcome.Confirmed -> sendEvent(
-                    Event.Confirmed(outcome.mnemonicWithPassphrase)
-                )
-                is DeviceMnemonicBuildOutcome.Unconfirmed -> {
+                DeviceMnemonicValidationOutcome.Valid -> {
+                    sendEvent(Event.Confirmed(deviceMnemonicBuilderClient.getMnemonicWithPassphrase()))
+                }
+                is DeviceMnemonicValidationOutcome.Invalid -> {
                     val incorrectIndices = outcome.indicesInMnemonic.map { it.toInt() }
 
                     _state.update { state ->
@@ -82,7 +82,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
         }
     }
 
-    fun onFillWordsClick() {
+    fun onDebugFillWordsClick() {
         viewModelScope.launch {
             _state.update { state ->
                 val indicesToConfirm = state.words.map { it.index }

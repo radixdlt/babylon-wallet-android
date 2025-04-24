@@ -42,6 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -61,6 +62,8 @@ import kotlinx.collections.immutable.toImmutableList
 fun BiometricsPinScreen(
     viewModel: BiometricsPinViewModel,
     onBackClick: () -> Unit,
+    onNavigateToWriteDownSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
+    onNavigateToSeedPhraseRestore: () -> Unit,
     onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -72,6 +75,14 @@ fun BiometricsPinScreen(
                 is BiometricsPinViewModel.Event.NavigateToDeviceFactorSourceDetails -> {
                     onNavigateToDeviceFactorSourceDetails(event.factorSourceId)
                 }
+
+                is BiometricsPinViewModel.Event.NavigateToWriteDownSeedPhrase -> {
+                    onNavigateToWriteDownSeedPhrase(event.factorSourceId)
+                }
+
+                BiometricsPinViewModel.Event.NavigateToSeedPhraseRestore -> {
+                    onNavigateToSeedPhraseRestore()
+                }
             }
         }
     }
@@ -82,6 +93,7 @@ fun BiometricsPinScreen(
         onDeviceFactorSourceClick = viewModel::onDeviceFactorSourceClick,
         onAddBiometricsPinClick = viewModel::onAddBiometricsPinClick,
         onChangeMainDeviceFactorSourceClick = viewModel::onChangeMainDeviceFactorSourceClick,
+        onMessageClick = viewModel::onSecurityPromptMessageClicked,
         onInfoClick = onInfoClick
     )
 
@@ -117,6 +129,7 @@ private fun BiometricsPinContent(
     state: State,
     onBackClick: () -> Unit,
     onDeviceFactorSourceClick: (FactorSourceId) -> Unit,
+    onMessageClick: (FactorSourceId, SecurityPrompt) -> Unit,
     onAddBiometricsPinClick: () -> Unit,
     onChangeMainDeviceFactorSourceClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
@@ -147,6 +160,7 @@ private fun BiometricsPinContent(
                 onFactorSourceClick = onDeviceFactorSourceClick,
                 onAddFactorSourceClick = onAddBiometricsPinClick,
                 onChangeMainFactorSourceClick = onChangeMainDeviceFactorSourceClick,
+                onSecurityPromptMessageClick = onMessageClick,
                 onInfoClick = onInfoClick
             )
         }
@@ -236,13 +250,14 @@ private val otherDeviceFactorSources = persistentListOf(
         includeDescription = false,
         lastUsedOn = "Today",
         kind = FactorSourceKind.DEVICE,
-        messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
+        messages = persistentListOf(SecurityPrompt.LostFactorSource),
         accounts = persistentListOf(Account.sampleMainnet()),
         personas = persistentListOf(
             Persona.sampleMainnet(),
             Persona.sampleStokenet()
         ),
         hasHiddenEntities = true,
+        supportsBabylon = true,
         isEnabled = true
     ),
     FactorSourceCard(
@@ -258,6 +273,7 @@ private val otherDeviceFactorSources = persistentListOf(
         accounts = persistentListOf(),
         personas = persistentListOf(),
         hasHiddenEntities = true,
+        supportsBabylon = true,
         isEnabled = true
     )
 )
@@ -285,12 +301,14 @@ private fun BiometricsPinPreview() {
                         Persona.sampleStokenet()
                     ),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 otherDeviceFactorSources = otherDeviceFactorSources,
             ),
             onBackClick = {},
             onDeviceFactorSourceClick = {},
+            onMessageClick = { _, _ -> },
             onAddBiometricsPinClick = {},
             onChangeMainDeviceFactorSourceClick = {},
             onInfoClick = {}

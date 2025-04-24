@@ -298,6 +298,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = false
@@ -319,6 +320,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = false
@@ -340,6 +342,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = false
@@ -360,6 +363,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = false
@@ -381,6 +385,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = true
@@ -402,6 +407,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     accounts = persistentListOf(),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
+                    supportsBabylon = true,
                     isEnabled = true
                 ),
                 selected = false

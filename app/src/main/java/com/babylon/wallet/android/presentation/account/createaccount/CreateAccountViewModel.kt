@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -43,6 +44,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val firstAccountCreationStatusManager: FirstAccountCreationStatusManager,
     private val syncAccountThirdPartyDepositsWithLedger: SyncAccountThirdPartyDepositsWithLedger,
     private val getProfileUseCase: GetProfileUseCase,
     private val deleteWalletUseCase: DeleteWalletUseCase,
@@ -86,6 +88,11 @@ class CreateAccountViewModel @Inject constructor(
 
             val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
             val name = DisplayName.init(accountName.value.trim())
+
+            if (args.requestSource?.isFirstTime() == true) {
+                firstAccountCreationStatusManager.onFirstAccountCreationInProgress()
+            }
+
             when (factorSourceToCreateAccount) {
                 is FactorSourceToCreateAccount.Ledger -> runCatching {
                     sargonOsManager.sargonOs.createAndSaveNewAccountWithFactorSource(
@@ -106,6 +113,10 @@ class CreateAccountViewModel @Inject constructor(
             }.onFailure { error ->
                 Timber.w(error)
                 _state.update { it.copy(isCreatingAccount = false) }
+
+                if (args.requestSource?.isFirstTime() == true) {
+                    firstAccountCreationStatusManager.onFirstAccountCreationAborted()
+                }
             }
         }
     }
@@ -216,6 +227,7 @@ class CreateAccountViewModel @Inject constructor(
                 requestSource = args.requestSource
             )
         )
+        firstAccountCreationStatusManager.onFirstAccountCreationConfirmed()
     }
 
     private sealed interface FactorSourceToCreateAccount {

@@ -35,7 +35,7 @@ fun SeedPhraseInputVerificationForm(
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
     onWordChanged: (Int, String) -> Unit
 ) {
-    val firstFocusedIndex by remember(seedPhraseWords) {
+    val firstFocusedIndex by remember(seedPhraseWords.size) {
         mutableIntStateOf(seedPhraseWords.indexOfFirst { it.state == SeedPhraseWord.State.Empty })
     }
     Column(

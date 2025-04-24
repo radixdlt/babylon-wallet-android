@@ -42,7 +42,9 @@ class HomeCardsDelegate @Inject constructor(
             }
 
             // Currently all the cards should be dismissed on tap
-            dismissCard(card)
+            if (card.allowsDismiss()) {
+                dismissCard(card)
+            }
         }
     }
 
@@ -62,4 +64,14 @@ class HomeCardsDelegate @Inject constructor(
                 }
         }
     }
+}
+
+fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.DiscoverRadixDapps
+
+fun HomeCard.allowsDismiss() = when (this) {
+    HomeCard.Connector -> true
+    HomeCard.ContinueRadQuest -> true
+    is HomeCard.Dapp -> true
+    HomeCard.DiscoverRadixDapps -> false
+    HomeCard.StartRadQuest -> true
 }

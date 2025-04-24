@@ -60,6 +60,8 @@ class DerivePublicKeysViewModel @Inject constructor(
     override fun initialState(): State = State(
         purpose = when (proxyInput.purpose) {
             DerivationPurpose.ACCOUNT_RECOVERY -> AccessFactorSourcePurpose.DerivingAccounts
+            DerivationPurpose.CREATING_NEW_ACCOUNT -> AccessFactorSourcePurpose.CreatingAccount
+            DerivationPurpose.CREATING_NEW_PERSONA -> AccessFactorSourcePurpose.CreatingPersona
             else -> AccessFactorSourcePurpose.UpdatingFactorConfig
         },
         accessState = accessDelegate.state.value

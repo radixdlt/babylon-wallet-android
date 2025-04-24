@@ -5,6 +5,8 @@ enum class AccessFactorSourcePurpose {
     ProvingOwnership,
     DerivingAccounts,
     UpdatingFactorConfig,
+    CreatingAccount,
+    CreatingPersona,
     SpotCheck
 }
 
