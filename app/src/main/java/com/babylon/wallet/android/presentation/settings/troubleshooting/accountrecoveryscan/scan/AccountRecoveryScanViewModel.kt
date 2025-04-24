@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.troubleshooting.account
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.ResolveDerivationPathsForRecoveryScanUseCase
@@ -58,6 +59,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     private val resolveDerivationPathsForRecoveryScanUseCase: ResolveDerivationPathsForRecoveryScanUseCase,
     private val sargonOsManager: SargonOsManager,
+    private val homeCardsRepository: HomeCardsRepository,
 ) : StateViewModel<AccountRecoveryScanViewModel.State>(),
     OneOffEventHandler<AccountRecoveryScanViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -189,6 +191,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                         accounts = Accounts(accountsToRecover)
                     ).onSuccess {
                         _state.update { state -> state.copy(isScanningNetwork = false) }
+                        homeCardsRepository.walletRestored()
                         sendEvent(Event.RecoverComplete)
                     }.onFailure { error ->
                         if (error is CommonException.SecureStorageWriteException) {
