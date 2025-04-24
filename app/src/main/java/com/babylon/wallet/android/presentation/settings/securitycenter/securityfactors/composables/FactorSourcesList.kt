@@ -25,6 +25,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.collections.immutable.PersistentList
@@ -40,6 +41,7 @@ fun FactorSourcesList(
     @StringRes addFactorSourceButtonTitle: Int? = null,
     addFactorSourceButtonContent: @Composable (() -> Unit)? = null,
     onFactorSourceClick: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: ((FactorSourceId, SecurityPrompt) -> Unit)? = null,
     onAddFactorSourceClick: (() -> Unit)? = null,
     onChangeMainFactorSourceClick: () -> Unit = {},
     @Suppress("UNUSED_PARAMETER")
@@ -96,7 +98,12 @@ fun FactorSourcesList(
                     modifier = Modifier
                         .padding(bottom = RadixTheme.dimensions.paddingMedium)
                         .clickable { onFactorSourceClick(it.id) },
-                    item = it
+                    item = it,
+                    onSecurityPromptMessageClicked = if (onSecurityPromptMessageClick != null) {
+                        { message -> onSecurityPromptMessageClick(it.id, message) }
+                    } else {
+                        null
+                    }
                 )
             }
         }

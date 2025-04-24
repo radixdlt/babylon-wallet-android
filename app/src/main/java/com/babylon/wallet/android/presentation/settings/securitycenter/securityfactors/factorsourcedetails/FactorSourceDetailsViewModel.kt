@@ -22,7 +22,6 @@ import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -180,7 +179,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
         val uiMessage: UiMessage? = null
     ) : UiState {
 
-        val factorSourceName: String = factorSource?.name ?: ""
+        val factorSourceName: String = factorSource?.name.orEmpty()
 
         val factorSourceKind: FactorSourceKind =
             factorSource?.kind ?: FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET

@@ -26,7 +26,6 @@ class FirstAccountCreationStatusManager @Inject constructor() {
     fun onFirstAccountCreationAborted() {
         _firstAccountCreationStatus.update { FirstAccountCreationStatus.None }
     }
-
 }
 
 enum class FirstAccountCreationStatus {

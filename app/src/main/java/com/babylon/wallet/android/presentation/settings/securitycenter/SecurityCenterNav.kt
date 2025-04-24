@@ -107,6 +107,14 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         biometricsPin(
             onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
+            onNavigateToWriteDownSeedPhrase = { navController.revealSeedPhrase(it) },
+            onNavigateToSeedPhraseRestore = {
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs(
+                        requestSource = RestoreMnemonicsRequestSource.FactorSourceDetails
+                    )
+                )
+            },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )

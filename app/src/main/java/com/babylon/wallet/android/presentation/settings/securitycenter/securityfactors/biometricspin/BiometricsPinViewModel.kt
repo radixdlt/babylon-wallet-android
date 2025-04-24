@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
@@ -14,6 +15,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
@@ -49,6 +51,7 @@ class BiometricsPinViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val sargonOsManager: SargonOsManager,
     private val addFactorSourceProxy: AddFactorSourceProxy,
     private val preferencesManager: PreferencesManager,
@@ -79,7 +82,7 @@ class BiometricsPinViewModel @Inject constructor(
                     accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
                     personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
                     hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
                 )
                 val isMainDeviceFactorSource =
                     deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
@@ -115,6 +118,22 @@ class BiometricsPinViewModel @Inject constructor(
     fun onDeviceFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
             sendEvent(Event.NavigateToDeviceFactorSourceDetails(factorSourceId))
+        }
+    }
+
+    fun onSecurityPromptMessageClicked(id: FactorSourceId, message: SecurityPrompt) {
+        val hashFactorSourceId = id as? FactorSourceId.Hash ?: return
+        when (message) {
+            SecurityPrompt.EntitiesNotRecoverable,
+            SecurityPrompt.WriteDownSeedPhrase -> viewModelScope.launch {
+                if (biometricsAuthenticateUseCase()) {
+                    sendEvent(Event.NavigateToWriteDownSeedPhrase(hashFactorSourceId))
+                }
+            }
+            SecurityPrompt.LostFactorSource,
+            SecurityPrompt.SeedPhraseNeedRecovery -> viewModelScope.launch {
+                sendEvent(Event.NavigateToSeedPhraseRestore)
+            }
         }
     }
 
@@ -203,5 +222,7 @@ class BiometricsPinViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
 
         data class NavigateToDeviceFactorSourceDetails(val factorSourceId: FactorSourceId) : Event
+        data class NavigateToWriteDownSeedPhrase(val factorSourceId: FactorSourceId.Hash) : Event
+        data object NavigateToSeedPhraseRestore : Event
     }
 }
