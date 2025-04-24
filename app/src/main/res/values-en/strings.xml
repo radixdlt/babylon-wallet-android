@@ -1146,7 +1146,7 @@ Code: %s</string>
   <string name="securityCenter_encryptWalletBackup_passwordMismatchError">Passwords do not match</string>
   <string name="securityCenter_encryptWalletBackup_continue">Continue</string>
   <string name="securityFactors_title">Security Factors</string>
-  <string name="securityFactors_subtitle">Manage the security factors you’ll use in your Security Shields.</string>
+  <string name="securityFactors_subtitle">View and manage your security factors.</string>
   <string name="securityFactors_hardware">Hardware</string>
   <string name="securityFactors_information">Things you know</string>
   <string name="securityFactors_seedPhrases_title">Seed Phrases</string>
