@@ -37,11 +37,11 @@ class AppLockStateProvider @Inject constructor(
 
     val lockState: SharedFlow<LockState>
         get() = _state.map { state ->
-                state.lockState
-            }.shareIn(
-                scope = applicationScope,
-                started = SharingStarted.WhileSubscribed()
-            )
+            state.lockState
+        }.shareIn(
+            scope = applicationScope,
+            started = SharingStarted.WhileSubscribed()
+        )
 
     suspend fun lockApp() {
         if (_state.value.isLockingPaused) return
