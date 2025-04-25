@@ -5,13 +5,12 @@ import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.radixdlt.sargon.Account
-import kotlinx.coroutines.flow.StateFlow
 
 const val MAIN_ROUTE = "main"
 
 @Suppress("LongParameterList")
 fun NavGraphBuilder.main(
-    mainUiState: StateFlow<MainViewModel.State>,
+    viewModel: MainViewModel,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit,
     onNavigateToSecurityCenter: () -> Unit,
@@ -31,7 +30,7 @@ fun NavGraphBuilder.main(
         popExitTransition = { ExitTransition.None }
     ) {
         MainScreen(
-            mainUiState = mainUiState,
+            viewModel = viewModel,
             onMenuClick = onMenuClick,
             onAccountClick = onAccountClick,
             onAccountCreationClick = onAccountCreationClick,

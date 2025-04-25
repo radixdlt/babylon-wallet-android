@@ -9,12 +9,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.radixdlt.sargon.Account
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    mainUiState: StateFlow<MainViewModel.State>,
+    viewModel: MainViewModel,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,
@@ -26,7 +25,7 @@ fun MainScreen(
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit
 ) {
-    val state by mainUiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
         is AppState.Wallet -> {
             WalletScreen(

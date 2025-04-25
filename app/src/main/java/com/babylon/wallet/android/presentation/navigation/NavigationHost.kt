@@ -88,14 +88,13 @@ import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.walletclaimed.claimedByAnotherDevice
 import com.radixdlt.sargon.extensions.networkId
-import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
-    state: StateFlow<MainViewModel.State>,
+    viewModel: MainViewModel,
     startDestination: String,
     navController: NavHostController,
     onCloseApp: () -> Unit,
@@ -209,7 +208,7 @@ fun NavigationHost(
             }
         )
         main(
-            mainUiState = state,
+            viewModel = viewModel,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
