@@ -21,7 +21,9 @@ class AppLockStateProvider @Inject constructor(
     @ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
-    private val _state: MutableStateFlow<State> = MutableStateFlow(State())
+    private val _state: MutableStateFlow<State> = MutableStateFlow(
+        State(lockState = LockState.Unlocked)
+    )
 
     init {
         applicationScope.launch {
