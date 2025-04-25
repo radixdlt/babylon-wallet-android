@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -23,15 +23,20 @@ class AppLockStateProvider @Inject constructor(
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State())
 
-    val lockState: SharedFlow<LockState>
-        get() = _state
-            .onStart {
-                val isAdvancedLockEnabled = getProfileUseCase().isAdvancedLockEnabled
-                _state.update {
-                    it.copy(lockState = if (isAdvancedLockEnabled) LockState.Locked else LockState.Unlocked)
-                }
+    init {
+        applicationScope.launch {
+            val isAdvancedLockEnabled = getProfileUseCase
+                .finishedOnboardingProfile()
+                ?.isAdvancedLockEnabled ?: false
+
+            _state.update {
+                it.copy(lockState = if (isAdvancedLockEnabled) LockState.Locked else LockState.Unlocked)
             }
-            .map { state ->
+        }
+    }
+
+    val lockState: SharedFlow<LockState>
+        get() = _state.map { state ->
                 state.lockState
             }.shareIn(
                 scope = applicationScope,
