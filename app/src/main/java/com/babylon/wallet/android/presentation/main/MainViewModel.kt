@@ -18,10 +18,8 @@ import com.babylon.wallet.android.presentation.main.p2plinks.IncomingRequestsDel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
@@ -238,15 +236,6 @@ class MainViewModel @Inject constructor(
     ) : UiState {
         val showDeviceNotSecureDialog: Boolean
             get() = !isDeviceSecure && !isAdvancedLockEnabled
-    }
-
-    data class OlympiaErrorState(
-        val secondsLeft: Int = 30,
-        val affectedAccounts: List<Account>,
-        val affectedPersonas: List<Persona>
-    ) {
-        val isCountdownActive: Boolean
-            get() = secondsLeft > 0
     }
 
     sealed class Event : OneOffEvent {
