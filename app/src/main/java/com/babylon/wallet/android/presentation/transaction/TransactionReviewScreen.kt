@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -303,7 +303,7 @@ private fun TransactionReviewContent(
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
-                        androidx.compose.material.Text(
+                        Text(
                             modifier = Modifier
                                 .padding(
                                     top = 74.dp,
@@ -387,9 +387,11 @@ private fun TransactionReviewContent(
                                 },
                                 shape = RadixTheme.shapes.roundedRectSmall,
                                 elevation = null,
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = RadixTheme.colors.gray4,
-                                    contentColor = RadixTheme.colors.gray1
+                                colors = ButtonColors(
+                                    containerColor = RadixTheme.colors.gray4,
+                                    contentColor = RadixTheme.colors.gray1,
+                                    disabledContentColor = RadixTheme.colors.gray4,
+                                    disabledContainerColor = RadixTheme.colors.gray1
                                 )
                             ) {
                                 Icon(
