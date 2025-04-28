@@ -11,8 +11,8 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
