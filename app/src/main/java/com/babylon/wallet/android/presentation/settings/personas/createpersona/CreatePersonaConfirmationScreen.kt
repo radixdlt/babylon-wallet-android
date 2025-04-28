@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +61,7 @@ fun CreatePersonaConfirmationContent(
 
     Scaffold(
         modifier = modifier,
-        contentColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.defaultBackground,
         contentWindowInsets = WindowInsets.statusBarsAndBanner.add(WindowInsets.navigationBars),
         bottomBar = {
             RadixBottomBar(
