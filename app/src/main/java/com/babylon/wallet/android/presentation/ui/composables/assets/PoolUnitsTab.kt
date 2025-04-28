@@ -177,12 +177,16 @@ fun PoolResourcesValues(
         val itemsSize = resources.size
         resources.entries.forEachIndexed { index, resourceWithAmount ->
             Column(
-                modifier = Modifier.padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = if (isCompact) RadixTheme.dimensions.paddingMedium else RadixTheme.dimensions.paddingDefault
-                )
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
             ) {
                 Row(
+                    modifier = Modifier.padding(
+                        vertical = if (isCompact) {
+                            RadixTheme.dimensions.paddingMedium
+                        } else {
+                            RadixTheme.dimensions.paddingDefault
+                        }
+                    ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
