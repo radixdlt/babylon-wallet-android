@@ -347,7 +347,8 @@ private fun SpecificAssetsDepositsContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 hostState = snackBarHostState
             )
-        }
+        },
+        containerColor = RadixTheme.colors.gray5
     ) { paddingValues ->
         Column(
             Modifier
