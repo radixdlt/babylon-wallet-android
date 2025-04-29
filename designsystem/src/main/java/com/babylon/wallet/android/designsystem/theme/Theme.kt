@@ -3,12 +3,7 @@
 package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Shapes
-import androidx.compose.material.Typography
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -18,18 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-// TODO - IMPORTANT
-//  The resource-theme of the app has been switched from Material 2 to Material 3.
-//  The reason was to fix the bug that caused a crash with the biometric dialog on Android 6 to 8.1.
-//  Although the resource-theme is set to Material 3,
-//  the rest of the UI components and the UI theme is still in Material 2.
-//  Once we have a design system we should update the Theme file following the Material Design 3 guidelines
-//  and switch the UI components from Material 2 to 3 if it is needed!
-//  For samples have a look at Jetsurvey and JetNews
 
 @Stable
 class RadixColors(
@@ -228,51 +211,6 @@ private val LightColorPalette = RadixColors(
     darkMode3 = DarkMode3,
 )
 
-@Suppress("UnusedPrivateMember")
-private val DarkColorPalette = RadixColors(
-    defaultBackground = Black,
-    backgroundAlternate = White,
-    defaultText = White,
-    blue1 = Blue1,
-    blue2 = Blue2,
-    blue3 = Blue3,
-    green1 = Green1,
-    green2 = Green2,
-    green3 = Green3,
-    pink1 = Pink1,
-    pink2 = Pink2,
-    gray1 = Gray1,
-    gray2 = Gray2,
-    gray3 = Gray3,
-    gray4 = Gray4,
-    gray5 = Gray5,
-    orange1 = Orange1,
-    orange2 = Orange2,
-    orange3 = Orange3,
-    lightOrange = LightOrange,
-    red1 = Red1,
-    lightRed = LightRed,
-    white = White,
-    darkMode1 = DarkMode1,
-    darkMode2 = DarkMode2,
-    darkMode3 = DarkMode3,
-)
-
-private val MaterialLightColorPalette = lightColors(
-    primary = White,
-    primaryVariant = Color(0xFF3700B3),
-    onPrimary = Color(0xFF000000),
-    secondary = RadixBackground,
-    secondaryVariant = Color(0xFF018786),
-    onSecondary = Color(0xFF000000),
-    background = Color(0xFFFFFFFF),
-    onBackground = Color(0xFF000000),
-    surface = RadixCardBackground,
-    onSurface = Color(0xFF535353), // Color(0xFF000000),
-    error = Color(0xFFB00020),
-    onError = Color(0xFFCCCCCC),
-)
-
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
     error("No RadixColors provided")
 }
@@ -377,56 +315,14 @@ fun RadixWalletTheme(
                 ProvideRadixDimensions {
                     ProvideRadixShapes {
                         MaterialTheme(
-                            colors = MaterialLightColorPalette,
-                            typography = DefaultTypography,
-                            shapes = debugShapes()
-                        ) {
-                            content()
-                        }
+                            colorScheme = MaterialTheme.colorScheme,
+                            shapes = MaterialTheme.shapes,
+                            typography = RadixMaterialTypography,
+                            content = content
+                        )
                     }
                 }
             }
         }
     }
 }
-
-fun debugColors(
-    darkTheme: Boolean,
-    debugColor: Color = Color.Magenta,
-) = Colors(
-    primary = debugColor,
-    primaryVariant = debugColor,
-    secondary = debugColor,
-    secondaryVariant = debugColor,
-    background = debugColor,
-    surface = debugColor,
-    error = debugColor,
-    onPrimary = debugColor,
-    onSecondary = debugColor,
-    onBackground = debugColor,
-    onSurface = debugColor,
-    onError = debugColor,
-    isLight = !darkTheme
-)
-
-fun debugShapes() = Shapes(
-    small = RoundedCornerShape(0.dp),
-    medium = RoundedCornerShape(0.dp),
-    large = RoundedCornerShape(0.dp)
-)
-
-fun debugTypography() = Typography(
-    body1 = TextStyle(fontSize = 4.sp),
-    body2 = TextStyle(fontSize = 4.sp),
-    button = TextStyle(fontSize = 4.sp),
-    caption = TextStyle(fontSize = 4.sp),
-    h1 = TextStyle(fontSize = 4.sp),
-    h2 = TextStyle(fontSize = 4.sp),
-    h3 = TextStyle(fontSize = 4.sp),
-    h4 = TextStyle(fontSize = 4.sp),
-    h5 = TextStyle(fontSize = 4.sp),
-    h6 = TextStyle(fontSize = 4.sp),
-    overline = TextStyle(fontSize = 4.sp),
-    subtitle1 = TextStyle(fontSize = 4.sp),
-    subtitle2 = TextStyle(fontSize = 4.sp),
-)

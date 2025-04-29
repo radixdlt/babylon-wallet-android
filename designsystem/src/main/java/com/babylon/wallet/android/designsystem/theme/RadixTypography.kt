@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.designsystem.theme
 
-import androidx.compose.material.Typography
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -33,22 +33,22 @@ private val IBMPlex = FontFamily(
 )
 
 data class RadixTypography(
-    var title: TextStyle = bold.copy(fontSize = 32.sp, lineHeight = 36.sp),
-    var header: TextStyle = semibold.copy(fontSize = 20.sp, lineHeight = 23.sp),
-    var secondaryHeader: TextStyle = semibold.copy(fontSize = 18.sp, lineHeight = 23.sp),
-    var body1Header: TextStyle = semibold.copy(fontSize = 16.sp, lineHeight = 23.sp),
-    var body1HighImportance: TextStyle = medium.copy(fontSize = 16.sp, lineHeight = 23.sp),
-    var body1Regular: TextStyle = regular.copy(fontSize = 16.sp, lineHeight = 23.sp),
-    var body1StandaloneLink: TextStyle = semibold.copy(fontSize = 16.sp, lineHeight = 23.sp),
-    var body1Link: TextStyle = medium.copy(fontSize = 16.sp, lineHeight = 23.sp),
-    var body2Header: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var body2HighImportance: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var body2Regular: TextStyle = regular.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var body3Regular: TextStyle = regular.copy(fontSize = 12.sp, lineHeight = 23.sp),
-    var body2Link: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp),
-    var button: TextStyle = bold.copy(fontSize = 16.sp, lineHeight = 18.sp),
+    var title: TextStyle = RadixTypography.title,
+    var header: TextStyle = RadixTypography.header,
+    var secondaryHeader: TextStyle = RadixTypography.secondaryHeader,
+    var body1Header: TextStyle = RadixTypography.body1Header,
+    var body1HighImportance: TextStyle = RadixTypography.body1HighImportance,
+    var body1Regular: TextStyle = RadixTypography.body1Regular,
+    var body1StandaloneLink: TextStyle = RadixTypography.body1StandaloneLink,
+    var body1Link: TextStyle = RadixTypography.body1Link,
+    var body2Header: TextStyle = RadixTypography.body2Header,
+    var body2HighImportance: TextStyle = RadixTypography.body2HighImportance,
+    var body2Regular: TextStyle = RadixTypography.body2Regular,
+    var body3Regular: TextStyle = RadixTypography.body3Regular,
+    var body2Link: TextStyle = RadixTypography.body2Link,
+    var button: TextStyle = RadixTypography.button,
 ) {
-    private companion object {
+    companion object {
         val regular = TextStyle(
             fontFamily = IBMPlex,
             fontWeight = FontWeight.Normal
@@ -65,46 +65,70 @@ data class RadixTypography(
             fontFamily = IBMPlex,
             fontWeight = FontWeight.Bold
         )
+
+        internal val title: TextStyle = bold.copy(fontSize = 32.sp, lineHeight = 36.sp)
+        internal val header: TextStyle = semibold.copy(fontSize = 20.sp, lineHeight = 23.sp)
+        internal val secondaryHeader: TextStyle = semibold.copy(fontSize = 18.sp, lineHeight = 23.sp)
+        internal val body1Header: TextStyle = semibold.copy(fontSize = 16.sp, lineHeight = 23.sp)
+        internal val body1HighImportance: TextStyle = medium.copy(fontSize = 16.sp, lineHeight = 23.sp)
+        internal val body1Regular: TextStyle = regular.copy(fontSize = 16.sp, lineHeight = 23.sp)
+        internal val body1StandaloneLink: TextStyle = semibold.copy(fontSize = 16.sp, lineHeight = 23.sp)
+        internal val body1Link: TextStyle = medium.copy(fontSize = 16.sp, lineHeight = 23.sp)
+        internal val body2Header: TextStyle = bold.copy(fontSize = 14.sp, lineHeight = 18.sp)
+        internal val body2HighImportance: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp)
+        internal val body2Regular: TextStyle = regular.copy(fontSize = 14.sp, lineHeight = 18.sp)
+        internal val body3Regular: TextStyle = regular.copy(fontSize = 12.sp, lineHeight = 23.sp)
+        internal val body2Link: TextStyle = medium.copy(fontSize = 14.sp, lineHeight = 18.sp)
+        internal val button: TextStyle = bold.copy(fontSize = 16.sp, lineHeight = 18.sp)
     }
 }
 
-// Set of Material typography styles to start with
-val DefaultTypography = Typography(
-    body1 = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
-    ),
-    h1 = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 26.sp
-    ),
-    h4 = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp
-    ),
-    h6 = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    ),
-    button = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.W600,
-        fontSize = 14.sp
-    ),
-    /* Other default text styles to override
-    button = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.W500,
-        fontSize = 14.sp
-    ),
-    caption = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp
+internal val RadixMaterialTypography = Typography().let { default ->
+    default.copy(
+        displayLarge = default.displayLarge.copy(
+            fontFamily = IBMPlex
+        ),
+        displayMedium = default.displayMedium.copy(
+            fontFamily = IBMPlex,
+        ),
+        displaySmall = default.displaySmall.copy(
+            fontFamily = IBMPlex
+        ),
+        headlineLarge = default.headlineLarge.copy(
+            fontFamily = IBMPlex
+        ),
+        headlineMedium = default.headlineMedium.copy(
+            fontFamily = IBMPlex
+        ),
+        headlineSmall = default.headlineSmall.copy(
+            fontFamily = IBMPlex
+        ),
+        titleLarge = default.titleLarge.copy(
+            fontFamily = IBMPlex
+        ),
+        titleMedium = default.titleMedium.copy(
+            fontFamily = IBMPlex
+        ),
+        titleSmall = default.titleSmall.copy(
+            fontFamily = IBMPlex
+        ),
+        bodyLarge = default.bodyLarge.copy(
+            fontFamily = IBMPlex
+        ),
+        bodyMedium = default.bodyMedium.copy(
+            fontFamily = IBMPlex
+        ),
+        bodySmall = default.bodySmall.copy(
+            fontFamily = IBMPlex
+        ),
+        labelLarge = default.labelLarge.copy(
+            fontFamily = IBMPlex
+        ),
+        labelMedium = default.labelMedium.copy(
+            fontFamily = IBMPlex
+        ),
+        labelSmall = default.labelSmall.copy(
+            fontFamily = IBMPlex
+        )
     )
-     */
-)
+}
