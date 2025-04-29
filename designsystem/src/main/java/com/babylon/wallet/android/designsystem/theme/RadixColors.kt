@@ -11,14 +11,11 @@ import com.radixdlt.sargon.AppearanceId
 
 val Blue1 = Color(0xFF060F8F)
 val Blue2 = Color(0xFF052CC0)
-val Blue3 = Color(0xFF20E4FF)
 
 val Green1 = Color(0xFF00AB84)
-val Green2 = Color(0xFF00C389)
 val Green3 = Color(0xFF21FFBE)
 
 val Pink1 = Color(0xFFCE0D98)
-val Pink2 = Color(0xFFFF43CA)
 
 val Gray1 = Color(0xFF003057)
 val Gray2 = Color(0xFF8A8FA4)
@@ -37,17 +34,8 @@ val LightRed = Color(0xFFfcebeb)
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
 
-val DarkMode1 = Color(0xFF28292A)
-val DarkMode2 = Color(0xFF404243)
-val DarkMode3 = Color(0xFF373839)
-
 val DefaultLightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
 val DefaultDarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
-
-val RadixBackground = Color(226, 226, 226)
-val RadixCardBackground = Color(190, 189, 189)
-val RadixLightCardBackground = Color(244, 244, 244)
-val RadixButtonBackground = Color(83, 83, 83)
 
 val GradientBrand1 = Brush.linearGradient(
     listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F)),
