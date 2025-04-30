@@ -193,12 +193,14 @@ private fun WalletContent(
         topBar = {
             TopAppBar(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = RadixTheme.colors.defaultBackground),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = RadixTheme.colors.background
+                ),
                 title = {
                     Text(
                         text = stringResource(id = R.string.homePage_title),
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 },
                 actions = {
@@ -209,7 +211,7 @@ private fun WalletContent(
                                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
                                 ),
                                 contentDescription = null,
-                                tint = RadixTheme.colors.gray1
+                                tint = RadixTheme.colors.text
                             )
                         }
                     }
@@ -223,8 +225,7 @@ private fun WalletContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
-        contentColor = RadixTheme.colors.defaultText
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val pullToRefreshState = rememberPullToRefreshState()
         Box {

@@ -34,8 +34,13 @@ val LightRed = Color(0xFFfcebeb)
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
 
-val DefaultLightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
-val DefaultDarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
+val LightEdgeToEdgeScrim = android.graphics.Color.WHITE
+val DarkEdgeToEdgeScrim = android.graphics.Color.argb(
+    0xFF,
+    0x00,
+    0x30,
+    0x57
+)
 
 val GradientBrand1 = Brush.linearGradient(
     listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F)),

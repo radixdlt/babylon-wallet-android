@@ -35,7 +35,11 @@ class RadixColors(
     lightOrange: Color,
     red1: Color,
     lightRed: Color,
-    white: Color
+    white: Color,
+
+    background: Color,
+    backgroundSecondary: Color,
+    text: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
         private set
@@ -78,6 +82,14 @@ class RadixColors(
     var white by mutableStateOf(white)
         private set
 
+    var background by mutableStateOf(background)
+        private set
+    var backgroundSecondary by mutableStateOf(backgroundSecondary)
+        private set
+    var text by mutableStateOf(text)
+        private set
+
+
     fun copy(
         defaultBackground: Color = this.defaultBackground,
         backgroundAlternate: Color = this.backgroundAlternate,
@@ -99,6 +111,9 @@ class RadixColors(
         red1: Color = this.red1,
         lightRed: Color = this.lightRed,
         white: Color = this.white,
+        background: Color = this.background,
+        backgroundSecondary: Color = this.backgroundSecondary,
+        text: Color = this.text
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
@@ -120,7 +135,10 @@ class RadixColors(
             lightOrange = lightOrange,
             red1 = red1,
             lightRed = lightRed,
-            white = white
+            white = white,
+            background = background,
+            backgroundSecondary = backgroundSecondary,
+            text = text
         )
     }
 
@@ -143,6 +161,9 @@ class RadixColors(
         red1 = other.red1
         lightRed = other.lightRed
         white = other.white
+        background = other.background
+        backgroundSecondary = other.backgroundSecondary
+        text = other.text
     }
 }
 
@@ -167,6 +188,15 @@ private val LightColorPalette = RadixColors(
     red1 = Red1,
     lightRed = LightRed,
     white = White,
+    background = White,
+    backgroundSecondary = Gray5,
+    text = Gray1
+)
+
+private val DarkColorPalette = LightColorPalette.copy(
+    background = Color(0xFF28292A),
+    backgroundSecondary = Color(0xFF1E1F1F),
+    text = White
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
@@ -174,12 +204,16 @@ private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
 }
 
 @Composable
-fun ProvideRadixColors(colors: RadixColors, content: @Composable () -> Unit) {
-    val colorPalette = remember {
-        colors.copy()
+fun ProvideRadixColors(content: @Composable () -> Unit) {
+    val isDarkMode = LocalRadixThemeConfig.current.isDarkTheme
+    val colors = remember(isDarkMode) {
+        if (isDarkMode) {
+            DarkColorPalette
+        } else {
+            LightColorPalette
+        }
     }
-    colorPalette.update(colors)
-    CompositionLocalProvider(LocalRadixColors provides colorPalette) {
+    CompositionLocalProvider(LocalRadixColors provides colors) {
         content()
     }
 }
@@ -260,15 +294,8 @@ fun RadixWalletTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val colors = if (darkTheme) {
-        // TODO update to dark color palette when we have it ready
-        // TODO remove android:windowBackground from themes.xml
-        LightColorPalette
-    } else {
-        LightColorPalette
-    }
-    ProvideRadixThemeConfig(isDarkMode = darkTheme) {
-        ProvideRadixColors(colors) {
+    ProvideRadixThemeConfig(isDarkMode = false) {
+        ProvideRadixColors {
             ProvideRadixTypography {
                 ProvideRadixDimensions {
                     ProvideRadixShapes {
