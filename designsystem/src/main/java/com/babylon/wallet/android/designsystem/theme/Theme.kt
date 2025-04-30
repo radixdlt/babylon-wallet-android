@@ -39,7 +39,11 @@ class RadixColors(
 
     background: Color,
     backgroundSecondary: Color,
-    text: Color
+    backgroundTertiary: Color,
+    text: Color,
+    textSecondary: Color,
+    textButton: Color,
+    icon: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
         private set
@@ -86,7 +90,15 @@ class RadixColors(
         private set
     var backgroundSecondary by mutableStateOf(backgroundSecondary)
         private set
+    var backgroundTertiary by mutableStateOf(backgroundTertiary)
+        private set
     var text by mutableStateOf(text)
+        private set
+    var textSecondary by mutableStateOf(textSecondary)
+        private set
+    var textButton by mutableStateOf(textButton)
+        private set
+    var icon by mutableStateOf(icon)
         private set
 
     fun copy(
@@ -112,7 +124,11 @@ class RadixColors(
         white: Color = this.white,
         background: Color = this.background,
         backgroundSecondary: Color = this.backgroundSecondary,
-        text: Color = this.text
+        backgroundTertiary: Color = this.backgroundTertiary,
+        text: Color = this.text,
+        textSecondary: Color = this.textSecondary,
+        textButton: Color = this.textButton,
+        icon: Color = this.icon
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
@@ -137,7 +153,11 @@ class RadixColors(
             white = white,
             background = background,
             backgroundSecondary = backgroundSecondary,
-            text = text
+            backgroundTertiary = backgroundTertiary,
+            text = text,
+            textSecondary = textSecondary,
+            textButton = textButton,
+            icon = icon
         )
     }
 
@@ -162,7 +182,11 @@ class RadixColors(
         white = other.white
         background = other.background
         backgroundSecondary = other.backgroundSecondary
+        backgroundTertiary = other.backgroundTertiary
         text = other.text
+        textSecondary = other.textSecondary
+        textButton = other.textButton
+        icon = other.icon
     }
 }
 
@@ -189,13 +213,21 @@ private val LightColorPalette = RadixColors(
     white = White,
     background = White,
     backgroundSecondary = Gray5,
-    text = Gray1
+    backgroundTertiary = Gray4,
+    text = Gray1,
+    textSecondary = Gray2,
+    textButton = Blue2,
+    icon = Gray1
 )
 
 private val DarkColorPalette = LightColorPalette.copy(
     background = Color(0xFF28292A),
     backgroundSecondary = Color(0xFF1E1F1F),
-    text = White
+    backgroundTertiary = Color(0xFF404243),
+    text = Gray5,
+    textSecondary = Gray4,
+    textButton = Color(0xFF90CAF9),
+    icon = Gray5
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
