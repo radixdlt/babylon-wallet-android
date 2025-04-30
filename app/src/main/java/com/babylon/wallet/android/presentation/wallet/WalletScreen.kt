@@ -211,7 +211,7 @@ private fun WalletContent(
                                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
                                 ),
                                 contentDescription = null,
-                                tint = RadixTheme.colors.text
+                                tint = RadixTheme.colors.icon
                             )
                         }
                     }
@@ -254,8 +254,8 @@ private fun WalletContent(
                     .align(Alignment.TopCenter),
                 state = pullToRefreshState,
                 isRefreshing = state.isRefreshing,
-                color = RadixTheme.colors.gray1,
-                containerColor = RadixTheme.colors.defaultBackground
+                color = RadixTheme.colors.icon,
+                containerColor = RadixTheme.colors.backgroundSecondary // TODO theme
             )
         }
     }

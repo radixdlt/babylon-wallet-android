@@ -46,14 +46,14 @@ fun DefaultSettingsItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = RadixTheme.colors.gray1
+            tint = RadixTheme.colors.icon
         )
     }
 ) {
     ConstraintLayout(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .throttleClickable(onClick = onClick, enabled = isEnabled)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
     ) {
@@ -95,7 +95,7 @@ fun DefaultSettingsItem(
                 color = if (isErrorText) {
                     RadixTheme.colors.red1
                 } else {
-                    RadixTheme.colors.gray1
+                    RadixTheme.colors.text
                 }
             )
             subtitleView?.let { subtitle ->
@@ -152,7 +152,7 @@ fun DefaultSettingsItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = RadixTheme.colors.gray1
+            tint = RadixTheme.colors.icon
         )
     }
 ) {
@@ -170,7 +170,7 @@ fun DefaultSettingsItem(
                     color = if (isErrorText) {
                         RadixTheme.colors.red1
                     } else {
-                        RadixTheme.colors.gray1
+                        RadixTheme.colors.icon
                     }
                 )
             }
@@ -180,7 +180,7 @@ fun DefaultSettingsItem(
                 Text(
                     text = it,
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
             }
         },
@@ -204,7 +204,7 @@ fun DefaultSettingsItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = if (isErrorText) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+            tint = if (isErrorText) RadixTheme.colors.red1 else RadixTheme.colors.icon
         )
     }
 ) {
@@ -241,7 +241,7 @@ fun DefaultSettingsItem(
                     tint = if (isErrorText) {
                         RadixTheme.colors.red1
                     } else {
-                        RadixTheme.colors.gray1
+                        RadixTheme.colors.icon
                     }
                 )
             }

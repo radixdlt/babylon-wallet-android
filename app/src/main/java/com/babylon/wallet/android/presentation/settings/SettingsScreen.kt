@@ -69,18 +69,18 @@ private fun SettingsContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.walletSettings_title),
                 onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1,
+                contentColor = RadixTheme.colors.text,
                 windowInsets = WindowInsets.statusBarsAndBanner,
-                containerColor = RadixTheme.colors.defaultBackground
+                containerColor = RadixTheme.colors.background
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -120,7 +120,7 @@ private fun SettingsContent(
                                 )
                             }
                             item {
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                                HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
                             }
                         }
                     }
@@ -134,7 +134,7 @@ private fun SettingsContent(
                             BuildConfig.VERSION_CODE.toString()
                         ),
                         style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -195,14 +195,14 @@ private fun VersionInformation(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 ).toSpanStyle()
             ) {
                 append(dependencyVersion)
             }
         },
         style = RadixTheme.typography.body1Regular,
-        color = RadixTheme.colors.gray2,
+        color = RadixTheme.colors.textSecondary,
         textAlign = TextAlign.Start
     )
 }

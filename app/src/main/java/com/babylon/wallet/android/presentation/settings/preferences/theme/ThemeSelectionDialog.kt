@@ -139,7 +139,7 @@ private fun ThemeSelectionItem(
 ) {
     DefaultSettingsItem(
         modifier = modifier,
-        title = when (selection) { // TODO
+        title = when (selection) { // TODO theme
             ThemeSelection.LIGHT -> "Light"
             ThemeSelection.DARK -> "Dark"
             ThemeSelection.SYSTEM -> "Follow System"
