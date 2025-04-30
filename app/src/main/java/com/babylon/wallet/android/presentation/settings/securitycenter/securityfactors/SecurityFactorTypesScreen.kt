@@ -55,7 +55,7 @@ private fun SecurityFactorTypesContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         containerColor = RadixTheme.colors.backgroundSecondary

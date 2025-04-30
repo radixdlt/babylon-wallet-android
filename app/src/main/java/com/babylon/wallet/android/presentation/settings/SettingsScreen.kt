@@ -80,7 +80,7 @@ private fun SettingsContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -120,7 +120,7 @@ private fun SettingsContent(
                                 )
                             }
                             item {
-                                HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+                                HorizontalDivider(color = RadixTheme.colors.divider)
                             }
                         }
                     }
