@@ -265,13 +265,11 @@ private val LocalRadixThemeConfig = staticCompositionLocalOf<RadixThemeConfig> {
 }
 
 @Composable
-fun ProvideRadixThemeConfig(isDarkMode: Boolean, content: @Composable () -> Unit) {
-    val themeConfig = remember {
-        RadixThemeConfig(
-            isDarkTheme = isDarkMode,
-        )
-    }
-    CompositionLocalProvider(LocalRadixThemeConfig provides themeConfig) {
+fun ProvideRadixThemeConfig(
+    config: RadixThemeConfig,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(LocalRadixThemeConfig provides config) {
         content()
     }
 }
@@ -291,10 +289,10 @@ object RadixTheme {
 
 @Composable
 fun RadixWalletTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    config: RadixThemeConfig = RadixThemeConfig(isSystemDarkTheme = isSystemInDarkTheme()),
     content: @Composable () -> Unit,
 ) {
-    ProvideRadixThemeConfig(isDarkMode = false) {
+    ProvideRadixThemeConfig(config = config) {
         ProvideRadixColors {
             ProvideRadixTypography {
                 ProvideRadixDimensions {

@@ -10,6 +10,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -25,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
@@ -94,12 +96,20 @@ class MainActivity : FragmentActivity() {
         }
 
         setContent {
-            RadixWalletTheme {
+            val themeSelection by viewModel.themeSelection.collectAsStateWithLifecycle()
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+            val themeConfig = remember(themeSelection, isSystemInDarkTheme) {
+                RadixThemeConfig(
+                    themeSelection = themeSelection,
+                    isSystemDarkTheme = isSystemInDarkTheme
+                )
+            }
+            RadixWalletTheme(config = themeConfig) {
                 val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
                 LaunchedEffect(isDarkThemeEnabled) {
                     enableEdgeToEdge(
                         statusBarStyle = SystemBarStyle.auto(
-                            lightScrim = android.graphics.Color.WHITE,
+                            lightScrim = android.graphics.Color.BLACK,
                             darkScrim = android.graphics.Color.BLACK,
                             detectDarkMode = {
                                 isDarkThemeEnabled

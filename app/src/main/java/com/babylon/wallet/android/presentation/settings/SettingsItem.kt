@@ -9,6 +9,7 @@ import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_ADDRESS
 import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_SUBJECT
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
+import rdx.works.core.domain.ThemeSelection
 
 sealed interface SettingsItem {
 
@@ -133,6 +134,7 @@ sealed interface SettingsItem {
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
         data class AdvancedLock(val enabled: Boolean) : WalletPreferences
+        data class ThemePreference(val selection: ThemeSelection) : WalletPreferences
 
         @StringRes
         fun titleRes(): Int {
@@ -144,6 +146,7 @@ sealed interface SettingsItem {
                 AssetsHiding -> R.string.preferences_hiddenAssets_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
                 is AdvancedLock -> R.string.preferences_advancedLock_title
+                is ThemePreference -> R.string.preferences_themeSelection_title
             }
         }
 
@@ -157,6 +160,7 @@ sealed interface SettingsItem {
                 AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
                 is CrashReporting -> null
                 is AdvancedLock -> R.string.preferences_advancedLockAndroid_subtitle
+                is ThemePreference -> R.string.preferences_themeSelection_subtitle
             }
         }
 

@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.hasNetworks
@@ -109,6 +110,14 @@ class MainViewModel @Inject constructor(
     )
 
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
+
+    val themeSelection = preferencesManager
+        .themeSelection
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = ThemeSelection.DEFAULT
+        )
 
     init {
         incomingRequestsDelegate(
