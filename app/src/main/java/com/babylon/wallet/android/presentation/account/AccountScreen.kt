@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.account
 
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -33,6 +34,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -48,9 +51,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.edgeToEdge
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -112,10 +115,7 @@ fun AccountScreen(
         }
     }
 
-    val devBannerState = LocalDevBannerState.current
-    if (!devBannerState.isVisible) {
-        SetStatusBarColor(useDarkIcons = false)
-    }
+    SetStatusBarColors()
 
     AccountScreenContent(
         modifier = modifier,
@@ -142,6 +142,30 @@ fun AccountScreen(
         onHistoryClick = onHistoryClick,
         onInfoClick = onInfoClick
     )
+}
+
+@Composable
+private fun SetStatusBarColors() {
+    val isDevBannerVisible = LocalDevBannerState.current.isVisible
+    val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
+    val context = LocalContext.current
+    DisposableEffect(
+        isDevBannerVisible,
+        isDarkThemeEnabled
+    ) {
+        (context as ComponentActivity).edgeToEdge(
+            isDarkThemeEnabled = isDarkThemeEnabled,
+            forceDarkStatusBar = true
+        )
+
+        // When screen is closed, then reset the theme
+        onDispose {
+            (context as ComponentActivity).edgeToEdge(
+                isDarkThemeEnabled = isDarkThemeEnabled,
+                forceDarkStatusBar = isDevBannerVisible
+            )
+        }
+    }
 }
 
 @Composable

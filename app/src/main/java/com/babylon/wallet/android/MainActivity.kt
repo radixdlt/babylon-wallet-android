@@ -6,11 +6,10 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AnticipateInterpolator
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -28,6 +27,7 @@ import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsSt
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.edgeToEdge
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
 import com.babylon.wallet.android.presentation.main.AppState
@@ -41,7 +41,6 @@ import com.radixdlt.sargon.os.driver.OnBiometricsLifecycleCallbacks
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
-import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -97,6 +96,7 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             val themeSelection by viewModel.themeSelection.collectAsStateWithLifecycle()
+            val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsStateWithLifecycle()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val themeConfig = remember(themeSelection, isSystemInDarkTheme) {
                 RadixThemeConfig(
@@ -105,26 +105,13 @@ class MainActivity : FragmentActivity() {
                 )
             }
             RadixWalletTheme(config = themeConfig) {
-                val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
-                LaunchedEffect(isDarkThemeEnabled) {
-                    enableEdgeToEdge(
-                        statusBarStyle = SystemBarStyle.auto(
-                            lightScrim = android.graphics.Color.BLACK,
-                            darkScrim = android.graphics.Color.BLACK,
-                            detectDarkMode = {
-                                isDarkThemeEnabled
-                            }
-                        )
-                    )
-                }
+                SetupEdgeToEdge(isDevBannerVisible)
 
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
-
                 CustomCompositionProviders(
                     isBalanceVisible = isVisible,
                     actionableAddressViewEntryPoint = actionableAddressViewEntryPoint
                 ) {
-                    val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsStateWithLifecycle()
                     val devBannerState by remember(isDevBannerVisible) {
                         derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                     }
@@ -151,6 +138,17 @@ class MainActivity : FragmentActivity() {
         }
 
         monitorAdvancedLockState()
+    }
+
+    @Composable
+    private fun SetupEdgeToEdge(isDevBannerVisible: Boolean) {
+        val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
+        LaunchedEffect(isDarkThemeEnabled, isDevBannerVisible) {
+            edgeToEdge(
+                isDarkThemeEnabled = isDarkThemeEnabled,
+                forceDarkStatusBar = isDevBannerVisible
+            )
+        }
     }
 
     private fun monitorAdvancedLockState() {

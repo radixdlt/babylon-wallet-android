@@ -42,8 +42,8 @@ dependencies {
     implementation libs.sargonAndroid
     implementation libs.composeFoundation
     implementation libs.composeMaterial3
+    implementation libs.activity
 
-    implementation libs.accompanistSystemUiController
     implementation libs.composeUi
     implementation libs.composeRuntime
     implementation libs.composeUiToolingPreview

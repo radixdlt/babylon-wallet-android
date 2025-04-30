@@ -89,7 +89,6 @@ class RadixColors(
     var text by mutableStateOf(text)
         private set
 
-
     fun copy(
         defaultBackground: Color = this.defaultBackground,
         backgroundAlternate: Color = this.backgroundAlternate,
