@@ -1225,6 +1225,8 @@ Code: %s</string>
   <string name="preferences_advancedLock_title">Advanced Lock</string>
   <string name="preferences_advancedLock_subtitle">Re-authenticate when switching between apps</string>
   <string name="preferences_advancedLockAndroid_subtitle">Re-authenticate when switching, prevent screen recording</string>
+  <string name="preferences_themeSelection_title">Theme Selection</string>
+  <string name="preferences_themeSelection_subtitle">Change the app theme</string>
   <string name="preferences_displayPreferences">Display</string>
   <string name="preferences_hiddenAssets_title">Hidden Assets</string>
   <string name="preferences_hiddenAssets_subtitle">Manage hidden Tokens, NFTs, and other asset types</string>

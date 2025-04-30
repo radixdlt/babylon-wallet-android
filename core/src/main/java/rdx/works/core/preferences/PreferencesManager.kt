@@ -21,11 +21,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.BuildConfig
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.di.NonEncryptedPreferences
+import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import java.time.Instant
 import javax.inject.Inject
@@ -46,6 +46,7 @@ interface PreferencesManager {
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
     val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
     val isEulaAccepted: Flow<Boolean>
+    val themeSelection: Flow<ThemeSelection>
 
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
@@ -86,6 +87,8 @@ interface PreferencesManager {
     suspend fun setShowRelinkConnectorsAfterUpdate(show: Boolean)
 
     suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean)
+
+    suspend fun setThemeSelection(themeSelection: ThemeSelection)
 
     suspend fun clearShowRelinkConnectors()
 
@@ -135,6 +138,14 @@ class PreferencesManagerImpl @Inject constructor(
     override val isEulaAccepted = dataStore.data.map { preferences ->
         preferences[KEY_EULA_ACCEPTED] ?: false
     }
+    override val themeSelection: Flow<ThemeSelection>
+        get() = dataStore.data.map { preferences ->
+            preferences[KEY_THEME_SELECTION]
+        }.map { stringPreference ->
+            stringPreference?.let {
+                ThemeSelection.fromLiteral(it)
+            } ?: ThemeSelection.LIGHT
+        }
 
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
         dataStore.edit { preferences ->
@@ -318,6 +329,12 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun setThemeSelection(themeSelection: ThemeSelection) {
+        dataStore.edit { preferences ->
+            preferences[KEY_THEME_SELECTION] = themeSelection.toLiteral()
+        }
+    }
+
     override suspend fun clearShowRelinkConnectors() {
         dataStore.edit { preferences ->
             preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE] = false
@@ -351,5 +368,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")
         val KEY_EULA_ACCEPTED = booleanPreferencesKey("eula_accepted")
+        val KEY_THEME_SELECTION = stringPreferencesKey("theme_selection")
     }
 }
