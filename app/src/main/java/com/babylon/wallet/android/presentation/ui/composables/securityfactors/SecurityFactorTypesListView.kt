@@ -59,7 +59,7 @@ fun SecurityFactorTypesListView(
             }
         } else {
             item {
-                HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+                HorizontalDivider(color = RadixTheme.colors.divider)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
             }
         }
@@ -113,10 +113,10 @@ fun SecurityFactorTypesListView(
                     if (!isLastItem) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                            color = RadixTheme.colors.backgroundTertiary
+                            color = RadixTheme.colors.divider
                         )
                     } else {
-                        HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+                        HorizontalDivider(color = RadixTheme.colors.divider)
                     }
                 }
             }

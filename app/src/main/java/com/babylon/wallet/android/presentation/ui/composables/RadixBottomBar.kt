@@ -59,7 +59,7 @@ fun RadixBottomBar(
     button: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
     color: Color = RadixTheme.colors.background,
-    dividerColor: Color = RadixTheme.colors.backgroundTertiary,
+    dividerColor: Color = RadixTheme.colors.divider,
     insets: WindowInsets = WindowInsets.navigationBars,
     additionalTopContent: (@Composable ColumnScope.() -> Unit)? = null,
     additionalBottomContent: (@Composable ColumnScope.() -> Unit)? = null

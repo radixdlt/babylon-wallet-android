@@ -128,7 +128,7 @@ private fun FactorSourceDetailsContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         snackbarHost = {
@@ -155,7 +155,7 @@ private fun FactorSourceDetailsContent(
                 onClick = onRenameFactorSourceClick
             )
 
-            HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
+            HorizontalDivider(color = RadixTheme.colors.divider)
 
             state.factorSourceKind.AdditionalSettingsItems(
                 state = state,
@@ -230,7 +230,7 @@ private fun FactorSourceKind.AdditionalSettingsItems(
                 modifier = Modifier
                     .background(color = RadixTheme.colors.defaultBackground)
                     .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                color = RadixTheme.colors.backgroundTertiary
+                color = RadixTheme.colors.divider
             )
             DefaultSettingsItem(
                 title = stringResource(id = R.string.factorSources_detail_changePin),

@@ -44,7 +44,8 @@ class RadixColors(
     textSecondary: Color,
     textButton: Color,
     icon: Color,
-    primaryButton: Color
+    primaryButton: Color,
+    divider: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
         private set
@@ -103,6 +104,8 @@ class RadixColors(
         private set
     var primaryButton by mutableStateOf(primaryButton)
         private set
+    var divider by mutableStateOf(divider)
+        private set
 
     fun copy(
         defaultBackground: Color = this.defaultBackground,
@@ -132,7 +135,8 @@ class RadixColors(
         textSecondary: Color = this.textSecondary,
         textButton: Color = this.textButton,
         icon: Color = this.icon,
-        primaryButton: Color = this.primaryButton
+        primaryButton: Color = this.primaryButton,
+        divider: Color = this.divider
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
@@ -162,7 +166,8 @@ class RadixColors(
             textSecondary = textSecondary,
             textButton = textButton,
             icon = icon,
-            primaryButton = primaryButton
+            primaryButton = primaryButton,
+            divider = divider
         )
     }
 
@@ -193,6 +198,7 @@ class RadixColors(
         textButton = other.textButton
         icon = other.icon
         primaryButton = other.primaryButton
+        divider = other.divider
     }
 }
 
@@ -224,7 +230,8 @@ private val LightColorPalette = RadixColors(
     textSecondary = Gray2,
     textButton = Blue2,
     icon = Gray1,
-    primaryButton = Blue2
+    primaryButton = Blue2,
+    divider = Gray4
 )
 
 private val DarkColorPalette = LightColorPalette.copy(
@@ -235,7 +242,8 @@ private val DarkColorPalette = LightColorPalette.copy(
     textSecondary = Gray4,
     textButton = Color(0xFF90CAF9),
     icon = Gray5,
-    primaryButton = Color(0xFF00C389)
+    primaryButton = Color(0xFF00C389),
+    divider = Color(0xFF404243)
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
