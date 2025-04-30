@@ -92,14 +92,13 @@ private fun RenameContent(
             title = stringResource(id = R.string.empty),
             onBackClick = onDismiss,
             backIconType = BackIconType.Close,
-            containerColor = RadixTheme.colors.defaultBackground,
             windowInsets = WindowInsets(0.dp)
         )
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = titleRes?.let { stringResource(id = it) } ?: stringResource(R.string.empty),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
@@ -107,7 +106,7 @@ private fun RenameContent(
             modifier = Modifier.fillMaxWidth(),
             text = subtitleRes?.let { stringResource(id = it) } ?: stringResource(R.string.empty),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))

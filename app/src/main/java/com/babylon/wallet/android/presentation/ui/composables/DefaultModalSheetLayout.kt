@@ -34,7 +34,7 @@ fun DefaultModalSheetLayout(
     wrapContent: Boolean = false,
     sheetContent: @Composable () -> Unit,
     showDragHandle: Boolean = true,
-    containerColor: Color = RadixTheme.colors.defaultBackground,
+    containerColor: Color = RadixTheme.colors.background,
     windowInsets: @Composable () -> WindowInsets = {
         // Defaults to insets at the bottom of the screen
         BottomSheetDefaults.windowInsets
@@ -89,6 +89,6 @@ fun DefaultModalSheetDragHandle(
         modifier = modifier
             .padding(padding)
             .size(38.dp, 4.dp)
-            .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
+            .background(color = RadixTheme.colors.backgroundTertiary, shape = RadixTheme.shapes.circle)
     )
 }
