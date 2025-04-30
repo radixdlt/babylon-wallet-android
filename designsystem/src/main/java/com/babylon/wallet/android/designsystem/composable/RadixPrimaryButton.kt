@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -83,6 +83,19 @@ fun RadixPrimaryButton(
 fun RadixPrimaryButtonPreview() {
     RadixWalletTheme {
         RadixPrimaryButton(text = "Primary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
+    }
+}
+
+@Preview
+@Composable
+fun RadixPrimaryButtonLoadingPreview() {
+    RadixWalletTheme {
+        RadixPrimaryButton(
+            text = "Primary button",
+            isLoading = true,
+            onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp)
+        )
     }
 }
 

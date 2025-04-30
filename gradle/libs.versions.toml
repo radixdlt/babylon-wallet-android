@@ -77,7 +77,6 @@ composeConstraintLayout = { module = "androidx.constraintlayout:constraintlayout
 composeActivity = { module = "androidx.activity:activity-compose", version.ref = "composeActivity" }
 composeNavigation = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
-composeMaterial = { module = "androidx.compose.material:material", version.ref = "compose" }
 composeMaterial3 = { module = "androidx.compose.material3:material3", version.ref = "composeMaterial3" }
 material3WindowSizeClass = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3WindowSizeClass" }
 splash = { module = "androidx.core:core-splashscreen", version.ref = "splash" }

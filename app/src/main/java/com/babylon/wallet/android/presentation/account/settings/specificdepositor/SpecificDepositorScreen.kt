@@ -295,7 +295,7 @@ private fun SpecificDepositorContent(
                 hostState = snackBarHostState
             )
         },
-        contentColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.gray5
     ) { paddingValues ->
         Column(
             Modifier
