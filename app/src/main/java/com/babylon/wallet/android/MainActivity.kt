@@ -2,7 +2,6 @@ package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -11,9 +10,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -27,8 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
-import com.babylon.wallet.android.designsystem.theme.DefaultDarkScrim
-import com.babylon.wallet.android.designsystem.theme.DefaultLightScrim
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
@@ -43,6 +39,7 @@ import com.radixdlt.sargon.os.driver.OnBiometricsLifecycleCallbacks
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
+import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -98,7 +95,19 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                SyncEdgeToEdgeSetupWithSelectedTheme()
+                val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
+                LaunchedEffect(isDarkThemeEnabled) {
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            lightScrim = android.graphics.Color.WHITE,
+                            darkScrim = android.graphics.Color.BLACK,
+                            detectDarkMode = {
+                                isDarkThemeEnabled
+                            }
+                        )
+                    )
+                }
+
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
 
                 CustomCompositionProviders(
@@ -132,24 +141,6 @@ class MainActivity : FragmentActivity() {
         }
 
         monitorAdvancedLockState()
-    }
-
-    @Composable
-    private fun SyncEdgeToEdgeSetupWithSelectedTheme() {
-        val isSystemInDarkTheme = isSystemInDarkTheme()
-        DisposableEffect(isSystemInDarkTheme) {
-            enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.auto(
-                    Color.TRANSPARENT,
-                    Color.TRANSPARENT,
-                ) { isSystemInDarkTheme },
-                navigationBarStyle = SystemBarStyle.light(
-                    scrim = DefaultLightScrim,
-                    darkScrim = DefaultDarkScrim
-                ),
-            )
-            onDispose {}
-        }
     }
 
     private fun monitorAdvancedLockState() {
@@ -201,12 +192,6 @@ class MainActivity : FragmentActivity() {
             fadeIn.duration = splashExitAnimDurationMs
             fadeIn.doOnEnd {
                 splashScreenView.remove()
-                enableEdgeToEdge(
-                    navigationBarStyle = SystemBarStyle.light(
-                        scrim = DefaultLightScrim,
-                        darkScrim = DefaultDarkScrim
-                    )
-                )
             }
             fadeIn.start()
         }
