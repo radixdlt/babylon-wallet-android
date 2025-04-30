@@ -98,11 +98,11 @@ private fun SecurityCenterContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner,
-                contentColor = RadixTheme.colors.gray1,
-                containerColor = RadixTheme.colors.gray5
+                contentColor = RadixTheme.colors.text,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier
@@ -115,12 +115,12 @@ private fun SecurityCenterContent(
             Text(
                 text = stringResource(id = R.string.securityCenter_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Text(
                 text = stringResource(id = R.string.securityCenter_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
 
@@ -242,6 +242,7 @@ fun RecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     }
 }
 
+// TODO Theme
 @Composable
 private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtitle: String) {
     Column(
@@ -303,7 +304,7 @@ private fun SecurityCenterCard(
             )
             .clickable { onClick() }
             .background(
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.background, // TODO Theme (card)
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(
@@ -317,7 +318,7 @@ private fun SecurityCenterCard(
             modifier = Modifier.size(80.dp),
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            tint = Color.Unspecified
+            tint = Color.Unspecified // TODO Theme
         )
 
         Column(
@@ -332,13 +333,13 @@ private fun SecurityCenterCard(
             Text(
                 text = title,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             Text(
                 text = subtitle,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
 
             val promptColor = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1

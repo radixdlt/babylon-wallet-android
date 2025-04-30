@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
 
+// TODO Theme
 @Composable
 fun StatusMessageText(
     modifier: Modifier = Modifier,

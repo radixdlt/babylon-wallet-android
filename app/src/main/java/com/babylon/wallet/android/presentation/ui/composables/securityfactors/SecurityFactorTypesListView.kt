@@ -51,7 +51,7 @@ fun SecurityFactorTypesListView(
     }
 
     LazyColumn(
-        modifier = modifier.background(color = RadixTheme.colors.gray5)
+        modifier = modifier
     ) {
         if (description != null) {
             item {
@@ -59,7 +59,7 @@ fun SecurityFactorTypesListView(
             }
         } else {
             item {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
             }
         }
@@ -80,14 +80,14 @@ fun SecurityFactorTypesListView(
                                 modifier = Modifier.size(24.dp),
                                 painter = painterResource(id = item.factorSourceKind.iconRes()),
                                 contentDescription = null,
-                                tint = RadixTheme.colors.gray1
+                                tint = RadixTheme.colors.icon
                             )
                         },
                         trailingIcon = {
                             Icon(
                                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
                                 contentDescription = null,
-                                tint = RadixTheme.colors.gray1
+                                tint = RadixTheme.colors.icon
                             )
                         },
                         warningView = {
@@ -113,10 +113,10 @@ fun SecurityFactorTypesListView(
                     if (!isLastItem) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                            color = RadixTheme.colors.gray4
+                            color = RadixTheme.colors.backgroundTertiary
                         )
                     } else {
-                        HorizontalDivider(color = RadixTheme.colors.gray4)
+                        HorizontalDivider(color = RadixTheme.colors.backgroundTertiary)
                     }
                 }
             }
@@ -134,7 +134,7 @@ private fun HeaderView(item: SecurityFactorTypeUiItem.Header) {
         Text(
             text = title,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
         )
     }
