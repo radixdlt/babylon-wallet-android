@@ -43,7 +43,8 @@ class RadixColors(
     text: Color,
     textSecondary: Color,
     textButton: Color,
-    icon: Color
+    icon: Color,
+    primaryButton: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
         private set
@@ -100,6 +101,8 @@ class RadixColors(
         private set
     var icon by mutableStateOf(icon)
         private set
+    var primaryButton by mutableStateOf(primaryButton)
+        private set
 
     fun copy(
         defaultBackground: Color = this.defaultBackground,
@@ -128,7 +131,8 @@ class RadixColors(
         text: Color = this.text,
         textSecondary: Color = this.textSecondary,
         textButton: Color = this.textButton,
-        icon: Color = this.icon
+        icon: Color = this.icon,
+        primaryButton: Color = this.primaryButton
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
@@ -157,7 +161,8 @@ class RadixColors(
             text = text,
             textSecondary = textSecondary,
             textButton = textButton,
-            icon = icon
+            icon = icon,
+            primaryButton = primaryButton
         )
     }
 
@@ -187,6 +192,7 @@ class RadixColors(
         textSecondary = other.textSecondary
         textButton = other.textButton
         icon = other.icon
+        primaryButton = other.primaryButton
     }
 }
 
@@ -217,7 +223,8 @@ private val LightColorPalette = RadixColors(
     text = Gray1,
     textSecondary = Gray2,
     textButton = Blue2,
-    icon = Gray1
+    icon = Gray1,
+    primaryButton = Blue2
 )
 
 private val DarkColorPalette = LightColorPalette.copy(
@@ -227,7 +234,8 @@ private val DarkColorPalette = LightColorPalette.copy(
     text = Gray5,
     textSecondary = Gray4,
     textButton = Color(0xFF90CAF9),
-    icon = Gray5
+    icon = Gray5,
+    primaryButton = Color(0xFF00C389)
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {

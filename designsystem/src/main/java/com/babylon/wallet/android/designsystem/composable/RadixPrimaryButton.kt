@@ -54,7 +54,11 @@ fun RadixPrimaryButton(
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             contentColor = Color.White,
-            containerColor = if (isPressed) RadixTheme.colors.blue2.darken(0.1f) else RadixTheme.colors.blue2,
+            containerColor = if (isPressed) {
+                RadixTheme.colors.primaryButton.darken(0.1f)
+            } else {
+                RadixTheme.colors.primaryButton
+            },
             disabledContainerColor = RadixTheme.colors.gray4,
             disabledContentColor = RadixTheme.colors.gray3
         ),
@@ -82,7 +86,11 @@ fun RadixPrimaryButton(
 @Composable
 fun RadixPrimaryButtonPreview() {
     RadixWalletTheme {
-        RadixPrimaryButton(text = "Primary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
+        RadixPrimaryButton(
+            text = "Primary button",
+            onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp)
+        )
     }
 }
 
@@ -103,9 +111,13 @@ fun RadixPrimaryButtonLoadingPreview() {
 @Composable
 fun RadixPrimaryButtonWithIconPreview() {
     RadixWalletTheme {
-        RadixPrimaryButton(text = "Primary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp), icon = {
-            Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
-        })
+        RadixPrimaryButton(
+            text = "Primary button",
+            onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp),
+            icon = {
+                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
+            })
     }
 }
 
