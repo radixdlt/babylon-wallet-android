@@ -97,7 +97,11 @@ class MainViewModel @Inject constructor(
 
             else -> false
         }
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = false
+    )
 
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
 
