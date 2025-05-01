@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.Gray1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
@@ -140,15 +141,7 @@ private fun AddFieldCheckbox(
     Checkbox(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        colors = CheckboxDefaults.colors(
-            checkedColor = RadixTheme.colors.text,
-            uncheckedColor = RadixTheme.colors.textSecondary,
-            checkmarkColor = if (RadixTheme.config.isDarkTheme) {
-                Gray1
-            } else {
-                White
-            }
-        )
+        colors = RadixCheckboxDefaults.colors()
     )
 }
 

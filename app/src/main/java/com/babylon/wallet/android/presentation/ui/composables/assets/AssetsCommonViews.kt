@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
@@ -85,10 +86,6 @@ fun AssetsViewCheckBox(
         modifier = modifier,
         checked = isSelected,
         onCheckedChange = onCheckChanged,
-        colors = CheckboxDefaults.colors(
-            checkedColor = RadixTheme.colors.gray1,
-            uncheckedColor = RadixTheme.colors.gray2,
-            checkmarkColor = Color.White
-        )
+        colors = RadixCheckboxDefaults.colors()
     )
 }

@@ -40,13 +40,13 @@ fun DebugSettingsScreen(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 SettingsItem.DebugSettingsItem.values().forEach { debugSettingsItem ->
                     item {
@@ -61,7 +61,7 @@ fun DebugSettingsScreen(
                                     checked = linkConnectionStatusIndicatorState.isEnabled,
                                     onCheckedChange = viewModel::onLinkConnectionStatusIndicatorToggled
                                 )
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                                HorizontalDivider(color = RadixTheme.colors.divider)
                             }
 
                             else -> {
@@ -72,7 +72,7 @@ fun DebugSettingsScreen(
                                         onItemClick(debugSettingsItem)
                                     }
                                 )
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                                HorizontalDivider(color = RadixTheme.colors.divider)
                             }
                         }
                     }

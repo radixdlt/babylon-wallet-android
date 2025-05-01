@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -183,14 +184,7 @@ private fun CheckboxSelectorView(
 
         Checkbox(
             checked = isChecked,
-            colors = CheckboxDefaults.colors().copy(
-                checkedCheckmarkColor = RadixTheme.colors.white,
-                checkedBorderColor = RadixTheme.colors.gray1,
-                checkedBoxColor = RadixTheme.colors.gray1,
-                uncheckedCheckmarkColor = Color.Transparent,
-                uncheckedBorderColor = RadixTheme.colors.gray2,
-                uncheckedBoxColor = RadixTheme.colors.gray5
-            ),
+            colors = RadixCheckboxDefaults.colors(),
             onCheckedChange = onCheckedChange
         )
 

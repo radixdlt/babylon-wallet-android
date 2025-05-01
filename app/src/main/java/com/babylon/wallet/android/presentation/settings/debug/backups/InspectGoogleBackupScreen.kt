@@ -73,6 +73,7 @@ fun InspectGoogleBackupsScreen(
                 hostState = snackBarHostState
             )
         },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         val pullToRefreshState = rememberPullToRefreshState()
         Box(
@@ -105,8 +106,8 @@ fun InspectGoogleBackupsScreen(
                     .align(Alignment.TopCenter),
                 state = pullToRefreshState,
                 isRefreshing = state.isLoading,
-                color = RadixTheme.colors.gray1,
-                containerColor = RadixTheme.colors.defaultBackground
+                color = RadixTheme.colors.text,
+                containerColor = RadixTheme.colors.background
             )
         }
     }
@@ -124,7 +125,8 @@ private fun UserStatus(
     ) {
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_personas),
-            contentDescription = null
+            contentDescription = null,
+            tint = RadixTheme.colors.iconSecondary
         )
 
         val emailText = remember(state) {
@@ -139,7 +141,7 @@ private fun UserStatus(
 
         Text(
             text = emailText,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             style = RadixTheme.typography.body2Regular
         )
     }
@@ -157,12 +159,13 @@ private fun DeviceId(
     ) {
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_developer_mode),
-            contentDescription = null
+            contentDescription = null,
+            tint = RadixTheme.colors.iconSecondary
         )
 
         Text(
             text = state.deviceId.toString(),
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             style = RadixTheme.typography.body2Regular
         )
     }
@@ -177,8 +180,12 @@ private fun GoogleDriveFile(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(bottom = RadixTheme.dimensions.paddingMedium),
-        color = RadixTheme.colors.gray5,
-        shadowElevation = 8.dp,
+        color = RadixTheme.colors.cardOnSecondary,
+        shadowElevation = if (RadixTheme.config.isDarkTheme) {
+            0.dp
+        } else {
+            6.dp
+        },
         shape = RadixTheme.shapes.roundedRectMedium
     ) {
         Column(
@@ -221,14 +228,16 @@ private fun FileProperty(
     ) {
         Text(
             text = key,
-            maxLines = 1
+            maxLines = 1,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingLarge))
         Text(
             modifier = Modifier.weight(1f),
             text = value,
             fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.End
+            textAlign = TextAlign.End,
+            color = RadixTheme.colors.text
         )
     }
 }

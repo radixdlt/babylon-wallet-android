@@ -20,7 +20,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 fun FullscreenCircularProgressContent(
     modifier: Modifier = Modifier
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,

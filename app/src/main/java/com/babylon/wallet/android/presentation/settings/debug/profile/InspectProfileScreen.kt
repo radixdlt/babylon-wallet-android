@@ -90,7 +90,8 @@ fun InspectProfileScreen(
                     Icon(painter = painterResource(id = R.drawable.ic_copy), contentDescription = null)
                 }
             }
-        }
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         if (state.isRawProfileVisible) {
             RawProfileContent(
@@ -114,8 +115,8 @@ private fun RawProfileContent(
     profileSnapshot: String
 ) {
     val customTextSelectionColors = TextSelectionColors(
-        handleColor = RadixTheme.colors.gray4,
-        backgroundColor = RadixTheme.colors.gray4
+        handleColor = RadixTheme.colors.textSecondary,
+        backgroundColor = RadixTheme.colors.textSecondary
     )
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
         SelectionContainer {
@@ -124,7 +125,7 @@ private fun RawProfileContent(
                     .verticalScroll(rememberScrollState())
                     .horizontalScroll(rememberScrollState()),
                 text = profileSnapshot,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.textSecondary,
                 fontSize = 13.sp,
                 fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
             )
@@ -136,5 +137,10 @@ private fun RawProfileContent(
 private fun ProfileContent(
     modifier: Modifier
 ) {
-    Text(modifier = modifier.fillMaxSize(), text = "Profile viewer tbd", textAlign = TextAlign.Center)
+    Text(
+        modifier = modifier.fillMaxSize(),
+        text = "Profile viewer tbd",
+        textAlign = TextAlign.Center,
+        color = RadixTheme.colors.textSecondary
+    )
 }

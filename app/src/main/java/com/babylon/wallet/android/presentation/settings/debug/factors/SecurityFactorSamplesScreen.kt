@@ -93,7 +93,7 @@ private fun SecurityFactorSamplesContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding),
