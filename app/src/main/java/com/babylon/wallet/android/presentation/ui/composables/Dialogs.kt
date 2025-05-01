@@ -268,7 +268,7 @@ fun BasicPromptAlertDialog(
     message: (@Composable () -> Unit)? = null,
     confirmText: String = stringResource(id = R.string.common_confirm),
     dismissText: String? = stringResource(id = R.string.common_cancel),
-    confirmTextColor: Color = RadixTheme.colors.blue2
+    confirmTextColor: Color = RadixTheme.colors.primaryButton
 ) {
     AlertDialog(
         modifier = modifier,
@@ -293,7 +293,7 @@ fun BasicPromptAlertDialog(
         title = title,
         text = message,
         shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background // TODO Theme
     )
 }
 
@@ -365,7 +365,7 @@ fun BasicPromptAlertDialog(
     messageText: String? = null,
     confirmText: String = stringResource(id = R.string.common_confirm),
     dismissText: String? = stringResource(id = R.string.common_cancel),
-    confirmTextColor: Color = RadixTheme.colors.blue2
+    confirmTextColor: Color = RadixTheme.colors.primaryButton // TODO Theme
 ) {
     BasicPromptAlertDialog(
         modifier = modifier,
@@ -375,7 +375,7 @@ fun BasicPromptAlertDialog(
                 Text(
                     text = it,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
         },
@@ -384,7 +384,7 @@ fun BasicPromptAlertDialog(
                 Text(
                     text = it,
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
         },
@@ -416,14 +416,14 @@ fun NotSecureAlertDialog(
             Text(
                 text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_title),
                 style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         message = {
             Text(
                 text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_message),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         },
         confirmText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_openSettings),
@@ -459,7 +459,7 @@ fun FailureDialogContent(
             Text(
                 text = title,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
@@ -468,7 +468,7 @@ fun FailureDialogContent(
                 Text(
                     text = it,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
             }
@@ -478,18 +478,18 @@ fun FailureDialogContent(
             }
         }
         if (isMobileConnect) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = RadixTheme.colors.gray5)
+                    .background(color = RadixTheme.colors.backgroundSecondary)
                     .padding(
                         vertical = RadixTheme.dimensions.paddingLarge,
                         horizontal = RadixTheme.dimensions.paddingXLarge
                     ),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }

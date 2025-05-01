@@ -155,7 +155,7 @@ fun SimpleFactorCardView(
                     id = iconRes
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
 
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
@@ -164,7 +164,7 @@ fun SimpleFactorCardView(
                 Text(
                     text = title,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
 
                 subtitle?.let {
@@ -173,7 +173,7 @@ fun SimpleFactorCardView(
                     Text(
                         text = it,
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
 
@@ -183,7 +183,7 @@ fun SimpleFactorCardView(
                     Text(
                         text = it,
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
             }
@@ -303,7 +303,7 @@ private fun LinkedEntitiesView(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundTertiary,
                 shape = RadixTheme.shapes.roundedRectBottomDefault
             )
     ) {
@@ -322,7 +322,7 @@ private fun LinkedEntitiesView(
                 modifier = Modifier.weight(1f),
                 text = linkedText,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
 
             Icon(

@@ -45,7 +45,11 @@ class RadixColors(
     textButton: Color,
     icon: Color,
     primaryButton: Color,
-    divider: Color
+    divider: Color,
+    border: Color,
+    borderSecondary: Color,
+    error: Color,
+    warning: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
         private set
@@ -106,6 +110,14 @@ class RadixColors(
         private set
     var divider by mutableStateOf(divider)
         private set
+    var border by mutableStateOf(border)
+        private set
+    var borderSecondary by mutableStateOf(borderSecondary)
+        private set
+    var error by mutableStateOf(error)
+        private set
+    var warning by mutableStateOf(warning)
+        private set
 
     fun copy(
         defaultBackground: Color = this.defaultBackground,
@@ -136,7 +148,11 @@ class RadixColors(
         textButton: Color = this.textButton,
         icon: Color = this.icon,
         primaryButton: Color = this.primaryButton,
-        divider: Color = this.divider
+        divider: Color = this.divider,
+        border: Color = this.border,
+        borderSecondary: Color = this.borderSecondary,
+        error: Color = this.error,
+        warning: Color = this.warning
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
@@ -167,7 +183,11 @@ class RadixColors(
             textButton = textButton,
             icon = icon,
             primaryButton = primaryButton,
-            divider = divider
+            divider = divider,
+            border = border,
+            borderSecondary = borderSecondary,
+            error = error,
+            warning = warning
         )
     }
 
@@ -199,6 +219,10 @@ class RadixColors(
         icon = other.icon
         primaryButton = other.primaryButton
         divider = other.divider
+        border = other.border
+        borderSecondary = other.borderSecondary
+        error = other.error
+        warning = other.warning
     }
 }
 
@@ -231,7 +255,11 @@ private val LightColorPalette = RadixColors(
     textButton = Blue2,
     icon = Gray1,
     primaryButton = Blue2,
-    divider = Gray4
+    divider = Gray4,
+    border = Gray1,
+    borderSecondary = Gray3,
+    error = Red1,
+    warning = Orange3
 )
 
 private val DarkColorPalette = LightColorPalette.copy(
@@ -243,7 +271,11 @@ private val DarkColorPalette = LightColorPalette.copy(
     textButton = Color(0xFF90CAF9),
     icon = Gray5,
     primaryButton = Color(0xFF00C389),
-    divider = Color(0xFF404243)
+    divider = Color(0xFF404243),
+    border = Gray5,
+    borderSecondary = Gray3,
+    error = Red1,
+    warning = Orange3
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {

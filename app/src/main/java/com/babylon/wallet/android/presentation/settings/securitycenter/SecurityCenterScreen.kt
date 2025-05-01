@@ -43,6 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
@@ -295,7 +296,7 @@ private fun SecurityCenterCard(
 ) {
     Row(
         modifier = modifier
-            .shadow(
+            .defaultCardShadow(
                 elevation = 6.dp,
                 shape = RadixTheme.shapes.roundedRectMedium
             )

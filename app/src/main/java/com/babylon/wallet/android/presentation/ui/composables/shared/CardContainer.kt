@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,13 +33,13 @@ fun CardContainer(
                 isOutlined,
                 Modifier.border(
                     width = 1.dp,
-                    color = RadixTheme.colors.gray4,
+                    color = RadixTheme.colors.border,
                     shape = RadixTheme.shapes.roundedRectDefault
                 )
             )
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.white,
+                color = RadixTheme.colors.background,
                 shape = RadixTheme.shapes.roundedRectDefault
             )
     ) {
