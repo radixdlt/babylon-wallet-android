@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
@@ -240,14 +241,7 @@ fun SimplePersonaSelectionCard(
         } else {
             Checkbox(
                 checked = checked,
-                colors = CheckboxDefaults.colors().copy(
-                    checkedCheckmarkColor = RadixTheme.colors.white,
-                    checkedBorderColor = RadixTheme.colors.gray1,
-                    checkedBoxColor = RadixTheme.colors.gray1,
-                    uncheckedCheckmarkColor = Color.Transparent,
-                    uncheckedBorderColor = RadixTheme.colors.gray2,
-                    uncheckedBoxColor = RadixTheme.colors.gray5
-                ),
+                colors = RadixCheckboxDefaults.colors(),
                 onCheckedChange = null
             )
         }
