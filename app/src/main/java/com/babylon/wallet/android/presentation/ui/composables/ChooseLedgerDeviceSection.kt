@@ -62,7 +62,7 @@ fun ChooseLedgerDeviceSection(
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection)
             },
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
@@ -74,7 +74,7 @@ fun ChooseLedgerDeviceSection(
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger)
             },
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
@@ -83,11 +83,11 @@ fun ChooseLedgerDeviceSection(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
+                    .background(RadixTheme.colors.cardOnSecondary, RadixTheme.shapes.roundedRectSmall)
                     .padding(RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
@@ -118,7 +118,7 @@ fun ChooseLedgerDeviceSection(
                             modifier = Modifier
                                 .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
+                                .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectSmall)
                                 .throttleClickable {
                                     onLedgerDeviceSelected(ledgerItem.data)
                                 }

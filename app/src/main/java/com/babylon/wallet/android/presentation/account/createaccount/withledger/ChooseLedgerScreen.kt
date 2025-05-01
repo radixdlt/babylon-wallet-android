@@ -94,14 +94,14 @@ fun ChooseLedgerScreen(
                 Text(
                     text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
@@ -198,7 +198,8 @@ private fun ChooseLedgerDeviceContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 backIconType = BackIconType.Close,
-                windowInsets = WindowInsets.statusBarsAndBanner
+                windowInsets = WindowInsets.statusBarsAndBanner,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
         bottomBar = {
@@ -215,7 +216,7 @@ private fun ChooseLedgerDeviceContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         ChooseLedgerDeviceSection(
             modifier = Modifier
