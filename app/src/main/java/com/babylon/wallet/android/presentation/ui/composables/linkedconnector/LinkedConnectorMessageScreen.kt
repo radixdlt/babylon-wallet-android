@@ -63,7 +63,7 @@ fun LinkedConnectorMessageScreen(
             modifier = Modifier.fillMaxWidth(),
             text = title,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -79,7 +79,7 @@ fun LinkedConnectorMessageScreen(
                 ),
             text = message.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 

@@ -19,7 +19,7 @@ import kotlinx.collections.immutable.ImmutableList
 fun NumberedValuesList(
     modifier: Modifier = Modifier,
     style: TextStyle = RadixTheme.typography.body2Regular,
-    color: Color = RadixTheme.colors.gray1,
+    color: Color = RadixTheme.colors.text,
     values: ImmutableList<String>
 ) {
     val constraints = ConstraintSet {
