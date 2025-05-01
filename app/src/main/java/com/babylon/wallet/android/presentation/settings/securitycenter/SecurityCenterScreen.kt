@@ -224,6 +224,7 @@ private fun SecurityCenterContent(
     }
 }
 
+// TODO Theme
 @Composable
 fun RecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(

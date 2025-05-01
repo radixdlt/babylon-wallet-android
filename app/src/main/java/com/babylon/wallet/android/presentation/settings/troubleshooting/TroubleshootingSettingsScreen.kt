@@ -64,10 +64,10 @@ private fun TroubleshootingSettingsContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
@@ -114,7 +114,7 @@ private fun TroubleshootingSettingsContent(
                                                 Icon(
                                                     painter = painterResource(id = DSR.ic_link_out),
                                                     contentDescription = null,
-                                                    tint = RadixTheme.colors.gray1
+                                                    tint = RadixTheme.colors.icon
                                                 )
                                             }
                                         }
@@ -124,13 +124,13 @@ private fun TroubleshootingSettingsContent(
                                                 Icon(
                                                     painter = painterResource(id = DSR.ic_chevron_right),
                                                     contentDescription = null,
-                                                    tint = RadixTheme.colors.gray1
+                                                    tint = RadixTheme.colors.icon
                                                 )
                                             }
                                         }
                                     }
                                 )
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                                HorizontalDivider(color = RadixTheme.colors.divider)
                             }
                         }
                     }
@@ -146,7 +146,7 @@ private fun SectionHeader(modifier: Modifier = Modifier, title: String) {
         modifier = modifier.padding(all = RadixTheme.dimensions.paddingDefault),
         text = title,
         style = RadixTheme.typography.body1Link,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
