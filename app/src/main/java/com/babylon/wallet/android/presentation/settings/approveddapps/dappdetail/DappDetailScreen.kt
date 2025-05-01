@@ -292,14 +292,14 @@ fun DappDefinitionAddressRow(
         Text(
             text = stringResource(id = R.string.authorizedDapps_dAppDetails_dAppDefinition),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         ActionableAddressView(
             address = Address.Account(dappDefinitionAddress),
             textStyle = RadixTheme.typography.body1HighImportance,
-            textColor = RadixTheme.colors.gray1,
-            iconColor = RadixTheme.colors.gray2
+            textColor = RadixTheme.colors.text,
+            iconColor = RadixTheme.colors.iconSecondary
         )
     }
 }
@@ -318,7 +318,7 @@ fun DAppWebsiteAddressRow(
                 if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
             },
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         LinkText(
@@ -326,8 +326,7 @@ fun DAppWebsiteAddressRow(
                 .fillMaxWidth()
                 .radixPlaceholder(visible = website == null),
             clickable = website != null,
-            url = website.orEmpty(),
-            linkIconColor = RadixTheme.colors.gray3
+            url = website.orEmpty()
         )
     }
 }

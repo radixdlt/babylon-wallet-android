@@ -44,6 +44,7 @@ class RadixColors(
     textSecondary: Color,
     textButton: Color,
     icon: Color,
+    iconSecondary: Color,
     primaryButton: Color,
     divider: Color,
     border: Color,
@@ -107,6 +108,8 @@ class RadixColors(
         private set
     var icon by mutableStateOf(icon)
         private set
+    var iconSecondary by mutableStateOf(iconSecondary)
+        private set
     var primaryButton by mutableStateOf(primaryButton)
         private set
     var divider by mutableStateOf(divider)
@@ -150,6 +153,7 @@ class RadixColors(
         textSecondary: Color = this.textSecondary,
         textButton: Color = this.textButton,
         icon: Color = this.icon,
+        iconSecondary: Color = this.iconSecondary,
         primaryButton: Color = this.primaryButton,
         divider: Color = this.divider,
         border: Color = this.border,
@@ -186,6 +190,7 @@ class RadixColors(
             textSecondary = textSecondary,
             textButton = textButton,
             icon = icon,
+            iconSecondary = iconSecondary,
             primaryButton = primaryButton,
             divider = divider,
             border = border,
@@ -225,6 +230,7 @@ private val LightColorPalette = RadixColors(
     textSecondary = Gray2,
     textButton = Blue2,
     icon = Gray1,
+    iconSecondary = Gray2,
     primaryButton = Blue2,
     divider = Gray4,
     border = Gray1,
@@ -242,6 +248,7 @@ private val DarkColorPalette = LightColorPalette.copy(
     textSecondary = Gray4,
     textButton = Color(0xFF90CAF9),
     icon = Gray5,
+    iconSecondary = Gray4,
     primaryButton = Color(0xFF00C389),
     divider = Color(0xFF404243),
     border = Gray5,
