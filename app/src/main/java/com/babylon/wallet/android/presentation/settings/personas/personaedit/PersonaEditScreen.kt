@@ -144,7 +144,7 @@ private fun PersonaEditContent(
                         R.string.editPersona_closeConfirmationDialog_message
                     ),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(
@@ -152,7 +152,8 @@ private fun PersonaEditContent(
             ),
             dismissText = stringResource(
                 id = R.string.editPersona_closeConfirmationDialog_keepEditing
-            )
+            ),
+            confirmTextColor = RadixTheme.colors.error
         )
     }
 
@@ -173,7 +174,7 @@ private fun PersonaEditContent(
                         backIconType = BackIconType.Close,
                         windowInsets = WindowInsets.statusBarsAndBanner
                     )
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                    HorizontalDivider(color = RadixTheme.colors.divider)
                 }
             },
             bottomBar = {
@@ -184,7 +185,7 @@ private fun PersonaEditContent(
                     insets = WindowInsets.navigationBars.union(WindowInsets.ime)
                 )
             },
-            containerColor = RadixTheme.colors.defaultBackground
+            containerColor = RadixTheme.colors.background
         ) { padding ->
             PersonaDetailList(
                 modifier = Modifier
@@ -277,7 +278,7 @@ private fun PersonaDetailList(
 //                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
 //                onClick = onEditAvatar
 //            )
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
         }
         item {
             RadixTextField(
@@ -297,7 +298,7 @@ private fun PersonaDetailList(
                     null
                 }
             )
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
         }
         item {
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
@@ -306,7 +307,7 @@ private fun PersonaDetailList(
                     .fillMaxWidth(),
                 text = stringResource(R.string.editPersona_sharedInformationHeading),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             if (missingFields.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -317,7 +318,7 @@ private fun PersonaDetailList(
                 )
             }
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
         }
         items(editedFields) { field ->
             val validationError = if (dappContextEdit) {
@@ -351,7 +352,7 @@ private fun PersonaDetailList(
             HorizontalDivider(
                 modifier = Modifier
                     .fillMaxWidth(),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
         }
         item {

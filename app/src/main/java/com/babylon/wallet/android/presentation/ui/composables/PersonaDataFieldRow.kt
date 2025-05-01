@@ -67,14 +67,14 @@ fun PersonaDataStringField(
         Text(
             text = label,
             style = labelStyle,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
         Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = value,
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             overflow = TextOverflow.Ellipsis,
             maxLines = if (singleLine) 1 else Int.MAX_VALUE
         )

@@ -117,7 +117,7 @@ private fun PersonaDetailContent(
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         bottomBar = {
@@ -135,7 +135,7 @@ private fun PersonaDetailContent(
                 )
             }
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         if (state.persona != null) {
             PersonaDetailList(
@@ -188,7 +188,7 @@ private fun PersonaDetailList(
             )
             HorizontalDivider(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
         }
         val allFields = persona.personaData.fields
@@ -203,7 +203,7 @@ private fun PersonaDetailList(
                 )
                 HorizontalDivider(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
+                    color = RadixTheme.colors.divider
                 )
             }
         }
@@ -219,7 +219,7 @@ private fun PersonaDetailList(
         if (authorizedDapps.isNotEmpty()) {
             item {
                 HorizontalDivider(
-                    color = RadixTheme.colors.gray4
+                    color = RadixTheme.colors.divider
                 )
                 GrayBackgroundWrapper {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -229,7 +229,7 @@ private fun PersonaDetailList(
                             .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                         text = stringResource(R.string.authorizedDapps_personaDetails_authorizedDappsHeading),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
                 }

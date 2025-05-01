@@ -114,15 +114,14 @@ fun PersonaCard(
     modifier: Modifier = Modifier,
     persona: Persona,
     showChevron: Boolean = true,
-    elevation: Dp = 2.dp,
     onNavigateToSecurityCenter: (() -> Unit)? = null,
     securityPrompts: ImmutableList<SecurityPromptType>? = null
 ) {
     Column(
         modifier = modifier
-            .defaultCardShadow(elevation = elevation)
+            .defaultCardShadow()
             .fillMaxWidth()
-            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.background, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault
@@ -142,7 +141,7 @@ fun PersonaCard(
                 modifier = Modifier.weight(1f),
                 text = persona.displayName.value,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -152,7 +151,7 @@ fun PersonaCard(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
                     ),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.text
                 )
             }
         }
@@ -193,13 +192,13 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
         )
         persona.lastUsedOn?.let {
             Column(modifier = Modifier.fillMaxWidth()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
                 Spacer(modifier = Modifier.height(paddingDefault))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.dAppRequest_login_lastLoginWasOn, it),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(paddingDefault))
             }
@@ -230,7 +229,7 @@ fun SimplePersonaSelectionCard(
             textAlign = TextAlign.Start,
             maxLines = 2,
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         if (isSingleChoice) {
             RadixRadioButton(
