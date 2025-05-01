@@ -3,8 +3,8 @@ package com.babylon.wallet.android.designsystem.theme
 import rdx.works.core.domain.ThemeSelection
 
 data class RadixThemeConfig(
-    val themeSelection: ThemeSelection = ThemeSelection.DEFAULT,
-    val isSystemDarkTheme: Boolean
+    private val themeSelection: ThemeSelection = ThemeSelection.DEFAULT,
+    private val isSystemDarkTheme: Boolean
 ) {
     val isDarkTheme: Boolean
         get() = when (themeSelection) {

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.designsystem.composable
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,7 @@ fun RadixTextField(
     value: String,
     colors: TextFieldColors? = null,
     hint: String? = null,
-    hintColor: Color? = RadixTheme.colors.defaultText,
+    hintColor: Color? = RadixTheme.colors.text,
     error: String? = null,
     errorHighlight: Boolean = false,
     leftLabel: LabelType? = null,
@@ -74,26 +75,26 @@ fun RadixTextField(
                 onValueChange = onValueChanged,
                 shape = RadixTheme.shapes.roundedRectSmall,
                 colors = colors ?: OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = RadixTheme.colors.gray5,
-                    focusedPlaceholderColor = RadixTheme.colors.gray2,
-                    focusedTextColor = RadixTheme.colors.gray1,
-                    focusedBorderColor = RadixTheme.colors.gray1,
-                    unfocusedBorderColor = RadixTheme.colors.gray4,
-                    errorBorderColor = RadixTheme.colors.red1,
-                    cursorColor = RadixTheme.colors.gray1,
+                    focusedContainerColor = RadixTheme.colors.backgroundTertiary,
+                    focusedPlaceholderColor = RadixTheme.colors.textSecondary,
+                    focusedTextColor = RadixTheme.colors.text,
+                    focusedBorderColor = RadixTheme.colors.border,
+                    unfocusedBorderColor = RadixTheme.colors.backgroundTertiary,
+                    errorBorderColor = RadixTheme.colors.error,
+                    cursorColor = RadixTheme.colors.text,
                     selectionColors = TextSelectionColors(
-                        RadixTheme.colors.gray1,
+                        RadixTheme.colors.text, // TODO Theme
                         LocalTextSelectionColors.current.backgroundColor
                     ),
-                    unfocusedContainerColor = RadixTheme.colors.gray5,
-                    errorContainerColor = RadixTheme.colors.gray5
+                    unfocusedContainerColor = RadixTheme.colors.backgroundTertiary,
+                    errorContainerColor = RadixTheme.colors.backgroundTertiary
                 ),
                 placeholder = {
                     hint?.let {
                         Text(
                             text = it,
                             style = RadixTheme.typography.body1Regular,
-                            color = hintColor ?: RadixTheme.colors.gray1
+                            color = hintColor ?: RadixTheme.colors.text
                         )
                     }
                 },
@@ -122,14 +123,22 @@ fun RadixTextField(
                         modifier = Modifier.size(14.dp),
                         painter = painterResource(id = R.drawable.ic_warning_error),
                         contentDescription = null,
-                        tint = RadixTheme.colors.red1
+                        tint = RadixTheme.colors.error
                     )
                 }
-                Text(text = error.orEmpty(), style = RadixTheme.typography.body2HighImportance, color = RadixTheme.colors.red1)
+                Text(
+                    text = error.orEmpty(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.error
+                )
             }
         } else {
             optionalHint?.let { hint ->
-                Text(text = hint, style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.gray2)
+                Text(
+                    text = hint,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.textSecondary
+                )
             }
         }
     }
@@ -155,7 +164,7 @@ private fun TopLabelRow(
                     modifier = Modifier.weight(1f),
                     text = leftLabel.value,
                     style = RadixTheme.typography.body1Link,
-                    color = if (isError) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+                    color = if (isError) RadixTheme.colors.error else RadixTheme.colors.text
                 )
             }
 
@@ -167,7 +176,7 @@ private fun TopLabelRow(
                     modifier = Modifier.weight(1f),
                     text = rightLabel.value,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     textAlign = TextAlign.End
                 )
             }

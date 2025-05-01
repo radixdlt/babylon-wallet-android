@@ -14,10 +14,14 @@ fun Modifier.defaultCardShadow(
     shape: Shape? = null,
     color: Color? = null
 ) = composed {
-    this.shadow(
-        elevation = elevation,
-        shape = shape ?: RadixTheme.shapes.roundedRectMedium,
-        ambientColor = color ?: RadixTheme.colors.gray2,
-        spotColor = color ?: RadixTheme.colors.gray2
-    )
+    if (!RadixTheme.config.isDarkTheme) {
+        shadow(
+            elevation = elevation,
+            shape = shape ?: RadixTheme.shapes.roundedRectMedium,
+            ambientColor = color ?: RadixTheme.colors.gray2,
+            spotColor = color ?: RadixTheme.colors.gray2
+        )
+    } else {
+        this
+    }
 }

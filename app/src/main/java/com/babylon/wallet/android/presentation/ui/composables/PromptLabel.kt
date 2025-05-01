@@ -25,10 +25,10 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 fun PromptLabel(
     text: String,
     modifier: Modifier = Modifier,
-    textColor: Color = RadixTheme.colors.orange3,
+    textColor: Color = RadixTheme.colors.warning,
     textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
     @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
-    iconTint: Color = RadixTheme.colors.orange3,
+    iconTint: Color = RadixTheme.colors.warning,
     iconSize: Dp = 24.dp,
     endContent: (@Composable () -> Unit)? = null
 ) {
@@ -48,10 +48,10 @@ fun PromptLabel(
 fun PromptLabel(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
-    textColor: Color = RadixTheme.colors.orange3,
+    textColor: Color = RadixTheme.colors.warning,
     textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
     @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
-    iconTint: Color = RadixTheme.colors.orange3,
+    iconTint: Color = RadixTheme.colors.warning,
     iconSize: Dp = 24.dp,
     endContent: (@Composable () -> Unit)? = null
 ) {
