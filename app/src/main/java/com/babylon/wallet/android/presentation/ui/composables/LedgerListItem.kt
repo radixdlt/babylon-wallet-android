@@ -35,7 +35,7 @@ fun LedgerListItem(
             Text(
                 text = ledgerFactorSource.value.hint.label,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             val usedText = buildAnnotatedString {
@@ -53,12 +53,12 @@ fun LedgerListItem(
             Text(
                 text = usedText,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             Text(
                 text = addedText,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         if (selected != null) {

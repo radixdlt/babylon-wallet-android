@@ -21,19 +21,19 @@ fun ResetWalletDialog(
         modifier = modifier,
         onDismissRequest = onDeny,
         shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         title = {
             Text(
                 text = stringResource(id = R.string.factoryReset_dialog_title),
                 style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         text = {
             Text(
                 text = stringResource(id = R.string.factoryReset_dialog_message),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmButton = {
@@ -45,7 +45,7 @@ fun ResetWalletDialog(
                         vertical = RadixTheme.dimensions.paddingXSmall
                     ),
                 text = stringResource(id = R.string.common_confirm),
-                color = RadixTheme.colors.red1
+                color = RadixTheme.colors.error
             )
         },
         dismissButton = {
@@ -57,7 +57,7 @@ fun ResetWalletDialog(
                         vertical = RadixTheme.dimensions.paddingXSmall
                     ),
                 text = stringResource(id = R.string.common_cancel),
-                color = RadixTheme.colors.blue2
+                color = RadixTheme.colors.textButton
             )
         }
     )
