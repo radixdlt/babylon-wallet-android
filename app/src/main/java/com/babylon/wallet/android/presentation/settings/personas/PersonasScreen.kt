@@ -92,13 +92,13 @@ fun PersonasContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item {
                     Text(
@@ -108,7 +108,7 @@ fun PersonasContent(
                         ),
                         text = stringResource(id = R.string.personas_subtitle),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                     InfoButton(
                         modifier = Modifier.padding(

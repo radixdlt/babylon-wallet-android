@@ -30,15 +30,14 @@ fun DappCard(
     modifier: Modifier = Modifier,
     dApp: DApp,
     showChevron: Boolean = true,
-    elevation: Dp = 2.dp,
     bottomContent: (@Composable () -> Unit)? = null
 ) {
     Column(
         modifier = modifier
-            .defaultCardShadow(elevation = elevation)
+            .defaultCardShadow()
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
-            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault
@@ -57,7 +56,7 @@ fun DappCard(
                 modifier = Modifier.weight(1f),
                 text = dApp.displayName(),
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -67,7 +66,7 @@ fun DappCard(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
                     ),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.icon
                 )
             }
         }
