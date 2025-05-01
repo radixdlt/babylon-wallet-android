@@ -236,7 +236,6 @@ fun AddDepositorSheet(
                     onValueChanged = onResourceAddressChanged,
                     value = depositor.addressToDisplay,
                     hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
-                    hintColor = RadixTheme.colors.gray2,
                     singleLine = true,
                     error = null
                 )

@@ -91,7 +91,7 @@ private fun ConfirmDeviceSeedPhraseContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         bottomBar = {
             RadixBottomBar(
                 onClick = onConfirmClick,
@@ -126,7 +126,7 @@ private fun ConfirmDeviceSeedPhraseContent(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(id = state.factorSourceKind.iconRes()),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -134,7 +134,7 @@ private fun ConfirmDeviceSeedPhraseContent(
             Text(
                 text = stringResource(id = R.string.newBiometricFactor_confirmSeedPhrase_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -143,7 +143,7 @@ private fun ConfirmDeviceSeedPhraseContent(
             Text(
                 text = stringResource(id = R.string.newBiometricFactor_confirmSeedPhrase_subtitle, state.words.size),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 

@@ -39,7 +39,6 @@ fun RadixTextField(
     value: String,
     colors: TextFieldColors? = null,
     hint: String? = null,
-    hintColor: Color? = RadixTheme.colors.text,
     error: String? = null,
     errorHighlight: Boolean = false,
     leftLabel: LabelType? = null,
@@ -76,8 +75,12 @@ fun RadixTextField(
                 shape = RadixTheme.shapes.roundedRectSmall,
                 colors = colors ?: OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = RadixTheme.colors.backgroundTertiary,
+                    unfocusedContainerColor = RadixTheme.colors.backgroundTertiary,
+                    errorContainerColor = RadixTheme.colors.backgroundTertiary,
                     focusedPlaceholderColor = RadixTheme.colors.textSecondary,
+                    unfocusedPlaceholderColor = RadixTheme.colors.textSecondary,
                     focusedTextColor = RadixTheme.colors.text,
+                    unfocusedTextColor = RadixTheme.colors.text,
                     focusedBorderColor = RadixTheme.colors.border,
                     unfocusedBorderColor = RadixTheme.colors.backgroundTertiary,
                     errorBorderColor = RadixTheme.colors.error,
@@ -85,16 +88,13 @@ fun RadixTextField(
                     selectionColors = TextSelectionColors(
                         RadixTheme.colors.text, // TODO Theme
                         LocalTextSelectionColors.current.backgroundColor
-                    ),
-                    unfocusedContainerColor = RadixTheme.colors.backgroundTertiary,
-                    errorContainerColor = RadixTheme.colors.backgroundTertiary
+                    )
                 ),
                 placeholder = {
                     hint?.let {
                         Text(
                             text = it,
                             style = RadixTheme.typography.body1Regular,
-                            color = hintColor ?: RadixTheme.colors.text
                         )
                     }
                 },

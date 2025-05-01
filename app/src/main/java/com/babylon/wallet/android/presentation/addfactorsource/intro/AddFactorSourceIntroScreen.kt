@@ -73,7 +73,7 @@ private fun AddFactorSourceIntroContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
@@ -93,7 +93,7 @@ private fun AddFactorSourceIntroContent(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(id = state.factorSourceKind.iconRes()),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -101,7 +101,7 @@ private fun AddFactorSourceIntroContent(
             Text(
                 text = state.factorSourceKind.addTitle(),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.icon,
                 textAlign = TextAlign.Center
             )
 
@@ -110,7 +110,7 @@ private fun AddFactorSourceIntroContent(
             Text(
                 text = state.factorSourceKind.addSubtitle(),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.icon,
                 textAlign = TextAlign.Center
             )
 

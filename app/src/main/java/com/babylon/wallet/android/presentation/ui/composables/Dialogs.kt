@@ -81,7 +81,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
-    sheetBackgroundColor: Color = RadixTheme.colors.defaultBackground,
+    sheetBackgroundColor: Color = RadixTheme.colors.background,
     headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
@@ -123,7 +123,7 @@ fun BottomSheetDialogWrapper(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
+            .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f))) // TODO theme
             .clickable(interactionSource = interactionSource, indication = null) {
                 onDismissRequest()
             }
@@ -243,7 +243,7 @@ fun BottomDialogHeader(
         ) {
             Icon(
                 imageVector = backIcon,
-                tint = RadixTheme.colors.gray1,
+                tint = RadixTheme.colors.icon,
                 contentDescription = "clear"
             )
         }
@@ -254,7 +254,8 @@ fun BottomDialogHeader(
                     .padding(horizontal = 48.dp),
                 text = title,
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.body1Header
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.text
             )
         }
     }

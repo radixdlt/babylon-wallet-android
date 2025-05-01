@@ -195,7 +195,6 @@ fun CreateAccountContent(
                     null
                 },
                 hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
-                hintColor = RadixTheme.colors.gray2,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     capitalization = KeyboardCapitalization.Sentences

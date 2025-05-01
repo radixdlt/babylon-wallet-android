@@ -267,8 +267,7 @@ private fun AddGatewaySheet(
                     )
 
                     else -> null
-                },
-                hintColor = RadixTheme.colors.gray2
+                }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         }

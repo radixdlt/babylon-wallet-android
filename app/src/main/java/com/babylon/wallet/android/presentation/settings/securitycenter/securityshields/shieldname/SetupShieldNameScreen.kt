@@ -156,7 +156,6 @@ private fun SetupShieldNameContent(
                 keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                 value = state.name,
                 singleLine = true,
-                hintColor = RadixTheme.colors.gray2,
                 error = stringResource(id = R.string.shieldWizardName_tooLong).takeIf { state.isNameTooLong }
             )
 

@@ -82,15 +82,14 @@ fun AddLedgerDeviceScreen(
                 hostState = snackBarHostState,
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
-        }
+        },
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Box(
             modifier = Modifier.padding(padding)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(RadixTheme.colors.defaultBackground)
+                modifier = Modifier.fillMaxSize()
             ) {
                 val imeController = LocalSoftwareKeyboardController.current
                 var ledgerNameValue by remember {
@@ -118,7 +117,7 @@ fun AddLedgerDeviceScreen(
                             Text(
                                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger),
                                 style = RadixTheme.typography.title,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center
                             )
@@ -126,7 +125,7 @@ fun AddLedgerDeviceScreen(
                             Text(
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_body1),
                                 style = RadixTheme.typography.body1Regular,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center
                             )
@@ -134,7 +133,7 @@ fun AddLedgerDeviceScreen(
                             Text(
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_body2),
                                 style = RadixTheme.typography.body1Regular,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center
                             )
@@ -151,7 +150,7 @@ fun AddLedgerDeviceScreen(
                             Text(
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_title),
                                 style = RadixTheme.typography.title,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center
                             )
@@ -160,7 +159,7 @@ fun AddLedgerDeviceScreen(
                                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_subtitle),
                                 style = RadixTheme.typography.body1Regular,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center
                             )
@@ -173,7 +172,7 @@ fun AddLedgerDeviceScreen(
                                         model.displayName()
                                     ),
                                     style = RadixTheme.typography.body1Header,
-                                    color = RadixTheme.colors.gray2,
+                                    color = RadixTheme.colors.textSecondary,
                                     overflow = TextOverflow.Ellipsis,
                                     textAlign = TextAlign.Center
                                 )
@@ -183,14 +182,13 @@ fun AddLedgerDeviceScreen(
                                 onValueChanged = { ledgerNameValue = it },
                                 value = ledgerNameValue,
                                 hint = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_namePlaceholder),
-                                hintColor = RadixTheme.colors.gray2
                             )
                             Text(
                                 modifier = Modifier
                                     .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_fieldHint),
                                 style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray2,
+                                color = RadixTheme.colors.textSecondary,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Spacer(modifier = Modifier.weight(1f))
