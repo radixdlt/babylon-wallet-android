@@ -49,7 +49,8 @@ class RadixColors(
     border: Color,
     borderSecondary: Color,
     error: Color,
-    warning: Color
+    warning: Color,
+    cardOnSecondary: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
         private set
@@ -118,6 +119,8 @@ class RadixColors(
         private set
     var warning by mutableStateOf(warning)
         private set
+    var cardOnSecondary by mutableStateOf(cardOnSecondary)
+        private set
 
     fun copy(
         defaultBackground: Color = this.defaultBackground,
@@ -152,7 +155,8 @@ class RadixColors(
         border: Color = this.border,
         borderSecondary: Color = this.borderSecondary,
         error: Color = this.error,
-        warning: Color = this.warning
+        warning: Color = this.warning,
+        cardOnSecondary: Color = this.cardOnSecondary,
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
@@ -187,42 +191,9 @@ class RadixColors(
             border = border,
             borderSecondary = borderSecondary,
             error = error,
-            warning = warning
+            warning = warning,
+            cardOnSecondary = cardOnSecondary
         )
-    }
-
-    fun update(other: RadixColors) {
-        defaultBackground = other.defaultBackground
-        defaultText = other.defaultText
-        blue1 = other.blue1
-        blue2 = other.blue2
-        green1 = other.green1
-        green3 = other.green3
-        pink1 = other.pink1
-        gray1 = other.gray1
-        gray2 = other.gray2
-        gray3 = other.gray3
-        gray4 = other.gray4
-        gray5 = other.gray5
-        orange1 = other.orange1
-        orange2 = other.orange2
-        lightOrange = other.lightOrange
-        red1 = other.red1
-        lightRed = other.lightRed
-        white = other.white
-        background = other.background
-        backgroundSecondary = other.backgroundSecondary
-        backgroundTertiary = other.backgroundTertiary
-        text = other.text
-        textSecondary = other.textSecondary
-        textButton = other.textButton
-        icon = other.icon
-        primaryButton = other.primaryButton
-        divider = other.divider
-        border = other.border
-        borderSecondary = other.borderSecondary
-        error = other.error
-        warning = other.warning
     }
 }
 
@@ -259,7 +230,8 @@ private val LightColorPalette = RadixColors(
     border = Gray1,
     borderSecondary = Gray3,
     error = Red1,
-    warning = Orange3
+    warning = Orange3,
+    cardOnSecondary = White
 )
 
 private val DarkColorPalette = LightColorPalette.copy(
@@ -275,7 +247,8 @@ private val DarkColorPalette = LightColorPalette.copy(
     border = Gray5,
     borderSecondary = Gray3,
     error = Red1,
-    warning = Orange3
+    warning = Orange3,
+    cardOnSecondary = Color(0xFF28292A)
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {

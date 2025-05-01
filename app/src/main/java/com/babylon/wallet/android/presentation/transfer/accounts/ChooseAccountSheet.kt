@@ -208,7 +208,6 @@ private fun ChooseAccountContent(
                 onValueChanged = onAddressChanged,
                 value = typedAddress,
                 hint = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_addressFieldPlaceholder),
-                hintColor = RadixTheme.colors.gray2,
                 error = if (!isFocused) {
                     errorResource?.let { stringResource(id = it) }
                 } else {

@@ -103,7 +103,7 @@ private fun SetFactorSourceNameContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         bottomBar = {
             RadixBottomBar(
                 modifier = Modifier.imePadding(),
@@ -146,7 +146,7 @@ private fun SetFactorSourceNameContent(
                     .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = state.factorSourceKind.iconRes()),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -155,7 +155,7 @@ private fun SetFactorSourceNameContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 text = state.factorSourceKind.nameTitle(),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -169,7 +169,6 @@ private fun SetFactorSourceNameContent(
                 keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                 value = state.name,
                 singleLine = true,
-                hintColor = RadixTheme.colors.gray2,
                 hint = stringResource(id = R.string.newBiometricFactor_name_label),
                 error = stringResource(id = R.string.renameLabel_factorSource_tooLong).takeIf { state.isNameTooLong }
             )

@@ -260,7 +260,6 @@ private fun AddAssetSheet(
                     onValueChanged = onResourceAddressChanged,
                     value = asset.addressToDisplay,
                     hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
-                    hintColor = RadixTheme.colors.gray2,
                     singleLine = true,
                     error = null
                 )

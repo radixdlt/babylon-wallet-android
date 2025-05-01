@@ -216,7 +216,7 @@ private fun SeedPhraseWordInput(
                             id = com.babylon.wallet.android.designsystem.R.drawable.ic_close
                         ),
                         contentDescription = null,
-                        tint = Color.Unspecified
+                        tint = RadixTheme.colors.icon
                     )
                 }
             }

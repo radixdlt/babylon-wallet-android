@@ -18,21 +18,16 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 
 @Composable
 fun FullscreenCircularProgressContent(
-    modifier: Modifier = Modifier,
-    addOverlay: Boolean = false,
-    clickable: Boolean = false
+    modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .applyIf(addOverlay, Modifier.background(Color.Black.copy(alpha = 0.3f)))
-            .applyIf(clickable, Modifier.clickable(interactionSource, null) {}),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.icon
         )
     }
 }

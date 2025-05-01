@@ -270,7 +270,6 @@ private fun CreatePersonaContentList(
                     )
                 ),
                 hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
-                hintColor = RadixTheme.colors.gray2,
                 error = if (personaName.wasEdited) {
                     when (personaName.validationState) {
                         PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)

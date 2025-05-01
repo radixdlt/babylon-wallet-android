@@ -128,7 +128,6 @@ fun NPSSurveySheet(
                 onValueChanged = onReasonChanged,
                 value = reason.orEmpty(),
                 hint = stringResource(id = R.string.survey_reason_fieldHint),
-                hintColor = RadixTheme.colors.gray2,
                 singleLine = true
             )
         }

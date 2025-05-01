@@ -134,10 +134,6 @@ fun SimpleSelectableSingleChoiceFactorSourceCard(
     ) {
         SimpleFactorCardView(
             modifier = modifier
-                .background(
-                    color = RadixTheme.colors.white,
-                    shape = RadixTheme.shapes.roundedRectMedium
-                )
                 .noIndicationClickable { onSelect(item.data) },
             iconRes = item.data.kind.iconRes(),
             title = item.data.name,
@@ -213,7 +209,7 @@ private fun CardContainer(
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.white,
+                color = RadixTheme.colors.cardOnSecondary,
                 shape = RadixTheme.shapes.roundedRectDefault
             )
     ) {
