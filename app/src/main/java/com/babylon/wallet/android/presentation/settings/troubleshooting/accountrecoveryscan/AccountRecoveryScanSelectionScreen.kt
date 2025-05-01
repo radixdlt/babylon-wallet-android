@@ -80,7 +80,7 @@ private fun AccountRecoveryScanSelectionContent(
                 backIconType = BackIconType.Close
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -95,7 +95,7 @@ private fun AccountRecoveryScanSelectionContent(
                     .padding(vertical = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.accountSecuritySettings_accountRecoveryScan_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Text(
@@ -103,15 +103,18 @@ private fun AccountRecoveryScanSelectionContent(
                     .fillMaxWidth(),
                 text = stringResource(id = R.string.accountRecoveryScan_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
-            HorizontalDivider(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge), color = RadixTheme.colors.gray4)
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
+                color = RadixTheme.colors.divider
+            )
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.accountRecoveryScan_babylonSection_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Text(
                 modifier = Modifier
@@ -123,7 +126,7 @@ private fun AccountRecoveryScanSelectionContent(
                     RadixTheme.typography.body1Header.toSpanStyle()
                 ),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             RadixSecondaryButton(
@@ -144,7 +147,7 @@ private fun AccountRecoveryScanSelectionContent(
             if (isMainnet) {
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
+                    color = RadixTheme.colors.divider
                 )
                 Text(
                     modifier = Modifier
@@ -153,7 +156,7 @@ private fun AccountRecoveryScanSelectionContent(
                     text = stringResource(id = R.string.accountRecoveryScan_olympiaSection_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Text(
                     modifier = Modifier
@@ -163,7 +166,7 @@ private fun AccountRecoveryScanSelectionContent(
                         RadixTheme.typography.body1Header.toSpanStyle()
                     ),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 RadixSecondaryButton(
@@ -190,7 +193,7 @@ private fun AccountRecoveryScanSelectionContent(
                             RadixTheme.typography.body1HighImportance.toSpanStyle()
                         ),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
         }
