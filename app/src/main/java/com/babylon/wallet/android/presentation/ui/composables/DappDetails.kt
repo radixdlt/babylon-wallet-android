@@ -64,7 +64,10 @@ fun DappDetails(
                         dapp = dAppWithResources.dApp
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                    HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = dimensions.paddingXLarge))
+                    HorizontalDivider(
+                        color = RadixTheme.colors.divider,
+                        modifier = Modifier.padding(horizontal = dimensions.paddingXLarge)
+                    )
                 }
                 dAppWithResources.dApp.description?.let { description ->
                     item {
@@ -74,11 +77,11 @@ fun DappDetails(
                                 .padding(horizontal = dimensions.paddingXLarge, vertical = dimensions.paddingLarge),
                             text = description,
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             textAlign = TextAlign.Start
                         )
                         HorizontalDivider(
-                            color = RadixTheme.colors.gray4,
+                            color = RadixTheme.colors.divider,
                             modifier = Modifier.padding(horizontal = dimensions.paddingXLarge)
                         )
                     }
@@ -112,7 +115,7 @@ fun DappDetails(
                                 .padding(horizontal = dimensions.paddingXLarge),
                             text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2,
+                            color = RadixTheme.colors.textSecondary,
                             textAlign = TextAlign.Start
                         )
                         Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -142,7 +145,7 @@ fun DappDetails(
                                 .padding(horizontal = dimensions.paddingXLarge),
                             text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2,
+                            color = RadixTheme.colors.textSecondary,
                             textAlign = TextAlign.Start
                         )
                         Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -171,7 +174,7 @@ fun DappDetails(
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(R.string.authorizedDapps_dAppDetails_personasHeading),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
+                            color = RadixTheme.colors.textSecondary
                         )
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     }
@@ -202,7 +205,7 @@ fun DappDetails(
 
                         SwitchSettingsItem(
                             modifier = Modifier
-                                .background(RadixTheme.colors.defaultBackground)
+                                .background(RadixTheme.colors.background)
                                 .fillMaxWidth()
                                 .padding(horizontal = dimensions.paddingDefault),
                             titleRes = R.string.authorizedDapps_dAppDetails_depositsTitle,
@@ -212,7 +215,7 @@ fun DappDetails(
                                 R.string.authorizedDapps_dAppDetails_depositsHidden
                             },
                             icon = null,
-                            subtitleTextColor = RadixTheme.colors.gray2,
+                            subtitleTextColor = RadixTheme.colors.textSecondary,
                             checked = isShowLockerDepositsChecked,
                             onCheckedChange = onShowLockerDepositsCheckedChange
                         )
@@ -220,7 +223,7 @@ fun DappDetails(
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
                         HorizontalDivider(
-                            color = RadixTheme.colors.gray4,
+                            color = RadixTheme.colors.divider,
                             modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
                         )
 
