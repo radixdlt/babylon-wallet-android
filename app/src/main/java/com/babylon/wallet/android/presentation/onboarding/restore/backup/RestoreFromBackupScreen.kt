@@ -177,7 +177,7 @@ private fun RestoreFromBackupContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -191,7 +191,8 @@ private fun RestoreFromBackupContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = R.string.recoverProfileBackup_header_title),
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.title
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.text
             )
 
             Text(
@@ -200,7 +201,8 @@ private fun RestoreFromBackupContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = R.string.recoverProfileBackup_header_subtitle),
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.body1Regular
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.text
             )
 
             Text(
@@ -213,7 +215,7 @@ private fun RestoreFromBackupContent(
                 text = stringResource(id = R.string.androidRecoverProfileBackup_choose_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             LazyColumn(modifier = Modifier.weight(1f)) {
@@ -291,7 +293,7 @@ private fun EmptyCloudBackups() {
             .height(140.dp)
             .fillMaxWidth()
             .padding(RadixTheme.dimensions.paddingDefault)
-            .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium),
+            .background(RadixTheme.colors.backgroundSecondary, shape = RadixTheme.shapes.roundedRectMedium),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -299,7 +301,7 @@ private fun EmptyCloudBackups() {
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.secondaryHeader
         )
@@ -314,7 +316,7 @@ private fun LoadingCloudBackups() {
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(color = RadixTheme.colors.gray1)
+        CircularProgressIndicator(color = RadixTheme.colors.icon)
     }
 }
 
@@ -350,8 +352,8 @@ private fun RestoredProfileListItem(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(bottom = RadixTheme.dimensions.paddingMedium),
-        color = RadixTheme.colors.gray5,
-        shadowElevation = 8.dp,
+        color = RadixTheme.colors.backgroundSecondary,
+        shadowElevation = if (RadixTheme.config.isDarkTheme) 0.dp else 8.dp,
         shape = RadixTheme.shapes.roundedRectMedium
     ) {
         Row(
@@ -376,7 +378,7 @@ private fun RestoredProfileListItem(
                             restoringProfile.deviceDescription
                         }
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     style = RadixTheme.typography.body2Regular
                 )
 
@@ -385,7 +387,7 @@ private fun RestoredProfileListItem(
                         id = R.string.recoverProfileBackup_lastModified,
                         restoringProfile.lastModified.displayable()
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     style = RadixTheme.typography.body2Regular
                 )
 
@@ -394,7 +396,7 @@ private fun RestoredProfileListItem(
                         id = R.string.recoverProfileBackup_numberOfAccounts,
                         restoringProfile.totalNumberOfAccountsOnAllNetworks
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     style = RadixTheme.typography.body2Regular
                 )
 
@@ -403,7 +405,7 @@ private fun RestoredProfileListItem(
                         id = R.string.recoverProfileBackup_numberOfPersonas,
                         restoringProfile.totalNumberOfPersonasOnAllNetworks
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     style = RadixTheme.typography.body2Regular
                 )
             }
@@ -422,7 +424,7 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Text(
@@ -434,7 +436,7 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
             text = stringResource(id = R.string.recoverProfileBackup_backupNotAvailable),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         RadixSecondaryButton(
             modifier = Modifier
@@ -451,7 +453,7 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
 @Composable
 private fun PasswordSheet(
     modifier: Modifier = Modifier,
-    state: RestoreFromBackupViewModel.State.PasswordSheet.Open,
+    state: PasswordSheet.Open,
     onPasswordTyped: (String) -> Unit,
     onPasswordRevealToggle: () -> Unit,
     onPasswordSubmitted: () -> Unit
@@ -481,7 +483,8 @@ private fun PasswordSheet(
                                 com.babylon.wallet.android.designsystem.R.drawable.ic_show
                             }
                         ),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = RadixTheme.colors.icon
                     )
                 }
             },
@@ -497,7 +500,7 @@ private fun PasswordSheet(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        HorizontalDivider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = RadixTheme.colors.divider)
 
         RadixPrimaryButton(
             modifier = Modifier

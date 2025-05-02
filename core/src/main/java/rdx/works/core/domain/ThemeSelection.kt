@@ -14,7 +14,7 @@ enum class ThemeSelection(
     internal fun toLiteral() = literal
 
     companion object {
-        val DEFAULT = LIGHT
+        val DEFAULT = SYSTEM
 
         internal fun fromLiteral(literal: String) = when (literal) {
             LITERAL_LIGHT -> LIGHT

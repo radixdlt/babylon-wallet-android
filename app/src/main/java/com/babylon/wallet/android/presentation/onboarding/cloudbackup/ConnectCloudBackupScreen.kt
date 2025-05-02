@@ -131,7 +131,7 @@ private fun ConnectCloudBackupContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -159,7 +159,7 @@ private fun ConnectCloudBackupContent(
                     ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedTitleAndroid)
                 },
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -171,7 +171,7 @@ private fun ConnectCloudBackupContent(
                     ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedSubtitleAndroid)
                 },
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
 

@@ -88,7 +88,7 @@ private fun EulaContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.onboarding_eula_headerTitle),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -98,11 +98,11 @@ private fun EulaContent(
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.onboarding_eula_headerSubtitle),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         bottomBar = {
@@ -112,7 +112,7 @@ private fun EulaContent(
                 enabled = eulaText != null
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val scope = rememberCoroutineScope()
 
