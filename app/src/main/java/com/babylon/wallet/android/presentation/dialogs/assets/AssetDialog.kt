@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.dialogs.assets
 
 import android.net.Uri
@@ -7,12 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -20,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,14 +45,20 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.LinkText
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
 import com.babylon.wallet.android.presentation.ui.composables.assets.Tag
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.babylon.wallet.android.presentation.ui.none
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.assets.AssetPrice
@@ -64,96 +76,136 @@ fun AssetDialog(
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    BottomSheetDialogWrapper(
-        modifier = modifier,
-        title = state.asset?.displayTitle(),
-        showDragHandle = true,
-        onDismiss = onDismiss
-    ) {
-        val isLoadingBalance = if (state.isFiatBalancesEnabled) {
-            state.isLoadingBalance
-        } else {
-            false
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch { sheetState.show() }
+    }
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
         }
+    }
 
-        Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
-            when (val asset = state.asset) {
-                is Token -> FungibleDialogContent(
-                    args = state.args as AssetDialogArgs.Fungible,
-                    token = asset,
-                    tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
-                    isLoadingBalance = isLoadingBalance,
-                    canBeHidden = state.canBeHidden,
-                    onInfoClick = onInfoClick,
-                    onHideClick = { viewModel.onHideClick(asset) }
-                )
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = viewModel::onMessageShown
+    )
 
-                is LiquidStakeUnit -> LSUDialogContent(
-                    args = state.args as AssetDialogArgs.Fungible,
-                    lsu = asset,
-                    price = state.assetPrice as? AssetPrice.LSUPrice,
-                    isLoadingBalance = isLoadingBalance,
-                    onInfoClick = onInfoClick
-                )
-
-                is PoolUnit -> PoolUnitDialogContent(
-                    args = state.args as AssetDialogArgs.Fungible,
-                    poolUnit = asset,
-                    poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
-                    isLoadingBalance = isLoadingBalance,
-                    canBeHidden = state.canBeHidden,
-                    onInfoClick = onInfoClick,
-                    onHideClick = { viewModel.onHideClick(asset) }
-                )
-                // Includes NFTs and stake claims
-                is Asset.NonFungible -> {
-                    val args = state.args as? AssetDialogArgs.NonFungible
-                    NonFungibleAssetDialogContent(
-                        resourceAddress = state.args.resourceAddress,
-                        localId = args?.localId,
-                        asset = asset,
-                        isNewlyCreated = state.args.isNewlyCreated,
-                        claimState = state.claimState,
-                        accountContext = state.accountContext,
-                        price = state.assetPrice as? AssetPrice.StakeClaimPrice,
-                        isLoadingBalance = isLoadingBalance,
-                        boundedAmount = args?.amount,
-                        canBeHidden = state.canBeHidden,
-                        onInfoClick = onInfoClick,
-                        onClaimClick = viewModel::onClaimClick,
-                        onHideClick = { viewModel.onHideClick(asset) }
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = sheetState,
+        onDismissRequest = onDismissRequest,
+        wrapContent = true,
+        windowInsets = {
+            WindowInsets.none // Bottom insets are handled by child views
+        },
+        sheetContent = {
+            Scaffold(
+                topBar = {
+                    RadixCenteredTopAppBar(
+                        title = state.asset?.displayTitle().orEmpty(),
+                        onBackClick = onDismissRequest,
+                        windowInsets = WindowInsets.none
                     )
+                },
+                snackbarHost = {
+                    RadixSnackbarHost(
+                        hostState = snackBarHostState,
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+                    )
+                },
+                containerColor = RadixTheme.colors.background,
+                contentWindowInsets = WindowInsets.none
+            ) { padding ->
+                val isLoadingBalance = if (state.isFiatBalancesEnabled) {
+                    state.isLoadingBalance
+                } else {
+                    false
                 }
 
-                // When asset is not retrieved yet, we show the placeholders for tokens, or NFTs
-                null -> when (val args = state.args) {
-                    is AssetDialogArgs.Fungible -> FungibleDialogContent(
+                when (val asset = state.asset) {
+                    is Token -> FungibleDialogContent(
+                        modifier = Modifier.padding(padding),
                         args = state.args as AssetDialogArgs.Fungible,
-                        token = null,
-                        tokenPrice = null,
-                        isLoadingBalance = state.isLoadingBalance,
-                        canBeHidden = false,
+                        token = asset,
+                        tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
+                        isLoadingBalance = isLoadingBalance,
+                        canBeHidden = state.canBeHidden,
+                        onInfoClick = onInfoClick,
+                        onHideClick = { viewModel.onHideClick(asset) }
+                    )
+
+                    is LiquidStakeUnit -> LSUDialogContent(
+                        modifier = Modifier.padding(padding),
+                        args = state.args as AssetDialogArgs.Fungible,
+                        lsu = asset,
+                        price = state.assetPrice as? AssetPrice.LSUPrice,
+                        isLoadingBalance = isLoadingBalance,
                         onInfoClick = onInfoClick
                     )
 
-                    is AssetDialogArgs.NonFungible -> NonFungibleAssetDialogContent(
-                        resourceAddress = state.args.resourceAddress,
-                        localId = args.localId,
-                        asset = null,
-                        price = null,
-                        isNewlyCreated = args.isNewlyCreated,
-                        isLoadingBalance = false, // we do not need to pass value here because it's for NFTs
-                        canBeHidden = false
+                    is PoolUnit -> PoolUnitDialogContent(
+                        modifier = Modifier.padding(padding),
+                        args = state.args as AssetDialogArgs.Fungible,
+                        poolUnit = asset,
+                        poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
+                        isLoadingBalance = isLoadingBalance,
+                        canBeHidden = state.canBeHidden,
+                        onInfoClick = onInfoClick,
+                        onHideClick = { viewModel.onHideClick(asset) }
                     )
+                    // Includes NFTs and stake claims
+                    is Asset.NonFungible -> {
+                        val args = state.args as? AssetDialogArgs.NonFungible
+                        NonFungibleAssetDialogContent(
+                            modifier = Modifier.padding(padding),
+                            resourceAddress = state.args.resourceAddress,
+                            localId = args?.localId,
+                            asset = asset,
+                            isNewlyCreated = state.args.isNewlyCreated,
+                            claimState = state.claimState,
+                            accountContext = state.accountContext,
+                            price = state.assetPrice as? AssetPrice.StakeClaimPrice,
+                            isLoadingBalance = isLoadingBalance,
+                            boundedAmount = args?.amount,
+                            canBeHidden = state.canBeHidden,
+                            onInfoClick = onInfoClick,
+                            onClaimClick = viewModel::onClaimClick,
+                            onHideClick = { viewModel.onHideClick(asset) }
+                        )
+                    }
+
+                    // When asset is not retrieved yet, we show the placeholders for tokens, or NFTs
+                    null -> when (val args = state.args) {
+                        is AssetDialogArgs.Fungible -> FungibleDialogContent(
+                            modifier = Modifier.padding(padding),
+                            args = state.args as AssetDialogArgs.Fungible,
+                            token = null,
+                            tokenPrice = null,
+                            isLoadingBalance = state.isLoadingBalance,
+                            canBeHidden = false,
+                            onInfoClick = onInfoClick
+                        )
+
+                        is AssetDialogArgs.NonFungible -> NonFungibleAssetDialogContent(
+                            modifier = Modifier.padding(padding),
+                            resourceAddress = state.args.resourceAddress,
+                            localId = args.localId,
+                            asset = null,
+                            price = null,
+                            isNewlyCreated = args.isNewlyCreated,
+                            isLoadingBalance = false, // we do not need to pass value here because it's for NFTs
+                            canBeHidden = false
+                        )
+                    }
                 }
             }
-
-            SnackbarUiMessageHandler(
-                message = state.uiMessage,
-                onMessageShown = viewModel::onMessageShown
-            )
         }
-    }
+    )
 
     HideAssetSheet(
         type = state.showHideConfirmation,
@@ -252,7 +304,7 @@ fun DescriptionSection(
                     .padding(bottom = if (infoUrl != null) RadixTheme.dimensions.paddingSemiLarge else 0.dp),
                 text = description,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Start
             )
         }
@@ -263,7 +315,7 @@ fun DescriptionSection(
                     .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.assetDetails_moreInfo),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
 
             LinkText(
@@ -277,7 +329,7 @@ fun DescriptionSection(
 
         if (!description.isNullOrBlank() || infoUrl != null) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.divider)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
     }
@@ -297,7 +349,7 @@ fun NonStandardMetadataSection(
             modifier = modifier
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.divider)
 
             metadata.forEach { metadata ->
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -330,7 +382,7 @@ fun BehavioursSection(
                     ),
                 text = stringResource(id = R.string.assetDetails_behavior),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
 
@@ -396,7 +448,7 @@ fun TagsSection(
                                 .padding(RadixTheme.dimensions.paddingXXSmall)
                                 .border(
                                     width = 1.dp,
-                                    color = RadixTheme.colors.gray4,
+                                    color = RadixTheme.colors.divider,
                                     shape = RadixTheme.shapes.roundedTag
                                 )
                                 .padding(RadixTheme.dimensions.paddingSmall),

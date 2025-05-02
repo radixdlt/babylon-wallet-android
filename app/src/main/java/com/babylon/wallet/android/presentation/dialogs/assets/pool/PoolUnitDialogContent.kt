@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -79,10 +82,9 @@ fun PoolUnitDialogContent(
         ?: remember(poolUnit) { poolUnit?.stake?.ownedAmount?.let { BoundedAmount.Exact(it) } }
     Column(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = RadixTheme.dimensions.paddingSemiLarge),
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
@@ -115,13 +117,13 @@ fun PoolUnitDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(
                 text = stringResource(id = R.string.account_poolUnits_details_currentRedeemableValue),
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -160,7 +162,7 @@ fun PoolUnitDialogContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                             .radixPlaceholder(visible = true)
                     )
-                    HorizontalDivider(color = RadixTheme.colors.gray4)
+                    HorizontalDivider(color = RadixTheme.colors.divider)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -173,7 +175,7 @@ fun PoolUnitDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -200,7 +202,7 @@ fun PoolUnitDialogContent(
                     Text(
                         text = poolUnit?.resource?.name.orEmpty(),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
             }
@@ -222,7 +224,7 @@ fun PoolUnitDialogContent(
                         else -> supply.formatted()
                     },
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.End
                 )
             }
@@ -241,7 +243,7 @@ fun PoolUnitDialogContent(
                             .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2),
                         text = it.value.toString(),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.End
                     )
                 }
@@ -277,6 +279,12 @@ fun PoolUnitDialogContent(
                         onClick = onHideClick
                     )
                 }
+            )
+        } else {
+            Spacer(
+                modifier = Modifier.height(
+                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                )
             )
         }
     }
