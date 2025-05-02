@@ -144,7 +144,7 @@ class PreferencesManagerImpl @Inject constructor(
         }.map { stringPreference ->
             stringPreference?.let {
                 ThemeSelection.fromLiteral(it)
-            } ?: ThemeSelection.LIGHT
+            } ?: ThemeSelection.DEFAULT
         }
 
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {

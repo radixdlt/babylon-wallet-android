@@ -20,7 +20,7 @@ fun UnderlineTextButton(
         onClick = onClick,
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = ButtonDefaults.textButtonColors(
-            contentColor = RadixTheme.colors.blue1,
+            contentColor = RadixTheme.colors.textButton,
             disabledContentColor = RadixTheme.colors.gray3,
         ),
         enabled = enabled

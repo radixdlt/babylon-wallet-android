@@ -90,7 +90,7 @@ fun CreateAccountConfirmationContent(
                 )
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         contentWindowInsets = WindowInsets.statusBarsAndBanner.add(WindowInsets.navigationBars)
     ) { padding ->
         Column(
@@ -117,7 +117,7 @@ fun CreateAccountConfirmationContent(
             Text(
                 text = stringResource(id = R.string.createEntity_completion_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
             val text = if (requestSource.isFirstTime()) {
@@ -128,7 +128,7 @@ fun CreateAccountConfirmationContent(
             Text(
                 text = text,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
             Text(
@@ -136,7 +136,7 @@ fun CreateAccountConfirmationContent(
                 text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.weight(3f))
         }
