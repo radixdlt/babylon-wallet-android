@@ -30,10 +30,10 @@ fun HistoryFilterTag(
     onCloseClick: (() -> Unit)? = null
 ) {
     val tagBorderModifier = Modifier
-        .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+        .border(1.dp, RadixTheme.colors.divider, shape = RadixTheme.shapes.circle)
         .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
     val tagSelectedModifier = Modifier
-        .background(RadixTheme.colors.gray1, shape = RadixTheme.shapes.circle)
+        .background(RadixTheme.colors.icon, shape = RadixTheme.shapes.circle)
         .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
     Row(
         modifier = modifier
@@ -53,7 +53,7 @@ fun HistoryFilterTag(
         Text(
             text = text,
             style = RadixTheme.typography.body1HighImportance,
-            color = if (selected) RadixTheme.colors.white else RadixTheme.colors.gray1
+            color = if (selected) RadixTheme.colors.background else RadixTheme.colors.text
         )
         if (showCloseIcon) {
             Icon(
@@ -67,7 +67,7 @@ fun HistoryFilterTag(
                     .size(12.dp),
                 painter = painterResource(id = DSR.ic_close),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray3
+                tint = RadixTheme.colors.divider
             )
         }
     }

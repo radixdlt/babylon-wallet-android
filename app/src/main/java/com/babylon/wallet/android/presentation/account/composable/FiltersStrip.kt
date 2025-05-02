@@ -30,7 +30,7 @@ fun FiltersStrip(
 ) {
     LazyRow(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
         contentPadding = PaddingValues(

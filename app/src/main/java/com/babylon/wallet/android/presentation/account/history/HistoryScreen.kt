@@ -249,7 +249,6 @@ fun HistoryContent(
                     onBackClick = onBackClick,
                     backIconType = BackIconType.Close,
                     windowInsets = WindowInsets.statusBarsAndBanner,
-                    containerColor = RadixTheme.colors.defaultBackground,
                     actions = {
                         AnimatedVisibility(visible = state.shouldShowFiltersButton, enter = fadeIn(), exit = fadeOut()) {
                             IconButton(onClick = { onShowFilters(true) }) {
@@ -257,7 +256,7 @@ fun HistoryContent(
                                     painterResource(
                                         id = DSR.ic_filter_list
                                     ),
-                                    tint = Color.Unspecified,
+                                    tint = RadixTheme.colors.icon,
                                     contentDescription = null
                                 )
                             }
@@ -271,7 +270,7 @@ fun HistoryContent(
                     hostState = snackBarHostState
                 )
             },
-            containerColor = RadixTheme.colors.gray5
+            containerColor = RadixTheme.colors.backgroundSecondary
         ) { padding ->
             var accountCardHeight by rememberSaveable {
                 mutableIntStateOf(0)
@@ -318,14 +317,14 @@ fun HistoryContent(
                                                 Text(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .background(RadixTheme.colors.gray5)
+                                                        .background(RadixTheme.colors.backgroundSecondary)
                                                         .padding(RadixTheme.dimensions.paddingMedium)
                                                         .radixPlaceholder(
                                                             visible = state.loadMoreState == State.LoadingMoreState.NewRange
                                                         ),
                                                     text = historyItem.item.toInstant().dayMonthDateFull(),
                                                     style = RadixTheme.typography.body2Header,
-                                                    color = RadixTheme.colors.gray2
+                                                    color = RadixTheme.colors.textSecondary
                                                 )
                                             }
                                         }
@@ -385,7 +384,7 @@ fun HistoryContent(
                         SimpleAccountCard(
                             account = it.account,
                             modifier = Modifier
-                                .background(RadixTheme.colors.defaultBackground)
+                                .background(RadixTheme.colors.background)
                                 .fillMaxWidth()
                                 .heightIn(min = 50.dp)
                                 .padding(
@@ -433,8 +432,8 @@ fun HistoryContent(
                 .align(Alignment.TopCenter),
             state = pullToRefreshState,
             isRefreshing = state.isRefreshing,
-            color = RadixTheme.colors.gray1,
-            containerColor = RadixTheme.colors.defaultBackground,
+            color = RadixTheme.colors.icon,
+            containerColor = RadixTheme.colors.background,
             threshold = WindowInsets
                 .statusBarsAndBanner
                 .asPaddingValues()
@@ -455,7 +454,7 @@ fun HistoryContent(
                 onTransactionClassFilterSelected = onTransactionClassFilterSelected,
                 onResourceFilterSelected = onResourceFilterSelected,
             )
-        }, showDragHandle = true, containerColor = RadixTheme.colors.defaultBackground, onDismissRequest = {
+        }, showDragHandle = true, containerColor = RadixTheme.colors.background, onDismissRequest = {
             onShowFilters(false)
             onShowResults()
         })
@@ -492,7 +491,7 @@ private fun LoadingItemPlaceholder(modifier: Modifier = Modifier) {
             .height(150.dp)
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.background,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .radixPlaceholder(visible = true)
@@ -512,7 +511,7 @@ private fun EmptyContent(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(id = R.string.transactionHistory_noTransactions),
             style = RadixTheme.typography.secondaryHeader.copy(fontSize = 20.sp),
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
@@ -527,7 +526,7 @@ private fun TimePicker(
 ) {
     LazyRow(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         state = timeFilterState,
@@ -545,7 +544,7 @@ private fun TimePicker(
                         .applyIf(userInteractionEnabled, Modifier.clickable { onTimeFilterSelected(item.data) })
                         .applyIf(
                             item.selected,
-                            Modifier.background(RadixTheme.colors.gray4, RadixTheme.shapes.circle)
+                            Modifier.background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.circle)
                         )
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingDefault,
@@ -554,7 +553,7 @@ private fun TimePicker(
                     text = item.data.month,
                     style = RadixTheme.typography.body2HighImportance,
                     maxLines = 1,
-                    color = if (item.selected) RadixTheme.colors.gray1 else RadixTheme.colors.gray2,
+                    color = if (item.selected) RadixTheme.colors.text else RadixTheme.colors.textSecondary,
                     textAlign = TextAlign.Center
                 )
             }
