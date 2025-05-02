@@ -180,7 +180,7 @@ fun TransferContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
@@ -199,7 +199,7 @@ fun TransferContent(
                             ),
                         text = stringResource(id = R.string.assetTransfer_header_transfer),
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -242,7 +242,7 @@ fun TransferContent(
                             id = R.string.assetTransfer_accountList_fromLabel
                         ).uppercase(),
                         style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         overflow = TextOverflow.Ellipsis,
                     )
 
@@ -273,7 +273,7 @@ fun TransferContent(
                             id = R.string.assetTransfer_accountList_toLabel
                         ).uppercase(),
                         style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         overflow = TextOverflow.Ellipsis,
                     )
                     StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 30.dp)
@@ -365,7 +365,7 @@ fun TransferContent(
                 is State.Sheet.ChooseAccounts -> {
                     ChooseAccountSheet(
                         modifier = Modifier
-                            .background(RadixTheme.colors.gray5)
+                            .background(RadixTheme.colors.backgroundSecondary)
                             .fillMaxHeight(0.9f)
                             .imePadding(),
                         onCloseClick = onSheetClosed,
@@ -382,7 +382,7 @@ fun TransferContent(
                 is State.Sheet.ChooseAssets -> {
                     ChooseAssetsSheet(
                         modifier = Modifier
-                            .background(RadixTheme.colors.defaultBackground)
+                            .background(RadixTheme.colors.background)
                             .fillMaxHeight(0.9f)
                             .imePadding(),
                         state = sheetState,

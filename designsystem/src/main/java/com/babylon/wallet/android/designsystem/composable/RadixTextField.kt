@@ -73,23 +73,7 @@ fun RadixTextField(
                 value = value,
                 onValueChange = onValueChanged,
                 shape = RadixTheme.shapes.roundedRectSmall,
-                colors = colors ?: OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = RadixTheme.colors.backgroundTertiary,
-                    unfocusedContainerColor = RadixTheme.colors.backgroundTertiary,
-                    errorContainerColor = RadixTheme.colors.backgroundTertiary,
-                    focusedPlaceholderColor = RadixTheme.colors.textSecondary,
-                    unfocusedPlaceholderColor = RadixTheme.colors.textSecondary,
-                    focusedTextColor = RadixTheme.colors.text,
-                    unfocusedTextColor = RadixTheme.colors.text,
-                    focusedBorderColor = RadixTheme.colors.border,
-                    unfocusedBorderColor = RadixTheme.colors.backgroundTertiary,
-                    errorBorderColor = RadixTheme.colors.error,
-                    cursorColor = RadixTheme.colors.text,
-                    selectionColors = TextSelectionColors(
-                        RadixTheme.colors.text, // TODO Theme
-                        LocalTextSelectionColors.current.backgroundColor
-                    )
-                ),
+                colors = colors ?: RadixTextFieldDefaults.colors(),
                 placeholder = {
                     hint?.let {
                         Text(
@@ -142,6 +126,40 @@ fun RadixTextField(
             }
         }
     }
+}
+
+object RadixTextFieldDefaults {
+    @Composable
+    fun colors(
+        focusedContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
+        unfocusedContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
+        errorContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
+        focusedPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
+        unfocusedPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
+        focusedTextColor: Color =  RadixTheme.colors.text,
+        unfocusedTextColor: Color =  RadixTheme.colors.text,
+        focusedBorderColor: Color =  RadixTheme.colors.border,
+        unfocusedBorderColor: Color =  RadixTheme.colors.backgroundTertiary,
+        errorBorderColor: Color =  RadixTheme.colors.error,
+        cursorColor: Color =  RadixTheme.colors.text,
+        selectionColors: TextSelectionColors = TextSelectionColors(
+            RadixTheme.colors.text, // TODO Theme
+            LocalTextSelectionColors.current.backgroundColor
+        )
+    ) = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = focusedContainerColor,
+        unfocusedContainerColor = unfocusedContainerColor,
+        errorContainerColor = errorContainerColor,
+        focusedPlaceholderColor = focusedPlaceholderColor,
+        unfocusedPlaceholderColor = unfocusedPlaceholderColor,
+        focusedTextColor = focusedTextColor,
+        unfocusedTextColor = unfocusedTextColor,
+        focusedBorderColor = focusedBorderColor,
+        unfocusedBorderColor = unfocusedBorderColor,
+        errorBorderColor = errorBorderColor,
+        cursorColor = cursorColor,
+        selectionColors = selectionColors
+    )
 }
 
 @Composable
