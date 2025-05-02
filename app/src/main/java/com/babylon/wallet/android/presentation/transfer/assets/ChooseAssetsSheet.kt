@@ -58,7 +58,7 @@ fun ChooseAssetsSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.defaultBackground,
+                        color = RadixTheme.colors.background,
                     ),
                 title = stringResource(id = R.string.assetTransfer_addAssets_navigationTitle),
                 onDismissRequest = onCloseClick
@@ -81,7 +81,7 @@ fun ChooseAssetsSheet(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         val selectedResources = remember(state.targetAccount.spendingAssets) {
             state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.Fungible>().map { it.resourceAddress }

@@ -229,8 +229,8 @@ private fun StakingSummary(
             amount = stakeSummary?.readyToClaim,
             fiatPrice = readyToClaimFiatPrice,
             isLoadingBalance = isLoadingBalance,
-            labelStyle = if (stakeSummary?.hasReadyToClaimValue == true) {
-                RadixTheme.typography.body2Link.copy(color = RadixTheme.colors.primaryButton)
+            labelStyle = if (stakeSummary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
+                RadixTheme.typography.body2Link.copy(color = RadixTheme.colors.textButton)
             } else {
                 RadixTheme.typography.body2HighImportance.copy(color = RadixTheme.colors.textSecondary)
             }
@@ -598,7 +598,7 @@ private fun StakeClaims(
                         },
                         text = stringResource(id = R.string.account_staking_claim),
                         style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.primaryButton
+                        color = RadixTheme.colors.textButton
                     )
                 }
             }
