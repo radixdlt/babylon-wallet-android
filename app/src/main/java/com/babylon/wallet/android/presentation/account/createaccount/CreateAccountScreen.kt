@@ -144,7 +144,7 @@ fun CreateAccountContent(
                 insets = if (isKeyboardVisible()) WindowInsets.ime else WindowInsets.navigationBars
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         snackbarHost = {
             RadixSnackbarHost(
                 hostState = snackBarHostState,
@@ -167,7 +167,7 @@ fun CreateAccountContent(
                     stringResource(id = R.string.createAccount_titleNotFirst)
                 },
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -175,13 +175,13 @@ fun CreateAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = stringResource(id = R.string.createAccount_nameNewAccount_explanation),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
@@ -225,12 +225,12 @@ private fun CreateWithLedgerSwitch(
             Text(
                 text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerTitle),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Text(
                 text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         RadixSwitch(
