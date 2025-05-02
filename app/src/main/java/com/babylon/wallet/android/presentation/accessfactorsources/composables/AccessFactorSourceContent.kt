@@ -45,6 +45,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
@@ -265,7 +266,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                             else -> ""
                         }
                     ),
-                    contentColor = RadixTheme.colors.red1,
+                    contentColor = RadixTheme.colors.error,
                     textStyle = RadixTheme.typography.body2HighImportance
                 )
             }
@@ -320,7 +321,12 @@ private fun <F : FactorSource> AccessFactorSourceContent(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    item = card
+                    item = card,
+                    containerColor = if (RadixTheme.config.isDarkTheme) {
+                        RadixTheme.colors.backgroundTertiary
+                    } else {
+                        RadixTheme.colors.background
+                    } // TODO Theme
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -428,86 +434,131 @@ fun UnknownFactorSourcePreview() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun UnknownFactorSourcePreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        AccessDeviceFactorSourceContent(
+            purpose = AccessFactorSourcePurpose.SignatureRequest,
+            factorSource = null,
+            isRetryEnabled = false,
+            skipOption = AccessFactorSourceSkipOption.None,
+            onSkipClick = {},
+            onRetryClick = {}
+        )
+    }
+}
+
 @UsesSampleValues
 @Preview
 @Composable
-private fun Preview(
+private fun PreviewLight(
     @PreviewParameter(AccessFactorSourcePreviewParameterProvider::class) sample: Pair<AccessFactorSourcePurpose, FactorSource>
 ) {
-    val skipOption = remember(sample.first) {
-        if (sample.first == AccessFactorSourcePurpose.SpotCheck) {
+    RadixWalletPreviewTheme {
+        PreviewContent(
+            purpose = sample.first,
+            factorSource = sample.second
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+private fun PreviewDark(
+    @PreviewParameter(AccessFactorSourcePreviewParameterProvider::class) sample: Pair<AccessFactorSourcePurpose, FactorSource>
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true,
+        backgroundType = PreviewBackgroundType.PRIMARY
+    ) {
+        PreviewContent(
+            purpose = sample.first,
+            factorSource = sample.second
+        )
+    }
+}
+
+@Composable
+@UsesSampleValues
+private fun PreviewContent(
+    purpose: AccessFactorSourcePurpose,
+    factorSource: FactorSource
+) {
+    val skipOption = remember(purpose) {
+        if (purpose == AccessFactorSourcePurpose.SpotCheck) {
             AccessFactorSourceSkipOption.CanIgnoreFactor
         } else {
             AccessFactorSourceSkipOption.CanSkipFactor
         }
     }
-    RadixWalletPreviewTheme {
-        when (val factorSource = sample.second) {
-            is FactorSource.Device -> AccessDeviceFactorSourceContent(
-                purpose = sample.first,
+
+    when (factorSource) {
+        is FactorSource.Device -> AccessDeviceFactorSourceContent(
+            purpose = purpose,
+            factorSource = factorSource.value,
+            isRetryEnabled = false,
+            skipOption = skipOption,
+            onSkipClick = {},
+            onRetryClick = {}
+        )
+
+        is FactorSource.Ledger -> AccessLedgerHardwareWalletFactorSourceContent(
+            purpose = purpose,
+            factorSource = factorSource.value,
+            isRetryEnabled = false,
+            skipOption = skipOption,
+            onSkipClick = {},
+            onRetryClick = {}
+        )
+
+        is FactorSource.ArculusCard -> AccessArculusCardFactorSourceContent(
+            purpose = purpose,
+            factorSource = factorSource.value,
+            skipOption = skipOption,
+            onSkipClick = {},
+        )
+
+        is FactorSource.Password -> {
+            var password by remember { mutableStateOf("") }
+            AccessPasswordFactorSourceContent(
+                purpose = purpose,
                 factorSource = factorSource.value,
-                isRetryEnabled = false,
                 skipOption = skipOption,
-                onSkipClick = {},
-                onRetryClick = {}
-            )
-
-            is FactorSource.Ledger -> AccessLedgerHardwareWalletFactorSourceContent(
-                purpose = sample.first,
-                factorSource = factorSource.value,
-                isRetryEnabled = false,
-                skipOption = skipOption,
-                onSkipClick = {},
-                onRetryClick = {}
-            )
-
-            is FactorSource.ArculusCard -> AccessArculusCardFactorSourceContent(
-                purpose = sample.first,
-                factorSource = factorSource.value,
-                skipOption = skipOption,
+                passwordState = AccessFactorSourceDelegate.State.PasswordState(
+                    input = password,
+                    isPasswordInvalidErrorVisible = false
+                ),
+                onPasswordTyped = {
+                    password = it
+                },
                 onSkipClick = {},
             )
+        }
 
-            is FactorSource.Password -> {
-                var password by remember { mutableStateOf("") }
-                AccessPasswordFactorSourceContent(
-                    purpose = sample.first,
-                    factorSource = factorSource.value,
-                    skipOption = skipOption,
-                    passwordState = AccessFactorSourceDelegate.State.PasswordState(
-                        input = password,
-                        isPasswordInvalidErrorVisible = false
-                    ),
-                    onPasswordTyped = {
-                        password = it
-                    },
-                    onSkipClick = {},
-                )
-            }
-
-            is FactorSource.OffDeviceMnemonic -> {
-                val scope = rememberCoroutineScope()
-                val delegate = remember {
-                    SeedPhraseInputDelegate(scope).apply {
-                        setSeedPhraseSize(factorSource.value.hint.wordCount)
-                    }
+        is FactorSource.OffDeviceMnemonic -> {
+            val scope = rememberCoroutineScope()
+            val delegate = remember {
+                SeedPhraseInputDelegate(scope).apply {
+                    setSeedPhraseSize(factorSource.value.hint.wordCount)
                 }
-                val state by delegate.state.collectAsState()
-
-                AccessOffDeviceMnemonicFactorSourceContent(
-                    purpose = sample.first,
-                    factorSource = factorSource.value,
-                    skipOption = skipOption,
-                    seedPhraseInputState = AccessFactorSourceDelegate.State.SeedPhraseInputState(
-                        delegateState = state,
-                        seedPhraseValidity = SeedPhraseValidity.WrongMnemonic
-                    ),
-                    onWordChanged = delegate::onWordChanged,
-                    onFocusedWordChanged = {},
-                    onConfirmed = {},
-                    onSkipClick = {},
-                )
             }
+            val state by delegate.state.collectAsState()
+
+            AccessOffDeviceMnemonicFactorSourceContent(
+                purpose = purpose,
+                factorSource = factorSource.value,
+                skipOption = skipOption,
+                seedPhraseInputState = AccessFactorSourceDelegate.State.SeedPhraseInputState(
+                    delegateState = state,
+                    seedPhraseValidity = SeedPhraseValidity.WrongMnemonic
+                ),
+                onWordChanged = delegate::onWordChanged,
+                onFocusedWordChanged = {},
+                onConfirmed = {},
+                onSkipClick = {},
+            )
         }
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -19,6 +20,7 @@ fun CardContainer(
     modifier: Modifier = Modifier,
     castsShadow: Boolean = true,
     isOutlined: Boolean = false,
+    containerColor: Color = RadixTheme.colors.cardOnSecondary,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
@@ -39,7 +41,7 @@ fun CardContainer(
             )
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.background,
+                color = containerColor,
                 shape = RadixTheme.shapes.roundedRectDefault
             )
     ) {

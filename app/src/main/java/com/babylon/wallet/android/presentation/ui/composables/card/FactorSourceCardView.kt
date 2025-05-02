@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -89,12 +90,14 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
+    containerColor: Color = RadixTheme.colors.cardOnSecondary,
     onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
         modifier = modifier,
         castsShadow = castsShadow,
+        containerColor = containerColor,
         isOutlined = isOutlined
     ) {
         SimpleFactorCardView(
