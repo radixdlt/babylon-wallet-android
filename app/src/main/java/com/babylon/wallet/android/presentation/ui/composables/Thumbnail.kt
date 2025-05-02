@@ -140,15 +140,15 @@ object Thumbnail {
     @Composable
     fun NonFungible(
         modifier: Modifier = Modifier,
-        collection: Resource.NonFungibleResource?,
+        image: Uri?,
+        name: String? = null,
         radius: CornerSize = CornerSize(size = RadixTheme.dimensions.paddingSmall)
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
-        val imageType = remember(collection, viewSize) {
-            val icon = collection?.iconUrl
+        val imageType = remember(image, viewSize) {
             val size = viewSize
-            if (icon != null && size != null) {
-                ImageType.External(icon, ThumbnailRequestSize.closest(size))
+            if (image != null && size != null) {
+                ImageType.External(image, ThumbnailRequestSize.closest(size))
             } else {
                 null
             }
@@ -161,7 +161,21 @@ object Thumbnail {
             emptyDrawable = R.drawable.ic_nfts,
             emptyContentScale = CustomContentScale.standard(density = density),
             shape = RoundedCornerShape(radius),
-            contentDescription = collection?.name.orEmpty()
+            contentDescription = name.orEmpty()
+        )
+    }
+
+    @Composable
+    fun NonFungible(
+        modifier: Modifier = Modifier,
+        collection: Resource.NonFungibleResource?,
+        radius: CornerSize = CornerSize(size = RadixTheme.dimensions.paddingSmall)
+    ) {
+        NonFungible(
+            modifier = modifier,
+            image = collection?.iconUrl,
+            name = collection?.name,
+            radius = radius
         )
     }
 
