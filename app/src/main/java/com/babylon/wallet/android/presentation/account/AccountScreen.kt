@@ -319,7 +319,7 @@ fun AssetsContent(
 ) {
     Surface(
         modifier = modifier,
-        color = RadixTheme.colors.gray5
+        color = RadixTheme.colors.backgroundSecondary
     ) {
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address
@@ -502,7 +502,7 @@ private fun AccountHeader(
                 .fillMaxWidth()
                 .height(RadixTheme.dimensions.paddingSemiLarge)
                 .background(
-                    color = RadixTheme.colors.gray5,
+                    color = RadixTheme.colors.backgroundSecondary,
                     shape = RadixTheme.shapes.roundedRectTopDefault
                 )
         )

@@ -113,14 +113,14 @@ private fun PoolUnitItem(
                 Text(
                     text = poolUnit.displayTitle(),
                     style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 2
                 )
 
                 Text(
                     text = poolUnit.displaySubtitle(),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -143,7 +143,7 @@ private fun PoolUnitItem(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.account_staking_worth),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
@@ -198,7 +198,7 @@ fun PoolResourcesValues(
                         modifier = Modifier.weight(1f),
                         text = resourceWithAmount.key.displayTitleAsPoolUnit(),
                         style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         maxLines = 2
                     )
 
@@ -238,7 +238,7 @@ fun PoolResourcesValues(
                 }
 
                 if (index != itemsSize - 1) {
-                    HorizontalDivider(color = RadixTheme.colors.gray4)
+                    HorizontalDivider(color = RadixTheme.colors.divider)
                 }
             }
         }

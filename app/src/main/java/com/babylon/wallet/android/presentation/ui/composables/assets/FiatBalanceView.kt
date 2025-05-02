@@ -38,7 +38,7 @@ fun FiatBalanceView(
             }
         },
         style = textStyle,
-        color = RadixTheme.colors.gray2,
+        color = RadixTheme.colors.textSecondary,
         maxLines = 1,
     )
 }

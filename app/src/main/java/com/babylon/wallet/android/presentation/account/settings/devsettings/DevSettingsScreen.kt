@@ -46,13 +46,12 @@ private fun DevSettingsContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(RadixTheme.colors.gray5)
         ) {
         }
     }

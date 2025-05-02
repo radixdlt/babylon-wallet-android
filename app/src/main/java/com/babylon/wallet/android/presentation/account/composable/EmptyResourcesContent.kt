@@ -39,7 +39,7 @@ fun EmptyResourcesContent(
         Text(
             text = stringResource(id = tab.toEmptyTitleRes()),
             style = RadixTheme.typography.header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         InfoButton(

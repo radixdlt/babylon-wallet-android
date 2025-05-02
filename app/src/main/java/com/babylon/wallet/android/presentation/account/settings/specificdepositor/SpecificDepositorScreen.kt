@@ -119,14 +119,14 @@ fun SpecificDepositorScreen(
                 Text(
                     text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeDepositor),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeDepositorMessage),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(
@@ -134,7 +134,8 @@ fun SpecificDepositorScreen(
             ),
             dismissText = stringResource(
                 id = R.string.common_cancel
-            )
+            ),
+            confirmTextColor = RadixTheme.colors.error
         )
     }
 
@@ -148,9 +149,7 @@ fun SpecificDepositorScreen(
                 sheetState.show()
             }
         },
-        modifier = modifier
-            .fillMaxSize()
-            .background(RadixTheme.colors.gray5),
+        modifier = modifier.fillMaxSize(),
         allowedDepositors = state.allowedDepositorsUiModels,
         onDeleteDepositor = sharedViewModel::showDeletePrompt
     )
@@ -214,7 +213,7 @@ fun AddDepositorSheet(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorTitle),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -224,7 +223,7 @@ fun AddDepositorSheet(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorSubtitle),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -277,7 +276,6 @@ private fun SpecificDepositorContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
                 onBackClick = onBackClick,
-                containerColor = RadixTheme.colors.defaultBackground,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
@@ -294,7 +292,7 @@ private fun SpecificDepositorContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { paddingValues ->
         Column(
             Modifier
@@ -320,7 +318,7 @@ private fun SpecificDepositorContent(
                         text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyAllowAll),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
 
@@ -335,7 +333,7 @@ private fun SpecificDepositorContent(
                                 ),
                             text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_allowInfo),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
+                            color = RadixTheme.colors.textSecondary
                         )
                         DepositorList(
                             depositors = allowedDepositors.toPersistentList(),
@@ -360,7 +358,7 @@ private fun DepositorList(
             DepositorItem(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
+                    .background(RadixTheme.colors.cardOnSecondary)
                     .padding(RadixTheme.dimensions.paddingDefault),
                 depositor = depositor,
                 onDeleteDepositor = onDeleteDepositor
@@ -369,7 +367,7 @@ private fun DepositorList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = if (lastItem != depositor) RadixTheme.dimensions.paddingDefault else 0.dp),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
         }
     }
@@ -408,7 +406,7 @@ private fun DepositorItem(
                 text = title.orEmpty(),
                 maxLines = 1,
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             val address = remember(depositor.depositorAddress) {
@@ -422,7 +420,7 @@ private fun DepositorItem(
                     address = it,
                     isVisitableInDashboard = true,
                     textStyle = RadixTheme.typography.body2Regular,
-                    textColor = RadixTheme.colors.gray2
+                    textColor = RadixTheme.colors.textSecondary
                 )
             }
         }
@@ -433,7 +431,7 @@ private fun DepositorItem(
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
         }
     }
