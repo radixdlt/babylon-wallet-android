@@ -16,7 +16,7 @@ fun Modifier.radixPlaceholder(
 ) = composed {
     this.placeholder(
         visible = visible,
-        color = color ?: RadixTheme.colors.gray4,
+        color = color ?: RadixTheme.colors.backgroundTertiary,
         shape = shape ?: RadixTheme.shapes.roundedRectDefault,
         highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
     )
