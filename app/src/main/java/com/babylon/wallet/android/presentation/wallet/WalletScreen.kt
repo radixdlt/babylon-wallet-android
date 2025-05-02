@@ -296,7 +296,7 @@ private fun WalletAccountList(
                 Text(
                     text = stringResource(R.string.homePage_totalValue).uppercase(),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                 TotalFiatBalanceView(

@@ -37,7 +37,7 @@ fun TotalFiatBalanceView(
     fiatPrice: FiatPrice?,
     currency: SupportedCurrency,
     isLoading: Boolean,
-    contentColor: Color = RadixTheme.colors.gray1,
+    contentColor: Color = RadixTheme.colors.text,
     hiddenContentColor: Color = RadixTheme.colors.gray3,
     contentStyle: TextStyle = RadixTheme.typography.title,
     formattedContentStyle: TextStyle = contentStyle,
