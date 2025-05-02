@@ -84,111 +84,120 @@ private fun WalletPreferencesContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.preferences_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.preferences_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+
+                HorizontalDivider(color = RadixTheme.colors.divider)
+            }
+
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        Column(
-            modifier = Modifier.padding(padding),
-            horizontalAlignment = Alignment.Start
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
+            }
+            walletPreferences.forEach { walletPreferenceItem ->
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
-                }
-                walletPreferences.forEach { walletPreferenceItem ->
-                    item {
-                        when (walletPreferenceItem) {
-                            PreferencesUiItem.AdvancedSection -> {
-                                Text(
-                                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(id = R.string.preferences_advancedPreferences),
-                                    style = RadixTheme.typography.body1Link,
-                                    color = RadixTheme.colors.gray2
-                                )
-                            }
-                            PreferencesUiItem.DisplaySection -> {
-                                Text(
-                                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(id = R.string.preferences_displayPreferences),
-                                    style = RadixTheme.typography.body1Link,
-                                    color = RadixTheme.colors.gray2
-                                )
-                            }
-                            is PreferencesUiItem.Preference -> {
-                                when (val item = walletPreferenceItem.item) {
-                                    is SettingsItem.WalletPreferences.DeveloperMode -> {
-                                        SwitchSettingsItem(
-                                            modifier = Modifier
-                                                .background(RadixTheme.colors.defaultBackground)
-                                                .fillMaxWidth()
-                                                .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.titleRes(),
-                                            subtitleRes = R.string.appSettings_developerMode_subtitle, // appSettingsItem.subtitleRes(),
-                                            iconResource = item.getIcon(),
-                                            checked = item.enabled,
-                                            onCheckedChange = onDeveloperModeToggled
-                                        )
-                                    }
+                    when (walletPreferenceItem) {
+                        PreferencesUiItem.AdvancedSection -> {
+                            Text(
+                                modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.preferences_advancedPreferences),
+                                style = RadixTheme.typography.body1Link,
+                                color = RadixTheme.colors.textSecondary
+                            )
+                        }
 
-                                    is SettingsItem.WalletPreferences.CrashReporting -> {
-                                        SwitchSettingsItem(
-                                            modifier = Modifier
-                                                .background(RadixTheme.colors.defaultBackground)
-                                                .fillMaxWidth()
-                                                .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.titleRes(),
-                                            iconResource = item.getIcon(),
-                                            checked = item.enabled,
-                                            onCheckedChange = { selected ->
-                                                if (selected) {
-                                                    crashReportingPromptVisible = true
-                                                } else {
-                                                    onCrashReportingToggled(false)
-                                                }
-                                            }
-                                        )
-                                    }
+                        PreferencesUiItem.DisplaySection -> {
+                            Text(
+                                modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.preferences_displayPreferences),
+                                style = RadixTheme.typography.body1Link,
+                                color = RadixTheme.colors.textSecondary
+                            )
+                        }
 
-                                    is SettingsItem.WalletPreferences.AdvancedLock -> {
-                                        SwitchSettingsItem(
-                                            modifier = Modifier
-                                                .background(RadixTheme.colors.defaultBackground)
-                                                .fillMaxWidth()
-                                                .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.titleRes(),
-                                            subtitleRes = item.subtitleRes(),
-                                            iconResource = item.getIcon(),
-                                            checked = item.enabled,
-                                            onCheckedChange = { checked ->
-                                                context.biometricAuthenticate { result ->
-                                                    if (result == BiometricAuthenticationResult.Succeeded) {
-                                                        onAdvancedLockToggled(checked)
-                                                    } // else do nothing
-                                                }
-                                            }
-                                        )
-                                        HorizontalDivider(color = RadixTheme.colors.gray5)
-                                    }
-
-                                    else -> {
-                                        DefaultSettingsItem(
-                                            title = stringResource(id = item.titleRes()),
-                                            leadingIconRes = item.getIcon(),
-                                            subtitle = item.subtitleRes()?.let { stringResource(id = it) },
-                                            onClick = {
-                                                onWalletPreferenceItemClick(item)
-                                            }
-                                        )
-                                    }
+                        is PreferencesUiItem.Preference -> {
+                            when (val item = walletPreferenceItem.item) {
+                                is SettingsItem.WalletPreferences.DeveloperMode -> {
+                                    SwitchSettingsItem(
+                                        modifier = Modifier
+                                            .background(RadixTheme.colors.background)
+                                            .fillMaxWidth()
+                                            .padding(all = RadixTheme.dimensions.paddingDefault),
+                                        titleRes = item.titleRes(),
+                                        subtitleRes = R.string.appSettings_developerMode_subtitle, // appSettingsItem.subtitleRes(),
+                                        iconResource = item.getIcon(),
+                                        checked = item.enabled,
+                                        onCheckedChange = onDeveloperModeToggled
+                                    )
                                 }
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
+
+                                is SettingsItem.WalletPreferences.CrashReporting -> {
+                                    SwitchSettingsItem(
+                                        modifier = Modifier
+                                            .background(RadixTheme.colors.background)
+                                            .fillMaxWidth()
+                                            .padding(all = RadixTheme.dimensions.paddingDefault),
+                                        titleRes = item.titleRes(),
+                                        iconResource = item.getIcon(),
+                                        checked = item.enabled,
+                                        onCheckedChange = { selected ->
+                                            if (selected) {
+                                                crashReportingPromptVisible = true
+                                            } else {
+                                                onCrashReportingToggled(false)
+                                            }
+                                        }
+                                    )
+                                }
+
+                                is SettingsItem.WalletPreferences.AdvancedLock -> {
+                                    SwitchSettingsItem(
+                                        modifier = Modifier
+                                            .background(RadixTheme.colors.background)
+                                            .fillMaxWidth()
+                                            .padding(all = RadixTheme.dimensions.paddingDefault),
+                                        titleRes = item.titleRes(),
+                                        subtitleRes = item.subtitleRes(),
+                                        iconResource = item.getIcon(),
+                                        checked = item.enabled,
+                                        onCheckedChange = { checked ->
+                                            context.biometricAuthenticate { result ->
+                                                if (result == BiometricAuthenticationResult.Succeeded) {
+                                                    onAdvancedLockToggled(checked)
+                                                } // else do nothing
+                                            }
+                                        }
+                                    )
+                                    HorizontalDivider(color = RadixTheme.colors.divider)
+                                }
+
+                                else -> {
+                                    DefaultSettingsItem(
+                                        modifier = Modifier
+                                            .background(RadixTheme.colors.background)
+                                            .fillMaxWidth(),
+                                        title = stringResource(id = item.titleRes()),
+                                        leadingIconRes = item.getIcon(),
+                                        subtitle = item.subtitleRes()
+                                            ?.let { stringResource(id = it) },
+                                        onClick = {
+                                            onWalletPreferenceItemClick(item)
+                                        }
+                                    )
+                                }
                             }
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                 }

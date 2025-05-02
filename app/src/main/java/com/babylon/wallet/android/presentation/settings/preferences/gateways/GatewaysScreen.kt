@@ -117,95 +117,91 @@ private fun GatewaysContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.gateways_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = RadixTheme.colors.gray5)
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                    Text(
-                        modifier = Modifier.padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingMedium
-                        ),
-                        text = stringResource(id = R.string.gateways_subtitle),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
-                    )
-                    InfoButton(
-                        modifier = Modifier.padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingDefault
-                        ),
-                        text = stringResource(id = R.string.infoLink_title_gateways),
-                        onClick = {
-                            onInfoClick(GlossaryItem.gateways)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                }
-                itemsIndexed(state.gatewayList) { index, gateway ->
-                    Column(
-                        modifier = Modifier.background(color = RadixTheme.colors.white)
-                    ) {
-                        GatewayCard(
-                            gateway = gateway,
-                            onDeleteGateway = onDeleteGateway,
-                            modifier = Modifier
-                                .throttleClickable {
-                                    onGatewayClick(gateway.gateway)
-                                }
-                                .fillMaxWidth()
-                                .background(color = RadixTheme.colors.white)
-                                .padding(
-                                    start = RadixTheme.dimensions.paddingDefault,
-                                    end = RadixTheme.dimensions.paddingSmall,
-                                    top = RadixTheme.dimensions.paddingDefault,
-                                    bottom = RadixTheme.dimensions.paddingDefault
-                                )
-                        )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.gateways_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
 
-                        if (remember(state.gatewayList.size) { index < state.gatewayList.size - 1 }) {
-                            HorizontalDivider(
-                                color = RadixTheme.colors.gray4,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                HorizontalDivider(color = RadixTheme.colors.divider)
+            }
+
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = padding
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                Text(
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingMedium
+                    ),
+                    text = stringResource(id = R.string.gateways_subtitle),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.textSecondary
+                )
+                InfoButton(
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    ),
+                    text = stringResource(id = R.string.infoLink_title_gateways),
+                    onClick = {
+                        onInfoClick(GlossaryItem.gateways)
+                    }
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            }
+            itemsIndexed(state.gatewayList) { index, gateway ->
+                Column(
+                    modifier = Modifier.background(color = RadixTheme.colors.cardOnSecondary)
+                ) {
+                    GatewayCard(
+                        gateway = gateway,
+                        onDeleteGateway = onDeleteGateway,
+                        modifier = Modifier
+                            .throttleClickable {
+                                onGatewayClick(gateway.gateway)
+                            }
+                            .fillMaxWidth()
+                            .padding(
+                                start = RadixTheme.dimensions.paddingDefault,
+                                end = RadixTheme.dimensions.paddingSmall,
+                                top = RadixTheme.dimensions.paddingDefault,
+                                bottom = RadixTheme.dimensions.paddingDefault
                             )
-                        }
+                    )
+
+                    if (remember(state.gatewayList.size) { index < state.gatewayList.size - 1 }) {
+                        HorizontalDivider(
+                            color = RadixTheme.colors.divider,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        )
                     }
                 }
-                item {
-                    HorizontalDivider(
-                        color = RadixTheme.colors.gray4,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
-                        onClick = onAddGatewayClick
-                    )
-                }
+            }
+            item {
+                HorizontalDivider(
+                    color = RadixTheme.colors.divider,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
+                    onClick = onAddGatewayClick
+                )
             }
         }
     }
@@ -237,7 +233,7 @@ private fun AddGatewaySheet(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.gateways_addNewGateway_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
@@ -245,7 +241,7 @@ private fun AddGatewaySheet(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.gateways_addNewGateway_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -298,7 +294,8 @@ private fun GatewayCard(
             Icon(
                 modifier = Modifier.width(24.dp),
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
-                contentDescription = null
+                contentDescription = null,
+                tint = RadixTheme.colors.icon
             )
         } else {
             Box(modifier = Modifier.width(24.dp))
@@ -307,14 +304,14 @@ private fun GatewayCard(
             Text(
                 text = gateway.name(),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = gateway.gateway.network.displayDescription,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -327,7 +324,7 @@ private fun GatewayCard(
                     painter = painterResource(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline
                     ),
-                    tint = RadixTheme.colors.gray1,
+                    tint = RadixTheme.colors.icon,
                     contentDescription = null
                 )
             }
@@ -345,17 +342,18 @@ private fun GatewayCard(
                 Text(
                     text = stringResource(id = R.string.gateways_removeGatewayAlert_title),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.gateways_removeGatewayAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.common_remove),
+            confirmTextColor = RadixTheme.colors.error
         )
     }
 }

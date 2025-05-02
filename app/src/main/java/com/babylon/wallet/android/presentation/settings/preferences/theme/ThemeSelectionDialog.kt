@@ -153,7 +153,7 @@ private fun ThemeSelectionItem(
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
                         contentDescription = null,
-                        tint = RadixTheme.colors.gray1
+                        tint = RadixTheme.colors.icon
                     )
                 }
             }

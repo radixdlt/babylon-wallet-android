@@ -80,7 +80,7 @@ fun PersonaDetailScreen(
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_personaDetails_hidePersonaConfirmation),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.common_continue)

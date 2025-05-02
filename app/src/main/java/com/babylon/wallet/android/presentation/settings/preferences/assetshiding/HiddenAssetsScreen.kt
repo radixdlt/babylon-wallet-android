@@ -109,7 +109,7 @@ private fun HiddenAssetsContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         snackbarHost = {
@@ -118,18 +118,17 @@ private fun HiddenAssetsContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.gray5),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = padding.plus(PaddingValues(RadixTheme.dimensions.paddingDefault))
         ) {
             item {
                 Text(
                     text = stringResource(R.string.hiddenAssets_text),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
             }
 
@@ -192,7 +191,7 @@ private fun HiddenAssetsContent(
                             }
                         ),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 },
                 confirmText = stringResource(id = R.string.common_confirm)
@@ -229,7 +228,7 @@ private fun TitleLayout(text: String) {
         modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingXLarge),
         text = text,
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
@@ -243,7 +242,7 @@ private fun ResourceLayout(
             .fillMaxWidth()
             .defaultCardShadow()
             .background(
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.cardOnSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(
@@ -264,7 +263,7 @@ private fun ResourceLayout(
         ) {
             Text(
                 text = resource.name ?: stringResource(id = R.string.dash),
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1HighImportance
             )
 
@@ -272,7 +271,7 @@ private fun ResourceLayout(
                 address = resource.address,
                 isVisitableInDashboard = true,
                 textStyle = RadixTheme.typography.body2Regular,
-                textColor = RadixTheme.colors.gray2
+                textColor = RadixTheme.colors.textSecondary
             )
         }
 
@@ -297,10 +296,10 @@ private fun Thumbnail(
             icon = resource.icon,
             name = resource.name.orEmpty()
         )
-        is ResourceIdentifier.NonFungible -> Thumbnail.NFT(
+        is ResourceIdentifier.NonFungible -> Thumbnail.NonFungible(
             modifier = modifier,
             image = resource.icon,
-            localId = resource.name
+            name = resource.name
         )
         is ResourceIdentifier.PoolUnit -> Thumbnail.PoolUnit(
             modifier = modifier,
@@ -317,7 +316,7 @@ private fun NoAssets() {
             .fillMaxWidth()
             .height(83.dp)
             .background(
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.backgroundTertiary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(RadixTheme.dimensions.paddingDefault),
@@ -326,7 +325,7 @@ private fun NoAssets() {
         Text(
             text = stringResource(id = R.string.common_none),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
