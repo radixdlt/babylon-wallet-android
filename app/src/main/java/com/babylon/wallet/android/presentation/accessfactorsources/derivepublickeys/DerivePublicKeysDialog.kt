@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.composables.A
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
@@ -116,90 +117,100 @@ private fun DerivePublicKeysSheetContent(
         mutableStateOf<Int?>(null)
     }
 
-    DefaultModalSheetLayout(modifier = modifier.fillMaxSize(), onDismissRequest = onDismiss, sheetState = sheetState, sheetContent = {
-        Scaffold(topBar = {
-            RadixCenteredTopAppBar(
-                windowInsets = WindowInsets.none,
-                title = "",
-                onBackClick = onDismiss,
-                backIconType = BackIconType.Close
-            )
-        }, bottomBar = {
-            if (isSeedPhraseSuggestionsVisible) {
-                SeedPhraseSuggestions(
-                    modifier = Modifier
-                        .imePadding()
-                        .fillMaxWidth()
-                        .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
-                        .padding(RadixTheme.dimensions.paddingSmall),
-                    wordAutocompleteCandidates = accessFactorSourceState.seedPhraseInputState.delegateState.wordAutocompleteCandidates,
-                    onCandidateClick = { candidate ->
-                        focusedWordIndex?.let { index ->
-                            onSeedPhraseWordChanged(index, candidate)
-                        }
+    DefaultModalSheetLayout(
+        modifier = modifier.fillMaxSize(),
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        sheetContent = {
+            Scaffold(
+                topBar = {
+                    RadixCenteredTopAppBar(
+                        windowInsets = WindowInsets.none,
+                        title = "",
+                        onBackClick = onDismiss,
+                        backIconType = BackIconType.Close
+                    )
+                },
+                bottomBar = {
+                    if (isSeedPhraseSuggestionsVisible) {
+                        SeedPhraseSuggestions(
+                            modifier = Modifier
+                                .imePadding()
+                                .fillMaxWidth()
+                                .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
+                                .padding(RadixTheme.dimensions.paddingSmall),
+                            wordAutocompleteCandidates = accessFactorSourceState.seedPhraseInputState.delegateState.wordAutocompleteCandidates,
+                            onCandidateClick = { candidate ->
+                                focusedWordIndex?.let { index ->
+                                    onSeedPhraseWordChanged(index, candidate)
+                                }
+                            }
+                        )
                     }
-                )
-            }
-        }, containerColor = RadixTheme.colors.defaultBackground, content = { padding ->
-            val contentModifier = Modifier
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
+                },
+                containerColor = RadixTheme.colors.background,
+                content = { padding ->
+                    val contentModifier = Modifier
+                        .padding(padding)
+                        .verticalScroll(rememberScrollState())
 
-            when (accessFactorSourceState.factorSourceToAccess.kind) {
-                FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
-                    modifier = contentModifier,
-                    purpose = state.purpose,
-                    factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
-                    isRetryEnabled = accessFactorSourceState.isRetryEnabled,
-                    skipOption = AccessFactorSourceSkipOption.None,
-                    onRetryClick = onRetryClick,
-                    onSkipClick = {}
-                )
+                    when (accessFactorSourceState.factorSourceToAccess.kind) {
+                        FactorSourceKind.DEVICE -> AccessDeviceFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = state.purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Device)?.value,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
+                            skipOption = AccessFactorSourceSkipOption.None,
+                            onRetryClick = onRetryClick,
+                            onSkipClick = {}
+                        )
 
-                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
-                    modifier = contentModifier,
-                    purpose = state.purpose,
-                    factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
-                    isRetryEnabled = accessFactorSourceState.isRetryEnabled,
-                    skipOption = AccessFactorSourceSkipOption.None,
-                    onRetryClick = onRetryClick,
-                    onSkipClick = {}
-                )
+                        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> AccessLedgerHardwareWalletFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = state.purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Ledger)?.value,
+                            isRetryEnabled = accessFactorSourceState.isRetryEnabled,
+                            skipOption = AccessFactorSourceSkipOption.None,
+                            onRetryClick = onRetryClick,
+                            onSkipClick = {}
+                        )
 
-                FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
-                    modifier = contentModifier,
-                    purpose = state.purpose,
-                    factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
-                    seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
-                    skipOption = AccessFactorSourceSkipOption.None,
-                    onWordChanged = onSeedPhraseWordChanged,
-                    onConfirmed = onInputConfirmed,
-                    onFocusedWordChanged = {
-                        focusedWordIndex = it
-                    },
-                    onSkipClick = {}
-                )
+                        FactorSourceKind.OFF_DEVICE_MNEMONIC -> AccessOffDeviceMnemonicFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = state.purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.OffDeviceMnemonic)?.value,
+                            seedPhraseInputState = accessFactorSourceState.seedPhraseInputState,
+                            skipOption = AccessFactorSourceSkipOption.None,
+                            onWordChanged = onSeedPhraseWordChanged,
+                            onConfirmed = onInputConfirmed,
+                            onFocusedWordChanged = {
+                                focusedWordIndex = it
+                            },
+                            onSkipClick = {}
+                        )
 
-                FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
-                    modifier = contentModifier,
-                    purpose = state.purpose,
-                    factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
-                    skipOption = AccessFactorSourceSkipOption.None,
-                    onSkipClick = {}
-                )
+                        FactorSourceKind.ARCULUS_CARD -> AccessArculusCardFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = state.purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            skipOption = AccessFactorSourceSkipOption.None,
+                            onSkipClick = {}
+                        )
 
-                FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
-                    modifier = contentModifier,
-                    purpose = state.purpose,
-                    factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
-                    passwordState = accessFactorSourceState.passwordState,
-                    onPasswordTyped = onPasswordTyped,
-                    skipOption = AccessFactorSourceSkipOption.None,
-                    onSkipClick = {}
-                )
-            }
-        })
-    })
+                        FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
+                            modifier = contentModifier,
+                            purpose = state.purpose,
+                            factorSource = (accessFactorSourceState.factorSource as? FactorSource.Password)?.value,
+                            passwordState = accessFactorSourceState.passwordState,
+                            onPasswordTyped = onPasswordTyped,
+                            skipOption = AccessFactorSourceSkipOption.None,
+                            onSkipClick = {}
+                        )
+                    }
+                }
+            )
+        }
+    )
 }
 
 @UsesSampleValues
@@ -208,7 +219,32 @@ private fun DerivePublicKeysSheetContent(
 private fun DerivePublicKeyPreview(
     @PreviewParameter(DerivePublicKeysPreviewParameterProvider::class) param: Pair<AccessFactorSourcePurpose, FactorSource>
 ) {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
+        DerivePublicKeysSheetContent(
+            state = DerivePublicKeysViewModel.State(
+                purpose = param.first,
+                accessState = AccessFactorSourceDelegate.State(
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                        factorSource = param.second
+                    )
+                )
+            ),
+            onDismiss = {},
+            onSeedPhraseWordChanged = { _, _ -> },
+            onPasswordTyped = {},
+            onRetryClick = {},
+            onInputConfirmed = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+private fun DerivePublicKeyPreviewDark(
+    @PreviewParameter(DerivePublicKeysPreviewParameterProvider::class) param: Pair<AccessFactorSourcePurpose, FactorSource>
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true)  {
         DerivePublicKeysSheetContent(
             state = DerivePublicKeysViewModel.State(
                 purpose = param.first,

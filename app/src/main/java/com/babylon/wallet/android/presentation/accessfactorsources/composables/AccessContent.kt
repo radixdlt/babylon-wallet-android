@@ -40,7 +40,7 @@ fun AccessContent(
                 id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
             ),
             contentDescription = null,
-            tint = RadixTheme.colors.gray3
+            tint = RadixTheme.colors.gray3 // TODO Theme
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -50,7 +50,7 @@ fun AccessContent(
                 .align(Alignment.CenterHorizontally)
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             style = RadixTheme.typography.title,
             textAlign = TextAlign.Center
         )
@@ -62,7 +62,7 @@ fun AccessContent(
                 .align(Alignment.CenterHorizontally)
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = message,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             style = RadixTheme.typography.body1Regular,
             textAlign = TextAlign.Center
         )
