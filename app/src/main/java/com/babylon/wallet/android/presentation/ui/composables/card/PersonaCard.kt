@@ -68,7 +68,7 @@ fun SimplePersonaCard(
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
     }
@@ -104,7 +104,7 @@ fun SimplePersonaCardWithShadow(
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
     }

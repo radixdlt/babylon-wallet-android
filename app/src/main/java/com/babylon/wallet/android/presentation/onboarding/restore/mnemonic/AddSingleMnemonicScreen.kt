@@ -166,7 +166,7 @@ private fun AddSingleMnemonicsContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val title = when (state.mnemonicType) {
             MnemonicType.BabylonMain -> stringResource(id = R.string.enterSeedPhrase_titleBabylonMain)
@@ -227,7 +227,7 @@ private fun SeedPhraseView(
             text = title,
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -252,13 +252,13 @@ private fun SeedPhraseView(
                     ),
                 text = stringResource(id = R.string.importMnemonic_numberOfWordsPicker),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             TabRow(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .background(RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectSmall),
+                    .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectSmall),
                 selectedTabIndex = tabIndex,
                 containerColor = Color.Transparent,
                 divider = {},
@@ -269,7 +269,7 @@ private fun SeedPhraseView(
                             .fillMaxHeight()
                             .zIndex(-1f)
                             .padding(2.dp)
-                            .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectSmall)
+                            .background(RadixTheme.colors.background, RadixTheme.shapes.roundedRectSmall)
                     )
                 }
             ) {
@@ -284,8 +284,8 @@ private fun SeedPhraseView(
                             onSeedPhraseLengthChanged(tab)
                         },
                         interactionSource = interactionSource,
-                        selectedContentColor = RadixTheme.colors.gray1,
-                        unselectedContentColor = RadixTheme.colors.gray2
+                        selectedContentColor = RadixTheme.colors.text,
+                        unselectedContentColor = RadixTheme.colors.textSecondary
                     ) {
                         Text(
                             modifier = Modifier.padding(

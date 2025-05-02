@@ -363,7 +363,7 @@ private fun LinkedEntitiesView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = RadixTheme.colors.white,
+                                color = RadixTheme.colors.cardOnSecondary,
                                 shape = RadixTheme.shapes.roundedRectMedium
                             ),
                         persona = it
