@@ -126,7 +126,7 @@ fun SpecificAssetsDepositsScreen(
                 Text(
                     text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeAsset),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
@@ -143,7 +143,7 @@ fun SpecificAssetsDepositsScreen(
                         null -> ""
                     },
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(
@@ -151,7 +151,8 @@ fun SpecificAssetsDepositsScreen(
             ),
             dismissText = stringResource(
                 id = R.string.common_cancel
-            )
+            ),
+            confirmTextColor = RadixTheme.colors.error
         )
     }
 
@@ -238,7 +239,7 @@ private fun AddAssetSheet(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetTitle),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -248,7 +249,7 @@ private fun AddAssetSheet(
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                     text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetSubtitle),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -330,7 +331,6 @@ private fun SpecificAssetsDepositsContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.accountSettings_specificAssetsDeposits),
                 onBackClick = onBackClick,
-                containerColor = RadixTheme.colors.defaultBackground,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
@@ -347,7 +347,7 @@ private fun SpecificAssetsDepositsContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { paddingValues ->
         Column(
             Modifier
@@ -362,7 +362,10 @@ private fun SpecificAssetsDepositsContent(
                         bottom = RadixTheme.dimensions.paddingDefault
                     )
                     .fillMaxWidth(0.8f)
-                    .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectSmall),
+                    .background(
+                        color = RadixTheme.colors.backgroundTertiary,
+                        shape = RadixTheme.shapes.roundedRectSmall
+                    ),
                 pagerState = pagerState,
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
@@ -433,7 +436,7 @@ private fun SpecificAssetsDepositsContent(
                                             .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                                         text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_denyInfo),
                                         style = RadixTheme.typography.body1HighImportance,
-                                        color = RadixTheme.colors.gray2
+                                        color = RadixTheme.colors.textSecondary
                                     )
                                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                                     AssetsList(assets = deniedAssets, onDeleteAsset = onDeleteAsset)
@@ -462,7 +465,7 @@ private fun EmptyPage(
             text = text,
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
@@ -479,7 +482,7 @@ private fun AssetsList(
             AssetItem(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
+                    .background(RadixTheme.colors.cardOnSecondary)
                     .padding(RadixTheme.dimensions.paddingDefault),
                 asset = asset,
                 onDeleteAsset = onDeleteAsset
@@ -488,7 +491,7 @@ private fun AssetsList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = if (lastItem != asset) RadixTheme.dimensions.paddingDefault else 0.dp),
-                color = RadixTheme.colors.gray5
+                color = RadixTheme.colors.divider
             )
         }
     }
@@ -527,7 +530,7 @@ private fun AssetItem(
                 text = name.orEmpty(),
                 maxLines = 1,
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             val address = remember(asset.assetException) {
@@ -541,7 +544,7 @@ private fun AssetItem(
                     address = it,
                     isVisitableInDashboard = true,
                     textStyle = RadixTheme.typography.body2Regular,
-                    textColor = RadixTheme.colors.gray2
+                    textColor = RadixTheme.colors.textSecondary
                 )
             }
         }
@@ -553,7 +556,7 @@ private fun AssetItem(
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
         }
     }

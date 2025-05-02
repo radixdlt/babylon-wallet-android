@@ -46,7 +46,7 @@ fun BoundedAmountSection(
             guaranteedAmountStyle = RadixTheme.typography.body1Header.copy(
                 fontSize = 14.sp
             ),
-            guaranteedAmountColor = RadixTheme.colors.gray2
+            guaranteedAmountColor = RadixTheme.colors.textSecondary
         )
     } else {
         BoundedAmountSection(
@@ -57,7 +57,7 @@ fun BoundedAmountSection(
                 QualifierText(
                     text = text,
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             amount = { amount ->
@@ -87,7 +87,7 @@ fun LargeBoundedAmountSection(
             estimatedAmountStyle = RadixTheme.typography.title,
             guaranteedTitleStyle = RadixTheme.typography.body2HighImportance,
             guaranteedAmountStyle = RadixTheme.typography.secondaryHeader,
-            guaranteedAmountColor = RadixTheme.colors.gray2,
+            guaranteedAmountColor = RadixTheme.colors.textSecondary,
             symbolStyle = RadixTheme.typography.body2Link
         )
     } else {
@@ -99,7 +99,7 @@ fun LargeBoundedAmountSection(
                 QualifierText(
                     text = text,
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             amount = { amount ->
@@ -170,7 +170,7 @@ private fun PredictedAmount(
         QualifierText(
             text = stringResource(id = R.string.interactionReview_estimated),
             style = estimatedTitleStyle,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         AmountText(
@@ -184,7 +184,7 @@ private fun PredictedAmount(
             QualifierText(
                 text = stringResource(id = R.string.interactionReview_guaranteed),
                 style = guaranteedTitleStyle,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
 
             AmountText(
@@ -212,7 +212,7 @@ fun UnknownAmount(
             modifier = modifier,
             text = stringResource(id = R.string.interactionReview_unknown_amount),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
@@ -222,10 +222,10 @@ private fun AmountText(
     modifier: Modifier = Modifier,
     amount: Decimal192,
     amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
-    amountColor: Color = RadixTheme.colors.gray1,
+    amountColor: Color = RadixTheme.colors.text,
     symbol: String? = null,
     symbolStyle: TextStyle = RadixTheme.typography.secondaryHeader,
-    symbolColor: Color = RadixTheme.colors.gray1
+    symbolColor: Color = RadixTheme.colors.text
 ) {
     Row(
         modifier = modifier,
@@ -256,7 +256,7 @@ private fun QualifierText(
     text: String,
     modifier: Modifier = Modifier,
     style: TextStyle = RadixTheme.typography.body2Regular,
-    color: Color = RadixTheme.colors.gray1
+    color: Color = RadixTheme.colors.text
 ) {
     Text(
         modifier = modifier,

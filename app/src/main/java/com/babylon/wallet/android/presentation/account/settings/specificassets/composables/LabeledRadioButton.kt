@@ -36,7 +36,7 @@ fun LabeledRadioButton(
         Text(
             text = label,
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
     }

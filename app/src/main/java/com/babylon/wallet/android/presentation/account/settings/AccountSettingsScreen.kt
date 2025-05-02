@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
@@ -177,44 +178,51 @@ private fun AccountSettingsContent(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .padding(WindowInsets.navigationBars.asPaddingValues())
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-            ) {
-                if (faucetState is FaucetState.Available) {
-                    RadixSecondaryButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                        onClick = onGetFreeXrdClick,
-                        isLoading = isXrdLoading,
-                        enabled = !isXrdLoading && faucetState.isEnabled
-                    )
-                    if (isXrdLoading) {
-                        Text(
+            RadixBottomBar(
+                additionalTopContent = {
+                    if (faucetState is FaucetState.Available) {
+                        RadixSecondaryButton(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                            text = stringResource(R.string.accountSettings_loadingPrompt),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                            onClick = onGetFreeXrdClick,
+                            isLoading = isXrdLoading,
+                            enabled = !isXrdLoading && faucetState.isEnabled
                         )
+                        if (isXrdLoading) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                                text = stringResource(R.string.accountSettings_loadingPrompt),
+                                style = RadixTheme.typography.body2Regular,
+                                color = RadixTheme.colors.text
+                            )
+                        }
                     }
+                },
+                button = {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = RadixTheme.dimensions.paddingDefault)
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(R.string.accountSettings_hideAccount_button),
+                        onClick = onHideAccount
+                    )
+                },
+                additionalBottomContent = {
+                    WarningButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = RadixTheme.dimensions.paddingDefault)
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.accountSettings_deleteAccount),
+                        onClick = onDeleteAccount
+                    )
                 }
-
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.accountSettings_hideAccount_button),
-                    onClick = onHideAccount
-                )
-
-                WarningButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.accountSettings_deleteAccount),
-                    onClick = onDeleteAccount
-                )
-            }
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -222,13 +230,11 @@ private fun AccountSettingsContent(
                 hostState = snackbarHostState
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .background(RadixTheme.colors.gray5)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = padding
         ) {
             item {
                 account?.let {
@@ -249,7 +255,7 @@ private fun AccountSettingsContent(
                             .padding(RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = section.titleRes()),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
                 val lastSettingsItem = section.settingsItems.last()
@@ -270,7 +276,7 @@ private fun AccountSettingsContent(
                         if (lastSettingsItem != settingsItem) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                color = RadixTheme.colors.gray5
+                                color = RadixTheme.colors.divider
                             )
                         }
                     }

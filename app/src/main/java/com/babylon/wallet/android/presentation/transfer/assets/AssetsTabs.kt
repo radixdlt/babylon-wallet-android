@@ -40,7 +40,7 @@ fun AssetsTabs(
                     .tabIndicatorOffset(tabPositions[tabIndex])
                     .fillMaxHeight()
                     .zIndex(-1f)
-                    .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
+                    .background(RadixTheme.colors.icon, RadixTheme.shapes.circle)
             )
         }
     ) {
@@ -54,8 +54,8 @@ fun AssetsTabs(
                         onTabSelected(tab)
                     }
                 },
-                selectedContentColor = RadixTheme.colors.white,
-                unselectedContentColor = RadixTheme.colors.gray1
+                selectedContentColor = RadixTheme.colors.background, // TODO theme
+                unselectedContentColor = RadixTheme.colors.text
             ) {
                 Text(
                     modifier = Modifier.padding(

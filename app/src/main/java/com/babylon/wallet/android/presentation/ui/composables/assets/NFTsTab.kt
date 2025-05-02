@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.CollapsibleCommonCard
 import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
@@ -156,14 +157,14 @@ private fun NFTHeader(
                 Text(
                     text = collection.displayTitle(),
                     style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 2
                 )
 
                 Text(
                     text = collection.displaySubtitle(),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                 )
             }
         }
@@ -208,7 +209,7 @@ private fun NonFungibleResourceItem(
                         .padding(bottom = RadixTheme.dimensions.paddingXXSmall),
                     text = name,
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
 
@@ -216,7 +217,7 @@ private fun NonFungibleResourceItem(
                 modifier = Modifier.fillMaxWidth(),
                 text = item.localId.formatted(),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
 
@@ -246,11 +247,9 @@ private fun NonFungibleResourcePlaceholder(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(Thumbnail.NFTAspectRatio)
-                .placeholder(
+                .radixPlaceholder(
                     visible = true,
-                    color = RadixTheme.colors.gray4,
-                    shape = RoundedCornerShape(Thumbnail.NFTCornerRadius),
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
+                    shape = RoundedCornerShape(Thumbnail.NFTCornerRadius)
                 )
         )
 
@@ -258,11 +257,9 @@ private fun NonFungibleResourcePlaceholder(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(23.dp)
-                .placeholder(
+                .radixPlaceholder(
                     visible = true,
-                    color = RadixTheme.colors.gray4,
-                    shape = RoundedCornerShape(Thumbnail.NFTCornerRadius),
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
+                    shape = RoundedCornerShape(Thumbnail.NFTCornerRadius)
                 )
         )
 
@@ -270,11 +267,9 @@ private fun NonFungibleResourcePlaceholder(
             modifier = Modifier
                 .fillMaxSize(0.5f)
                 .height(23.dp)
-                .placeholder(
+                .radixPlaceholder(
                     visible = true,
-                    color = RadixTheme.colors.gray4,
-                    shape = RoundedCornerShape(Thumbnail.NFTCornerRadius),
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
+                    shape = RoundedCornerShape(Thumbnail.NFTCornerRadius)
                 )
         )
     }
