@@ -286,8 +286,8 @@ private fun AccountScreenContent(
                 .align(Alignment.TopCenter),
             state = pullToRefreshState,
             isRefreshing = state.isRefreshing,
-            color = RadixTheme.colors.gray1,
-            containerColor = RadixTheme.colors.defaultBackground,
+            color = RadixTheme.colors.icon,
+            containerColor = RadixTheme.colors.background,
             threshold = WindowInsets.statusBarsAndBanner
                 .asPaddingValues()
                 .calculateTopPadding() + PullToRefreshDefaults.PositionalThreshold
