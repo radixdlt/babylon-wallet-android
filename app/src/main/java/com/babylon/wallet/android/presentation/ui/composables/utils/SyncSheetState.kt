@@ -17,7 +17,9 @@ fun SyncSheetState(
 ) {
     val scope = rememberCoroutineScope()
     BackHandler(enabled = isSheetVisible) {
-        onSheetClosed()
+        scope.launch {
+            sheetState.hide()
+        }
     }
 
     LaunchedEffect(isSheetVisible) {

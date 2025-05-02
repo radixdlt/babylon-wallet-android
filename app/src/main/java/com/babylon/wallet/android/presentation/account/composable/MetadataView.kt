@@ -134,7 +134,7 @@ fun MetadataKeyView(
     modifier: Modifier = Modifier,
     metadata: Metadata,
     style: TextStyle = RadixTheme.typography.body1Regular,
-    color: Color = RadixTheme.colors.gray2,
+    color: Color = RadixTheme.colors.textSecondary,
 ) {
     MetadataKeyView(
         modifier = modifier,
@@ -151,7 +151,7 @@ fun MetadataKeyView(
     key: String,
     isLocked: Boolean,
     style: TextStyle = RadixTheme.typography.body1Regular,
-    color: Color = RadixTheme.colors.gray2,
+    color: Color = RadixTheme.colors.textSecondary,
 ) {
     Text(
         modifier = modifier,
@@ -186,8 +186,8 @@ fun MetadataValueView(
     metadata: Metadata,
     isRenderedInNewLine: Boolean,
     style: TextStyle = RadixTheme.typography.body1HighImportance,
-    color: Color = RadixTheme.colors.gray1,
-    iconColor: Color = RadixTheme.colors.gray2
+    color: Color = RadixTheme.colors.text,
+    iconColor: Color = RadixTheme.colors.iconSecondary
 ) {
     val context = LocalContext.current
     when (metadata) {
@@ -325,7 +325,7 @@ fun MetadataValueView(
                     modifier = modifier,
                     text = displayable,
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                     maxLines = 2
                 )

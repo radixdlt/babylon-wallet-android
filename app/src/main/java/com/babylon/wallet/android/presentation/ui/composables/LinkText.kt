@@ -26,8 +26,8 @@ fun LinkText(
     url: Uri,
     clickable: Boolean = true,
     linkStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    linkColor: Color = RadixTheme.colors.blue1,
-    linkIconColor: Color = RadixTheme.colors.gray2
+    linkColor: Color = RadixTheme.colors.primaryButton,
+    linkIconColor: Color = RadixTheme.colors.iconSecondary
 ) {
     LinkText(
         modifier = modifier,

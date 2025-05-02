@@ -29,14 +29,14 @@ fun Tag(
                 painterResource(id = R.drawable.ic_token_tag)
             },
             contentDescription = "tag image",
-            tint = RadixTheme.colors.gray2
+            tint = RadixTheme.colors.iconSecondary
         )
 
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             text = tag.name(),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }

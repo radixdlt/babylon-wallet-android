@@ -34,7 +34,7 @@ fun Behaviour(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = name,
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
         )
 
 //        Icon(

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,7 +48,8 @@ fun DefaultModalSheetLayout(
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
             // The sheet should expand until the status bar and banner
-            modifier = Modifier.padding(WindowInsets.statusBarsAndBanner.asPaddingValues()),
+            modifier = Modifier
+                .statusBarsPadding(),
             sheetState = sheetState,
             containerColor = containerColor,
             scrimColor = Color.Black.copy(alpha = 0.3f),

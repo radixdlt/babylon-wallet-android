@@ -30,14 +30,14 @@ fun ValidatorDetailsItem(validator: Validator, modifier: Modifier = Modifier, ic
             Text(
                 validator.name,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1
             )
 
             ActionableAddressView(
                 address = Address.Validator(validator.address),
                 textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.gray2
+                textColor = RadixTheme.colors.text
             )
         }
     }
