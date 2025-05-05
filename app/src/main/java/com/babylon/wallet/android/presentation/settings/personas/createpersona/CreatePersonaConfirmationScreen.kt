@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
@@ -61,7 +62,7 @@ fun CreatePersonaConfirmationContent(
 
     Scaffold(
         modifier = modifier,
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         contentWindowInsets = WindowInsets.statusBarsAndBanner.add(WindowInsets.navigationBars),
         bottomBar = {
             RadixBottomBar(
@@ -90,7 +91,7 @@ fun CreatePersonaConfirmationContent(
             Text(
                 text = stringResource(id = R.string.createEntity_completion_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             Text(
@@ -103,13 +104,13 @@ fun CreatePersonaConfirmationContent(
                     }
                 ),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             Text(
                 text = stringResource(id = R.string.createPersona_completion_explanation),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.weight(2f))
@@ -117,10 +118,10 @@ fun CreatePersonaConfirmationContent(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun CreateAccountConfirmationContentPreview() {
-    RadixWalletTheme {
+fun CreateAccountConfirmationContentPreviewLight() {
+    RadixWalletPreviewTheme {
         CreatePersonaConfirmationContent(
             modifier = Modifier,
             isFirstPersona = false,
@@ -130,10 +131,36 @@ fun CreateAccountConfirmationContentPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun CreateAccountConfirmationContentFirstPersonaPreview() {
-    RadixWalletTheme {
+fun CreateAccountConfirmationContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        CreatePersonaConfirmationContent(
+            modifier = Modifier,
+            isFirstPersona = false,
+            {},
+            CreatePersonaRequestSource.Settings
+        )
+    }
+}
+
+@Preview
+@Composable
+fun CreateAccountConfirmationContentFirstPersonaPreviewLight() {
+    RadixWalletPreviewTheme {
+        CreatePersonaConfirmationContent(
+            modifier = Modifier,
+            isFirstPersona = true,
+            {},
+            CreatePersonaRequestSource.DappRequest
+        )
+    }
+}
+
+@Preview
+@Composable
+fun CreateAccountConfirmationContentFirstPersonaPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         CreatePersonaConfirmationContent(
             modifier = Modifier,
             isFirstPersona = true,

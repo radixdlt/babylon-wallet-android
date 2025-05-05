@@ -74,7 +74,7 @@ fun ChooseAccountContent(
                 isLoading = isSigningInProgress
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             contentPadding = padding + PaddingValues(RadixTheme.dimensions.paddingLarge),
@@ -95,7 +95,7 @@ fun ChooseAccountContent(
                     },
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
                 ChooseAccountsSubtitle(
@@ -174,21 +174,59 @@ private fun ChooseAccountsSubtitle(
                 stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_subtitleAtLeastOne, dappName)
             }
         }
-    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold))
+    }.formattedSpans(
+        boldStyle = SpanStyle(color = RadixTheme.colors.text, fontWeight = FontWeight.SemiBold)
+    )
     Text(
         modifier = modifier,
         text = text,
         textAlign = TextAlign.Center,
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun ChooseAccountContentPreview() {
+fun ChooseAccountContentPreviewLight() {
     RadixWalletPreviewTheme {
+        ChooseAccountContent(
+            onBackClick = {},
+            onContinueClick = {},
+            isContinueButtonEnabled = true,
+            accountItems = persistentListOf(
+                AccountItemUiModel(
+                    displayName = "Account name 1",
+                    address = AccountAddress.sampleMainnet.random(),
+                    appearanceID = AppearanceId(1u),
+                    isSelected = true
+                ),
+                AccountItemUiModel(
+                    displayName = "Account name 2",
+                    address = AccountAddress.sampleMainnet.random(),
+                    appearanceID = AppearanceId(2u),
+                    isSelected = false
+                )
+            ),
+            onAccountSelected = {},
+            onCreateNewAccount = {},
+            dapp = DApp.sampleMainnet(),
+            isOneTimeRequest = false,
+            isSingleChoice = false,
+            numberOfAccounts = 1,
+            isExactAccountsCount = false,
+            showBackButton = true,
+            isSigningInProgress = false
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun ChooseAccountContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         ChooseAccountContent(
             onBackClick = {},
             onContinueClick = {},

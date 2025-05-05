@@ -140,13 +140,13 @@ fun DappAuthorizedLoginScreen(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground)
+                .background(RadixTheme.colors.background)
         ) {
             AnimatedVisibility(
                 visible = state.initialAuthorizedLoginRoute == null,
