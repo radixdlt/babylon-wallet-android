@@ -50,7 +50,8 @@ fun SigningFailedSheet(
                 )
             },
             style = RadixTheme.typography.title,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -62,7 +63,8 @@ fun SigningFailedSheet(
                 SigningFailed.Type.PreAuthorization -> stringResource(R.string.transactionRecovery_preAuthorization_message)
             },
             style = RadixTheme.typography.body1Header,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.weight(1f))

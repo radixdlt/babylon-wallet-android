@@ -113,7 +113,7 @@ private fun FeePayerSelectionContent(
                 ) {
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                        tint = RadixTheme.colors.gray1,
+                        tint = RadixTheme.colors.icon,
                         contentDescription = null
                     )
                 }
@@ -127,7 +127,7 @@ private fun FeePayerSelectionContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                         text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
                     )
 
@@ -139,7 +139,7 @@ private fun FeePayerSelectionContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                         text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
                         style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         textAlign = TextAlign.Center
                     )
 
@@ -154,7 +154,7 @@ private fun FeePayerSelectionContent(
                 text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_selectAccountButtonTitle)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -188,9 +188,9 @@ private fun FeePayerCard(
             )
             .applyIf(candidate.hasEnoughBalance, Modifier.throttleClickable { onPayerSelected(candidate) }),
         shape = RadixTheme.shapes.roundedRectMedium,
-        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
+        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.background), // TODO Theme
         elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 6.dp
+            defaultElevation = if (RadixTheme.config.isDarkTheme) 0.dp else 6.dp
         )
     ) {
         Row(
@@ -246,7 +246,7 @@ private fun FeePayerCard(
                 modifier = Modifier.weight(1f),
                 text = XrdResource.SYMBOL,
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1
             )
 
@@ -255,7 +255,7 @@ private fun FeePayerCard(
                     candidate.xrdAmount.formatted()
                 },
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2
             )
 
@@ -283,7 +283,7 @@ private fun FeePayerCard(
                         end = RadixTheme.dimensions.paddingDefault
                     ),
                 text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance)),
-                contentColor = RadixTheme.colors.red1,
+                contentColor = RadixTheme.colors.error,
                 textStyle = RadixTheme.typography.body1Header
             )
 

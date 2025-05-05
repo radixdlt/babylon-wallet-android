@@ -43,7 +43,7 @@ fun TransferableTokenItemContent(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = shape
             )
             .padding(
@@ -63,7 +63,7 @@ fun TransferableTokenItemContent(
                 modifier = Modifier.weight(1f),
                 text = transferableToken.asset.displayTitle(),
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

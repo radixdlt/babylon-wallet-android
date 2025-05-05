@@ -52,7 +52,7 @@ fun UnknownAddressesSheetContent(
             ),
             onDismissRequest = onBackClick
         )
-        HorizontalDivider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = RadixTheme.colors.divider)
         LazyColumn {
             itemsIndexed(unknownAddresses) { index, unknownComponentAddress ->
                 Column {
@@ -77,14 +77,14 @@ fun UnknownAddressesSheetContent(
                                     else -> stringResource(id = R.string.empty)
                                 },
                                 style = RadixTheme.typography.body1Header,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 overflow = TextOverflow.Ellipsis
                             )
 
                             ActionableAddressView(
                                 address = unknownComponentAddress,
                                 textStyle = RadixTheme.typography.body2Regular,
-                                textColor = RadixTheme.colors.gray1
+                                textColor = RadixTheme.colors.text
                             )
                         }
                     }
@@ -92,7 +92,7 @@ fun UnknownAddressesSheetContent(
                     if (index != unknownAddresses.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.fillMaxWidth(),
-                            color = RadixTheme.colors.gray5
+                            color = RadixTheme.colors.divider
                         )
                     }
                 }

@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -22,8 +23,14 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 
-fun Modifier.assetOutlineBorder() = composed {
-    then(Modifier.border(1.dp, RadixTheme.colors.divider, RadixTheme.shapes.roundedRectMedium))
+fun Modifier.assetOutlineBorder(
+    shape: Shape? = null
+) = composed {
+    then(Modifier.border(
+        width = 1.dp,
+        color = RadixTheme.colors.divider,
+        shape = shape ?: RadixTheme.shapes.roundedRectMedium
+    ))
 }
 
 fun Modifier.assetPlaceholder(

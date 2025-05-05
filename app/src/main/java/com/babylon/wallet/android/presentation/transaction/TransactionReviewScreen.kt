@@ -267,7 +267,7 @@ private fun TransactionReviewContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         if (state.isLoading) {
             FullscreenCircularProgressContent()
@@ -287,12 +287,15 @@ private fun TransactionReviewContent(
                                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
                                     .background(
                                         brush = Brush.verticalGradient(
-                                            listOf(RadixTheme.colors.gray5, RadixTheme.colors.gray4)
+                                            listOf(
+                                                RadixTheme.colors.backgroundSecondary,
+                                                RadixTheme.colors.backgroundTertiary
+                                            )
                                         ),
                                         shape = RadixTheme.shapes.roundedRectMedium
                                     )
                             } else {
-                                Modifier.background(color = RadixTheme.colors.gray5)
+                                Modifier.background(color = RadixTheme.colors.backgroundSecondary)
                             }
                         )
                 ) {
@@ -309,7 +312,7 @@ private fun TransactionReviewContent(
                                 )
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                             text = state.rawManifest,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             fontSize = 13.sp,
                             fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
                         )
@@ -386,10 +389,10 @@ private fun TransactionReviewContent(
                                 shape = RadixTheme.shapes.roundedRectSmall,
                                 elevation = null,
                                 colors = ButtonColors(
-                                    containerColor = RadixTheme.colors.gray4,
-                                    contentColor = RadixTheme.colors.gray1,
-                                    disabledContentColor = RadixTheme.colors.gray4,
-                                    disabledContainerColor = RadixTheme.colors.gray1
+                                    containerColor = RadixTheme.colors.backgroundTertiary,
+                                    contentColor = RadixTheme.colors.icon,
+                                    disabledContentColor = RadixTheme.colors.backgroundTertiary,
+                                    disabledContainerColor = RadixTheme.colors.icon
                                 )
                             ) {
                                 Icon(
@@ -414,13 +417,13 @@ private fun TransactionReviewContent(
                     }
 
                     if (state.showReceiptEdges) {
-                        ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+                        ReceiptEdge(color = RadixTheme.colors.background)
                     }
                 }
 
-                Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
+                Column(modifier = Modifier.background(RadixTheme.colors.background)) {
                     if (state.showReceiptEdges) {
-                        ReceiptEdge(color = RadixTheme.colors.gray5)
+                        ReceiptEdge(color = RadixTheme.colors.backgroundSecondary)
                     }
 
                     if (!state.isPreAuthorization) {

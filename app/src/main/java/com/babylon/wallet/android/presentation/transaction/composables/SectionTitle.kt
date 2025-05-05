@@ -38,17 +38,17 @@ fun SectionTitle(
         Image(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3),
+                .dashedCircleBorder(RadixTheme.colors.gray3), // TODO Theme
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(RadixTheme.colors.gray2),
+            colorFilter = ColorFilter.tint(RadixTheme.colors.iconSecondary),
             contentScale = ContentScale.Inside
         )
 
         Text(
             text = stringResource(id = titleRes).uppercase(),
             style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             overflow = TextOverflow.Ellipsis,
         )
     }

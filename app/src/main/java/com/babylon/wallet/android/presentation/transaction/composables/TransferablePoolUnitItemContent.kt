@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.assets.PoolUnit
@@ -53,7 +54,7 @@ fun TransferablePoolUnitItemContent(
                 onClick(transferablePoolUnit)
             }
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = shape
             )
             .padding(
@@ -76,7 +77,7 @@ fun TransferablePoolUnitItemContent(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferablePoolUnit.displayTitle(),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -84,7 +85,7 @@ fun TransferablePoolUnitItemContent(
                 Text(
                     text = transferablePoolUnit.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -104,16 +105,14 @@ fun TransferablePoolUnitItemContent(
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             text = stringResource(id = R.string.interactionReview_worth).uppercase(),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             maxLines = 1
         )
 
         val poolResources = transferablePoolUnit.asset.pool?.resources.orEmpty()
 
         Column(
-            modifier = Modifier.border(
-                width = 1.dp,
-                color = RadixTheme.colors.gray3,
+            modifier = Modifier.assetOutlineBorder(
                 shape = RadixTheme.shapes.roundedRectSmall
             )
         ) {
@@ -142,7 +141,7 @@ fun TransferablePoolUnitItemContent(
                         Text(
                             text = item.displayTitleAsToken(),
                             style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             maxLines = 2
                         )
 
@@ -160,7 +159,7 @@ fun TransferablePoolUnitItemContent(
                                 modifier = Modifier.weight(1f),
                                 text = stringResource(id = R.string.empty),
                                 style = RadixTheme.typography.body1HighImportance,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 textAlign = TextAlign.End,
                                 maxLines = 2
                             )
@@ -173,7 +172,7 @@ fun TransferablePoolUnitItemContent(
                     )
                 }
                 if (addDivider) {
-                    HorizontalDivider(color = RadixTheme.colors.gray3)
+                    HorizontalDivider(color = RadixTheme.colors.divider)
                 }
             }
         }
