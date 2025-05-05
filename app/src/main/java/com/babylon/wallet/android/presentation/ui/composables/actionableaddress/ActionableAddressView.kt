@@ -194,7 +194,7 @@ private fun DropDown(
 ) {
     val context = LocalContext.current
     DropdownMenu(
-        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
+        modifier = Modifier.background(RadixTheme.colors.background),
         expanded = action.isExpanded.value,
         onDismissRequest = { action.isExpanded.value = false }
     ) {
@@ -204,7 +204,7 @@ private fun DropDown(
                     Text(
                         text = actionItem.name(forAddress = address),
                         style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.defaultText
+                        color = RadixTheme.colors.text
                     )
                 },
                 leadingIcon = {
@@ -212,7 +212,7 @@ private fun DropDown(
                         modifier = Modifier.size(20.dp),
                         painter = actionItem.icon(),
                         contentDescription = actionItem.name(forAddress = address),
-                        tint = RadixTheme.colors.defaultText
+                        tint = RadixTheme.colors.text
                     )
                 },
                 onClick = {

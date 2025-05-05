@@ -56,7 +56,7 @@ fun AssetMetadataRow(
                 if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
             },
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         valueView()
@@ -94,7 +94,7 @@ fun Metadata.KeyView(
         modifier = modifier.padding(end = RadixTheme.dimensions.paddingMedium),
         text = key,
         style = RadixTheme.typography.body1Regular,
-        color = RadixTheme.colors.gray2,
+        color = RadixTheme.colors.textSecondary,
         textAlign = TextAlign.Start
     )
 }
@@ -111,7 +111,7 @@ fun Metadata.ValueView(
             modifier = modifier,
             text = stringResource(id = R.string.assetDetails_NFTDetails_complexData),
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
             maxLines = 2
         )
@@ -128,7 +128,7 @@ fun Metadata.ValueView(
                 modifier = modifier,
                 text = value,
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 maxLines = 2
             )
@@ -137,11 +137,11 @@ fun Metadata.ValueView(
                 modifier = modifier,
                 text = value,
                 style = RadixTheme.typography.body1HighImportance.copy(
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 ),
                 toggleStyle = RadixTheme.typography.body1HighImportance.copy(
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 ),
             )
 
@@ -158,7 +158,7 @@ fun Metadata.ValueView(
                     modifier = modifier,
                     text = displayable,
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                     maxLines = 2
                 )
@@ -184,7 +184,7 @@ fun Metadata.ValueView(
                     NonFungibleLocalId.init(value).formatted(AddressFormat.DEFAULT)
                 },
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 maxLines = 2
             )
@@ -194,7 +194,7 @@ fun Metadata.ValueView(
                 // If value is unable to transform to big decimal we just display raw value
                 text = value.toDecimal192OrNull()?.formatted() ?: value,
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 maxLines = 2
             )
@@ -209,12 +209,12 @@ fun Metadata.ValueView(
                 Text(
                     text = value,
                     style = RadixTheme.typography.body1StandaloneLink,
-                    color = RadixTheme.colors.blue1
+                    color = RadixTheme.colors.textButton
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.ic_external_link),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray3
+                    tint = RadixTheme.colors.gray3 // TODO Theme
                 )
             }
         }

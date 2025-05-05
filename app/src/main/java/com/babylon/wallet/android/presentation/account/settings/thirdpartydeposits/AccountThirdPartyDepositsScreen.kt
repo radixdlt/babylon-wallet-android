@@ -99,9 +99,7 @@ fun AccountThirdPartyDepositsScreen(
         canUpdate = state.canUpdate,
         onMessageShown = viewModel::onMessageShown,
         error = state.error,
-        modifier = modifier
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+        modifier = modifier,
         onAllowAll = viewModel::onAllowAll,
         onAcceptKnown = viewModel::onAcceptKnown,
         onDenyAll = viewModel::onDenyAll,

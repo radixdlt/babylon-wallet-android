@@ -25,6 +25,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
@@ -120,8 +121,8 @@ fun AccountCardView(
                             .fillMaxWidth(0.4f)
                             .radixPlaceholder(
                                 visible = true,
-                                color = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
-                                shape = RadixTheme.shapes.roundedRectSmall,
+                                color = White.copy(alpha = 0.6f),
+                                shape = RadixTheme.shapes.roundedRectSmall
                             ),
                     )
                 }

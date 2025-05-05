@@ -37,6 +37,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -54,7 +55,7 @@ fun NPSSurveySheet(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
-            .background(RadixTheme.colors.defaultBackground),
+            .background(RadixTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
@@ -69,7 +70,7 @@ fun NPSSurveySheet(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = R.string.survey_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -80,7 +81,7 @@ fun NPSSurveySheet(
                     ),
                 text = stringResource(id = R.string.survey_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -96,29 +97,29 @@ fun NPSSurveySheet(
                 Text(
                     text = stringResource(id = R.string.survey_lowestScoreLabel),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                 )
                 Text(
                     text = stringResource(id = R.string.survey_highestScoreLabel),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             Text(
                 text = stringResource(id = R.string.survey_reason_heading),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Text(
                 text = stringResource(id = R.string.common_optional),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
             )
 
             RadixTextField(
@@ -134,7 +135,7 @@ fun NPSSurveySheet(
         HorizontalDivider(
             modifier = Modifier
                 .padding(vertical = RadixTheme.dimensions.paddingMedium),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
         RadixPrimaryButton(
             text = stringResource(id = R.string.survey_submitButton),
@@ -193,8 +194,24 @@ fun RatingContainer(
 
 @Preview
 @Composable
-fun NPSSurveySheetPreview() {
-    RadixWalletTheme {
+fun NPSSurveySheetPreviewLight() {
+    RadixWalletPreviewTheme {
+        NPSSurveySheet(
+            onSubmitClick = {},
+            reason = "",
+            onReasonChanged = {},
+            onScoreClick = {},
+            isLoading = false,
+            isSubmitButtonEnabled = true,
+            scores = persistentListOf()
+        )
+    }
+}
+
+@Preview
+@Composable
+fun NPSSurveySheetPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         NPSSurveySheet(
             onSubmitClick = {},
             reason = "",

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -39,7 +40,7 @@ internal fun FailureDialogContent(
         Column(
             modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.defaultBackground)
+                .background(color = RadixTheme.colors.background)
                 .padding(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -50,12 +51,12 @@ internal fun FailureDialogContent(
                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.orange1
+                tint = RadixTheme.colors.warning
             )
             Text(
                 text = title,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
@@ -64,7 +65,7 @@ internal fun FailureDialogContent(
                 Text(
                     text = it,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
             }
@@ -74,15 +75,15 @@ internal fun FailureDialogContent(
             }
         }
         if (isMobileConnect) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = RadixTheme.colors.gray5)
+                    .background(color = RadixTheme.colors.backgroundSecondary)
                     .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }
@@ -96,8 +97,26 @@ internal class FailureContentParameterProvider : PreviewParameterProvider<Boolea
 @Composable
 @UsesSampleValues
 @Preview
-private fun SomethingWentWrongDialogPreview(@PreviewParameter(FailureContentParameterProvider::class) isMobileConnect: Boolean) {
-    RadixWalletTheme {
+private fun SomethingWentWrongDialogPreviewLight(
+    @PreviewParameter(FailureContentParameterProvider::class) isMobileConnect: Boolean
+) {
+    RadixWalletPreviewTheme {
+        FailureDialogContent(
+            isMobileConnect = isMobileConnect,
+            title = "Title",
+            subtitle = "Subtitle",
+            transactionId = TransactionIntentHash.sample()
+        )
+    }
+}
+
+@Composable
+@UsesSampleValues
+@Preview
+private fun SomethingWentWrongDialogPreviewDark(
+    @PreviewParameter(FailureContentParameterProvider::class) isMobileConnect: Boolean
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         FailureDialogContent(
             isMobileConnect = isMobileConnect,
             title = "Title",

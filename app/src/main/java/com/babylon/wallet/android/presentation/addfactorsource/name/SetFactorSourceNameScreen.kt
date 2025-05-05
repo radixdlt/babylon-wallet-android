@@ -178,7 +178,7 @@ private fun SetFactorSourceNameContent(
             Text(
                 text = stringResource(id = R.string.newBiometricFactor_name_note),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
             )
         }
     }
@@ -228,7 +228,7 @@ private fun SuccessSheetContent(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground),
+            .background(color = RadixTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
@@ -248,7 +248,7 @@ private fun SuccessSheetContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.newFactor_success_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -256,7 +256,7 @@ private fun SuccessSheetContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.newFactor_success_subtitle),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 

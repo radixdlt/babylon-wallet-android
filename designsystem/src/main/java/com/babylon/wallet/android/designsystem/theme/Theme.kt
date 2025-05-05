@@ -17,9 +17,6 @@ import androidx.compose.ui.graphics.Color
 @Stable
 class RadixColors(
     defaultBackground: Color,
-    backgroundAlternate: Color,
-    defaultText: Color,
-    blue1: Color,
     blue2: Color,
     green1: Color,
     green3: Color,
@@ -55,12 +52,6 @@ class RadixColors(
     cardOnSecondary: Color
 ) {
     var defaultBackground by mutableStateOf(defaultBackground)
-        private set
-    var backgroundAlternate by mutableStateOf(backgroundAlternate)
-        private set
-    var defaultText by mutableStateOf(defaultText)
-        private set
-    var blue1 by mutableStateOf(blue1)
         private set
     var blue2 by mutableStateOf(blue2)
         private set
@@ -130,9 +121,6 @@ class RadixColors(
 
     fun copy(
         defaultBackground: Color = this.defaultBackground,
-        backgroundAlternate: Color = this.backgroundAlternate,
-        defaultText: Color = this.defaultText,
-        blue1: Color = this.blue1,
         blue2: Color = this.blue2,
         green1: Color = this.green1,
         green3: Color = this.green3,
@@ -168,9 +156,6 @@ class RadixColors(
     ): RadixColors {
         return RadixColors(
             defaultBackground = defaultBackground,
-            backgroundAlternate = backgroundAlternate,
-            defaultText = defaultText,
-            blue1 = blue1,
             blue2 = blue2,
             green1 = green1,
             green3 = green3,
@@ -209,9 +194,6 @@ class RadixColors(
 
 private val LightColorPalette = RadixColors(
     defaultBackground = White,
-    backgroundAlternate = Black,
-    defaultText = Black,
-    blue1 = Blue1,
     blue2 = Blue2,
     green1 = Green1,
     green3 = Green3,

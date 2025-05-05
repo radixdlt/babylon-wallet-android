@@ -40,10 +40,12 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
+import com.babylon.wallet.android.designsystem.theme.RadixColors
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
@@ -73,13 +75,10 @@ fun AccountAssetsRow(
         modifier = modifier
             .fillMaxWidth()
             .height(height = iconSize + bordersSize * 2)
-            .placeholder(
+            .radixPlaceholder(
                 visible = isLoading,
-                color = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                color = White.copy(alpha = 0.6f),
                 shape = RadixTheme.shapes.roundedRectSmall,
-                highlight = PlaceholderHighlight.shimmer(
-                    highlightColor = White
-                ),
                 placeholderFadeTransitionSpec = { tween() },
                 contentFadeTransitionSpec = { tween() }
             ),
@@ -142,7 +141,7 @@ private fun AssetsContent(
                     .zIndex(visibleFungibles.size - index.toFloat())
                     .border(
                         width = bordersSize,
-                        color = RadixTheme.colors.white.copy(alpha = 0.2f),
+                        color = White.copy(alpha = 0.2f),
                         shape = CircleShape
                     )
                     .padding(bordersSize),
@@ -262,7 +261,7 @@ private fun AssetTypeWithCounter(
                 .size(iconSize + bordersSize * 2)
                 .border(
                     width = bordersSize,
-                    color = RadixTheme.colors.white.copy(alpha = 0.2f),
+                    color = White.copy(alpha = 0.2f),
                     shape = shape
                 )
                 .padding(bordersSize)
@@ -288,7 +287,7 @@ private fun CounterBox(
     Box(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.white.copy(alpha = 0.3f),
+                color = White.copy(alpha = 0.3f),
                 shape = RadixTheme.shapes.roundedRectDefault
             ),
         contentAlignment = Alignment.CenterEnd

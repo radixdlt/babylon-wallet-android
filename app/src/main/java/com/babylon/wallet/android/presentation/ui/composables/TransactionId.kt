@@ -23,14 +23,14 @@ fun TransactionId(transactionId: TransactionIntentHash, modifier: Modifier = Mod
         Text(
             text = stringResource(id = R.string.transactionStatus_transactionID_text),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
         ActionableAddressView(
             transactionId = transactionId,
             textStyle = RadixTheme.typography.body1HighImportance,
-            textColor = RadixTheme.colors.blue1,
-            iconColor = RadixTheme.colors.gray2
+            textColor = RadixTheme.colors.textButton,
+            iconColor = RadixTheme.colors.textSecondary
         )
     }
 }

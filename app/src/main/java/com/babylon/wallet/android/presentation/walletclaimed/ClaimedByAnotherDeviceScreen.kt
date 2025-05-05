@@ -56,7 +56,7 @@ fun ClaimedByAnotherDeviceScreen(
     } else {
         Scaffold(
             modifier = modifier.imePadding(),
-            containerColor = RadixTheme.colors.defaultBackground
+            containerColor = RadixTheme.colors.background
         ) { padding ->
             ClaimedByAnotherDeviceContent(
                 modifier = Modifier
@@ -110,14 +110,14 @@ fun ClaimedByAnotherDeviceContent(
                 text = stringResource(id = R.string.configurationBackup_automated_walletTransferredTitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(
                 text = stringResource(id = R.string.configurationBackup_automated_walletTransferredSubtitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(
@@ -131,7 +131,7 @@ fun ClaimedByAnotherDeviceContent(
                 text = stringResource(id = R.string.configurationBackup_automated_walletTransferredExplanation2),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
 
@@ -154,13 +154,24 @@ fun ClaimedByAnotherDeviceContent(
     }
 }
 
-@Preview(
-    showSystemUi = true,
-    showBackground = true,
-)
+@Preview
 @Composable
-fun ClaimedByAnotherDeviceScreenPreview() {
+fun ClaimedByAnotherDeviceScreenPreviewLight() {
     RadixWalletPreviewTheme {
+        ClaimedByAnotherDeviceContent(
+            state = ClaimedByAnotherDeviceViewModel.State(),
+            onResetWalletClick = {},
+            onResetWalletConfirmClick = {},
+            onResetWalletDenyClick = {},
+            onTransferControlBackClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ClaimedByAnotherDeviceScreenPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         ClaimedByAnotherDeviceContent(
             state = ClaimedByAnotherDeviceViewModel.State(),
             onResetWalletClick = {},

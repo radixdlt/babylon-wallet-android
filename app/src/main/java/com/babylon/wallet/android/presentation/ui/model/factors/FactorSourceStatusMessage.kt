@@ -39,7 +39,7 @@ sealed interface FactorSourceStatusMessage {
                 .formattedSpans(
                     boldStyle = SpanStyle(
                         fontWeight = FontWeight.Bold,
-                        color = RadixTheme.colors.blue2
+                        color = RadixTheme.colors.textButton
                     )
                 ),
             type = StatusMessage.Type.WARNING

@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
 import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.radixdlt.sargon.TransactionIntentHash
@@ -62,7 +63,7 @@ internal fun SuccessContent(
         Column(
             modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.defaultBackground)
+                .background(color = RadixTheme.colors.background)
                 .padding(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -76,14 +77,14 @@ internal fun SuccessContent(
             Text(
                 text = title,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
             Text(
                 text = subtitle,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -92,15 +93,15 @@ internal fun SuccessContent(
             }
         }
         if (isMobileConnect) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = RadixTheme.colors.gray5)
+                    .background(color = RadixTheme.colors.backgroundSecondary)
                     .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }
@@ -111,13 +112,29 @@ internal class SuccessContentParameterProvider : PreviewParameterProvider<Boolea
     override val values: Sequence<Boolean> = sequenceOf(true, false)
 }
 
-@Preview(showBackground = true)
+@Preview
 @UsesSampleValues
 @Composable
-private fun SuccessBottomDialogPreview(
+private fun SuccessBottomDialogPreviewLight(
     @PreviewParameter(SuccessContentParameterProvider::class) isMobileConnect: Boolean
 ) {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
+        SuccessContent(
+            transactionId = TransactionIntentHash.sample(),
+            isMobileConnect = isMobileConnect,
+            isInternal = false,
+            dAppName = null
+        )
+    }
+}
+
+@Preview
+@UsesSampleValues
+@Composable
+private fun SuccessBottomDialogPreviewDark(
+    @PreviewParameter(SuccessContentParameterProvider::class) isMobileConnect: Boolean
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         SuccessContent(
             transactionId = TransactionIntentHash.sample(),
             isMobileConnect = isMobileConnect,
