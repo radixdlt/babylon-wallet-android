@@ -130,17 +130,17 @@ private fun Title(
         Image(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3),
+                .dashedCircleBorder(RadixTheme.colors.gray3), // TODO Theme
             painter = icon,
             contentDescription = null,
-            colorFilter = ColorFilter.tint(RadixTheme.colors.gray2),
+            colorFilter = ColorFilter.tint(RadixTheme.colors.iconSecondary),
             contentScale = ContentScale.Inside
         )
         Text(
             modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
             text = text,
             style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             overflow = TextOverflow.Ellipsis,
         )
         Icon(
@@ -151,7 +151,7 @@ private fun Title(
                     com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_down
                 }
             ),
-            tint = RadixTheme.colors.gray2,
+            tint = RadixTheme.colors.iconSecondary,
             contentDescription = "arrow"
         )
     }
@@ -241,12 +241,12 @@ private fun DAppsContent(
                     Icon(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_using_dapps),
-                        tint = RadixTheme.colors.gray3,
+                        tint = RadixTheme.colors.gray3, // TODO Theme
                         contentDescription = ""
                     )
                 },
                 text = stringResource(id = R.string.interactionReview_possibleDappCalls),
-                textColor = RadixTheme.colors.gray2,
+                textColor = RadixTheme.colors.textSecondary,
                 textStyle = RadixTheme.typography.body2Link,
                 infoIconVisible = true
             )
@@ -325,7 +325,7 @@ private fun ValidatorsContent(
                     ActionableAddressView(
                         address = validator.address.asGeneral(),
                         textStyle = RadixTheme.typography.body2HighImportance,
-                        textColor = RadixTheme.colors.gray2
+                        textColor = RadixTheme.colors.textSecondary
                     )
                 }
             )
@@ -340,7 +340,7 @@ private fun InvolvedComponent(
     contentSpacing: Dp = RadixTheme.dimensions.paddingDefault,
     icon: @Composable () -> Unit,
     text: String,
-    textColor: Color = RadixTheme.colors.gray1,
+    textColor: Color = RadixTheme.colors.text,
     textStyle: TextStyle = RadixTheme.typography.body1Header,
     subtitle: @Composable (() -> Unit)? = null,
     infoIconVisible: Boolean = false
@@ -349,7 +349,7 @@ private fun InvolvedComponent(
         modifier = modifier
             .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
             .clip(RadixTheme.shapes.roundedRectMedium)
-            .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.background, RadixTheme.shapes.roundedRectMedium)
             .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(contentSpacing)
@@ -376,7 +376,7 @@ private fun InvolvedComponent(
             Icon(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-                tint = RadixTheme.colors.gray3,
+                tint = RadixTheme.colors.gray3, // TODO Theme
                 contentDescription = "info"
             )
         }

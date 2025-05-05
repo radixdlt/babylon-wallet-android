@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.Constants
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
@@ -54,7 +55,7 @@ fun NetworkFeeContent(
                     modifier = Modifier.fillMaxHeight(),
                     text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                     style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 InfoButton(
@@ -62,7 +63,7 @@ fun NetworkFeeContent(
                         .fillMaxHeight()
                         .height(1.dp),
                     text = stringResource(id = R.string.empty),
-                    color = RadixTheme.colors.gray3,
+                    color = RadixTheme.colors.gray3, // TODO Theme
                     onClick = {
                         onInfoClick(GlossaryItem.transactionfee)
                     }
@@ -72,22 +73,16 @@ fun NetworkFeeContent(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     modifier = Modifier
-                        .placeholder(
+                        .radixPlaceholder(
                             visible = isNetworkFeeLoading,
-                            color = RadixTheme.colors.defaultText.copy(alpha = 0.2f),
-                            shape = RadixTheme.shapes.roundedRectSmall,
-                            highlight = PlaceholderHighlight.shimmer(
-                                highlightColor = White
-                            ),
-                            placeholderFadeTransitionSpec = { tween() },
-                            contentFadeTransitionSpec = { tween() }
+                            shape = RadixTheme.shapes.roundedRectSmall
                         ),
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
                         fees.transactionFeeToLock.formatted()
                     ),
                     style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 fees.transactionFeeTotalUsd?.let { fiatPrice ->
                     FiatBalanceView(
@@ -104,7 +99,7 @@ fun NetworkFeeContent(
                 modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.transactionReview_networkFee_congestedText),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.orange1
+                color = RadixTheme.colors.warning
             )
         }
 
@@ -122,7 +117,7 @@ fun NetworkFeeContent(
                         .fillMaxWidth()
                         .padding(top = RadixTheme.dimensions.paddingSmall),
                     text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
-                    contentColor = RadixTheme.colors.red1,
+                    contentColor = RadixTheme.colors.error,
                     textStyle = RadixTheme.typography.body1Header
                 )
             } else if (properties.isSelectedFeePayerInvolvedInTransaction.not()) {
@@ -140,7 +135,7 @@ fun NetworkFeeContent(
                     )
                     InfoButton(
                         text = stringResource(R.string.empty),
-                        color = RadixTheme.colors.gray3,
+                        color = RadixTheme.colors.gray3, // TODO Theme
                         onClick = {
                             onInfoClick(GlossaryItem.payingaccount)
                         }

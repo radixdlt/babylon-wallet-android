@@ -96,7 +96,7 @@ private fun TransferableNonFungibleContent(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = shape
             )
             .padding(
@@ -123,7 +123,7 @@ private fun TransferableNonFungibleContent(
                 Text(
                     text = transferableNFTCollection.asset.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -133,7 +133,7 @@ private fun TransferableNonFungibleContent(
                         transferableNFTCollection.resourceAddress.formatted()
                     },
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -143,7 +143,7 @@ private fun TransferableNonFungibleContent(
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                     text = stringResource(R.string.interactionReview_estimated),
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     style = RadixTheme.typography.body3Regular
                 )
             } else {

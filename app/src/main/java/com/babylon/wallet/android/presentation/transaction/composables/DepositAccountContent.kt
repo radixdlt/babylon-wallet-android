@@ -61,7 +61,7 @@ fun DepositAccountContent(
                     .padding(top = RadixTheme.dimensions.paddingSmall)
                     .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
                     .background(
-                        color = Color.White,
+                        color = RadixTheme.colors.background,
                         shape = RadixTheme.shapes.roundedRectDefault
                     )
                     .padding(RadixTheme.dimensions.paddingMedium),

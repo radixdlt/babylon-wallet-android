@@ -86,7 +86,7 @@ fun PreAuthorizationFeesHint(
     Row(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .clickable {
@@ -105,19 +105,19 @@ fun PreAuthorizationFeesHint(
                     proposingDApp.name.dAppDisplayName()
                 ),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             Text(
                 text = stringResource(R.string.preAuthorizationReview_fees_subtitle),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
 
         Icon(
             painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-            tint = RadixTheme.colors.gray2,
+            tint = RadixTheme.colors.iconSecondary,
             contentDescription = "info"
         )
     }

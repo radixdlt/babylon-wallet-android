@@ -18,6 +18,7 @@ import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.radixdlt.sargon.ResourceIdentifier
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -44,9 +45,12 @@ fun WithdrawAccountContent(
         Column(
             modifier = modifier
                 .padding(vertical = RadixTheme.dimensions.paddingSmall)
-                .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
+                .defaultCardShadow(
+                    elevation = 6.dp,
+                    shape = RadixTheme.shapes.roundedRectDefault
+                )
                 .background(
-                    color = Color.White,
+                    color = RadixTheme.colors.background,
                     shape = RadixTheme.shapes.roundedRectDefault
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)

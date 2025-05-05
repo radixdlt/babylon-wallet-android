@@ -54,7 +54,10 @@ fun GuaranteesSheet(
         BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
+                .background(
+                    color = RadixTheme.colors.background,
+                    shape = RadixTheme.shapes.roundedRectTopDefault
+                )
                 .padding(top = RadixTheme.dimensions.paddingDefault),
             onDismissRequest = onClose
         )
@@ -64,7 +67,7 @@ fun GuaranteesSheet(
                 .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
             text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -91,7 +94,7 @@ fun GuaranteesSheet(
                         id = com.babylon.wallet.android.R.string.transactionReview_guarantees_subtitle
                     ),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
