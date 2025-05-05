@@ -55,7 +55,7 @@ fun PersonaDetailCard(
             Text(
                 text = persona.persona.displayName.value,
                 style = RadixTheme.typography.header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             if (onSelectPersona != null) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -68,7 +68,7 @@ fun PersonaDetailCard(
                 )
             }
         }
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.divider)
         val personalInfo = persona.personalInfoFormatted()
         if (personalInfo.isNotEmpty()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -76,7 +76,7 @@ fun PersonaDetailCard(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 text = personalInfo,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         if (missingFields.isNotEmpty()) {

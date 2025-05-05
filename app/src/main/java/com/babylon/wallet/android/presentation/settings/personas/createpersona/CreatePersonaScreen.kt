@@ -48,6 +48,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -156,7 +157,7 @@ fun CreatePersonaContent(
                 modifier = Modifier.padding(dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         CreatePersonaContentList(
             onPersonaNameChange = onPersonaNameChange,
@@ -238,7 +239,7 @@ private fun CreatePersonaContentList(
             Text(
                 text = stringResource(id = R.string.createPersona_introduction_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             InfoButton(
                 modifier = Modifier.padding(
@@ -292,17 +293,17 @@ private fun CreatePersonaContentList(
                     .padding(bottom = dimensions.paddingXLarge),
                 text = stringResource(id = R.string.createPersona_explanation_thisWillBeShared),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             HorizontalDivider(
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.divider,
                 modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge)
             )
             Text(
                 modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge),
                 text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
         }
@@ -351,10 +352,38 @@ private fun CreatePersonaContentList(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
+@Composable
+fun CreateAccountContentPreviewLight() {
+    RadixWalletPreviewTheme {
+        CreatePersonaContent(
+            state = CreatePersonaViewModel.State(
+                currentFields = persistentListOf(),
+                fieldsToAdd = persistentListOf(),
+                personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),
+                anyFieldSelected = false,
+                isAddFieldBottomSheetVisible = false
+            ),
+            onPersonaNameChange = {},
+            onPersonaCreateClick = {},
+            onBackClick = {},
+            modifier = Modifier,
+            onSelectionChanged = { _, _ -> },
+            onAddFields = {},
+            onDeleteField = {},
+            onValueChanged = { _, _ -> },
+            onFieldFocusChanged = { _, _ -> },
+            onAddFieldSheetVisible = {},
+            onMessageShown = {},
+            onInfoClick = {}
+        )
+    }
+}
+
+@Preview
 @Composable
 fun CreateAccountContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         CreatePersonaContent(
             state = CreatePersonaViewModel.State(
                 currentFields = persistentListOf(),

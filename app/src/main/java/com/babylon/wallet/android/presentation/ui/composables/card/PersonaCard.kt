@@ -45,6 +45,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
+// TODO Theme
 @Composable
 fun SimplePersonaCard(
     modifier: Modifier = Modifier,
@@ -84,7 +85,7 @@ fun SimplePersonaCardWithShadow(
             Modifier
                 .defaultCardShadow(elevation = 6.dp)
                 .background(
-                    brush = SolidColor(RadixTheme.colors.gray5),
+                    brush = SolidColor(RadixTheme.colors.backgroundSecondary),
                     shape = RadixTheme.shapes.roundedRectMedium
                 )
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)

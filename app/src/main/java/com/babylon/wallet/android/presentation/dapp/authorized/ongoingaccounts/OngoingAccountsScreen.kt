@@ -121,7 +121,7 @@ private fun OngoingAccountsContent(
                 text = stringResource(id = R.string.dAppRequest_accountPermission_continue)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -144,7 +144,7 @@ private fun OngoingAccountsContent(
                 text = stringResource(id = R.string.dAppRequest_accountPermission_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             PermissionRequestHeader(
@@ -156,7 +156,10 @@ private fun OngoingAccountsContent(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
+                    .background(
+                        color = RadixTheme.colors.backgroundSecondary,
+                        shape = RadixTheme.shapes.roundedRectMedium
+                    )
                     .padding(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingLarge
@@ -170,7 +173,7 @@ private fun OngoingAccountsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(R.string.dAppRequest_accountPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             Spacer(modifier = Modifier.weight(1f))
         }
@@ -205,7 +208,7 @@ private fun RequestedPermissionsList(
         Text(
             text = text,
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
     }
 }
@@ -216,20 +219,22 @@ private fun PermissionRequestHeader(
     modifier: Modifier = Modifier
 ) {
     val text = stringResource(id = R.string.dAppRequest_accountPermission_subtitle, dappName)
-        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
+        .formattedSpans(
+            boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.text)
+        )
     Text(
         modifier = modifier,
         text = text,
         textAlign = TextAlign.Center,
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun OngoingAccountsContentPreview() {
+fun OngoingAccountsContentPreviewLight() {
     RadixWalletPreviewTheme {
         OngoingAccountsContent(
             onContinueClick = {},
@@ -244,7 +249,25 @@ fun OngoingAccountsContentPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true, device = "id:Nexus S")
+@Preview
+@Composable
+fun OngoingAccountsContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        OngoingAccountsContent(
+            onContinueClick = {},
+            dapp = DApp.sampleMainnet(),
+            onBackClick = {},
+            numberOfAccounts = 2,
+            isExactAccountsCount = false,
+            modifier = Modifier.fillMaxSize(),
+            showBack = true
+        )
+    }
+}
+
+
+@UsesSampleValues
+@Preview(device = "id:Nexus S")
 @Composable
 fun OngoingAccountsContentSmallDevicePreview() {
     RadixWalletPreviewTheme {
@@ -261,10 +284,27 @@ fun OngoingAccountsContentSmallDevicePreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun OngoingAccountsContentFirstTimePreview() {
+fun OngoingAccountsContentFirstTimePreviewLight() {
     RadixWalletPreviewTheme {
+        OngoingAccountsContent(
+            onContinueClick = {},
+            dapp = DApp.sampleMainnet(),
+            onBackClick = {},
+            numberOfAccounts = 2,
+            isExactAccountsCount = false,
+            modifier = Modifier.fillMaxSize(),
+            showBack = false
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun OngoingAccountsContentFirstTimePreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
