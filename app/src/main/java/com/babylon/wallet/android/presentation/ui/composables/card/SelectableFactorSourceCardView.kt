@@ -118,7 +118,7 @@ fun RemovableFactorSourceCard(
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray2
+                tint = RadixTheme.colors.iconSecondary
             )
         }
     }
@@ -159,7 +159,7 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
     SimpleFactorCardView(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.white,
+                color = RadixTheme.colors.cardOnSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .noIndicationClickable { onCheckedChange(!isChecked) },

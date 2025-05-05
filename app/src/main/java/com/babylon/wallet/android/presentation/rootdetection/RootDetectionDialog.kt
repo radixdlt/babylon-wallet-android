@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Blue1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 
@@ -35,7 +36,7 @@ fun RootDetectionContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(RadixTheme.colors.blue1)
+            .background(Blue1)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         BasicPromptAlertDialog(

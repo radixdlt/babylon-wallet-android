@@ -43,14 +43,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Blue1
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
+import com.babylon.wallet.android.designsystem.theme.Gray3
+import com.babylon.wallet.android.designsystem.theme.Gray4
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlin.math.roundToInt
 
+// TODO Theme
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SlideToSignButton(
@@ -60,8 +65,8 @@ fun SlideToSignButton(
     onSwipeComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val buttonColor = if (enabled) RadixTheme.colors.blue1 else RadixTheme.colors.gray4
-    val textColor = if (enabled) RadixTheme.colors.white else RadixTheme.colors.gray3
+    val buttonColor = if (enabled) Blue1 else Gray4
+    val textColor = if (enabled) White else Gray3
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
@@ -175,7 +180,7 @@ fun SlideToSignButton(
                     modifier = Modifier
                         .size(20.dp)
                         .align(Alignment.Center),
-                    color = RadixTheme.colors.blue1,
+                    color = Blue1,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -184,7 +189,7 @@ fun SlideToSignButton(
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
                         contentDescription = null,
-                        tint = RadixTheme.colors.blue1
+                        tint = Blue1
                     )
                 }
                 AnimatedVisibility(modifier = Modifier.align(Alignment.Center), visible = crossedSwipeThreshold) {
@@ -192,7 +197,7 @@ fun SlideToSignButton(
                         modifier = Modifier.align(Alignment.Center),
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix),
                         contentDescription = null,
-                        tint = RadixTheme.colors.blue1
+                        tint = Blue1
                     )
                 }
             }

@@ -444,7 +444,7 @@ fun FailureDialogContent(
         Column(
             modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.defaultBackground)
+                .background(color = RadixTheme.colors.background)
                 .padding(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -455,7 +455,7 @@ fun FailureDialogContent(
                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.orange1
+                tint = RadixTheme.colors.warning
             )
             Text(
                 text = title,

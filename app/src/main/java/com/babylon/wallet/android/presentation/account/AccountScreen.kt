@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.edgeToEdge
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
@@ -415,8 +416,8 @@ private fun AccountHeader(
                     fiatPrice = state.totalFiatValue,
                     isLoading = state.isAccountBalanceLoading,
                     currency = SupportedCurrency.USD,
-                    contentColor = RadixTheme.colors.white,
-                    shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                    contentColor = White,
+                    shimmeringColor = White.copy(alpha = 0.6f),
                     formattedContentStyle = RadixTheme.typography.header,
                     onVisibilityToggle = onShowHideBalanceToggle,
                     trailingContent = {

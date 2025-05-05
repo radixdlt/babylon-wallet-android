@@ -132,12 +132,12 @@ private fun SentContent(
     Column(
         modifier
             .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground)
+            .background(color = RadixTheme.colors.background)
     ) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.defaultBackground)
+                .background(color = RadixTheme.colors.background)
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -155,7 +155,7 @@ private fun SentContent(
             Text(
                 text = stringResource(R.string.preAuthorizationReview_unknownStatus_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -164,7 +164,7 @@ private fun SentContent(
             Text(
                 text = stringResource(id = R.string.preAuthorizationReview_unknownStatus_subtitle, dAppName),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -178,12 +178,12 @@ private fun SentContent(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.divider)
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.gray5)
+                .background(color = RadixTheme.colors.backgroundSecondary)
                 .padding(
                     start = RadixTheme.dimensions.paddingLarge,
                     end = RadixTheme.dimensions.paddingLarge,
@@ -243,7 +243,7 @@ private fun PreAuthorizationId(
         Text(
             text = stringResource(id = R.string.preAuthorizationReview_unknownStatus_identifier),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
@@ -254,7 +254,7 @@ private fun PreAuthorizationId(
         ) {
             Text(
                 text = id,
-                color = RadixTheme.colors.blue1,
+                color = RadixTheme.colors.textButton,
                 maxLines = 1,
                 style = RadixTheme.typography.body1HighImportance
             )
@@ -265,7 +265,7 @@ private fun PreAuthorizationId(
                 modifier = Modifier.size(14.dp),
                 painter = painterResource(id = R.drawable.ic_copy),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray2
+                tint = RadixTheme.colors.iconSecondary
             )
         }
     }
@@ -274,7 +274,7 @@ private fun PreAuthorizationId(
 @Composable
 @Preview
 @UsesSampleValues
-private fun PreAuthorizationStatusPreview(
+private fun PreAuthorizationStatusPreviewLight(
     @PreviewParameter(PreAuthorizationStatusPreviewProvider::class) state: PreAuthorizationStatusViewModel.State
 ) {
     RadixWalletPreviewTheme {
@@ -285,6 +285,22 @@ private fun PreAuthorizationStatusPreview(
         )
     }
 }
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun PreAuthorizationStatusPreviewDark(
+    @PreviewParameter(PreAuthorizationStatusPreviewProvider::class) state: PreAuthorizationStatusViewModel.State
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        PreAuthorizationStatusContent(
+            state = state,
+            onPreAuthorizationIdClick = {},
+            onDismiss = {}
+        )
+    }
+}
+
 
 @UsesSampleValues
 class PreAuthorizationStatusPreviewProvider : PreviewParameterProvider<PreAuthorizationStatusViewModel.State> {
