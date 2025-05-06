@@ -21,7 +21,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.mailReportMessage
-import com.babylon.wallet.android.domain.toMessage
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.openEmail
@@ -58,8 +57,10 @@ fun SnackbarUIMessage(
     if (message != null) {
         val errorMessage = message.getMessage()
         val actionLabel = remember(message) {
-            val supportMessage = ((message as? UiMessage.ErrorMessage)
-                ?.error as? CommonException)
+            val supportMessage = (
+                (message as? UiMessage.ErrorMessage)
+                    ?.error as? CommonException
+                )
                 ?.mailReportMessage()
 
             if (supportMessage != null) {
