@@ -45,6 +45,8 @@ Some useful Kotlin resources
 - [Value classes](https://quickbirdstudios.com/blog/kotlin-value-classes/)
 - [Sealed interfaces](https://quickbirdstudios.com/blog/sealed-interfaces-kotlin/ )
 
+This project is tested with BrowserStack.
+
 ## License
 
 The Android Radix Wallet binaries are licensed under the [Radix Wallet Software EULA](https://www.radixdlt.com/terms/walletEULA).
