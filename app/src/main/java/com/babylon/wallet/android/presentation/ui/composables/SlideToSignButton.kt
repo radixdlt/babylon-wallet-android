@@ -164,7 +164,7 @@ fun SlideToSignButton(
                 }
                 .padding(indicatorPadding)
                 .size(indicatorSize)
-                .background(RadixTheme.colors.white, RadixTheme.shapes.circle)
+                .background(White, RadixTheme.shapes.circle)
                 .applyIf(
                     enabled && !isSubmitting,
                     Modifier.anchoredDraggable(

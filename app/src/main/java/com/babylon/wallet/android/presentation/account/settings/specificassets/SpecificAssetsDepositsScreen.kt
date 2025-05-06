@@ -172,9 +172,7 @@ fun SpecificAssetsDepositsScreen(
                 sheetState.show()
             }
         },
-        modifier = modifier
-            .fillMaxSize()
-            .background(RadixTheme.colors.gray5),
+        modifier = modifier,
         allowedAssets = state.allowedAssets,
         deniedAssets = state.deniedAssets,
         onDeleteAsset = sharedViewModel::showDeletePrompt
@@ -299,7 +297,6 @@ private fun AddAssetSheet(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SpecificAssetsDepositsContent(
     onBackClick: () -> Unit,
@@ -405,7 +402,7 @@ private fun SpecificAssetsDepositsContent(
                                             .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                                         text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_allowInfo),
                                         style = RadixTheme.typography.body1HighImportance,
-                                        color = RadixTheme.colors.gray2
+                                        color = RadixTheme.colors.textSecondary
                                     )
                                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                                     AssetsList(assets = allowedAssets, onDeleteAsset = onDeleteAsset)

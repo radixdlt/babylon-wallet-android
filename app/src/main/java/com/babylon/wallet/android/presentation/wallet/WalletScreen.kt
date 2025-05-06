@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -192,7 +193,6 @@ private fun WalletContent(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = RadixTheme.colors.background
                 ),
@@ -204,19 +204,22 @@ private fun WalletContent(
                     )
                 },
                 actions = {
-                    Box {
-                        IconButton(onClick = onMenuClick) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(
-                                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
-                                ),
-                                contentDescription = null,
-                                tint = RadixTheme.colors.icon
-                            )
-                        }
+                    IconButton(onClick = onMenuClick) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(
+                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
+                            ),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.icon
+                        )
                     }
                 },
-                windowInsets = WindowInsets.statusBarsAndBanner
+                windowInsets = WindowInsets.statusBarsAndBanner.add(
+                    WindowInsets(
+                        left = RadixTheme.dimensions.paddingDefault,
+                        right = RadixTheme.dimensions.paddingDefault
+                    )
+                )
             )
         },
         snackbarHost = {

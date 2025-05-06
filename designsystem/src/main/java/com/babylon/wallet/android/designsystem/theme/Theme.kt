@@ -20,18 +20,12 @@ class RadixColors(
     green1: Color,
     green3: Color,
     pink1: Color,
-    gray1: Color,
-    gray2: Color,
-    gray3: Color,
-    gray4: Color,
-    gray5: Color,
     orange1: Color,
     orange2: Color,
     orange3: Color,
     lightOrange: Color,
     red1: Color,
     lightRed: Color,
-    white: Color,
 
     background: Color,
     backgroundSecondary: Color,
@@ -60,16 +54,6 @@ class RadixColors(
         private set
     var pink1 by mutableStateOf(pink1)
         private set
-    var gray1 by mutableStateOf(gray1)
-        private set
-    var gray2 by mutableStateOf(gray2)
-        private set
-    var gray3 by mutableStateOf(gray3)
-        private set
-    var gray4 by mutableStateOf(gray4)
-        private set
-    var gray5 by mutableStateOf(gray5)
-        private set
     var orange1 by mutableStateOf(orange1)
         private set
     var orange2 by mutableStateOf(orange2)
@@ -81,8 +65,6 @@ class RadixColors(
     var red1 by mutableStateOf(red1)
         private set
     var lightRed by mutableStateOf(lightRed)
-        private set
-    var white by mutableStateOf(white)
         private set
 
     var background by mutableStateOf(background)
@@ -127,18 +109,12 @@ class RadixColors(
         green1: Color = this.green1,
         green3: Color = this.green3,
         pink1: Color = this.pink1,
-        gray1: Color = this.gray1,
-        gray2: Color = this.gray2,
-        gray3: Color = this.gray3,
-        gray4: Color = this.gray4,
-        gray5: Color = this.gray5,
         orange1: Color = this.orange1,
         orange2: Color = this.orange2,
         orange3: Color = this.orange3,
         lightOrange: Color = this.lightOrange,
         red1: Color = this.red1,
         lightRed: Color = this.lightRed,
-        white: Color = this.white,
         background: Color = this.background,
         backgroundSecondary: Color = this.backgroundSecondary,
         backgroundTertiary: Color = this.backgroundTertiary,
@@ -163,18 +139,12 @@ class RadixColors(
             green1 = green1,
             green3 = green3,
             pink1 = pink1,
-            gray1 = gray1,
-            gray2 = gray2,
-            gray3 = gray3,
-            gray4 = gray4,
-            gray5 = gray5,
             orange1 = orange1,
             orange2 = orange2,
             orange3 = orange3,
             lightOrange = lightOrange,
             red1 = red1,
             lightRed = lightRed,
-            white = white,
             background = background,
             backgroundSecondary = backgroundSecondary,
             backgroundTertiary = backgroundTertiary,
@@ -202,18 +172,12 @@ private val LightColorPalette = RadixColors(
     green1 = Green1,
     green3 = Green3,
     pink1 = Pink1,
-    gray1 = Gray1,
-    gray2 = Gray2,
-    gray3 = Gray3,
-    gray4 = Gray4,
-    gray5 = Gray5,
     orange1 = Orange1,
     orange2 = Orange2,
     orange3 = Orange3,
     lightOrange = LightOrange,
     red1 = Red1,
     lightRed = LightRed,
-    white = White,
     background = White,
     backgroundSecondary = Gray5,
     backgroundTertiary = Gray4,
@@ -240,11 +204,11 @@ private val DarkColorPalette = LightColorPalette.copy(
     backgroundTertiary = Color(0xFF404243),
     text = Gray5,
     textSecondary = Gray4,
-    textTertiary = Gray3,
+    textTertiary = Gray2,
     textButton = Color(0xFF90CAF9),
     icon = Gray5,
     iconSecondary = Gray4,
-    iconTertiary = Gray3,
+    iconTertiary = Gray2,
     primaryButton = Color(0xFF00C389),
     divider = Color(0xFF404243),
     border = Gray5,

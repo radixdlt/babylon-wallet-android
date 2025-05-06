@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
@@ -223,7 +224,7 @@ fun AccountCardHeader(
             .fillMaxWidth()
             .background(
                 brush = when (account) {
-                    is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2) // TODO Theme
+                    is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.iconSecondary)
                     is InvolvedAccount.Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape
@@ -239,7 +240,7 @@ fun AccountCardHeader(
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             modifier = Modifier.weight(1f, false),
-            color = Color.White
+            color = White
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -247,8 +248,8 @@ fun AccountCardHeader(
         ActionableAddressView(
             address = Address.Account(account.address),
             textStyle = RadixTheme.typography.body2Regular,
-            textColor = Color.White,
-            iconColor = Color.White
+            textColor = White,
+            iconColor = White
         )
     }
 }

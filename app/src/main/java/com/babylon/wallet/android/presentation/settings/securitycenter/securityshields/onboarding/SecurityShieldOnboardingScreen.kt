@@ -128,7 +128,7 @@ private fun SecurityShieldOnboardingContent(
         },
         bottomBar = {
             Column(
-                modifier = Modifier.background(color = RadixTheme.colors.white)
+                modifier = Modifier.background(color = RadixTheme.colors.background)
             ) {
                 HorizontalPagerIndicator(
                     modifier = Modifier
@@ -141,7 +141,7 @@ private fun SecurityShieldOnboardingContent(
                     activeIndicatorWidth = 8.dp,
                     inactiveIndicatorWidth = 8.dp,
                     activeColor = RadixTheme.colors.blue2,
-                    inactiveColor = RadixTheme.colors.gray4
+                    inactiveColor = RadixTheme.colors.backgroundTertiary
                 )
 
                 RadixBottomBar(
@@ -162,7 +162,7 @@ private fun SecurityShieldOnboardingContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         HorizontalPager(
             modifier = Modifier
@@ -230,7 +230,7 @@ private fun PageContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(id = titleRes),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -240,7 +240,7 @@ private fun PageContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(id = descriptionRes),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 

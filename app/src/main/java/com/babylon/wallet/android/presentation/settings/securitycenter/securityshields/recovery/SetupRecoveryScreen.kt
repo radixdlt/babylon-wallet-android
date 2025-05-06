@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.common.displayName
 import com.babylon.wallet.android.presentation.common.title
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -158,7 +159,7 @@ private fun SetupRecoveryContent(
                 enabled = state.isButtonEnabled
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -258,7 +259,7 @@ private fun SetupRecoveryContent(
                             .align(Alignment.CenterHorizontally),
                         text = stringResource(id = R.string.shieldWizardRecovery_combination_label),
                         style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
 
                     EmergencyFallbackView(
@@ -303,7 +304,7 @@ private fun SectionHeaderView(
         Text(
             text = title,
             style = RadixTheme.typography.header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -311,7 +312,7 @@ private fun SectionHeaderView(
         Text(
             text = subtitle,
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
     }
 }
@@ -329,7 +330,7 @@ private fun FactorsView(
         Text(
             text = stringResource(id = R.string.shieldWizardRecovery_factors_title),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -350,7 +351,7 @@ private fun FactorsView(
                             .align(Alignment.CenterHorizontally),
                         text = stringResource(id = R.string.shieldWizardRecovery_combination_label),
                         style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -396,13 +397,13 @@ private fun EmergencyFallbackView(
                 modifier = Modifier.weight(1f),
                 text = stringResource(id = R.string.shieldWizardRecovery_fallback_title),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.white
+                color = White
             )
 
             Icon(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(DSR.ic_info_outline),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = "info"
             )
         }
@@ -416,7 +417,7 @@ private fun EmergencyFallbackView(
             text = stringResource(id = R.string.shieldWizardRecovery_fallback_subtitle)
                 .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
@@ -431,7 +432,7 @@ private fun EmergencyFallbackView(
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
                 .background(
-                    color = RadixTheme.colors.white,
+                    color = RadixTheme.colors.cardOnSecondary, // TODO Theme
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
                 .throttleClickable { onNumberOfDaysClick() }
@@ -447,7 +448,7 @@ private fun EmergencyFallbackView(
             Text(
                 text = period.title(),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
 
@@ -490,7 +491,7 @@ private fun SelectFallbackPeriodSheet(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.shieldWizardRecovery_setFallback_title),
                 style = RadixTheme.typography.header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -499,7 +500,7 @@ private fun SelectFallbackPeriodSheet(
                 text = stringResource(id = R.string.shieldWizardRecovery_setFallback_subtitle)
                     .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -560,7 +561,7 @@ private fun UnsafeCombinationInfoDialog(
             Text(
                 text = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_message),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_confirm),

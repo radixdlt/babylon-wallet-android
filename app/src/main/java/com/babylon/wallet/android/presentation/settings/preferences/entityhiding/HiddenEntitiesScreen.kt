@@ -35,6 +35,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -228,13 +229,13 @@ private fun AccountCard(modifier: Modifier = Modifier, account: Account, onUnhid
                 text = account.displayName.value,
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
-                color = RadixTheme.colors.white,
+                color = White,
                 overflow = TextOverflow.Ellipsis
             )
             ActionableAddressView(
                 address = Address.Account(account.address),
                 textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                textColor = White.copy(alpha = 0.8f)
             )
         }
         RadixSecondaryButton(

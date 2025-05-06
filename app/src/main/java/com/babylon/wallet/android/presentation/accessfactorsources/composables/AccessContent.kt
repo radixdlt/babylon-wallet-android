@@ -40,7 +40,7 @@ fun AccessContent(
                 id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
             ),
             contentDescription = null,
-            tint = RadixTheme.colors.gray3 // TODO Theme
+            tint = RadixTheme.colors.iconTertiary
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

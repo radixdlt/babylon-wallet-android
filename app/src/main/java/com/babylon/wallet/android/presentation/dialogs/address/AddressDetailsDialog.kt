@@ -334,7 +334,7 @@ private fun VisitDashboard(
                 modifier = Modifier.size(12.dp),
                 painter = painterResource(id = R.drawable.ic_external_link),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1 // TODO Theme
+                tint = RadixTheme.colors.icon
             )
         },
         onClick = onClick

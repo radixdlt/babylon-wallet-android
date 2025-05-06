@@ -121,14 +121,14 @@ fun AccountDepositSettingsTypeContent(
                             resource = assetChange.resource,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.gray5, shape)
+                                .background(RadixTheme.colors.backgroundSecondary, shape)
                                 .padding(RadixTheme.dimensions.paddingDefault),
                             trailingSection = {
                                 assetChange.change.Layout(Modifier.widthIn(max = 90.dp))
                             }
                         )
                         if (!lastItem) {
-                            HorizontalDivider(color = RadixTheme.colors.gray4)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                     accountWithSettings.depositorChanges.forEachIndexed { index, depositorChange ->
@@ -145,7 +145,7 @@ fun AccountDepositSettingsTypeContent(
                             }
                         )
                         if (!lastItem) {
-                            HorizontalDivider(color = RadixTheme.colors.gray4)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                 }
@@ -180,7 +180,7 @@ private fun SectionHeader(modifier: Modifier = Modifier, text: String) {
         Icon(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3) // TODO Theme
+                .dashedCircleBorder(RadixTheme.colors.iconTertiary)
                 .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(
                 id = DSR.ic_deposit_changes_heading

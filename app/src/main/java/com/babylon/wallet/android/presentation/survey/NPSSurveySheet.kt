@@ -168,8 +168,16 @@ fun RatingContainer(
             maxItemsInEachRow = 6
         ) {
             scores.forEach { selectableScore ->
-                val backgroundColor = if (selectableScore.selected) RadixTheme.colors.gray1 else RadixTheme.colors.white
-                val contentColor = if (selectableScore.selected) RadixTheme.colors.white else Color.Black
+                val backgroundColor = if (selectableScore.selected) {
+                    RadixTheme.colors.icon
+                } else {
+                    RadixTheme.colors.background
+                }
+                val contentColor = if (selectableScore.selected) {
+                    RadixTheme.colors.background
+                } else {
+                    RadixTheme.colors.text
+                }
 
                 Box(
                     modifier = Modifier
@@ -203,7 +211,11 @@ fun NPSSurveySheetPreviewLight() {
             onScoreClick = {},
             isLoading = false,
             isSubmitButtonEnabled = true,
-            scores = persistentListOf()
+            scores = persistentListOf(
+                Selectable(SurveyScore(score = 0)),
+                Selectable(SurveyScore(score = 1)),
+                Selectable(SurveyScore(score = 2), selected = true)
+            )
         )
     }
 }
@@ -219,7 +231,11 @@ fun NPSSurveySheetPreviewDark() {
             onScoreClick = {},
             isLoading = false,
             isSubmitButtonEnabled = true,
-            scores = persistentListOf()
+            scores = persistentListOf(
+                Selectable(SurveyScore(score = 0)),
+                Selectable(SurveyScore(score = 1)),
+                Selectable(SurveyScore(score = 2), selected = true)
+            )
         )
     }
 }

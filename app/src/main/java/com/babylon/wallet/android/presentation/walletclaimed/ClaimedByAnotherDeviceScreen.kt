@@ -124,7 +124,7 @@ fun ClaimedByAnotherDeviceContent(
                 text = stringResource(id = R.string.configurationBackup_automated_walletTransferredExplanation1),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(

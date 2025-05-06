@@ -238,7 +238,7 @@ object Thumbnail {
                         .clip(RoundedCornerShape(cornerRadius))
                         .applyIf(
                             condition = painterState !is AsyncImagePainter.State.Success,
-                            modifier = Modifier.background(RadixTheme.colors.gray4)
+                            modifier = Modifier.background(RadixTheme.colors.backgroundTertiary)
                         )
                         .applyIf(
                             condition = cropped,

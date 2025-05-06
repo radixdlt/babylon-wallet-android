@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
@@ -246,7 +247,7 @@ fun FeesSheet(
                             )
                             InfoButton(
                                 text = stringResource(R.string.empty),
-                                color = RadixTheme.colors.gray3, // TODO Theme
+                                color = RadixTheme.colors.iconTertiary,
                                 onClick = {
                                     onInfoClick(GlossaryItem.payingaccount)
                                 }
@@ -427,7 +428,7 @@ private fun NetworkFeesDefaultView(
                     },
                     style = RadixTheme.typography.body1Header,
                     color = if (transactionFees?.noDefaultRoyaltiesDue == true) {
-                        RadixTheme.colors.gray3 // TODO Theme
+                        RadixTheme.colors.iconTertiary
                     } else {
                         RadixTheme.colors.text
                     },
@@ -646,7 +647,7 @@ private fun NetworkFeesAdvancedView(
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = if (effectiveTip == "0") {
-                        RadixTheme.colors.gray3 // TODO Theme
+                        RadixTheme.colors.textTertiary
                     } else {
                         RadixTheme.colors.text
                     },
@@ -733,7 +734,7 @@ private fun NetworkFeesAdvancedView(
                     text = royaltyFee,
                     style = RadixTheme.typography.body1Header,
                     color = if (transactionFees?.noRoyaltiesCostDue == true) {
-                        RadixTheme.colors.gray3 // TODO Theme
+                        RadixTheme.colors.textTertiary
                     } else {
                         RadixTheme.colors.text
                     },
@@ -827,7 +828,7 @@ private fun NetworkFeesAdvancedView(
 }
 
 @Composable
-@Preview(showBackground = true)
+@Preview
 private fun FeesSheetEmptyPreview() {
     RadixWalletPreviewTheme {
         FeesSheet(
@@ -853,9 +854,36 @@ private fun FeesSheetEmptyPreview() {
     }
 }
 
+@Composable
+@Preview
+private fun FeesSheetEmptyPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true, backgroundType = PreviewBackgroundType.PRIMARY) {
+        FeesSheet(
+            state = TransactionReviewViewModel.State.Sheet.CustomizeFees(
+                feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = TransactionFees(),
+                properties = TransactionReviewViewModel.State.Fees.Properties(
+                    isSelectedFeePayerInvolvedInTransaction = false,
+                    noFeePayerSelected = false,
+                    isBalanceInsufficientToPayTheFee = false,
+                )
+            ),
+            onClose = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
+            onFeePaddingAmountChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {},
+            onInfoClick = {}
+        )
+    }
+}
+
 @UsesSampleValues
 @Composable
-@Preview(showBackground = true)
+@Preview
 private fun FeesSheetNotEnoughXRDPreview() {
     RadixWalletPreviewTheme {
         FeesSheet(
@@ -885,9 +913,69 @@ private fun FeesSheetNotEnoughXRDPreview() {
 
 @UsesSampleValues
 @Composable
-@Preview(showBackground = true)
+@Preview
+private fun FeesSheetNotEnoughXRDPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true, backgroundType = PreviewBackgroundType.PRIMARY) {
+        FeesSheet(
+            state = TransactionReviewViewModel.State.Sheet.CustomizeFees(
+                feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                    feePayerCandidate = Account.sampleMainnet.carol
+                ),
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = TransactionFees(),
+                properties = TransactionReviewViewModel.State.Fees.Properties(
+                    isSelectedFeePayerInvolvedInTransaction = false,
+                    noFeePayerSelected = false,
+                    isBalanceInsufficientToPayTheFee = true,
+                )
+            ),
+            onClose = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
+            onFeePaddingAmountChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {},
+            onInfoClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Composable
+@Preview
 private fun FeesSheetAccountNotInvolvedPreview() {
     RadixWalletPreviewTheme {
+        FeesSheet(
+            state = TransactionReviewViewModel.State.Sheet.CustomizeFees(
+                feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                    feePayerCandidate = Account.sampleMainnet.carol
+                ),
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = TransactionFees(),
+                properties = TransactionReviewViewModel.State.Fees.Properties(
+                    isSelectedFeePayerInvolvedInTransaction = false,
+                    noFeePayerSelected = false,
+                    isBalanceInsufficientToPayTheFee = true,
+                )
+            ),
+            onClose = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
+            onFeePaddingAmountChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {},
+            onInfoClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Composable
+@Preview
+private fun FeesSheetAccountNotInvolvedPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true, backgroundType = PreviewBackgroundType.PRIMARY) {
         FeesSheet(
             state = TransactionReviewViewModel.State.Sheet.CustomizeFees(
                 feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(

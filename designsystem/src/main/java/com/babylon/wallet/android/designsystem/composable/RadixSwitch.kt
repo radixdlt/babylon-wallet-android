@@ -73,6 +73,7 @@ private fun RadixSwitchPreviewDark() {
 
 object RadixSwitchDefaults {
 
+    // TODO Theme
     @Composable
     fun colors() = SwitchDefaults.colors(
         checkedThumbColor = RadixTheme.colors.background,
@@ -84,11 +85,11 @@ object RadixSwitchDefaults {
         uncheckedBorderColor = RadixTheme.colors.iconTertiary,
         uncheckedIconColor = Color.Transparent,
         disabledCheckedThumbColor = RadixTheme.colors.background.copy(alpha = 0.4f),
-        disabledCheckedTrackColor = RadixTheme.colors.iconTertiary.copy(alpha = 0.6f),
+        disabledCheckedTrackColor = RadixTheme.colors.divider.copy(alpha = 0.6f),
         disabledCheckedBorderColor = Color.Transparent,
         disabledCheckedIconColor = Color.Transparent,
         disabledUncheckedThumbColor = RadixTheme.colors.background.copy(alpha = 0.4f),
-        disabledUncheckedTrackColor = RadixTheme.colors.iconTertiary.copy(alpha = 0.6f),
+        disabledUncheckedTrackColor = RadixTheme.colors.divider.copy(alpha = 0.6f),
         disabledUncheckedBorderColor = Color.Transparent,
         disabledUncheckedIconColor = Color.Transparent
     )

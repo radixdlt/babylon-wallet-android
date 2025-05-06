@@ -46,6 +46,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
 import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -209,7 +210,7 @@ private fun FeePayerCard(
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.body1Header,
-                color = Color.White
+                color = White
             )
 
             ActionableAddressView(
@@ -217,7 +218,7 @@ private fun FeePayerCard(
                     candidate.account.address.asGeneral()
                 },
                 textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                textColor = White.copy(alpha = 0.8f)
             )
         }
 

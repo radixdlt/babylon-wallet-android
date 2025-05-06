@@ -338,7 +338,7 @@ private fun LinkedEntitiesView(
                     }
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray2
+                tint = RadixTheme.colors.iconSecondary
             )
         }
 

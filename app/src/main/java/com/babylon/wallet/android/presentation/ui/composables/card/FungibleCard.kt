@@ -36,7 +36,7 @@ fun FungibleCard(
             .defaultCardShadow(elevation = elevation)
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
-            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectMedium)
             .throttleClickable(enabled = onClick != null) {
                 onClick?.invoke()
             }
@@ -55,7 +55,7 @@ fun FungibleCard(
             modifier = Modifier.weight(1f),
             text = fungible.displayTitleAsToken(),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -65,7 +65,7 @@ fun FungibleCard(
                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
         }
     }

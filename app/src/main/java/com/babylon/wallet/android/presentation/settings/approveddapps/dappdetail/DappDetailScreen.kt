@@ -380,14 +380,14 @@ private fun PersonaDetailsSheet(
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_title),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_confirm)

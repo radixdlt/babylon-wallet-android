@@ -3,7 +3,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import android.net.Uri
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,6 +37,9 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Gray1
+import com.babylon.wallet.android.designsystem.theme.Gray2
+import com.babylon.wallet.android.designsystem.theme.Gray5
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -48,7 +50,6 @@ import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeCardsCarousel(
     modifier: Modifier = Modifier,
@@ -86,8 +87,8 @@ fun HomeCardsCarousel(
                 pagerState = pagerState,
                 activeIndicatorWidth = 6.dp,
                 inactiveIndicatorWidth = 4.dp,
-                activeColor = RadixTheme.colors.gray2,
-                inactiveColor = RadixTheme.colors.gray4
+                activeColor = RadixTheme.colors.iconSecondary,
+                inactiveColor = RadixTheme.colors.backgroundTertiary
             )
         }
     }
@@ -107,10 +108,10 @@ private fun CardView(
             .fillMaxWidth(),
         shape = RadixTheme.shapes.roundedRectMedium,
         colors = CardColors(
-            containerColor = RadixTheme.colors.gray5,
-            contentColor = RadixTheme.colors.gray1,
-            disabledContainerColor = RadixTheme.colors.gray5,
-            disabledContentColor = RadixTheme.colors.gray1
+            containerColor = Gray5,
+            contentColor = Gray1,
+            disabledContainerColor = Gray5,
+            disabledContentColor = Gray1
         )
     ) {
         ConstraintLayout(
@@ -178,7 +179,7 @@ private fun CardView(
                                 .height(12.dp),
                             painter = painterResource(id = R.drawable.ic_external_link),
                             contentDescription = null,
-                            tint = RadixTheme.colors.gray2
+                            tint = Gray2
                         )
                     }
                 ),
@@ -230,7 +231,7 @@ private fun CardView(
                         },
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray2
+                    tint = Gray2
                 )
             }
         }

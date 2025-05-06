@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.utils.ClickListenerUtils
 
@@ -34,8 +35,8 @@ fun RadixSecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = RadixTheme.colors.gray4,
-    contentColor: Color = RadixTheme.colors.gray1,
+    containerColor: Color = RadixTheme.colors.backgroundTertiary,
+    contentColor: Color = RadixTheme.colors.text,
     shape: Shape = RadixTheme.shapes.roundedRectSmall,
     textStyle: TextStyle = RadixTheme.typography.body1Header,
     isLoading: Boolean = false,
@@ -61,8 +62,8 @@ fun RadixSecondaryButton(
         colors = ButtonDefaults.buttonColors(
             contentColor = contentColor,
             containerColor = if (isPressed) containerColor.darken(0.1f) else containerColor,
-            disabledContainerColor = RadixTheme.colors.gray4,
-            disabledContentColor = RadixTheme.colors.gray3
+            disabledContainerColor = RadixTheme.colors.backgroundTertiary,
+            disabledContentColor = RadixTheme.colors.textTertiary
         )
     ) {
         Row(
@@ -72,7 +73,7 @@ fun RadixSecondaryButton(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = RadixTheme.colors.white,
+                    color = RadixTheme.colors.icon,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -86,7 +87,7 @@ fun RadixSecondaryButton(
 
 @Preview
 @Composable
-fun RadixSecondaryButtonPreview() {
+fun RadixSecondaryButtonPreviewLight() {
     RadixWalletTheme {
         RadixSecondaryButton(
             text = "Secondary button",
@@ -98,12 +99,23 @@ fun RadixSecondaryButtonPreview() {
 
 @Preview
 @Composable
-fun RadixSecondaryButtonWithIconPreview() {
-    RadixWalletTheme {
+fun RadixSecondaryButtonPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
         RadixSecondaryButton(
             text = "Secondary button",
             onClick = {},
-            modifier = Modifier.size(200.dp, 50.dp),
+            modifier = Modifier.size(200.dp, 50.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixSecondaryButtonWithIconPreviewLight() {
+    RadixWalletTheme {
+        RadixSecondaryButton(
+            text = "Secondary Button",
+            onClick = {},
             leadingContent = {
                 Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
             }
@@ -113,8 +125,35 @@ fun RadixSecondaryButtonWithIconPreview() {
 
 @Preview
 @Composable
-fun RadixSecondaryButtonDisabledPreview() {
+fun RadixSecondaryButtonWithIconPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        RadixSecondaryButton(
+            text = "Secondary Button",
+            onClick = {},
+            leadingContent = {
+                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixSecondaryButtonDisabledPreviewLight() {
     RadixWalletTheme {
+        RadixSecondaryButton(
+            text = "Secondary button",
+            onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp),
+            enabled = false
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixSecondaryButtonDisabledPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
         RadixSecondaryButton(
             text = "Secondary button",
             onClick = {},
