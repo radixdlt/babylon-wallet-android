@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -24,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.utils.ClickListenerUtils
 
 @Composable
@@ -53,14 +56,14 @@ fun RadixPrimaryButton(
         shape = RadixTheme.shapes.roundedRectSmall,
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            contentColor = Color.White,
+            contentColor = White,
             containerColor = if (isPressed) {
                 RadixTheme.colors.primaryButton.darken(0.1f)
             } else {
                 RadixTheme.colors.primaryButton
             },
-            disabledContainerColor = RadixTheme.colors.gray4,
-            disabledContentColor = RadixTheme.colors.gray3
+            disabledContainerColor = RadixTheme.colors.backgroundTertiary,
+            disabledContentColor = RadixTheme.colors.textTertiary
         ),
         interactionSource = interactionSource
     ) {
@@ -71,7 +74,7 @@ fun RadixPrimaryButton(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = RadixTheme.colors.white,
+                    color = White,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -84,37 +87,62 @@ fun RadixPrimaryButton(
 
 @Preview
 @Composable
-fun RadixPrimaryButtonPreview() {
+fun RadixPrimaryButtonPreviewLight() {
     RadixWalletTheme {
         RadixPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
             text = "Primary button",
             onClick = {},
-            modifier = Modifier.size(200.dp, 50.dp)
         )
     }
 }
 
 @Preview
 @Composable
-fun RadixPrimaryButtonLoadingPreview() {
+fun RadixPrimaryButtonPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        RadixPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Primary button",
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixPrimaryButtonLoadingPreviewLight() {
     RadixWalletTheme {
         RadixPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
             text = "Primary button",
             isLoading = true,
             onClick = {},
-            modifier = Modifier.size(200.dp, 50.dp)
         )
     }
 }
 
 @Preview
 @Composable
-fun RadixPrimaryButtonWithIconPreview() {
+fun RadixPrimaryButtonLoadingPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        RadixPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Primary button",
+            isLoading = true,
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixPrimaryButtonWithIconPreviewLight() {
     RadixWalletTheme {
         RadixPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
             text = "Primary button",
             onClick = {},
-            modifier = Modifier.size(200.dp, 50.dp),
             icon = {
                 Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
             })
@@ -123,12 +151,37 @@ fun RadixPrimaryButtonWithIconPreview() {
 
 @Preview
 @Composable
-fun RadixPrimaryButtonDisabledPreview() {
+fun RadixPrimaryButtonWithIconPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        RadixPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Primary button",
+            onClick = {},
+            icon = {
+                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
+            })
+    }
+}
+
+@Preview
+@Composable
+fun RadixPrimaryButtonDisabledPreviewLight() {
     RadixWalletTheme {
         RadixPrimaryButton(
             text = "Primary button",
             onClick = {},
-            modifier = Modifier.size(200.dp, 50.dp),
+            enabled = false
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixPrimaryButtonDisabledPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        RadixPrimaryButton(
+            text = "Primary button",
+            onClick = {},
             enabled = false
         )
     }

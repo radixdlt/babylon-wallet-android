@@ -63,7 +63,7 @@ fun NetworkFeeContent(
                         .fillMaxHeight()
                         .height(1.dp),
                     text = stringResource(id = R.string.empty),
-                    color = RadixTheme.colors.gray3, // TODO Theme
+                    color = RadixTheme.colors.iconTertiary,
                     onClick = {
                         onInfoClick(GlossaryItem.transactionfee)
                     }
@@ -135,7 +135,7 @@ fun NetworkFeeContent(
                     )
                     InfoButton(
                         text = stringResource(R.string.empty),
-                        color = RadixTheme.colors.gray3, // TODO Theme
+                        color = RadixTheme.colors.iconTertiary,
                         onClick = {
                             onInfoClick(GlossaryItem.payingaccount)
                         }

@@ -390,7 +390,7 @@ private fun ClaimNFTInfo(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
 
         Text(
@@ -402,7 +402,7 @@ private fun ClaimNFTInfo(
                 ),
             text = stringResource(id = R.string.assetDetails_staking_currentRedeemableValue),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -436,13 +436,13 @@ private fun ClaimNFTInfo(
                     Text(
                         text = stringResource(id = R.string.assetDetails_staking_readyToClaimIn),
                         style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
 
                     Text(
                         text = approximateClaimTimeText(approximateClaimMinutes = claimState.approximateClaimMinutes),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
             }

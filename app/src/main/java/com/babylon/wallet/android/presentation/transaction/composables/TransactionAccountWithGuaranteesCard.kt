@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
@@ -69,7 +70,7 @@ fun TransactionAccountWithGuaranteesCard(
                 .fillMaxWidth()
                 .background(
                     brush = when (val involvedAccount = guaranteeItem.account) {
-                        is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2) // TODO Theme
+                        is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.iconSecondary)
                         is InvolvedAccount.Owned -> involvedAccount.account.appearanceId.gradient()
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
@@ -87,15 +88,15 @@ fun TransactionAccountWithGuaranteesCard(
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
                 modifier = Modifier.weight(1f, false),
-                color = RadixTheme.colors.white
+                color = White
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             ActionableAddressView(
                 address = guaranteeItem.accountAddress.asGeneral(),
                 textStyle = RadixTheme.typography.body1Regular,
-                textColor = RadixTheme.colors.white,
-                iconColor = RadixTheme.colors.white
+                textColor = White,
+                iconColor = White
             )
         }
 

@@ -60,7 +60,7 @@ fun Modifier.dashedCircleBorder(color: Color) = composed {
 
 @Suppress("MagicNumber")
 fun Modifier.strokeLine() = composed {
-    val strokeColor = RadixTheme.colors.gray3
+    val strokeColor = RadixTheme.colors.iconTertiary
     val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
     val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
     val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)

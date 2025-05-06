@@ -111,7 +111,7 @@ private fun SelectFactorsContent(
                 enabled = state.isButtonEnabled
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             contentPadding = PaddingValues(
@@ -134,7 +134,7 @@ private fun SelectFactorsContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     text = stringResource(id = R.string.shieldSetupSelectFactors_title),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -145,7 +145,7 @@ private fun SelectFactorsContent(
                     text = stringResource(id = R.string.shieldSetupSelectFactors_subtitle)
                         .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -201,13 +201,13 @@ private fun CategoryHeaderView(
         Text(
             text = item.kind.title(),
             style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         Text(
             text = item.kind.subtitle(),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         message?.let {

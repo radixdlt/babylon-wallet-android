@@ -42,7 +42,7 @@ fun UnknownDepositRulesStateInfo(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             text = annotatedText,
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             inlineContent = inlineContent
         )
     }

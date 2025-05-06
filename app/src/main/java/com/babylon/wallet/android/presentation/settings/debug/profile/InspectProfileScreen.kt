@@ -54,7 +54,7 @@ fun InspectProfileScreen(
                         modifier = Modifier
                             .padding(end = RadixTheme.dimensions.paddingDefault)
                             .background(
-                                color = RadixTheme.colors.gray4,
+                                color = RadixTheme.colors.backgroundTertiary,
                                 shape = RadixTheme.shapes.roundedRectSmall
                             ),
                         onClick = {
@@ -78,8 +78,8 @@ fun InspectProfileScreen(
                 val context = LocalContext.current
                 FloatingActionButton(
                     shape = CircleShape,
-                    containerColor = RadixTheme.colors.gray4,
-                    contentColor = RadixTheme.colors.gray1,
+                    containerColor = RadixTheme.colors.backgroundTertiary,
+                    contentColor = RadixTheme.colors.text,
                     onClick = {
                         context.copyToClipboard(
                             label = "Radix Profile",

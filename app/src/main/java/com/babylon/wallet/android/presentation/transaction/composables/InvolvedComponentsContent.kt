@@ -130,7 +130,7 @@ private fun Title(
         Image(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3), // TODO Theme
+                .dashedCircleBorder(RadixTheme.colors.iconTertiary),
             painter = icon,
             contentDescription = null,
             colorFilter = ColorFilter.tint(RadixTheme.colors.iconSecondary),
@@ -241,7 +241,7 @@ private fun DAppsContent(
                     Icon(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_using_dapps),
-                        tint = RadixTheme.colors.gray3, // TODO Theme
+                        tint = RadixTheme.colors.iconTertiary,
                         contentDescription = ""
                     )
                 },
@@ -376,7 +376,7 @@ private fun InvolvedComponent(
             Icon(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-                tint = RadixTheme.colors.gray3, // TODO Theme
+                tint = RadixTheme.colors.iconTertiary,
                 contentDescription = "info"
             )
         }

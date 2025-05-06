@@ -219,7 +219,7 @@ private fun AccountScreenContent(
                 RadixCenteredTopAppBar(
                     title = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
                     onBackClick = onBackClick,
-                    contentColor = RadixTheme.colors.white,
+                    contentColor = White,
                     containerColor = Color.Transparent,
                     actions = {
                         IconButton(
@@ -233,7 +233,7 @@ private fun AccountScreenContent(
                                 imageVector = ImageVector.vectorResource(
                                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
                                 ),
-                                tint = RadixTheme.colors.white,
+                                tint = White,
                                 contentDescription = "account settings"
                             )
                         }
@@ -405,8 +405,8 @@ private fun AccountHeader(
                     modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                     address = Address.Account(it),
                     textStyle = RadixTheme.typography.body2HighImportance,
-                    textColor = RadixTheme.colors.white.copy(alpha = 0.6f),
-                    iconColor = RadixTheme.colors.white.copy(alpha = 0.6f)
+                    textColor = White.copy(alpha = 0.6f),
+                    iconColor = White.copy(alpha = 0.6f)
                 )
             }
 
@@ -520,14 +520,14 @@ private fun TransferButton(
         modifier = modifier,
         text = stringResource(id = R.string.account_transfer),
         onClick = { onTransferClick(accountAddress) },
-        containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-        contentColor = RadixTheme.colors.white,
+        containerColor = White.copy(alpha = 0.2f),
+        contentColor = White,
         shape = RadixTheme.shapes.circle,
         leadingContent = {
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = null
             )
         }
@@ -543,14 +543,14 @@ private fun HistoryButton(
         text = stringResource(id = R.string.common_history),
         onClick = onHistoryClick,
         modifier = modifier,
-        containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-        contentColor = RadixTheme.colors.white,
+        containerColor = White.copy(alpha = 0.2f),
+        contentColor = White,
         shape = RadixTheme.shapes.circle,
         leadingContent = {
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = null
             )
         }

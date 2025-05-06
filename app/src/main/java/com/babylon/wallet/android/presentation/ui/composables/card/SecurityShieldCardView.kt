@@ -68,14 +68,14 @@ fun SecurityShieldCardView(
                 Text(
                     text = item.shieldForDisplay.metadata.displayName.value,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
                 Text(
                     text = stringResource(R.string.securityShields_assigned_title),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
 
                 Text(
@@ -85,7 +85,7 @@ fun SecurityShieldCardView(
                         hasAnyHiddenEntities = item.hasAnyHiddenLinkedEntities
                     ),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 

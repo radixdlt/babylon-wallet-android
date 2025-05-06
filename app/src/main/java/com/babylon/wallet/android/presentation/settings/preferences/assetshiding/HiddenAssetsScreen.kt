@@ -168,7 +168,7 @@ private fun HiddenAssetsContent(
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.icon
                 )
             }
         }

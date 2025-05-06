@@ -60,7 +60,7 @@ private fun FactorsReadyContent(
                 text = stringResource(R.string.shieldSetupPrepareFactors_completion_button)
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -79,7 +79,7 @@ private fun FactorsReadyContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -89,7 +89,7 @@ private fun FactorsReadyContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_subtitleTop),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -99,7 +99,7 @@ private fun FactorsReadyContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_subtitleBottom),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }

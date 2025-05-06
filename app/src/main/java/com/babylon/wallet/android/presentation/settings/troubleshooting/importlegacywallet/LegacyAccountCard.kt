@@ -14,8 +14,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Gray2
+import com.babylon.wallet.android.designsystem.theme.Gray4
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
@@ -47,7 +50,7 @@ fun LegacyAccountCard(
             textAlign = TextAlign.Start,
             maxLines = 1,
             style = RadixTheme.typography.secondaryHeader,
-            color = Color.White
+            color = White
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
         Text(
@@ -59,7 +62,7 @@ fun LegacyAccountCard(
             ),
             textAlign = TextAlign.Start,
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray4
+            color = Gray4
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
@@ -67,13 +70,13 @@ fun LegacyAccountCard(
             textAlign = TextAlign.Start,
             maxLines = 1,
             style = RadixTheme.typography.body2Header,
-            color = Color.White
+            color = White
         )
         Text(
             text = address.formatted(),
             textAlign = TextAlign.Start,
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray4
+            color = Gray4
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         Text(
@@ -81,13 +84,13 @@ fun LegacyAccountCard(
             textAlign = TextAlign.Start,
             maxLines = 1,
             style = RadixTheme.typography.body2Header,
-            color = Color.White
+            color = White
         )
         Text(
             text = newAddress.formatted(),
             textAlign = TextAlign.Start,
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray4
+            color = Gray4
         )
     }
 }

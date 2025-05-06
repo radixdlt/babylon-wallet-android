@@ -214,7 +214,7 @@ fun Metadata.ValueView(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_external_link),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray3 // TODO Theme
+                    tint = RadixTheme.colors.iconTertiary
                 )
             }
         }

@@ -20,7 +20,7 @@ fun ColumnScope.OrView() {
         modifier = Modifier.align(Alignment.CenterHorizontally),
         text = stringResource(R.string.transactionReview_updateShield_combinationLabel),
         style = RadixTheme.typography.body2Regular,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 
     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))

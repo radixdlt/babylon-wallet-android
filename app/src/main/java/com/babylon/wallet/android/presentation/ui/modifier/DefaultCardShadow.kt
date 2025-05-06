@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.theme.Gray2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 fun Modifier.defaultCardShadow(
@@ -18,8 +19,8 @@ fun Modifier.defaultCardShadow(
         shadow(
             elevation = elevation,
             shape = shape ?: RadixTheme.shapes.roundedRectMedium,
-            ambientColor = color ?: RadixTheme.colors.gray2,
-            spotColor = color ?: RadixTheme.colors.gray2
+            ambientColor = color ?: Gray2,
+            spotColor = color ?: Gray2
         )
     } else {
         this

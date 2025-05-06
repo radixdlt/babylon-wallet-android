@@ -183,9 +183,9 @@ fun AccessPasswordFactorSourceContent(
                             isPasswordVisible = !isPasswordVisible
                         },
                         colors = IconButtonColors(
-                            contentColor = RadixTheme.colors.gray3,
+                            contentColor = RadixTheme.colors.iconTertiary,
                             containerColor = Color.Transparent,
-                            disabledContentColor = RadixTheme.colors.gray3,
+                            disabledContentColor = RadixTheme.colors.iconTertiary,
                             disabledContainerColor = Color.Transparent
                         )
                     ) {

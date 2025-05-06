@@ -21,6 +21,7 @@ import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.composables.ChooseEntityContent
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.models.ChooseEntityEvent
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.models.ChooseEntityUiState
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.card.SimplePersonaSelectionCard
 import com.radixdlt.sargon.AddressOfAccountOrPersona
@@ -85,7 +86,7 @@ private fun ChoosePersonasContent(
                         vertical = RadixTheme.dimensions.paddingXSmall
                     )
                     .background(
-                        color = RadixTheme.colors.gray5,
+                        color = RadixTheme.colors.backgroundSecondary,
                         shape = RadixTheme.shapes.roundedRectMedium
                     )
                     .clip(RadixTheme.shapes.roundedRectMedium)
@@ -103,10 +104,27 @@ private fun ChoosePersonasContent(
 @Composable
 @Preview
 @UsesSampleValues
-private fun ChooseAccountsPreview(
+private fun ChooseAccountsPreviewLight(
     @PreviewParameter(ChoosePersonasPreviewProvider::class) state: ChooseEntityUiState<Persona>
 ) {
     RadixWalletPreviewTheme {
+        ChoosePersonasContent(
+            state = state,
+            onDismiss = {},
+            onSelectAllToggleClick = {},
+            onSelectPersona = {},
+            onContinueClick = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun ChooseAccountsPreviewDark(
+    @PreviewParameter(ChoosePersonasPreviewProvider::class) state: ChooseEntityUiState<Persona>
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true, PreviewBackgroundType.PRIMARY) {
         ChoosePersonasContent(
             state = state,
             onDismiss = {},

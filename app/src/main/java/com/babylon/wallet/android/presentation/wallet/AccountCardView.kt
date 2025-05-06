@@ -102,7 +102,7 @@ fun AccountCardView(
             text = accountWithAssets.account.displayName.value,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
-            color = RadixTheme.colors.white,
+            color = White,
             overflow = TextOverflow.Ellipsis
         )
 
@@ -136,15 +136,15 @@ fun AccountCardView(
                     fiatPrice = accountWithAssets.fiatTotalValue,
                     currency = SupportedCurrency.USD,
                     isLoading = false,
-                    contentColor = RadixTheme.colors.white,
-                    hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+                    contentColor = White,
+                    hiddenContentColor = White.copy(alpha = 0.6f),
                     onVisibilityToggle = {},
                     contentStyle = RadixTheme.typography.body1Header
                 )
             }
         }
 
-        val addressTextColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+        val addressTextColor = White.copy(alpha = 0.8f)
 
         ActionableAddressView(
             modifier = Modifier.constrainAs(addressLabel) {
@@ -169,7 +169,7 @@ fun AccountCardView(
                 },
                 text = tagLabel,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.white
+                color = White
             )
         }
 

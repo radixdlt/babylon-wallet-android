@@ -29,6 +29,7 @@ import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
@@ -80,7 +81,7 @@ fun AccountTopBar(
         ) {
             Icon(
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = "navigate back"
             )
         }
@@ -91,7 +92,7 @@ fun AccountTopBar(
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
             text = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
             style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
-            color = RadixTheme.colors.white,
+            color = White,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -106,7 +107,7 @@ fun AccountTopBar(
         ) {
             Icon(
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = "account settings"
             )
         }
@@ -119,7 +120,7 @@ fun AccountTopBar(
                         .layoutId("accountAddressView")
                         .padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                     textStyle = RadixTheme.typography.body2HighImportance,
-                    textColor = RadixTheme.colors.white
+                    textColor = White
                 )
             }
 
@@ -138,13 +139,13 @@ fun AccountTopBar(
                             onTransferClick(accountAddress)
                         }
                     },
-                    containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-                    contentColor = RadixTheme.colors.white,
+                    containerColor = White.copy(alpha = 0.2f),
+                    contentColor = White,
                     shape = RadixTheme.shapes.circle,
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                            tint = RadixTheme.colors.white,
+                            tint = White,
                             contentDescription = null
                         )
                     }

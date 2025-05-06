@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.common.resetwallet.ResetWalletDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.RecoverableStatusCard
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -211,11 +212,15 @@ fun UnrecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
     ) {
-        Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
+        Icon(
+            painter = painterResource(id = DSR.ic_warning_error),
+            contentDescription = null,
+            tint = White
+        )
         Text(
             text = text,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.white
+            color = White
         )
     }
 }

@@ -38,7 +38,7 @@ fun TotalFiatBalanceView(
     currency: SupportedCurrency,
     isLoading: Boolean,
     contentColor: Color = RadixTheme.colors.text,
-    hiddenContentColor: Color = RadixTheme.colors.gray3,
+    hiddenContentColor: Color = RadixTheme.colors.textTertiary,
     contentStyle: TextStyle = RadixTheme.typography.title,
     formattedContentStyle: TextStyle = contentStyle,
     shimmeringColor: Color? = null,
@@ -164,7 +164,7 @@ fun TotalFiatBalanceViewToggle(
             }
         ),
         contentDescription = "",
-        tint = RadixTheme.colors.gray3,
+        tint = RadixTheme.colors.iconTertiary,
         modifier = modifier
             .padding(start = RadixTheme.dimensions.paddingSmall)
             .size(22.dp)

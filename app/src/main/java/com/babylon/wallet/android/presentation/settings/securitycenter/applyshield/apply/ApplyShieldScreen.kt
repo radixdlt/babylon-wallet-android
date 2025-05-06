@@ -105,7 +105,7 @@ private fun ApplyShieldContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -131,7 +131,7 @@ private fun ApplyShieldContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.shieldWizardApplyShield_applyShield_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -141,7 +141,7 @@ private fun ApplyShieldContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.shieldWizardApplyShield_applyShield_subtitle),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }

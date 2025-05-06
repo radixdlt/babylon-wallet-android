@@ -92,7 +92,7 @@ private fun LazyListScope.loadingAssets() {
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.icon
             )
         }
     }
@@ -254,7 +254,7 @@ fun AssetsViewWithAssets() {
     }
 
     RadixWalletTheme {
-        LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
+        LazyColumn(modifier = Modifier.background(RadixTheme.colors.backgroundSecondary)) {
             assetsView(
                 assetsViewData = null,
                 isLoadingBalance = false,

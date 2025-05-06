@@ -68,7 +68,7 @@ fun ChooseEntityContent(
                 }
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             contentPadding = padding,
@@ -89,7 +89,7 @@ fun ChooseEntityContent(
                         modifier = Modifier.fillMaxWidth(),
                         text = title,
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
                     )
 
@@ -101,7 +101,7 @@ fun ChooseEntityContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                         text = subtitle,
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
                     )
 

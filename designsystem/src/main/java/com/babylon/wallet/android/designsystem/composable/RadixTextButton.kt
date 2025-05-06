@@ -48,7 +48,7 @@ fun RadixTextButton(
         enabled = enabled,
         colors = ButtonDefaults.textButtonColors(
             contentColor = contentColor,
-            disabledContentColor = RadixTheme.colors.gray3,
+            disabledContentColor = RadixTheme.colors.textTertiary,
         ),
         contentPadding = if (isWithoutPadding) {
             PaddingValues(0.dp)

@@ -106,7 +106,7 @@ private fun PrepareFactorsContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -125,7 +125,7 @@ private fun PrepareFactorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_intro_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -136,7 +136,7 @@ private fun PrepareFactorsContent(
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_intro_subtitleTop)
                     .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -146,7 +146,7 @@ private fun PrepareFactorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_intro_subtitleBottom),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 

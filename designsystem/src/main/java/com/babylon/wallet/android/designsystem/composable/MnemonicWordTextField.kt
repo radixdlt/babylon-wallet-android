@@ -237,10 +237,10 @@ data class MnemonicTextFieldColors(
                 focusedBorderColor = RadixTheme.colors.border,
                 errorBorderColor = RadixTheme.colors.error,
                 disabledBorderColor = RadixTheme.colors.backgroundTertiary,
-                highlightedBorderColor = RadixTheme.colors.gray1,
+                highlightedBorderColor = RadixTheme.colors.backgroundTertiary,
                 hintColor = RadixTheme.colors.text,
                 errorHintColor = RadixTheme.colors.text,
-                disabledHintColor = RadixTheme.colors.text,
+                disabledHintColor = RadixTheme.colors.textTertiary,
                 statusMessageColor = RadixTheme.colors.error
             )
         }

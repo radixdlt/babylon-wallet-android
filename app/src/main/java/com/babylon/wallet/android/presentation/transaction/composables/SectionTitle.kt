@@ -38,7 +38,7 @@ fun SectionTitle(
         Image(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3), // TODO Theme
+                .dashedCircleBorder(RadixTheme.colors.iconTertiary),
             painter = painterResource(id = iconRes),
             contentDescription = null,
             colorFilter = ColorFilter.tint(RadixTheme.colors.iconSecondary),

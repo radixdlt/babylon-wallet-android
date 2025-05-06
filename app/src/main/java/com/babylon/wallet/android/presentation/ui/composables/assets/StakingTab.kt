@@ -313,7 +313,7 @@ fun ValidatorsSize(
         Icon(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.iconSecondary) // TODO Theme
+                .dashedCircleBorder(RadixTheme.colors.iconTertiary)
                 .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(id = DSR.ic_validator),
             tint = RadixTheme.colors.iconSecondary,

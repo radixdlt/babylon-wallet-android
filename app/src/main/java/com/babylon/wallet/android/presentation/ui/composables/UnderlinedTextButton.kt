@@ -21,7 +21,7 @@ fun UnderlineTextButton(
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = ButtonDefaults.textButtonColors(
             contentColor = RadixTheme.colors.textButton,
-            disabledContentColor = RadixTheme.colors.gray3,
+            disabledContentColor = RadixTheme.colors.textTertiary,
         ),
         enabled = enabled
     ) {

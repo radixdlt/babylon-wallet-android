@@ -74,14 +74,14 @@ fun LedgerDevicesScreen(
                 Text(
                     text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)

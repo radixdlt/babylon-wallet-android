@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -85,7 +86,7 @@ fun TargetAccountCard(
             is TargetAccount.Other ->
                 Modifier
                     .background(
-                        color = RadixTheme.colors.gray2, // TODO Theme
+                        color = RadixTheme.colors.iconSecondary,
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
         }
@@ -126,7 +127,7 @@ fun TargetAccountCard(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = stringResource(id = R.string.assetTransfer_accountList_externalAccountName),
                         style = RadixTheme.typography.body1Header,
-                        color = Color.White
+                        color = White
                     )
                 }
 
@@ -135,7 +136,7 @@ fun TargetAccountCard(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = targetAccount.account.displayName.value,
                         style = RadixTheme.typography.body1Header,
-                        color = Color.White
+                        color = White
                     )
                 }
             }
@@ -144,8 +145,8 @@ fun TargetAccountCard(
                 ActionableAddressView(
                     address = Address.Account(it),
                     textStyle = RadixTheme.typography.body2HighImportance,
-                    textColor = Color.White.copy(alpha = 0.8f),
-                    iconColor = Color.White.copy(alpha = 0.8f)
+                    textColor = White.copy(alpha = 0.8f),
+                    iconColor = White.copy(alpha = 0.8f)
                 )
             }
 
@@ -154,7 +155,7 @@ fun TargetAccountCard(
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear",
-                        tint = if (targetAccount.validatedAddress != null) Color.White else RadixTheme.colors.textSecondary,
+                        tint = if (targetAccount.validatedAddress != null) White else RadixTheme.colors.textSecondary,
                     )
                 }
             }

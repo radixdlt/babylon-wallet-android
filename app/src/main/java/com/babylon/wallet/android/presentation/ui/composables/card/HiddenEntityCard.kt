@@ -24,7 +24,7 @@ fun HiddenEntityCard(
     Row(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.backgroundTertiary,
                 shape = shape
             )
             .padding(
@@ -38,7 +38,7 @@ fun HiddenEntityCard(
             text = stringResource(id = R.string.common_hiddenAccountsOrPersonas),
             style = RadixTheme.typography.body1HighImportance,
             maxLines = 1,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             overflow = TextOverflow.Ellipsis
         )
     }
