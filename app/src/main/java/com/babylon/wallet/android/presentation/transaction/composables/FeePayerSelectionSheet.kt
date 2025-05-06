@@ -44,8 +44,8 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -263,7 +263,7 @@ private fun FeePayerCard(
 
             RadixRadioButton(
                 selected = candidate.account.address == selectedCandidateAddress,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = {
                     onPayerSelected(candidate)
                 },

@@ -1,10 +1,12 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.designsystem.composable
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -25,8 +27,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.theme.Gray1
+import com.babylon.wallet.android.designsystem.theme.Gray3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.designsystem.theme.indexToGradient
 
 private val RADIO_BUTTON_SIZE = 20.dp
 private val RADIO_BUTTON_PADDING = 2.dp
@@ -41,7 +48,7 @@ fun RadixRadioButton(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    colors: RadixRadioButtonColors = RadixRadioButtonDefaults.darkColors(),
+    colors: RadixRadioButtonColors = RadixRadioButtonDefaults.colors(),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     size: Dp = RADIO_BUTTON_SIZE
 ) {
@@ -109,24 +116,24 @@ fun RadixRadioButton(
 object RadixRadioButtonDefaults {
 
     @Composable
-    fun lightColors(
+    fun onLightBackgroundColors(
         dotColors: RadixRadioButtonColors.ComponentColors = RadixRadioButtonColors.ComponentColors(
-            selectedColor = RadixTheme.colors.gray1,
+            selectedColor = Gray1,
             unselectedColor = Color.Transparent,
-            disabledSelectedColor = RadixTheme.colors.gray3,
+            disabledSelectedColor = Gray3,
             disabledUnselectedColor = Color.Transparent
         ),
         backgroundColors: RadixRadioButtonColors.ComponentColors = RadixRadioButtonColors.ComponentColors(
-            selectedColor = RadixTheme.colors.white,
-            unselectedColor = RadixTheme.colors.white.copy(alpha = 0.5f),
-            disabledSelectedColor = RadixTheme.colors.white.copy(alpha = 0.5f),
-            disabledUnselectedColor = RadixTheme.colors.white.copy(alpha = 0.5f)
+            selectedColor = White,
+            unselectedColor = White.copy(alpha = 0.5f),
+            disabledSelectedColor = White.copy(alpha = 0.5f),
+            disabledUnselectedColor = White.copy(alpha = 0.5f)
         ),
         borderColors: RadixRadioButtonColors.ComponentColors = RadixRadioButtonColors.ComponentColors(
-            selectedColor = RadixTheme.colors.white,
-            unselectedColor = RadixTheme.colors.white,
-            disabledSelectedColor = RadixTheme.colors.gray3,
-            disabledUnselectedColor = RadixTheme.colors.gray4
+            selectedColor = White,
+            unselectedColor = White,
+            disabledSelectedColor = Gray3,
+            disabledUnselectedColor = Gray3
         )
     ): RadixRadioButtonColors = RadixRadioButtonColors(
         dotColors = dotColors,
@@ -135,24 +142,24 @@ object RadixRadioButtonDefaults {
     )
 
     @Composable
-    fun darkColors(
+    fun colors(
         dotColors: RadixRadioButtonColors.ComponentColors = RadixRadioButtonColors.ComponentColors(
-            selectedColor = RadixTheme.colors.white,
+            selectedColor = RadixTheme.colors.background,
             unselectedColor = Color.Transparent,
-            disabledSelectedColor = RadixTheme.colors.gray3,
+            disabledSelectedColor = RadixTheme.colors.iconTertiary,
             disabledUnselectedColor = Color.Transparent
         ),
         backgroundColors: RadixRadioButtonColors.ComponentColors = RadixRadioButtonColors.ComponentColors(
-            selectedColor = RadixTheme.colors.gray1,
+            selectedColor = RadixTheme.colors.icon,
             unselectedColor = Color.Transparent,
             disabledSelectedColor = Color.Transparent,
             disabledUnselectedColor = Color.Transparent
         ),
         borderColors: RadixRadioButtonColors.ComponentColors = RadixRadioButtonColors.ComponentColors(
-            selectedColor = RadixTheme.colors.gray1,
-            unselectedColor = RadixTheme.colors.gray2,
-            disabledSelectedColor = RadixTheme.colors.gray3,
-            disabledUnselectedColor = RadixTheme.colors.gray4
+            selectedColor = RadixTheme.colors.icon,
+            unselectedColor = RadixTheme.colors.iconSecondary,
+            disabledSelectedColor = RadixTheme.colors.iconTertiary,
+            disabledUnselectedColor = RadixTheme.colors.iconTertiary
         )
     ): RadixRadioButtonColors = RadixRadioButtonColors(
         dotColors = dotColors,
@@ -197,48 +204,176 @@ data class RadixRadioButtonColors(
 
 @Composable
 @Preview
-private fun RadixRadioButtonSelectedLightColorsPreview() {
-    RadixWalletPreviewTheme {
-        RadixRadioButton(
-            selected = true,
-            colors = RadixRadioButtonDefaults.lightColors(),
-            onClick = {}
-        )
+private fun RadixRadioButtonSelectedOnLightBackgroundColorsPreview() {
+    RadixWalletTheme {
+        Box(
+            modifier = Modifier
+                .background(0.indexToGradient())
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixRadioButton(
+                selected = true,
+                colors = RadixRadioButtonDefaults.onLightBackgroundColors(),
+                onClick = {}
+            )
+        }
     }
 }
 
 @Composable
 @Preview
-private fun RadixRadioButtonNotSelectedLightColorsPreview() {
-    RadixWalletPreviewTheme {
-        RadixRadioButton(
-            selected = false,
-            colors = RadixRadioButtonDefaults.lightColors(),
-            onClick = {}
-        )
+private fun RadixRadioButtonNotSelectedOnLightBackgroundColorsPreview() {
+    RadixWalletTheme {
+        Box(
+            modifier = Modifier
+                .background(0.indexToGradient())
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixRadioButton(
+                selected = false,
+                colors = RadixRadioButtonDefaults.onLightBackgroundColors(),
+                onClick = {}
+            )
+        }
     }
 }
 
 @Composable
 @Preview
-private fun RadixRadioButtonSelectedDarkColorsPreview() {
-    RadixWalletPreviewTheme {
-        RadixRadioButton(
-            selected = true,
-            colors = RadixRadioButtonDefaults.darkColors(),
-            onClick = {}
-        )
+private fun RadixRadioButtonSelectedColorsPreviewLight() {
+    RadixWalletTheme {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = true,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
     }
 }
 
 @Composable
 @Preview
-private fun RadixRadioButtonNotSelectedDarkColorsPreview() {
-    RadixWalletPreviewTheme {
-        RadixRadioButton(
-            selected = false,
-            colors = RadixRadioButtonDefaults.darkColors(),
-            onClick = {}
-        )
+private fun RadixRadioButtonNotSelectedColorsPreviewLight() {
+    RadixWalletTheme {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = false,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun RadixRadioButtonSelectedDisabledColorsPreviewLight() {
+    RadixWalletTheme {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = true,
+                enabled = false,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun RadixRadioButtonNotSelectedDisabledColorsPreviewLight() {
+    RadixWalletTheme {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = false,
+                enabled = false,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun RadixRadioButtonSelectedColorsPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = true,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun RadixRadioButtonNotSelectedColorsPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = false,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun RadixRadioButtonSelectedDisabledColorsPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = true,
+                enabled = false,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+private fun RadixRadioButtonNotSelectedDisabledColorsPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier =
+                Modifier.background(RadixTheme.colors.background)
+        ) {
+            RadixRadioButton(
+                selected = false,
+                enabled = false,
+                colors = RadixRadioButtonDefaults.colors(),
+                onClick = {}
+            )
+        }
     }
 }

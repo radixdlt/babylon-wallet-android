@@ -12,8 +12,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 
 @Composable
 fun LabeledRadioButton(
@@ -30,7 +30,7 @@ fun LabeledRadioButton(
     ) {
         RadixRadioButton(
             selected = selected,
-            colors = RadixRadioButtonDefaults.darkColors(),
+            colors = RadixRadioButtonDefaults.colors(),
             onClick = onSelected,
         )
         Text(

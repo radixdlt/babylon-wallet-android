@@ -15,6 +15,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.utils.dayMonthDateShort
 import com.radixdlt.sargon.FactorSource
@@ -64,7 +66,7 @@ fun LedgerListItem(
         if (selected != null) {
             RadixRadioButton(
                 selected = selected,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = {
                     onLedgerSelected?.invoke(ledgerFactorSource)
                 },
