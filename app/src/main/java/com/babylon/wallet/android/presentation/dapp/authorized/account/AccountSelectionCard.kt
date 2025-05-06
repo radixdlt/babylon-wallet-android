@@ -6,14 +6,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
@@ -70,14 +69,7 @@ fun AccountSelectionCard(
         } else {
             Checkbox(
                 checked = checked,
-                colors = CheckboxDefaults.colors().copy(
-                    checkedCheckmarkColor = RadixTheme.colors.gray1,
-                    checkedBorderColor = RadixTheme.colors.white,
-                    checkedBoxColor = RadixTheme.colors.white,
-                    uncheckedCheckmarkColor = Color.Transparent,
-                    uncheckedBorderColor = RadixTheme.colors.white,
-                    uncheckedBoxColor = RadixTheme.colors.white.copy(alpha = 0.5f)
-                ),
+                colors = RadixCheckboxDefaults.onLightBackgroundColors(),
                 onCheckedChange = null
             )
         }

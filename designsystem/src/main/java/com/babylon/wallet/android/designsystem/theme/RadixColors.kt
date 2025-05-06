@@ -86,8 +86,14 @@ val AccountGradientList =
 
 @Composable
 fun AppearanceId.gradient(alpha: Float = 1f): Brush {
+    val index = remember(this) { value.toInt() }
+    return index.indexToGradient(alpha = alpha)
+}
+
+@Composable
+internal fun Int.indexToGradient(alpha: Float = 1f): Brush {
     val colors = remember(this, alpha) {
-        AccountGradientList[value.toInt() % AccountGradientList.size].map { it.copy(alpha = alpha) }
+        AccountGradientList[this % AccountGradientList.size].map { it.copy(alpha = alpha) }
     }
 
     return Brush.horizontalGradient(colors)
