@@ -38,9 +38,11 @@ class RadixColors(
     backgroundTertiary: Color,
     text: Color,
     textSecondary: Color,
+    textTertiary: Color,
     textButton: Color,
     icon: Color,
     iconSecondary: Color,
+    iconTertiary: Color,
     primaryButton: Color,
     divider: Color,
     border: Color,
@@ -93,11 +95,15 @@ class RadixColors(
         private set
     var textSecondary by mutableStateOf(textSecondary)
         private set
+    var textTertiary by mutableStateOf(textTertiary)
+        private set
     var textButton by mutableStateOf(textButton)
         private set
     var icon by mutableStateOf(icon)
         private set
     var iconSecondary by mutableStateOf(iconSecondary)
+        private set
+    var iconTertiary by mutableStateOf(iconTertiary)
         private set
     var primaryButton by mutableStateOf(primaryButton)
         private set
@@ -138,9 +144,11 @@ class RadixColors(
         backgroundTertiary: Color = this.backgroundTertiary,
         text: Color = this.text,
         textSecondary: Color = this.textSecondary,
+        textTertiary: Color = this.textTertiary,
         textButton: Color = this.textButton,
         icon: Color = this.icon,
         iconSecondary: Color = this.iconSecondary,
+        iconTertiary: Color = this.iconTertiary,
         primaryButton: Color = this.primaryButton,
         divider: Color = this.divider,
         border: Color = this.border,
@@ -172,9 +180,11 @@ class RadixColors(
             backgroundTertiary = backgroundTertiary,
             text = text,
             textSecondary = textSecondary,
+            textTertiary = textTertiary,
             textButton = textButton,
             icon = icon,
             iconSecondary = iconSecondary,
+            iconTertiary = iconTertiary,
             primaryButton = primaryButton,
             divider = divider,
             border = border,
@@ -209,9 +219,11 @@ private val LightColorPalette = RadixColors(
     backgroundTertiary = Gray4,
     text = Gray1,
     textSecondary = Gray2,
+    textTertiary = Gray3,
     textButton = Blue2,
     icon = Gray1,
     iconSecondary = Gray2,
+    iconTertiary = Gray3,
     primaryButton = Blue2,
     divider = Gray4,
     border = Gray1,
@@ -228,9 +240,11 @@ private val DarkColorPalette = LightColorPalette.copy(
     backgroundTertiary = Color(0xFF404243),
     text = Gray5,
     textSecondary = Gray4,
+    textTertiary = Gray3,
     textButton = Color(0xFF90CAF9),
     icon = Gray5,
     iconSecondary = Gray4,
+    iconTertiary = Gray3,
     primaryButton = Color(0xFF00C389),
     divider = Color(0xFF404243),
     border = Gray5,

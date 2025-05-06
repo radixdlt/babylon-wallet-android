@@ -15,8 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -64,7 +64,7 @@ fun AccountSelectionCard(
                 selected = checked,
                 onClick = radioButtonClicked,
                 enabled = isEnabledForSelection,
-                colors = RadixRadioButtonDefaults.lightColors()
+                colors = RadixRadioButtonDefaults.onLightBackgroundColors()
             )
         } else {
             Checkbox(

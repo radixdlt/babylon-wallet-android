@@ -20,8 +20,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.ImmutableList
@@ -64,7 +64,7 @@ fun PersonaDetailCard(
                     onClick = {
                         onSelectPersona(persona.persona)
                     },
-                    colors = RadixRadioButtonDefaults.darkColors()
+                    colors = RadixRadioButtonDefaults.colors()
                 )
             }
         }

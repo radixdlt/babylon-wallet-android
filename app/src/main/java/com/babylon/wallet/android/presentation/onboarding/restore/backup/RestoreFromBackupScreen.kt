@@ -64,8 +64,8 @@ import com.babylon.wallet.android.presentation.onboarding.restore.backup.Restore
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -412,7 +412,7 @@ private fun RestoredProfileListItem(
 
             RadixRadioButton(
                 selected = isRestoringProfileSelected,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = onRadioButtonClick
             )
         }

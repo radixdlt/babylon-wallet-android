@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
 
 @Composable
 fun RadioButtonSelectorView(

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -18,14 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
@@ -34,8 +31,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -237,7 +234,7 @@ fun SimplePersonaSelectionCard(
             RadixRadioButton(
                 selected = checked,
                 onClick = { onSelectPersona(persona) },
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
             )
         } else {
             Checkbox(

@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -40,8 +39,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
@@ -242,7 +241,7 @@ fun SeedPhraseCard(
             }
             RadixRadioButton(
                 selected = selected,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = onSelectionChanged,
             )
         }
