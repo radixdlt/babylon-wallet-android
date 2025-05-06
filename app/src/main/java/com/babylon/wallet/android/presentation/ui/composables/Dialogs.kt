@@ -332,7 +332,6 @@ fun ErrorAlertDialog(
                         )
                         cancel()
                     },
-                    contentColor = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
                 )
             }
