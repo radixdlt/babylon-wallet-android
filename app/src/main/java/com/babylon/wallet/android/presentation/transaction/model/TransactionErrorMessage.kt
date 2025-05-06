@@ -22,7 +22,7 @@ data class TransactionErrorMessage(
                 error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired ||
                 error is RadixWalletException.DappRequestException.UnacceptableManifest
 
-    val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
+    val uiMessage: UiMessage.ErrorMessage = UiMessage.ErrorMessage(error)
 
     @Composable
     fun getTitle(): String = stringResource(id = R.string.common_errorAlertTitle)

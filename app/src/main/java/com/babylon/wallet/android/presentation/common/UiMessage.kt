@@ -75,7 +75,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     }
 
     data class ErrorMessage(
-        private val error: Throwable?
+        val error: Throwable?
     ) : UiMessage() {
 
         @Composable

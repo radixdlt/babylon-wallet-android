@@ -73,6 +73,7 @@ import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
@@ -200,14 +201,11 @@ private fun TransactionReviewContent(
 
     state.error?.let { transactionError ->
         if (transactionError.isTerminalError) {
-            BasicPromptAlertDialog(
-                finish = {
-                    dismissTransactionErrorDialog()
-                },
-                titleText = transactionError.getTitle(),
-                messageText = transactionError.uiMessage.getMessage(),
-                confirmText = stringResource(id = R.string.common_ok),
-                dismissText = null
+            ErrorAlertDialog(
+                cancel = dismissTransactionErrorDialog,
+                errorMessage = transactionError.uiMessage,
+                cancelMessage = stringResource(id = R.string.common_ok),
+                title = transactionError.getTitle()
             )
         } else {
             SnackbarUIMessage(
