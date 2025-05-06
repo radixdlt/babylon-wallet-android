@@ -30,12 +30,12 @@ fun RoundLedgerItem(
                 id = R.drawable.ic_security_key
             ),
             contentDescription = null,
-            tint = RadixTheme.colors.gray3
+            tint = RadixTheme.colors.gray3 // TODO Theme
         )
         Text(
             text = ledgerName,
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
     }
 }

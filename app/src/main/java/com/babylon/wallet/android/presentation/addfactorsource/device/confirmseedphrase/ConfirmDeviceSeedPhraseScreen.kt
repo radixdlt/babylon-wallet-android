@@ -172,8 +172,8 @@ private fun ConfirmDeviceSeedPhraseContent(
                     singleLine = true,
                     hasInitialFocus = index == 0,
                     colors = MnemonicTextFieldColors.default().copy(
-                        errorTextColor = RadixTheme.colors.gray1,
-                        errorHintColor = RadixTheme.colors.red1
+                        errorTextColor = RadixTheme.colors.text,
+                        errorHintColor = RadixTheme.colors.error
                     )
                 )
             }
