@@ -72,6 +72,7 @@ fun TargetAccountCard(
             is TargetAccount.Skeleton ->
                 Modifier
                     .clip(RadixTheme.shapes.roundedRectTopMedium)
+                    .background(RadixTheme.colors.background)
                     .clickable {
                         onChooseAccountClick()
                     }

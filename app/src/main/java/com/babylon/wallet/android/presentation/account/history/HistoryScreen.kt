@@ -78,6 +78,8 @@ import com.babylon.wallet.android.presentation.account.composable.FiltersDialog
 import com.babylon.wallet.android.presentation.account.composable.FiltersStrip
 import com.babylon.wallet.android.presentation.account.composable.TransactionHistoryItem
 import com.babylon.wallet.android.presentation.common.NetworkContent
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -651,11 +653,8 @@ data class ScrollInfo(
 @Preview(showBackground = true)
 @Composable
 fun HistoryContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.SECONDARY) {
         HistoryContent(
-            modifier = Modifier
-                .padding(10.dp)
-                .background(color = Color.Gray),
             onBackClick = {},
             state = State(
                 accountWithAssets = AccountWithAssets(

@@ -43,6 +43,8 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -408,11 +410,8 @@ fun TransferContent(
 @Preview(showBackground = true)
 @Composable
 fun TransferContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.PRIMARY) {
         TransferContent(
-            modifier = Modifier
-                .padding(10.dp)
-                .background(color = Color.Gray),
             onBackClick = {},
             state = State(fromAccount = Account.sampleMainnet()),
             onMessageStateChanged = {},
