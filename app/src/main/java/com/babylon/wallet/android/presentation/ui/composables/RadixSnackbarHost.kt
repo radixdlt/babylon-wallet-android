@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -76,7 +77,12 @@ fun SnackbarUIMessage(
 
             snackbarHostState.showSnackbar(
                 message = errorMessage,
-                actionLabel = encodedLabel
+                actionLabel = encodedLabel,
+                duration = if (actionLabel != null) {
+                    SnackbarDuration.Long
+                } else {
+                    SnackbarDuration.Short
+                }
             )
             onMessageShown()
         }
