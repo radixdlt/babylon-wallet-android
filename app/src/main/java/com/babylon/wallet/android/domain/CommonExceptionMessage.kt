@@ -18,12 +18,26 @@ fun CommonException.toMessage(context: Context): String {
     val messageBuilder = StringBuilder()
 
     messageBuilder.appendLine(publicMessage(context))
+    messageBuilder.appendLine()
+    messageBuilder.appendLine(context.getString(R.string.error_emailSupportMessage))
+    messageBuilder.appendLine("Code: ${errorCodeFromError(error = this)}")
 
     if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
         messageBuilder.appendLine()
-        messageBuilder.appendLine("[${errorCodeFromError(error = this)}]")
         messageBuilder.appendLine(errorMessageFromError(error = this))
     }
+
+    return messageBuilder.toString()
+}
+
+fun CommonException.mailReportMessage(): String {
+    val messageBuilder = StringBuilder()
+
+    messageBuilder.appendLine("Code: ${errorCodeFromError(error = this)}")
+    messageBuilder.appendLine()
+    messageBuilder.appendLine(errorMessageFromError(error = this))
+    messageBuilder.appendLine()
+    messageBuilder.appendLine(stackTraceToString())
 
     return messageBuilder.toString()
 }

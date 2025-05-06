@@ -47,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
@@ -206,11 +207,9 @@ private fun SetFactorSourceNameContent(
     }
 
     state.errorMessage?.let { error ->
-        BasicPromptAlertDialog(
-            finish = { onDismissMessage() },
-            messageText = error.getMessage(),
-            confirmText = stringResource(id = R.string.common_close),
-            dismissText = null
+        ErrorAlertDialog(
+            cancel = onDismissMessage,
+            errorMessage = error
         )
     }
 }

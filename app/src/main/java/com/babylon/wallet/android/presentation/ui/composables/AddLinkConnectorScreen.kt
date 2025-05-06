@@ -156,10 +156,11 @@ private fun AddLinkConnectorContent(
                 onDismiss = onErrorDismiss
             )
 
-            is AddLinkConnectorUiState.Error.Other -> ConnectionErrorDialog(
+            is AddLinkConnectorUiState.Error.Other -> ErrorAlertDialog(
                 title = stringResource(id = R.string.linkedConnectors_linkFailedErrorTitle),
-                message = it.message.getMessage(),
-                onDismiss = onErrorDismiss
+                errorMessage = it.message,
+                cancel = onErrorDismiss,
+                cancelMessage = stringResource(R.string.common_dismiss)
             )
         }
     }

@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -56,7 +57,12 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.mailReportMessage
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.utils.Constants
+import com.babylon.wallet.android.utils.openEmail
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -143,7 +149,10 @@ fun BottomSheetDialogWrapper(
             }
             Column(
                 modifier = Modifier
-                    .clickable(interactionSource = interactionSource, indication = null) { /* Disable content click */ }
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) { /* Disable content click */ }
                     .applyIf(heightFraction != 1f, Modifier.height(maxHeight * heightFraction))
                     .applyIf(
                         dragToDismissEnabled,
@@ -283,6 +292,67 @@ fun BasicPromptAlertDialog(
         },
         title = title,
         text = message,
+        shape = RadixTheme.shapes.roundedRectSmall,
+        containerColor = RadixTheme.colors.defaultBackground
+    )
+}
+
+@Composable
+fun ErrorAlertDialog(
+    modifier: Modifier = Modifier,
+    cancel: () -> Unit,
+    title: String? = null,
+    cancelMessage: String = stringResource(R.string.common_cancel),
+    errorMessage: UiMessage.ErrorMessage
+) {
+    val commonException = remember(errorMessage) {
+        errorMessage.error as? CommonException
+    }
+
+    val context = LocalContext.current
+    AlertDialog(
+        modifier = modifier,
+        onDismissRequest = cancel,
+        confirmButton = {
+            RadixTextButton(
+                text = cancelMessage,
+                onClick = cancel,
+                textAlign = TextAlign.End
+            )
+        },
+        dismissButton = commonException?.let { error ->
+            {
+                RadixTextButton(
+                    text = stringResource(R.string.error_emailSupportButtonTitle),
+                    onClick = {
+                        context.openEmail(
+                            recipientAddress = Constants.RADIX_SUPPORT_EMAIL_ADDRESS,
+                            subject = Constants.RADIX_SUPPORT_EMAIL_SUBJECT,
+                            body = error.mailReportMessage()
+                        )
+                        cancel()
+                    },
+                    contentColor = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
+                )
+            }
+        },
+        title = title?.let {
+            {
+                Text(
+                    text = it,
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        },
+        text = {
+            Text(
+                text = errorMessage.getMessage(),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1
+            )
+        },
         shape = RadixTheme.shapes.roundedRectSmall,
         containerColor = RadixTheme.colors.defaultBackground
     )
