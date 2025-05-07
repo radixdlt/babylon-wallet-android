@@ -146,7 +146,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                             LabelSection(
                                 text = stringResource(id = R.string.transactionHistory_depositedSection),
                                 iconResource = DSR.ic_tx_deposited,
-                                textColor = RadixTheme.colors.green1
+                                textColor = RadixTheme.colors.ok
                             )
                             Column(
                                 modifier = Modifier.border(1.dp, RadixTheme.colors.divider, shape = RadixTheme.shapes.roundedRectSmall)

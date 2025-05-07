@@ -231,7 +231,7 @@ fun RecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.green1, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.ok, RadixTheme.shapes.roundedRectMedium)
             .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
@@ -357,7 +357,7 @@ private fun SecurityCenterCard(
                 color = RadixTheme.colors.textSecondary
             )
 
-            val promptColor = if (needsAction) RadixTheme.colors.warning else RadixTheme.colors.green1
+            val promptColor = if (needsAction) RadixTheme.colors.warning else RadixTheme.colors.ok
 
             PromptLabel(
                 modifier = Modifier.fillMaxWidth(),

@@ -33,7 +33,7 @@ private fun StatusMessage.Type.iconRes(): Int {
 @Composable
 private fun StatusMessage.Type.color(): Color {
     return when (this) {
-        StatusMessage.Type.SUCCESS -> RadixTheme.colors.green1 // TODO Theme
+        StatusMessage.Type.SUCCESS -> RadixTheme.colors.ok
         StatusMessage.Type.WARNING -> RadixTheme.colors.warning
         StatusMessage.Type.ERROR -> RadixTheme.colors.error
     }
