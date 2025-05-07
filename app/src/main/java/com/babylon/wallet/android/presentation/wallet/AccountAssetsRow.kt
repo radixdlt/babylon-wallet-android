@@ -39,16 +39,13 @@ import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.babylon.wallet.android.designsystem.theme.RadixColors
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.placeholder
-import com.google.accompanist.placeholder.shimmer
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -323,7 +320,7 @@ fun AssetsContentRowPreview() {
             modifier = Modifier
                 .padding(all = 32.dp)
                 .background(
-                    Brush.linearGradient(AccountGradientList[0]),
+                    brush = AppearanceId(0u).gradient(),
                     shape = RadixTheme.shapes.roundedRectMedium
                 )
                 .fillMaxWidth()

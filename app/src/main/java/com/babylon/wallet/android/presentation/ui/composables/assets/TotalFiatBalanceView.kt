@@ -152,7 +152,8 @@ private fun TotalBalanceContent(
 @Composable
 fun TotalFiatBalanceViewToggle(
     modifier: Modifier = Modifier,
-    onToggle: (isVisible: Boolean) -> Unit
+    onToggle: (isVisible: Boolean) -> Unit,
+    color: Color = RadixTheme.colors.iconTertiary
 ) {
     val isPriceVisible = LocalBalanceVisibility.current
     Icon(
@@ -164,7 +165,7 @@ fun TotalFiatBalanceViewToggle(
             }
         ),
         contentDescription = "",
-        tint = RadixTheme.colors.iconTertiary,
+        tint = color,
         modifier = modifier
             .padding(start = RadixTheme.dimensions.paddingSmall)
             .size(22.dp)

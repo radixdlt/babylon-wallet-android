@@ -418,10 +418,14 @@ private fun AccountHeader(
                     currency = SupportedCurrency.USD,
                     contentColor = White,
                     shimmeringColor = White.copy(alpha = 0.6f),
+                    hiddenContentColor = White.copy(alpha = 0.6f),
                     formattedContentStyle = RadixTheme.typography.header,
                     onVisibilityToggle = onShowHideBalanceToggle,
                     trailingContent = {
-                        TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
+                        TotalFiatBalanceViewToggle(
+                            onToggle = onShowHideBalanceToggle,
+                            color = White.copy(alpha = 0.6f)
+                        )
                     }
                 )
             }
