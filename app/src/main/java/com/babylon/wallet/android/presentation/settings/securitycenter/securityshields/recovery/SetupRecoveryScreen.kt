@@ -376,7 +376,7 @@ private fun EmergencyFallbackView(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.lightRed,
+                color = RadixTheme.colors.errorSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {
@@ -384,7 +384,7 @@ private fun EmergencyFallbackView(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = RadixTheme.colors.red1,
+                    color = RadixTheme.colors.error,
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .clip(RadixTheme.shapes.roundedRectTopMedium)
@@ -460,7 +460,7 @@ private fun EmergencyFallbackView(
                 .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
             text = stringResource(id = R.string.shieldWizardRecovery_fallback_note),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.red1
+            color = RadixTheme.colors.error
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
@@ -566,7 +566,7 @@ private fun UnsafeCombinationInfoDialog(
         },
         confirmText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_confirm),
         dismissText = stringResource(id = R.string.shieldSetupStatus_unsafeCombination_cancel),
-        confirmTextColor = RadixTheme.colors.red1
+        confirmTextColor = RadixTheme.colors.error
     )
 }
 

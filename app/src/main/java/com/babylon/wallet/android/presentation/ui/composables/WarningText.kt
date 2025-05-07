@@ -22,7 +22,7 @@ fun WarningText(
     modifier: Modifier = Modifier,
     text: AnnotatedString,
     textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    contentColor: Color = RadixTheme.colors.orange1,
+    contentColor: Color = RadixTheme.colors.warning,
     iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
 ) {
     Row(

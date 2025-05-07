@@ -21,7 +21,7 @@ fun WarningButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = ButtonDefaults.buttonColors(
             contentColor = White,
-            containerColor = RadixTheme.colors.red1
+            containerColor = RadixTheme.colors.error
         )
     ) {
         Text(

@@ -485,12 +485,12 @@ private fun BackupWarning(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.warningSecondary, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
+                .background(RadixTheme.colors.warningSecondary, RadixTheme.shapes.roundedRectMedium)
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingMedium

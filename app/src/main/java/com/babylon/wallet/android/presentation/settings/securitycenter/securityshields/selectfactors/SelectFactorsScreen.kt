@@ -216,7 +216,7 @@ private fun CategoryHeaderView(
             Text(
                 text = it,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.orange1
+                color = RadixTheme.colors.warning
             )
         }
     }

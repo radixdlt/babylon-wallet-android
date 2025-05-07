@@ -93,7 +93,7 @@ fun DefaultSettingsItem(
                 text = title,
                 style = RadixTheme.typography.body1Header,
                 color = if (isErrorText) {
-                    RadixTheme.colors.red1
+                    RadixTheme.colors.error
                 } else {
                     RadixTheme.colors.text
                 }
@@ -168,7 +168,7 @@ fun DefaultSettingsItem(
                     text = it,
                     style = RadixTheme.typography.body1Regular,
                     color = if (isErrorText) {
-                        RadixTheme.colors.red1
+                        RadixTheme.colors.error
                     } else {
                         RadixTheme.colors.icon
                     }
@@ -204,7 +204,7 @@ fun DefaultSettingsItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = if (isErrorText) RadixTheme.colors.red1 else RadixTheme.colors.icon
+            tint = if (isErrorText) RadixTheme.colors.error else RadixTheme.colors.icon
         )
     }
 ) {
@@ -239,7 +239,7 @@ fun DefaultSettingsItem(
                     painter = painterResource(id = it),
                     contentDescription = null,
                     tint = if (isErrorText) {
-                        RadixTheme.colors.red1
+                        RadixTheme.colors.error
                     } else {
                         RadixTheme.colors.icon
                     }
