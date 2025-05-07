@@ -33,7 +33,7 @@ fun UnknownDepositRulesStateInfo(modifier: Modifier = Modifier) {
                 modifier = Modifier.size(20.dp),
                 painter = painterResource(id = DSR.ic_warning_error),
                 contentDescription = null,
-                tint = RadixTheme.colors.orange1,
+                tint = RadixTheme.colors.warning,
             )
         }
     )

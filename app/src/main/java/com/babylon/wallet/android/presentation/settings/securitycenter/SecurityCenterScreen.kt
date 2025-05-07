@@ -255,12 +255,12 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.warningSecondary, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.orange3, RadixTheme.shapes.roundedRectTopMedium)
+                .background(RadixTheme.colors.warning, RadixTheme.shapes.roundedRectTopMedium)
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
@@ -287,9 +287,13 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
                 modifier = Modifier.weight(1f),
                 text = subtitle,
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.orange3
+                color = RadixTheme.colors.warning
             )
-            Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange3)
+            Icon(
+                painter = painterResource(id = DSR.ic_chevron_right),
+                contentDescription = null,
+                tint = RadixTheme.colors.warning
+            )
         }
     }
 }
@@ -353,7 +357,7 @@ private fun SecurityCenterCard(
                 color = RadixTheme.colors.textSecondary
             )
 
-            val promptColor = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+            val promptColor = if (needsAction) RadixTheme.colors.warning else RadixTheme.colors.green1
 
             PromptLabel(
                 modifier = Modifier.fillMaxWidth(),

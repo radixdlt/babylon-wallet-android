@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Orange2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -60,7 +61,7 @@ fun DevelopmentPreviewWrapper(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.orange2)
+                    .background(Orange2)
                     .statusBarsPadding()
                     .onGloballyPositioned { coordinates ->
                         devBannerHeight.height.value = with(density) { coordinates.size.height.toDp() }

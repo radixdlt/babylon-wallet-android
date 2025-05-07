@@ -19,12 +19,6 @@ class RadixColors(
     green1: Color,
     green3: Color,
     pink1: Color,
-    orange1: Color,
-    orange2: Color,
-    orange3: Color,
-    lightOrange: Color,
-    red1: Color,
-    lightRed: Color,
 
     background: Color,
     backgroundSecondary: Color,
@@ -41,7 +35,9 @@ class RadixColors(
     border: Color,
     borderSecondary: Color,
     error: Color,
+    errorSecondary: Color,
     warning: Color,
+    warningSecondary: Color,
     cardOnPrimary: Color,
     cardOnSecondary: Color
 ) {
@@ -50,18 +46,6 @@ class RadixColors(
     var green3 by mutableStateOf(green3)
         private set
     var pink1 by mutableStateOf(pink1)
-        private set
-    var orange1 by mutableStateOf(orange1)
-        private set
-    var orange2 by mutableStateOf(orange2)
-        private set
-    var orange3 by mutableStateOf(orange3)
-        private set
-    var lightOrange by mutableStateOf(lightOrange)
-        private set
-    var red1 by mutableStateOf(red1)
-        private set
-    var lightRed by mutableStateOf(lightRed)
         private set
 
     var background by mutableStateOf(background)
@@ -94,7 +78,11 @@ class RadixColors(
         private set
     var error by mutableStateOf(error)
         private set
+    var errorSecondary by mutableStateOf(errorSecondary)
+        private set
     var warning by mutableStateOf(warning)
+        private set
+    var warningSecondary by mutableStateOf(warningSecondary)
         private set
     var cardOnPrimary by mutableStateOf(cardOnPrimary)
         private set
@@ -105,12 +93,6 @@ class RadixColors(
         green1: Color = this.green1,
         green3: Color = this.green3,
         pink1: Color = this.pink1,
-        orange1: Color = this.orange1,
-        orange2: Color = this.orange2,
-        orange3: Color = this.orange3,
-        lightOrange: Color = this.lightOrange,
-        red1: Color = this.red1,
-        lightRed: Color = this.lightRed,
         background: Color = this.background,
         backgroundSecondary: Color = this.backgroundSecondary,
         backgroundTertiary: Color = this.backgroundTertiary,
@@ -126,7 +108,9 @@ class RadixColors(
         border: Color = this.border,
         borderSecondary: Color = this.borderSecondary,
         error: Color = this.error,
+        errorSecondary: Color = this.errorSecondary,
         warning: Color = this.warning,
+        warningSecondary: Color = this.warningSecondary,
         cardOnPrimary: Color = this.cardOnPrimary,
         cardOnSecondary: Color = this.cardOnSecondary,
     ): RadixColors {
@@ -134,12 +118,6 @@ class RadixColors(
             green1 = green1,
             green3 = green3,
             pink1 = pink1,
-            orange1 = orange1,
-            orange2 = orange2,
-            orange3 = orange3,
-            lightOrange = lightOrange,
-            red1 = red1,
-            lightRed = lightRed,
             background = background,
             backgroundSecondary = backgroundSecondary,
             backgroundTertiary = backgroundTertiary,
@@ -155,7 +133,9 @@ class RadixColors(
             border = border,
             borderSecondary = borderSecondary,
             error = error,
+            errorSecondary = errorSecondary,
             warning = warning,
+            warningSecondary = warningSecondary,
             cardOnPrimary = cardOnPrimary,
             cardOnSecondary = cardOnSecondary
         )
@@ -166,12 +146,6 @@ private val LightColorPalette = RadixColors(
     green1 = Green1,
     green3 = Green3,
     pink1 = Pink1,
-    orange1 = Orange1,
-    orange2 = Orange2,
-    orange3 = Orange3,
-    lightOrange = LightOrange,
-    red1 = Red1,
-    lightRed = LightRed,
     background = White,
     backgroundSecondary = Gray5,
     backgroundTertiary = Gray4,
@@ -187,7 +161,9 @@ private val LightColorPalette = RadixColors(
     border = Gray1,
     borderSecondary = Gray3,
     error = Red1,
+    errorSecondary = LightRed,
     warning = Orange3,
+    warningSecondary = LightOrange,
     cardOnPrimary = Gray4,
     cardOnSecondary = White
 )
@@ -208,6 +184,7 @@ private val DarkColorPalette = LightColorPalette.copy(
     border = Gray5,
     borderSecondary = Gray3,
     error = Red1,
+    errorSecondary = LightRed,
     warning = Orange3,
     cardOnPrimary = Color(0xFF1E1F1F),
     cardOnSecondary = Color(0xFF28292A)

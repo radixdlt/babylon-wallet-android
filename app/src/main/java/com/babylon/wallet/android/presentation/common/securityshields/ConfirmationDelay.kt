@@ -30,7 +30,7 @@ fun ConfirmationDelay(
     Column(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.lightRed,
+                color = RadixTheme.colors.errorSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(RadixTheme.dimensions.paddingDefault),

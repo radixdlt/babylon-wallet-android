@@ -207,7 +207,7 @@ fun UnrecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange3, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.warning, RadixTheme.shapes.roundedRectMedium)
             .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
