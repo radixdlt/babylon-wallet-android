@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.utils.Constants
 import kotlinx.coroutines.launch
 
 @Composable
@@ -117,9 +118,15 @@ private fun EulaContent(
         val scope = rememberCoroutineScope()
 
         val context = LocalContext.current
-        LaunchedEffect(Unit) {
+        val isDarkTheme = RadixTheme.config.isDarkTheme
+        LaunchedEffect(isDarkTheme) {
             scope.launch {
-                eulaText = context.assets.open("eula/eula.html").bufferedReader().use { it.readText() }
+                val eulaPath = if (isDarkTheme) {
+                    Constants.EULA_DARK
+                } else {
+                    Constants.EULA_LIGHT
+                }
+                eulaText = context.assets.open(eulaPath).bufferedReader().use { it.readText() }
             }
         }
 
