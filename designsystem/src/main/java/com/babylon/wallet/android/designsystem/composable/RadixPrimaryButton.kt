@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.designsystem.composable
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -89,11 +92,15 @@ fun RadixPrimaryButton(
 @Composable
 fun RadixPrimaryButtonPreviewLight() {
     RadixWalletTheme {
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Primary button",
-            onClick = {},
-        )
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                onClick = {},
+            )
+        }
     }
 }
 
@@ -101,11 +108,15 @@ fun RadixPrimaryButtonPreviewLight() {
 @Composable
 fun RadixPrimaryButtonPreviewDark() {
     RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Primary button",
-            onClick = {},
-        )
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                onClick = {},
+            )
+        }
     }
 }
 
@@ -113,12 +124,16 @@ fun RadixPrimaryButtonPreviewDark() {
 @Composable
 fun RadixPrimaryButtonLoadingPreviewLight() {
     RadixWalletTheme {
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Primary button",
-            isLoading = true,
-            onClick = {},
-        )
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                isLoading = true,
+                onClick = {},
+            )
+        }
     }
 }
 
@@ -126,12 +141,16 @@ fun RadixPrimaryButtonLoadingPreviewLight() {
 @Composable
 fun RadixPrimaryButtonLoadingPreviewDark() {
     RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Primary button",
-            isLoading = true,
-            onClick = {},
-        )
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                isLoading = true,
+                onClick = {},
+            )
+        }
     }
 }
 
@@ -139,13 +158,21 @@ fun RadixPrimaryButtonLoadingPreviewDark() {
 @Composable
 fun RadixPrimaryButtonWithIconPreviewLight() {
     RadixWalletTheme {
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Primary button",
-            onClick = {},
-            icon = {
-                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
-            })
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = ""
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -153,13 +180,21 @@ fun RadixPrimaryButtonWithIconPreviewLight() {
 @Composable
 fun RadixPrimaryButtonWithIconPreviewDark() {
     RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Primary button",
-            onClick = {},
-            icon = {
-                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
-            })
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                onClick = {},
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = ""
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -167,11 +202,16 @@ fun RadixPrimaryButtonWithIconPreviewDark() {
 @Composable
 fun RadixPrimaryButtonDisabledPreviewLight() {
     RadixWalletTheme {
-        RadixPrimaryButton(
-            text = "Primary button",
-            onClick = {},
-            enabled = false
-        )
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                onClick = {},
+                enabled = false
+            )
+        }
     }
 }
 
@@ -179,10 +219,15 @@ fun RadixPrimaryButtonDisabledPreviewLight() {
 @Composable
 fun RadixPrimaryButtonDisabledPreviewDark() {
     RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
-        RadixPrimaryButton(
-            text = "Primary button",
-            onClick = {},
-            enabled = false
-        )
+        Box(modifier = Modifier.background(RadixTheme.colors.background)) {
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(),
+                text = "Primary button",
+                onClick = {},
+                enabled = false
+            )
+        }
     }
 }
