@@ -18,7 +18,6 @@ import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FiltersStrip(
     historyFilters: HistoryFilters?,

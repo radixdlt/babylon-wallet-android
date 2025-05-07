@@ -33,7 +33,14 @@ fun HistoryFilterTag(
         .border(1.dp, RadixTheme.colors.divider, shape = RadixTheme.shapes.circle)
         .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
     val tagSelectedModifier = Modifier
-        .background(RadixTheme.colors.icon, shape = RadixTheme.shapes.circle)
+        .background(
+            color = if (RadixTheme.config.isDarkTheme) {
+                RadixTheme.colors.backgroundTertiary
+            } else {
+                RadixTheme.colors.icon
+            },
+            shape = RadixTheme.shapes.circle
+        )
         .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
     Row(
         modifier = modifier
@@ -53,7 +60,7 @@ fun HistoryFilterTag(
         Text(
             text = text,
             style = RadixTheme.typography.body1HighImportance,
-            color = if (selected) RadixTheme.colors.background else RadixTheme.colors.text
+            color = RadixTheme.colors.text
         )
         if (showCloseIcon) {
             Icon(
