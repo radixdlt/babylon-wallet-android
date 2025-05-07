@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -149,7 +147,7 @@ private fun FactoryResetScreenContent(
                 modifier = Modifier
                     .defaultCardShadow(elevation = 6.dp)
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectMedium),
+                    .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(

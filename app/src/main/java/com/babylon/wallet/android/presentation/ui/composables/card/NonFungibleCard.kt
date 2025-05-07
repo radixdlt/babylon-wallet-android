@@ -37,7 +37,7 @@ fun NonFungibleCard(
             .defaultCardShadow(elevation = elevation)
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
-            .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium)
             .throttleClickable(enabled = onClick != null) {
                 onClick?.invoke()
             }

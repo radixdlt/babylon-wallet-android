@@ -218,7 +218,7 @@ private fun FactorSourceKind.AdditionalSettingsItems(
         FactorSourceKind.ARCULUS_CARD -> {
             SwitchSettingsItem(
                 modifier = Modifier
-                    .background(RadixTheme.colors.cardOnSecondary)
+                    .background(RadixTheme.colors.card)
                     .fillMaxWidth()
                     .padding(all = RadixTheme.dimensions.paddingDefault),
                 titleRes = R.string.factorSources_detail_changePin,
@@ -228,7 +228,7 @@ private fun FactorSourceKind.AdditionalSettingsItems(
             )
             HorizontalDivider(
                 modifier = Modifier
-                    .background(color = RadixTheme.colors.cardOnSecondary)
+                    .background(color = RadixTheme.colors.card)
                     .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
                 color = RadixTheme.colors.divider
             )

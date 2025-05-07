@@ -87,7 +87,7 @@ fun SpendingAssetItem(
         },
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = CardDefaults.outlinedCardColors(
-            containerColor = RadixTheme.colors.cardOnSecondary,
+            containerColor = RadixTheme.colors.card,
             contentColor = RadixTheme.colors.text
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),

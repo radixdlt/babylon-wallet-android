@@ -90,7 +90,7 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
-    containerColor: Color = RadixTheme.colors.cardOnSecondary,
+    containerColor: Color = RadixTheme.colors.card,
     onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null,
     endContent: (@Composable () -> Unit)? = null
 ) {
@@ -366,7 +366,7 @@ private fun LinkedEntitiesView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = RadixTheme.colors.cardOnSecondary,
+                                color = RadixTheme.colors.card,
                                 shape = RadixTheme.shapes.roundedRectMedium
                             ),
                         persona = it

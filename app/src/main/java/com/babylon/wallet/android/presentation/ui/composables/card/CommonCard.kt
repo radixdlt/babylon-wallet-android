@@ -26,7 +26,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun CommonCard(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = RadixTheme.colors.cardOnSecondary,
+    backgroundColor: Color = RadixTheme.colors.card,
     elevation: Dp = if (RadixTheme.config.isDarkTheme) 0.dp else 4.dp,
     roundTopCorners: Boolean = true,
     roundBottomCorners: Boolean = true,
@@ -75,7 +75,7 @@ fun CommonCard(
     modifier: Modifier = Modifier,
     itemIndex: Int,
     allItemsSize: Int,
-    backgroundColor: Color = RadixTheme.colors.cardOnSecondary,
+    backgroundColor: Color = RadixTheme.colors.card,
     roundTopCorners: Boolean = true,
     roundBottomCorners: Boolean = true,
     cornerSizeRadius: Dp = 12.dp,
@@ -97,7 +97,7 @@ fun CollapsibleCommonCard(
     modifier: Modifier = Modifier,
     isCollapsed: Boolean,
     collapsedItems: Int,
-    backgroundColor: Color = RadixTheme.colors.cardOnSecondary,
+    backgroundColor: Color = RadixTheme.colors.card,
     groupInnerPadding: Dp = 8.dp,
     cornerSizeRadius: Dp = 12.dp,
     content: @Composable ColumnScope.() -> Unit

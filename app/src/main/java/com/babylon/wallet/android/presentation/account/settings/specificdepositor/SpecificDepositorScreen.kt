@@ -358,7 +358,7 @@ private fun DepositorList(
             DepositorItem(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.cardOnSecondary)
+                    .background(RadixTheme.colors.card)
                     .padding(RadixTheme.dimensions.paddingDefault),
                 depositor = depositor,
                 onDeleteDepositor = onDeleteDepositor

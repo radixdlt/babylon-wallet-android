@@ -29,14 +29,12 @@ class RadixColors(
     primaryButton: Color,
     divider: Color,
     border: Color,
-    borderSecondary: Color,
     ok: Color,
     error: Color,
     errorSecondary: Color,
     warning: Color,
     warningSecondary: Color,
-    cardOnPrimary: Color,
-    cardOnSecondary: Color
+    card: Color
 ) {
     var background by mutableStateOf(background)
         private set
@@ -64,8 +62,6 @@ class RadixColors(
         private set
     var border by mutableStateOf(border)
         private set
-    var borderSecondary by mutableStateOf(borderSecondary)
-        private set
     var ok by mutableStateOf(ok)
         private set
     var error by mutableStateOf(error)
@@ -76,9 +72,7 @@ class RadixColors(
         private set
     var warningSecondary by mutableStateOf(warningSecondary)
         private set
-    var cardOnPrimary by mutableStateOf(cardOnPrimary)
-        private set
-    var cardOnSecondary by mutableStateOf(cardOnSecondary)
+    var card by mutableStateOf(card)
         private set
 }
 
@@ -96,14 +90,12 @@ private val LightColorPalette = RadixColors(
     primaryButton = Blue2,
     divider = Gray4,
     border = Gray1,
-    borderSecondary = Gray3,
     ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
     warning = Orange3,
     warningSecondary = LightOrange,
-    cardOnPrimary = Gray4,
-    cardOnSecondary = White
+    card = White
 )
 
 private val DarkColorPalette = RadixColors(
@@ -120,14 +112,12 @@ private val DarkColorPalette = RadixColors(
     primaryButton = Color(0xFF00C389),
     divider = Color(0xFF404243),
     border = Gray5,
-    borderSecondary = Gray3,
     ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
     warning = Orange3,
     warningSecondary = LightOrange,
-    cardOnPrimary = Color(0xFF1E1F1F),
-    cardOnSecondary = Color(0xFF28292A)
+    card = Color(0xFF28292A)
 )
 
 private val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
