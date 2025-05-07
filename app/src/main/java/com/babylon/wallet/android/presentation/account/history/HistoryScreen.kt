@@ -435,7 +435,7 @@ fun HistoryContent(
             state = pullToRefreshState,
             isRefreshing = state.isRefreshing,
             color = RadixTheme.colors.icon,
-            containerColor = RadixTheme.colors.background,
+            containerColor = RadixTheme.colors.backgroundTertiary,
             threshold = WindowInsets
                 .statusBarsAndBanner
                 .asPaddingValues()

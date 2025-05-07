@@ -107,7 +107,7 @@ fun InspectGoogleBackupsScreen(
                 state = pullToRefreshState,
                 isRefreshing = state.isLoading,
                 color = RadixTheme.colors.text,
-                containerColor = RadixTheme.colors.background
+                containerColor = RadixTheme.colors.backgroundTertiary
             )
         }
     }

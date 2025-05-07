@@ -258,7 +258,7 @@ private fun WalletContent(
                 state = pullToRefreshState,
                 isRefreshing = state.isRefreshing,
                 color = RadixTheme.colors.icon,
-                containerColor = RadixTheme.colors.backgroundSecondary // TODO theme
+                containerColor = RadixTheme.colors.backgroundTertiary
             )
         }
     }
