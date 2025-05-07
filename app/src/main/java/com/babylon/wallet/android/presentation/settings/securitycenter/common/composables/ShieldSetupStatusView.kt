@@ -35,7 +35,7 @@ fun ShieldSetupUnsafeCombinationStatusView(
         message = StatusMessage(
             message = stringResource(id = R.string.shieldSetupStatus_unsafeCombination).formattedSpans(
                 boldStyle = SpanStyle(
-                    color = RadixTheme.colors.blue2,
+                    color = RadixTheme.colors.textButton,
                     fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
                     fontSize = RadixTheme.typography.body2Link.fontSize
                 )
@@ -55,7 +55,7 @@ fun ShieldSetupNotEnoughFactorsStatusView(
         message = StatusMessage(
             message = stringResource(R.string.shieldSetupStatus_notEnoughFactors).formattedSpans(
                 boldStyle = SpanStyle(
-                    color = RadixTheme.colors.blue2,
+                    color = RadixTheme.colors.textButton,
                     fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
                     fontSize = RadixTheme.typography.body2Link.fontSize
                 )

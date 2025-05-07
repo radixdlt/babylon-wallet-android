@@ -276,11 +276,11 @@ private fun OverrideFactorsView(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXXSmall),
                         painter = painterResource(id = DSR.ic_add_override),
                         contentDescription = null,
-                        tint = RadixTheme.colors.blue2
+                        tint = RadixTheme.colors.textButton
                     )
                 },
                 isWithoutPadding = true,
-                contentColor = RadixTheme.colors.blue2,
+                contentColor = RadixTheme.colors.textButton,
                 throttleClicks = true,
                 onClick = onAddOverrideClick
             )
@@ -454,13 +454,13 @@ private fun NumberOfFactorsView(
                 is Threshold.Specific -> threshold.v1.toString()
             },
             style = RadixTheme.typography.body2Link,
-            color = RadixTheme.colors.blue2
+            color = RadixTheme.colors.textButton
         )
 
         Icon(
             painter = painterResource(id = DSR.ic_chevron_down),
             contentDescription = null,
-            tint = RadixTheme.colors.blue2
+            tint = RadixTheme.colors.textButton
         )
     }
 }

@@ -140,7 +140,7 @@ private fun SecurityShieldOnboardingContent(
                     pagerState = pagerState,
                     activeIndicatorWidth = 8.dp,
                     inactiveIndicatorWidth = 8.dp,
-                    activeColor = RadixTheme.colors.blue2,
+                    activeColor = RadixTheme.colors.textButton,
                     inactiveColor = RadixTheme.colors.backgroundTertiary
                 )
 

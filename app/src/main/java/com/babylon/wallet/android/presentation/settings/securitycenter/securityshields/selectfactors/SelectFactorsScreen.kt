@@ -248,7 +248,7 @@ private fun StatusView(
             message = StatusMessage(
                 message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
                     boldStyle = SpanStyle(
-                        color = RadixTheme.colors.blue2,
+                        color = RadixTheme.colors.textButton,
                         fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
                         fontSize = RadixTheme.typography.body2Link.fontSize
                     )
