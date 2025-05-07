@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,7 +19,7 @@ fun CardContainer(
     modifier: Modifier = Modifier,
     castsShadow: Boolean = true,
     isOutlined: Boolean = false,
-    containerColor: Color = RadixTheme.colors.cardOnSecondary,
+    containerColor: Color = RadixTheme.colors.card,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(

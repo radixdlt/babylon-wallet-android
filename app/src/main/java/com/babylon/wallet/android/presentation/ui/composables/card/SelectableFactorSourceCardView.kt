@@ -157,7 +157,7 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
     SimpleFactorCardView(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.cardOnSecondary,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .noIndicationClickable { onCheckedChange(!isChecked) },
@@ -201,7 +201,7 @@ private fun CardContainer(
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.cardOnSecondary,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectDefault
             )
     ) {

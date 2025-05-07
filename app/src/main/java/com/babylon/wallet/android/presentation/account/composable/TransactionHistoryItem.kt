@@ -55,7 +55,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
             }
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.cardOnSecondary,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {

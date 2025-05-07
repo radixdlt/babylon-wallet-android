@@ -79,7 +79,7 @@ fun SecurifyEntityTypeContent(
 
                 is ProfileEntity.PersonaEntity -> PersonaCardHeader(
                     persona = entity.persona,
-                    containerColor = RadixTheme.colors.cardOnSecondary
+                    containerColor = RadixTheme.colors.card
                 )
             }
 

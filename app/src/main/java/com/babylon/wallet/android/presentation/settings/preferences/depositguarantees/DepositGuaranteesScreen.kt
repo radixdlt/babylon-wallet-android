@@ -19,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -115,7 +113,7 @@ fun DepositGuaranteesContent(
                         shape = RadixTheme.shapes.roundedRectDefault
                     )
                     .background(
-                        color = RadixTheme.colors.cardOnSecondary,
+                        color = RadixTheme.colors.card,
                         shape = RadixTheme.shapes.roundedRectDefault
                     )
                     .padding(RadixTheme.dimensions.paddingDefault),

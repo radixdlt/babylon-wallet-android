@@ -83,7 +83,7 @@ fun ChooseLedgerDeviceSection(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.cardOnSecondary, RadixTheme.shapes.roundedRectSmall)
+                    .background(RadixTheme.colors.card, RadixTheme.shapes.roundedRectSmall)
                     .padding(RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                 style = RadixTheme.typography.body1Header,
@@ -118,7 +118,7 @@ fun ChooseLedgerDeviceSection(
                             modifier = Modifier
                                 .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectSmall)
+                                .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectSmall)
                                 .throttleClickable {
                                     onLedgerDeviceSelected(ledgerItem.data)
                                 }

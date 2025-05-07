@@ -161,7 +161,7 @@ private fun ChooseSeedPhraseContent(
                             .defaultCardShadow(elevation = 4.dp)
                             .fillMaxWidth()
                             .background(
-                                RadixTheme.colors.cardOnSecondary,
+                                RadixTheme.colors.card,
                                 RadixTheme.shapes.roundedRectMedium
                             )
                             .padding(RadixTheme.dimensions.paddingDefault),

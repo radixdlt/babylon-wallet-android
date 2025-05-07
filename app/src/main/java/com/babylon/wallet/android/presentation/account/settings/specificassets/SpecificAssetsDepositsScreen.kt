@@ -479,7 +479,7 @@ private fun AssetsList(
             AssetItem(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.cardOnSecondary)
+                    .background(RadixTheme.colors.card)
                     .padding(RadixTheme.dimensions.paddingDefault),
                 asset = asset,
                 onDeleteAsset = onDeleteAsset

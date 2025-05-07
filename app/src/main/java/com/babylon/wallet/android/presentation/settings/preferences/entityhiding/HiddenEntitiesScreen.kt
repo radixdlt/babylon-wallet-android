@@ -252,7 +252,7 @@ private fun PersonaCard(modifier: Modifier = Modifier, persona: Persona, onUnhid
             .heightIn(min = 84.dp)
             .defaultCardShadow(elevation = 2.dp)
             .fillMaxWidth()
-            .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault

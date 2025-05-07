@@ -159,7 +159,7 @@ private fun GatewaysContent(
             }
             itemsIndexed(state.gatewayList) { index, gateway ->
                 Column(
-                    modifier = Modifier.background(color = RadixTheme.colors.cardOnSecondary)
+                    modifier = Modifier.background(color = RadixTheme.colors.card)
                 ) {
                     GatewayCard(
                         gateway = gateway,

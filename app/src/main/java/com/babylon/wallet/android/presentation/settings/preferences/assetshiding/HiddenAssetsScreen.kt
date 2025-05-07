@@ -242,7 +242,7 @@ private fun ResourceLayout(
             .fillMaxWidth()
             .defaultCardShadow()
             .background(
-                color = RadixTheme.colors.cardOnSecondary,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(

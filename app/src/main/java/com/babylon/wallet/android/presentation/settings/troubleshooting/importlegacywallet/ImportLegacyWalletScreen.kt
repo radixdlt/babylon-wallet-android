@@ -41,7 +41,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -616,7 +615,7 @@ private fun VerifyWithLedgerDevicePage(
                                     )
                                     .fillMaxWidth()
                                     .background(
-                                        color = RadixTheme.colors.cardOnSecondary,
+                                        color = RadixTheme.colors.card,
                                         shape = RadixTheme.shapes.roundedRectSmall
                                     )
                                     .padding(RadixTheme.dimensions.paddingLarge),

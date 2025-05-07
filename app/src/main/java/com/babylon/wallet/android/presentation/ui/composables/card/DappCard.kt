@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -37,7 +36,7 @@ fun DappCard(
             .defaultCardShadow()
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
-            .background(RadixTheme.colors.cardOnSecondary, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault

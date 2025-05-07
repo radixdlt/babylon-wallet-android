@@ -180,7 +180,7 @@ private fun GoogleDriveFile(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(bottom = RadixTheme.dimensions.paddingMedium),
-        color = RadixTheme.colors.cardOnSecondary,
+        color = RadixTheme.colors.card,
         shadowElevation = if (RadixTheme.config.isDarkTheme) {
             0.dp
         } else {
