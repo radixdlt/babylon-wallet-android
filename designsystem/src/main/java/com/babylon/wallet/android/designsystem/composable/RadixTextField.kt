@@ -1,11 +1,13 @@
 package com.babylon.wallet.android.designsystem.composable
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
@@ -136,8 +139,10 @@ object RadixTextFieldDefaults {
         errorContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
         focusedPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
         unfocusedPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
+        errorPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
         focusedTextColor: Color =  RadixTheme.colors.text,
         unfocusedTextColor: Color =  RadixTheme.colors.text,
+        errorTextColor: Color = RadixTheme.colors.text,
         focusedBorderColor: Color =  RadixTheme.colors.border,
         unfocusedBorderColor: Color =  RadixTheme.colors.backgroundTertiary,
         errorBorderColor: Color =  RadixTheme.colors.error,
@@ -152,8 +157,10 @@ object RadixTextFieldDefaults {
         errorContainerColor = errorContainerColor,
         focusedPlaceholderColor = focusedPlaceholderColor,
         unfocusedPlaceholderColor = unfocusedPlaceholderColor,
+        errorPlaceholderColor = errorPlaceholderColor,
         focusedTextColor = focusedTextColor,
         unfocusedTextColor = unfocusedTextColor,
+        errorTextColor = errorTextColor,
         focusedBorderColor = focusedBorderColor,
         unfocusedBorderColor = unfocusedBorderColor,
         errorBorderColor = errorBorderColor,
@@ -216,72 +223,190 @@ sealed interface LabelType {
     data class Custom(val content: @Composable () -> Unit) : LabelType
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextFieldPreview() {
+fun RadixTextFieldPreviewLight() {
     RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = {},
-            value = "",
-            hint = "Placeholder",
-            optionalHint = "This is a hint text, It should be short and sweet"
-        )
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextFieldFilled() {
-    RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = {},
-            value = "Input Text",
-            hint = "Placeholder",
-            leftLabel = LabelType.Default("Left Label"),
-            rightLabel = LabelType.Default("Right label"),
-            optionalHint = "This is a hint text, It should be short and sweet"
-        )
+fun RadixTextFieldPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextErrorField() {
+fun RadixTextFieldFilledLight() {
     RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = {},
-            value = "",
-            hint = "Placeholder",
-            error = "Error",
-            optionalHint = "This is a hint text, It should be short and sweet"
-        )
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "Input Text",
+                hint = "Placeholder",
+                leftLabel = LabelType.Default("Left Label"),
+                rightLabel = LabelType.Default("Right label"),
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextFieldWithIcon() {
+fun RadixTextFieldFilledDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "Input Text",
+                hint = "Placeholder",
+                leftLabel = LabelType.Default("Left Label"),
+                rightLabel = LabelType.Default("Right label"),
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextErrorFieldLight() {
     RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = { },
-            value = "casino",
-            rightLabel = LabelType.Default("Abc"),
-            trailingIcon = {
-                Icon(
-                    modifier = Modifier.size(20.dp),
-                    painter = painterResource(
-                        id = R.drawable.check_circle_outline
-                    ),
-                    contentDescription = null,
-                    tint = Color.Unspecified
-                )
-            },
-            errorFixedSize = true,
-            singleLine = true
-        )
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                error = "Error",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextErrorFieldDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                error = "Error",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextFieldWithIconLight() {
+    RadixWalletTheme {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = { },
+                value = "casino",
+                rightLabel = LabelType.Default("Abc"),
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(
+                            id = R.drawable.check_circle_outline
+                        ),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                },
+                errorFixedSize = true,
+                singleLine = true
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextFieldWithIconDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = { },
+                value = "casino",
+                rightLabel = LabelType.Default("Abc"),
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(
+                            id = R.drawable.check_circle_outline
+                        ),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                },
+                errorFixedSize = true,
+                singleLine = true
+            )
+        }
     }
 }
