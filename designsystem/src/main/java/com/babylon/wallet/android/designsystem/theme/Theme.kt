@@ -16,10 +16,6 @@ import androidx.compose.ui.graphics.Color
 
 @Stable
 class RadixColors(
-    green1: Color,
-    green3: Color,
-    pink1: Color,
-
     background: Color,
     backgroundSecondary: Color,
     backgroundTertiary: Color,
@@ -34,6 +30,7 @@ class RadixColors(
     divider: Color,
     border: Color,
     borderSecondary: Color,
+    ok: Color,
     error: Color,
     errorSecondary: Color,
     warning: Color,
@@ -41,13 +38,6 @@ class RadixColors(
     cardOnPrimary: Color,
     cardOnSecondary: Color
 ) {
-    var green1 by mutableStateOf(green1)
-        private set
-    var green3 by mutableStateOf(green3)
-        private set
-    var pink1 by mutableStateOf(pink1)
-        private set
-
     var background by mutableStateOf(background)
         private set
     var backgroundSecondary by mutableStateOf(backgroundSecondary)
@@ -76,6 +66,8 @@ class RadixColors(
         private set
     var borderSecondary by mutableStateOf(borderSecondary)
         private set
+    var ok by mutableStateOf(ok)
+        private set
     var error by mutableStateOf(error)
         private set
     var errorSecondary by mutableStateOf(errorSecondary)
@@ -88,64 +80,9 @@ class RadixColors(
         private set
     var cardOnSecondary by mutableStateOf(cardOnSecondary)
         private set
-
-    fun copy(
-        green1: Color = this.green1,
-        green3: Color = this.green3,
-        pink1: Color = this.pink1,
-        background: Color = this.background,
-        backgroundSecondary: Color = this.backgroundSecondary,
-        backgroundTertiary: Color = this.backgroundTertiary,
-        text: Color = this.text,
-        textSecondary: Color = this.textSecondary,
-        textTertiary: Color = this.textTertiary,
-        textButton: Color = this.textButton,
-        icon: Color = this.icon,
-        iconSecondary: Color = this.iconSecondary,
-        iconTertiary: Color = this.iconTertiary,
-        primaryButton: Color = this.primaryButton,
-        divider: Color = this.divider,
-        border: Color = this.border,
-        borderSecondary: Color = this.borderSecondary,
-        error: Color = this.error,
-        errorSecondary: Color = this.errorSecondary,
-        warning: Color = this.warning,
-        warningSecondary: Color = this.warningSecondary,
-        cardOnPrimary: Color = this.cardOnPrimary,
-        cardOnSecondary: Color = this.cardOnSecondary,
-    ): RadixColors {
-        return RadixColors(
-            green1 = green1,
-            green3 = green3,
-            pink1 = pink1,
-            background = background,
-            backgroundSecondary = backgroundSecondary,
-            backgroundTertiary = backgroundTertiary,
-            text = text,
-            textSecondary = textSecondary,
-            textTertiary = textTertiary,
-            textButton = textButton,
-            icon = icon,
-            iconSecondary = iconSecondary,
-            iconTertiary = iconTertiary,
-            primaryButton = primaryButton,
-            divider = divider,
-            border = border,
-            borderSecondary = borderSecondary,
-            error = error,
-            errorSecondary = errorSecondary,
-            warning = warning,
-            warningSecondary = warningSecondary,
-            cardOnPrimary = cardOnPrimary,
-            cardOnSecondary = cardOnSecondary
-        )
-    }
 }
 
 private val LightColorPalette = RadixColors(
-    green1 = Green1,
-    green3 = Green3,
-    pink1 = Pink1,
     background = White,
     backgroundSecondary = Gray5,
     backgroundTertiary = Gray4,
@@ -160,6 +97,7 @@ private val LightColorPalette = RadixColors(
     divider = Gray4,
     border = Gray1,
     borderSecondary = Gray3,
+    ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
     warning = Orange3,
@@ -168,7 +106,7 @@ private val LightColorPalette = RadixColors(
     cardOnSecondary = White
 )
 
-private val DarkColorPalette = LightColorPalette.copy(
+private val DarkColorPalette = RadixColors(
     background = Color(0xFF28292A),
     backgroundSecondary = Color(0xFF1E1F1F),
     backgroundTertiary = Color(0xFF404243),
@@ -183,9 +121,11 @@ private val DarkColorPalette = LightColorPalette.copy(
     divider = Color(0xFF404243),
     border = Gray5,
     borderSecondary = Gray3,
+    ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
     warning = Orange3,
+    warningSecondary = LightOrange,
     cardOnPrimary = Color(0xFF1E1F1F),
     cardOnSecondary = Color(0xFF28292A)
 )

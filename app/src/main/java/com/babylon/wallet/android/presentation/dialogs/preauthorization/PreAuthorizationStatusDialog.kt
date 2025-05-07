@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Pink1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.transaction.FailureDialogContent
 import com.babylon.wallet.android.presentation.dialogs.transaction.SuccessContent
@@ -225,7 +226,7 @@ private fun ExpirationContent(
             ).formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle())
         },
         style = RadixTheme.typography.body2Regular,
-        color = RadixTheme.colors.pink1,
+        color = Pink1,
         textAlign = TextAlign.Center
     )
 }

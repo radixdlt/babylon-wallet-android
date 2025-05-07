@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Pink1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -72,7 +73,7 @@ fun TransactionExpirationInfo(
                 ).formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle())
             },
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.pink1,
+            color = Pink1,
         )
     }
 }

@@ -540,7 +540,7 @@ private fun BackupStatusSection(
         val statusColor = if (backupState.isCloudBackupNotUpdated) {
             RadixTheme.colors.warning
         } else {
-            RadixTheme.colors.green1
+            RadixTheme.colors.ok
         }
 
         PromptLabel(
