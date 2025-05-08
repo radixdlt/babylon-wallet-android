@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.theme.Green1
 import com.babylon.wallet.android.designsystem.theme.Green3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.address.AddressDetailsDialogViewModel.State.Section
@@ -463,7 +464,13 @@ private fun EnlargedAddressView(
                 text = buildAnnotatedString {
                     append(enlargedAddressState.address)
 
-                    val greenSpan = SpanStyle(color = Green3) // TODO Theme
+                    val greenSpan = SpanStyle(
+                        color = if (RadixTheme.config.isDarkTheme) {
+                            Green1
+                        } else {
+                            Green3
+                        }
+                    )
                     enlargedAddressState.numberRanges.forEach { range ->
                         addStyle(style = greenSpan, start = range.start, end = range.endExclusive)
                     }
