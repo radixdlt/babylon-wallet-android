@@ -74,7 +74,7 @@ fun HistoryFilterTag(
                     .size(12.dp),
                 painter = painterResource(id = DSR.ic_close),
                 contentDescription = null,
-                tint = RadixTheme.colors.divider
+                tint = RadixTheme.colors.icon
             )
         }
     }
