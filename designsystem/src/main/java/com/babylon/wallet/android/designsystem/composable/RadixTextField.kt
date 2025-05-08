@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.designsystem.theme.Gray3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -137,9 +138,9 @@ object RadixTextFieldDefaults {
         focusedContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
         unfocusedContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
         errorContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
-        focusedPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
-        unfocusedPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
-        errorPlaceholderColor: Color =  RadixTheme.colors.textSecondary,
+        focusedPlaceholderColor: Color =  Gray3,
+        unfocusedPlaceholderColor: Color =  Gray3,
+        errorPlaceholderColor: Color =  Gray3,
         focusedTextColor: Color =  RadixTheme.colors.text,
         unfocusedTextColor: Color =  RadixTheme.colors.text,
         errorTextColor: Color = RadixTheme.colors.text,
