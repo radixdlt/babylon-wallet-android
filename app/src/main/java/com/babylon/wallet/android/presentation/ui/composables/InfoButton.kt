@@ -16,7 +16,6 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
-// TODO Theme
 @Composable
 fun InfoButton(
     modifier: Modifier = Modifier,
