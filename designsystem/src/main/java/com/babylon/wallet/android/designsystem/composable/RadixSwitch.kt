@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 
 // TODO Theme
 @Composable
@@ -73,14 +74,13 @@ private fun RadixSwitchPreviewDark() {
 
 object RadixSwitchDefaults {
 
-    // TODO Theme
     @Composable
     fun colors() = SwitchDefaults.colors(
-        checkedThumbColor = RadixTheme.colors.background,
-        checkedTrackColor = RadixTheme.colors.icon,
-        checkedBorderColor = RadixTheme.colors.icon,
+        checkedThumbColor = White,
+        checkedTrackColor = RadixTheme.colors.toggleActive,
+        checkedBorderColor = RadixTheme.colors.toggleActive,
         checkedIconColor = Color.Transparent,
-        uncheckedThumbColor = RadixTheme.colors.background,
+        uncheckedThumbColor = White,
         uncheckedTrackColor = RadixTheme.colors.iconTertiary,
         uncheckedBorderColor = RadixTheme.colors.iconTertiary,
         uncheckedIconColor = Color.Transparent,

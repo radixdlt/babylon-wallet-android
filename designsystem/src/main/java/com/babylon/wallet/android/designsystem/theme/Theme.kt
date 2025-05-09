@@ -33,6 +33,7 @@ class RadixColors(
     textFieldBorder: Color,
     textFieldFocusedBorder: Color,
     textFieldBackground: Color,
+    toggleActive: Color,
     ok: Color,
     error: Color,
     errorSecondary: Color,
@@ -74,6 +75,8 @@ class RadixColors(
         private set
     var textFieldBackground by mutableStateOf(textFieldBackground)
         private set
+    var toggleActive by mutableStateOf(toggleActive)
+        private set
     var ok by mutableStateOf(ok)
         private set
     var error by mutableStateOf(error)
@@ -106,6 +109,7 @@ private val LightColorPalette = RadixColors(
     textFieldBorder = Gray4,
     textFieldFocusedBorder = Gray1,
     textFieldBackground = Gray5,
+    toggleActive = Gray1,
     ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
@@ -132,6 +136,7 @@ private val DarkColorPalette = RadixColors(
     textFieldBorder = Color(0xFF797B7F),
     textFieldFocusedBorder = Gray5,
     textFieldBackground = Color(0xFF404243),
+    toggleActive = Color(0xFF00C389),
     ok = Green1,
     error = Orange2,
     errorSecondary = LightRed,
