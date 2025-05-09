@@ -34,8 +34,8 @@ import com.babylon.wallet.android.presentation.accessfactorsources.composables.A
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
@@ -65,10 +65,9 @@ fun SpotCheckDialog(
     }
 
     state.accessState.errorMessage?.let { errorMessage ->
-        BasicPromptAlertDialog(
-            finish = { viewModel.onMessageShown() },
-            messageText = errorMessage.getMessage(),
-            dismissText = null
+        ErrorAlertDialog(
+            cancel = { viewModel.onMessageShown() },
+            errorMessage = errorMessage
         )
     }
 

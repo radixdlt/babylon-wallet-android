@@ -196,7 +196,7 @@ data class AddLinkConnectorUiState(
         ) : Error(message)
 
         data class Other(
-            override val message: UiMessage
+            override val message: UiMessage.ErrorMessage
         ) : Error(message)
     }
 
