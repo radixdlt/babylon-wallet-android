@@ -140,7 +140,10 @@ fun MnemonicWordTextField(
                                 color = borderColor,
                                 shape = RadixTheme.shapes.roundedRectSmall
                             )
-                            .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectSmall)
+                            .background(
+                                color = RadixTheme.colors.textFieldBackground,
+                                shape = RadixTheme.shapes.roundedRectSmall
+                            )
                             .padding(RadixTheme.dimensions.paddingMedium),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -233,14 +236,14 @@ data class MnemonicTextFieldColors(
                 errorTextColor = RadixTheme.colors.error,
                 disabledTextColor = RadixTheme.colors.text, // TODO Theme
                 highlightedTextColor = RadixTheme.colors.text,
-                borderColor = RadixTheme.colors.backgroundTertiary,
-                focusedBorderColor = RadixTheme.colors.border,
+                borderColor = RadixTheme.colors.textFieldBorder,
+                focusedBorderColor = RadixTheme.colors.textFieldFocusedBorder,
                 errorBorderColor = RadixTheme.colors.error,
-                disabledBorderColor = RadixTheme.colors.backgroundTertiary,
-                highlightedBorderColor = RadixTheme.colors.backgroundTertiary,
+                disabledBorderColor = RadixTheme.colors.textFieldBackground,
+                highlightedBorderColor = RadixTheme.colors.textFieldFocusedBorder,
                 hintColor = RadixTheme.colors.text,
                 errorHintColor = RadixTheme.colors.text,
-                disabledHintColor = RadixTheme.colors.textTertiary,
+                disabledHintColor = RadixTheme.colors.text,
                 statusMessageColor = RadixTheme.colors.error
             )
         }

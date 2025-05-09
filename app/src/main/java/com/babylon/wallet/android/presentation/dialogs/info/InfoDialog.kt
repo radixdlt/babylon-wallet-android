@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -43,7 +42,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.InfoViewModel.Companion.GLOSSARY_ANCHOR
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
@@ -51,6 +49,7 @@ import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.DefaultMarkdownColors
 import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.utils.MARKDOWN_TAG_URL
@@ -119,18 +118,22 @@ private fun InfoDialogContent(
     val context = LocalContext.current
 
     val customHeading2: MarkdownComponent = { markdownComponentModel ->
-        markdownComponentModel.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let { markDownNode ->
-            val styledText = buildAnnotatedString {
-                pushStyle(RadixTheme.typography.title.toSpanStyle().copy(color = RadixTheme.colors.text))
-                buildMarkdownAnnotatedString(markdownComponentModel.content, markDownNode)
-                pop()
+        markdownComponentModel.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)
+            ?.let { markDownNode ->
+                val styledText = buildAnnotatedString {
+                    pushStyle(
+                        RadixTheme.typography.title.toSpanStyle()
+                            .copy(color = RadixTheme.colors.text)
+                    )
+                    buildMarkdownAnnotatedString(markdownComponentModel.content, markDownNode)
+                    pop()
+                }
+                Text(
+                    styledText,
+                    modifier = Modifier.fillMaxSize(),
+                    textAlign = TextAlign.Center
+                )
             }
-            Text(
-                styledText,
-                modifier = Modifier.fillMaxSize(),
-                textAlign = TextAlign.Center
-            )
-        }
     }
 
     val linkColor = RadixTheme.colors.textButton
@@ -165,7 +168,7 @@ private fun InfoDialogContent(
         topBar = {
             RadixCenteredTopAppBar(
                 title = "",
-                onBackClick =  onDismiss,
+                onBackClick = onDismiss,
                 backIconType = BackIconType.Close,
                 windowInsets = WindowInsets.none
             )
@@ -221,6 +224,15 @@ private fun InfoDialogContent(
                     ),
                     annotator = linkAnnotator,
                     content = markdownContent ?: stringResource(id = R.string.empty),
+                    colors = DefaultMarkdownColors(
+                        text = RadixTheme.colors.text,
+                        codeText = RadixTheme.colors.text,
+                        inlineCodeText = RadixTheme.colors.text,
+                        linkText = RadixTheme.colors.textButton,
+                        codeBackground = RadixTheme.colors.backgroundTertiary,
+                        inlineCodeBackground = RadixTheme.colors.backgroundTertiary,
+                        dividerColor = RadixTheme.colors.divider,
+                    )
                 )
             }
         }

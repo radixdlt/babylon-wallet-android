@@ -30,6 +30,9 @@ class RadixColors(
     primaryButton: Color,
     divider: Color,
     border: Color,
+    textFieldBorder: Color,
+    textFieldFocusedBorder: Color,
+    textFieldBackground: Color,
     ok: Color,
     error: Color,
     errorSecondary: Color,
@@ -65,6 +68,12 @@ class RadixColors(
         private set
     var border by mutableStateOf(border)
         private set
+    var textFieldBorder by mutableStateOf(textFieldBorder)
+        private set
+    var textFieldFocusedBorder by mutableStateOf(textFieldFocusedBorder)
+        private set
+    var textFieldBackground by mutableStateOf(textFieldBackground)
+        private set
     var ok by mutableStateOf(ok)
         private set
     var error by mutableStateOf(error)
@@ -94,6 +103,9 @@ private val LightColorPalette = RadixColors(
     primaryButton = Blue2,
     divider = Gray4,
     border = Gray1,
+    textFieldBorder = Gray4,
+    textFieldFocusedBorder = Gray1,
+    textFieldBackground = Gray5,
     ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
@@ -117,6 +129,9 @@ private val DarkColorPalette = RadixColors(
     primaryButton = Color(0xFF00C389),
     divider = Color(0xFF404243),
     border = Gray5,
+    textFieldBorder = Color(0xFF797B7F),
+    textFieldFocusedBorder = Gray5,
+    textFieldBackground = Color(0xFF404243),
     ok = Green1,
     error = Orange2,
     errorSecondary = LightRed,

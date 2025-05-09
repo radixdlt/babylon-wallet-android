@@ -41,11 +41,14 @@ fun <T : SelectorItem<*>> DefaultSelector(
                 .throttleClickable {
                     isMenuExpanded = true
                 }
-                .background(RadixTheme.colors.backgroundTertiary, shape = RadixTheme.shapes.roundedRectSmall)
+                .background(
+                    color = RadixTheme.colors.textFieldBackground,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
                 .border(1.dp, if (isMenuExpanded) {
-                    RadixTheme.colors.border
+                    RadixTheme.colors.textFieldFocusedBorder
                 } else {
-                    RadixTheme.colors.backgroundTertiary
+                    RadixTheme.colors.textFieldBorder
                 }, RadixTheme.shapes.roundedRectSmall)
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
@@ -65,7 +68,7 @@ fun <T : SelectorItem<*>> DefaultSelector(
         }
 
         DropdownMenu(
-            modifier = Modifier.background(RadixTheme.colors.backgroundTertiary),
+            modifier = Modifier.background(RadixTheme.colors.textFieldBackground),
             expanded = isMenuExpanded,
             onDismissRequest = { isMenuExpanded = false }
         ) {

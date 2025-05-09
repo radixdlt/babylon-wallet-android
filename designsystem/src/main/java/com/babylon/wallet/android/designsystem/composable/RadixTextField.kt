@@ -135,17 +135,17 @@ fun RadixTextField(
 object RadixTextFieldDefaults {
     @Composable
     fun colors(
-        focusedContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
-        unfocusedContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
-        errorContainerColor: Color =  RadixTheme.colors.backgroundTertiary,
+        focusedContainerColor: Color =  RadixTheme.colors.textFieldBackground,
+        unfocusedContainerColor: Color =  RadixTheme.colors.textFieldBackground,
+        errorContainerColor: Color =  RadixTheme.colors.textFieldBackground,
         focusedPlaceholderColor: Color =  Gray3,
         unfocusedPlaceholderColor: Color =  Gray3,
         errorPlaceholderColor: Color =  Gray3,
         focusedTextColor: Color =  RadixTheme.colors.text,
         unfocusedTextColor: Color =  RadixTheme.colors.text,
         errorTextColor: Color = RadixTheme.colors.text,
-        focusedBorderColor: Color =  RadixTheme.colors.border,
-        unfocusedBorderColor: Color =  RadixTheme.colors.backgroundTertiary,
+        focusedBorderColor: Color =  RadixTheme.colors.textFieldFocusedBorder,
+        unfocusedBorderColor: Color =  RadixTheme.colors.textFieldBorder,
         errorBorderColor: Color =  RadixTheme.colors.error,
         cursorColor: Color =  RadixTheme.colors.text,
         selectionColors: TextSelectionColors = TextSelectionColors(
