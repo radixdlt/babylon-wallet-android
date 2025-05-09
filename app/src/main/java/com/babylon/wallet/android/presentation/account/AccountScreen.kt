@@ -524,7 +524,7 @@ private fun TransferButton(
         modifier = modifier,
         text = stringResource(id = R.string.account_transfer),
         onClick = { onTransferClick(accountAddress) },
-        containerColor = White.copy(alpha = 0.2f),
+        containerColor = RadixTheme.colors.backgroundTransparent,
         contentColor = White,
         shape = RadixTheme.shapes.circle,
         leadingContent = {
@@ -547,7 +547,7 @@ private fun HistoryButton(
         text = stringResource(id = R.string.common_history),
         onClick = onHistoryClick,
         modifier = modifier,
-        containerColor = White.copy(alpha = 0.2f),
+        containerColor = RadixTheme.colors.backgroundTransparent,
         contentColor = White,
         shape = RadixTheme.shapes.circle,
         leadingContent = {

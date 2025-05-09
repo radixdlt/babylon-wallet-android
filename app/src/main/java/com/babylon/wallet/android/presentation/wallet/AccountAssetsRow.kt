@@ -43,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.AppearanceId
@@ -138,7 +139,11 @@ private fun AssetsContent(
                     .zIndex(visibleFungibles.size - index.toFloat())
                     .border(
                         width = bordersSize,
-                        color = White.copy(alpha = 0.2f),
+                        color = RadixTheme.colors.backgroundTransparent,
+                        shape = CircleShape
+                    )
+                    .background(
+                        color = RadixTheme.colors.backgroundTransparent,
                         shape = CircleShape
                     )
                     .padding(bordersSize),
@@ -258,7 +263,7 @@ private fun AssetTypeWithCounter(
                 .size(iconSize + bordersSize * 2)
                 .border(
                     width = bordersSize,
-                    color = White.copy(alpha = 0.2f),
+                    color = RadixTheme.colors.backgroundTransparent,
                     shape = shape
                 )
                 .padding(bordersSize)
@@ -284,7 +289,7 @@ private fun CounterBox(
     Box(
         modifier = modifier
             .background(
-                color = White.copy(alpha = 0.3f),
+                color = RadixTheme.colors.backgroundTransparent,
                 shape = RadixTheme.shapes.roundedRectDefault
             ),
         contentAlignment = Alignment.CenterEnd
@@ -315,7 +320,7 @@ private fun Modifier.checkRenderedOutside(
 @Preview
 @Composable
 fun AssetsContentRowPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         Column(
             modifier = Modifier
                 .padding(all = 32.dp)

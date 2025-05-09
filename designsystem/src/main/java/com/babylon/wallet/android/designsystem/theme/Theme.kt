@@ -19,6 +19,7 @@ class RadixColors(
     background: Color,
     backgroundSecondary: Color,
     backgroundTertiary: Color,
+    backgroundTransparent: Color,
     text: Color,
     textSecondary: Color,
     textTertiary: Color,
@@ -41,6 +42,8 @@ class RadixColors(
     var backgroundSecondary by mutableStateOf(backgroundSecondary)
         private set
     var backgroundTertiary by mutableStateOf(backgroundTertiary)
+        private set
+    var backgroundTransparent by mutableStateOf(backgroundTransparent)
         private set
     var text by mutableStateOf(text)
         private set
@@ -80,6 +83,7 @@ private val LightColorPalette = RadixColors(
     background = White,
     backgroundSecondary = Gray5,
     backgroundTertiary = Gray4,
+    backgroundTransparent = White.copy(alpha = 0.3f),
     text = Gray1,
     textSecondary = Gray2,
     textTertiary = Gray3,
@@ -102,6 +106,7 @@ private val DarkColorPalette = RadixColors(
     background = Color(0xFF28292A),
     backgroundSecondary = Color(0xFF1E1F1F),
     backgroundTertiary = Color(0xFF404243),
+    backgroundTransparent = Gray5.copy(alpha = 0.3f),
     text = Gray5,
     textSecondary = Gray4,
     textTertiary = Gray2,
