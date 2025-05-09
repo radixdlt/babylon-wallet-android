@@ -30,7 +30,7 @@ fun AccountPromptLabel(
 ) {
     PromptLabel(
         modifier = modifier
-            .background(labelColor.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectSmall)
+            .background(RadixTheme.colors.backgroundTransparent, RadixTheme.shapes.roundedRectSmall)
             .clip(RadixTheme.shapes.roundedRectSmall)
             .applyIf(
                 onClick != null,
