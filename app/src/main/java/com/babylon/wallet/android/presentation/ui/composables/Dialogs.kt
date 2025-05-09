@@ -342,7 +342,7 @@ fun ErrorAlertDialog(
                 Text(
                     text = it,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
         },
@@ -350,11 +350,11 @@ fun ErrorAlertDialog(
             Text(
                 text = errorMessage.getMessage(),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     )
 }
 
