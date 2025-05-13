@@ -23,6 +23,7 @@ import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
@@ -92,7 +93,7 @@ class MainActivity : FragmentActivity() {
                     isBalanceVisible = isVisible,
                     actionableAddressViewEntryPoint = actionableAddressViewEntryPoint
                 ) {
-                    val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
+                    val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsStateWithLifecycle()
                     val devBannerState by remember(isDevBannerVisible) {
                         derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                     }

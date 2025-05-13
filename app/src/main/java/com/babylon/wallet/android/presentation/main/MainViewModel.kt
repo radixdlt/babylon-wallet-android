@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
@@ -21,12 +22,26 @@ import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileState
+import com.radixdlt.sargon.ProfileStateChangeDriver
+import com.radixdlt.sargon.os.SargonOsManager
+import com.radixdlt.sargon.os.SargonOsState
+import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.combineLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
@@ -34,6 +49,7 @@ import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.hasNetworks
 import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
 import rdx.works.profile.domain.FirstAccountCreationStatus
@@ -55,7 +71,8 @@ class MainViewModel @Inject constructor(
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
     private val appLockStateProvider: AppLockStateProvider,
-    private val incomingRequestsDelegate: IncomingRequestsDelegate
+    private val incomingRequestsDelegate: IncomingRequestsDelegate,
+    private val sargonOsManager: SargonOsManager
 ) : StateViewModel<MainViewModel.State>(),
     OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -94,7 +111,11 @@ class MainViewModel @Inject constructor(
 
             else -> false
         }
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = false
+    )
 
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
 
@@ -105,7 +126,7 @@ class MainViewModel @Inject constructor(
             oneOffEventHandler = this
         )
 
-        observeProfileState()
+        observeAppState()
         observeAppLockState()
         viewModelScope.launch { observeAccountsAndSyncWithConnectorExtensionUseCase() }
         processBufferedDeepLinkRequest()
@@ -115,34 +136,38 @@ class MainViewModel @Inject constructor(
         return State(isDeviceSecure = deviceCapabilityHelper.isDeviceSecure)
     }
 
-    private fun observeProfileState() {
-        viewModelScope.launch {
-            combine(
-                getProfileUseCase.state,
-                createInitialAccountStatusSemaphore.firstAccountCreationStatus,
-                preferencesManager.isDeviceRootedDialogShown,
-                cloudBackupErrorStream.errors
-            ) { profileState, firstAccountCreationStatus, isDeviceRootedDialogShown, backupError ->
-                val isAdvancedLockEnabled = if (profileState is ProfileState.Loaded) {
-                    profileState.v1.isAdvancedLockEnabled
-                } else {
-                    false
-                }
+    private fun observeAppState() {
+        combine(
+            sargonOsManager.sargonState,
+            getProfileUseCase.state.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = null
+            ),
+            createInitialAccountStatusSemaphore.firstAccountCreationStatus,
+            preferencesManager.isDeviceRootedDialogShown,
+            cloudBackupErrorStream.errors
+        ) { osState, profileState, firstAccountCreationStatus, isDeviceRootedDialogShown, backupError ->
+            val isAdvancedLockEnabled = if (profileState is ProfileState.Loaded) {
+                profileState.v1.isAdvancedLockEnabled
+            } else {
+                false
+            }
 
-                _state.update {
-                    State(
-                        initialAppState = AppState.from(
-                            profileState = profileState,
-                            firstAccountCreationStatus = firstAccountCreationStatus
-                        ),
-                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
-                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
-                        isAdvancedLockEnabled = isAdvancedLockEnabled,
-                        isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
-                    )
-                }
-            }.collect()
-        }
+            _state.update {
+                State(
+                    initialAppState = AppState.from(
+                        sargonOsState = osState,
+                        profileState = profileState,
+                        firstAccountCreationStatus = firstAccountCreationStatus
+                    ),
+                    showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
+                    claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
+                    isAdvancedLockEnabled = isAdvancedLockEnabled,
+                    isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
+                )
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun observeAppLockState() {
@@ -247,24 +272,33 @@ sealed interface AppState {
     data object OnBoarding : AppState
     data object Wallet : AppState
     data class IncompatibleProfile(val cause: CommonException) : AppState
+    data class ErrorBootingSargon(val error: Throwable) : AppState
     data object Loading : AppState
 
     companion object {
         fun from(
-            profileState: ProfileState,
+            sargonOsState: SargonOsState,
+            profileState: ProfileState?,
             firstAccountCreationStatus: FirstAccountCreationStatus
-        ) = when (profileState) {
-            is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.v1)
-            is ProfileState.Loaded -> if (
-                profileState.v1.hasNetworks &&
-                firstAccountCreationStatus == FirstAccountCreationStatus.None
-            ) {
-                Wallet
-            } else {
-                OnBoarding
-            }
+        ) = when (sargonOsState) {
+            is SargonOsState.Idle -> Loading
+            is SargonOsState.BootError -> ErrorBootingSargon(sargonOsState.error)
+            is SargonOsState.Booted -> {
+                when (profileState) {
+                    is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.v1)
+                    is ProfileState.Loaded -> if (
+                        profileState.v1.hasNetworks &&
+                        firstAccountCreationStatus == FirstAccountCreationStatus.None
+                    ) {
+                        Wallet
+                    } else {
+                        OnBoarding
+                    }
 
-            is ProfileState.None -> OnBoarding
+                    is ProfileState.None -> OnBoarding
+                    null -> Loading
+                }
+            }
         }
     }
 }

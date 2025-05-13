@@ -1,0 +1,156 @@
+package com.babylon.wallet.android.presentation.boot
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.utils.Constants
+import com.babylon.wallet.android.utils.openEmail
+import com.radixdlt.sargon.CommonException
+
+@Composable
+fun SargonBootErrorScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SargonBootErrorViewModel,
+    onFinish: () -> Unit
+) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is SargonBootErrorViewModel.Event.Finish -> onFinish()
+                is SargonBootErrorViewModel.Event.OnSendLogs -> {
+                    context.openEmail(
+                        recipientAddress = Constants.RADIX_SUPPORT_EMAIL_ADDRESS,
+                        subject = Constants.RADIX_SUPPORT_EMAIL_SUBJECT,
+                        body = it.body
+                    )
+                    onFinish()
+                }
+            }
+        }
+    }
+
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    SargonBootErrorContentContent(
+        modifier = modifier,
+        state = state,
+        onFinish = viewModel::onFinishClick,
+        onSendLogs = viewModel::onSendLogsClick
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun SargonBootErrorContentContent(
+    modifier: Modifier = Modifier,
+    state: SargonBootErrorViewModel.State,
+    onFinish: () -> Unit,
+    onSendLogs: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(RadixTheme.colors.blue1)
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+    ) {
+
+        BasicAlertDialog(
+            onDismissRequest = onFinish
+        ) {
+            Surface(
+                shape = RadixTheme.shapes.roundedRectSmall,
+                color = RadixTheme.colors.defaultBackground,
+                tonalElevation = AlertDialogDefaults.TonalElevation
+            ) {
+                Column(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                ) {
+                    Text(
+                        modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(R.string.common_errorAlertTitle),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
+                        text = state.bootErrorMessage?.getMessage().orEmpty(),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        RadixTextButton(
+                            text = stringResource(id = R.string.common_cancel),
+                            onClick = onFinish,
+                            contentColor = RadixTheme.colors.blue2
+                        )
+
+                        RadixTextButton(
+                            text = stringResource(id = R.string.troubleshooting_contactSupport_title),
+                            onClick = onSendLogs,
+                            contentColor = RadixTheme.colors.blue2
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun IncompatibleWalletWithCausePreview() {
+    RadixWalletPreviewTheme {
+        SargonBootErrorContentContent(
+            state = SargonBootErrorViewModel.State(
+                bootErrorMessage = UiMessage.ErrorMessage(CommonException.Unknown())
+            ),
+            onFinish = {},
+            onSendLogs = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun IncompatibleWalletWithoutCausePreview() {
+    RadixWalletPreviewTheme {
+        SargonBootErrorContentContent(
+            state = SargonBootErrorViewModel.State(
+                bootErrorMessage = null
+            ),
+            onFinish = {},
+            onSendLogs = {}
+        )
+    }
+}
