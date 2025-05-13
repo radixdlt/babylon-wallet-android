@@ -138,17 +138,16 @@ private val AccountGradientListDark = listOf(
 val SlideToSignLight = Brush.linearGradient(
     listOf(
         Color(0xFF03B797),
-        Color(0xFF1544F5),
+        Color(0xFF052CC0),
         Color(0xFFFF07E6),
-        Color(0xFF060F8F)
+        Color(0xFF060F8F) // TODO Theme
     )
 )
-// TODO Theme
 val SlideToSignDark = Brush.linearGradient(
     listOf(
-        Color(0xFF03B797),
-        Color(0xFF1544F5),
-        Color(0xFFFF07E6),
+        Color(0xFF2D8676),
+        Color(0xFF2D3A86),
+        Color(0xFF862D7D),
         Color(0xFF060F8F)
     )
 )

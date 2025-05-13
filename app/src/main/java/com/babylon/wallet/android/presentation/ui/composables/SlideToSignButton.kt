@@ -152,7 +152,9 @@ fun SlideToSignButton(
                         drawContent()
                         drawRect(
                             brush = gradient,
-                            size = if (draggableState.requireOffset() > 0f) {
+                            size = if (isSubmitting) {
+                                size
+                            } else if (draggableState.requireOffset() > 0f) {
                                 Size(draggableState.requireOffset() + indicatorWidthPx / 2, size.height)
                             } else {
                                 Size.Zero
