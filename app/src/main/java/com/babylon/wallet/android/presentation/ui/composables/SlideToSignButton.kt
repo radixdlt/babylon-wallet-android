@@ -43,19 +43,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.Blue1
-import com.babylon.wallet.android.designsystem.theme.GradientBrand2
-import com.babylon.wallet.android.designsystem.theme.Gray3
-import com.babylon.wallet.android.designsystem.theme.Gray4
+import com.babylon.wallet.android.designsystem.theme.SlideToSignLight
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.SlideToSignDark
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlin.math.roundToInt
 
-// TODO Theme
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SlideToSignButton(
@@ -65,8 +62,16 @@ fun SlideToSignButton(
     onSwipeComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val buttonColor = if (enabled) Blue1 else Gray4
-    val textColor = if (enabled) White else Gray3
+    val buttonColor = if (enabled) {
+        RadixTheme.colors.primaryButton
+    } else {
+        RadixTheme.colors.backgroundTertiary
+    }
+    val textColor = if (enabled) {
+        White
+    } else {
+        RadixTheme.colors.textTertiary
+    }
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
@@ -132,6 +137,12 @@ fun SlideToSignButton(
             style = RadixTheme.typography.body1Header,
             color = textColor
         )
+
+        val gradient = if (RadixTheme.config.isDarkTheme) {
+            SlideToSignDark
+        } else {
+            SlideToSignLight
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -140,7 +151,7 @@ fun SlideToSignButton(
                     onDrawWithContent {
                         drawContent()
                         drawRect(
-                            brush = GradientBrand2,
+                            brush = gradient,
                             size = if (draggableState.requireOffset() > 0f) {
                                 Size(draggableState.requireOffset() + indicatorWidthPx / 2, size.height)
                             } else {
@@ -164,7 +175,7 @@ fun SlideToSignButton(
                 }
                 .padding(indicatorPadding)
                 .size(indicatorSize)
-                .background(White, RadixTheme.shapes.circle)
+                .background(RadixTheme.colors.card, RadixTheme.shapes.circle)
                 .applyIf(
                     enabled && !isSubmitting,
                     Modifier.anchoredDraggable(
@@ -180,7 +191,7 @@ fun SlideToSignButton(
                     modifier = Modifier
                         .size(20.dp)
                         .align(Alignment.Center),
-                    color = Blue1,
+                    color = RadixTheme.colors.icon,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -189,7 +200,7 @@ fun SlideToSignButton(
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
                         contentDescription = null,
-                        tint = Blue1
+                        tint = RadixTheme.colors.icon
                     )
                 }
                 AnimatedVisibility(modifier = Modifier.align(Alignment.Center), visible = crossedSwipeThreshold) {
@@ -197,7 +208,7 @@ fun SlideToSignButton(
                         modifier = Modifier.align(Alignment.Center),
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix),
                         contentDescription = null,
-                        tint = Blue1
+                        tint = RadixTheme.colors.icon
                     )
                 }
             }

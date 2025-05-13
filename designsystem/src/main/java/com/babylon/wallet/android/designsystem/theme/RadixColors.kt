@@ -2,8 +2,6 @@
 
 package com.babylon.wallet.android.designsystem.theme
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val Blue1 = Color(0xFF060F8F)
@@ -30,18 +28,5 @@ val LightRed = Color(0xFFfcebeb)
 
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
-
-val GradientBrand1 = Brush.linearGradient(
-    listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F)),
-    start = Offset(0f, Float.POSITIVE_INFINITY),
-    end = Offset(
-        x = Float.POSITIVE_INFINITY,
-        y = 0f
-    )
-)
-
-val GradientBrand2 = Brush.linearGradient(
-    listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F))
-)
 
 

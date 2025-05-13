@@ -135,6 +135,24 @@ private val AccountGradientListDark = listOf(
     GradientAccount12Dark,
 )
 
+val SlideToSignLight = Brush.linearGradient(
+    listOf(
+        Color(0xFF03B797),
+        Color(0xFF1544F5),
+        Color(0xFFFF07E6),
+        Color(0xFF060F8F)
+    )
+)
+// TODO Theme
+val SlideToSignDark = Brush.linearGradient(
+    listOf(
+        Color(0xFF03B797),
+        Color(0xFF1544F5),
+        Color(0xFFFF07E6),
+        Color(0xFF060F8F)
+    )
+)
+
 @Composable
 internal fun Int.indexToGradient(alpha: Float = 1f): Brush {
     val isDarkTheme = RadixTheme.config.isDarkTheme
