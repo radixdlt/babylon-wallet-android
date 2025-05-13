@@ -173,7 +173,8 @@ sealed interface SettingsItem {
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
                 is AdvancedLock -> DSR.ic_lock
-                else -> null
+                is ThemePreference -> DSR.ic_app_theme
+                is CrashReporting -> null
             }
         }
     }

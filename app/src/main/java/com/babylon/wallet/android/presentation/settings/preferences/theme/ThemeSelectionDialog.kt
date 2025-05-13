@@ -21,9 +21,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -139,12 +141,17 @@ private fun ThemeSelectionItem(
 ) {
     DefaultSettingsItem(
         modifier = modifier,
-        title = when (selection) { // TODO theme
-            ThemeSelection.LIGHT -> "Light"
-            ThemeSelection.DARK -> "Dark"
-            ThemeSelection.SYSTEM -> "Follow System"
+        title = when (selection) {
+            ThemeSelection.LIGHT -> stringResource(R.string.preferences_themeSelection_light)
+            ThemeSelection.DARK -> stringResource(R.string.preferences_themeSelection_dark)
+            ThemeSelection.SYSTEM -> stringResource(R.string.preferences_themeSelection_system)
         },
         onClick = onSelected,
+        leadingIconRes = when (selection) {
+            ThemeSelection.LIGHT -> com.babylon.wallet.android.designsystem.R.drawable.ic_light
+            ThemeSelection.DARK -> com.babylon.wallet.android.designsystem.R.drawable.ic_dark
+            ThemeSelection.SYSTEM -> com.babylon.wallet.android.designsystem.R.drawable.ic_system
+        },
         trailingIcon = {
             Box(
                 modifier = Modifier.size(24.dp)
