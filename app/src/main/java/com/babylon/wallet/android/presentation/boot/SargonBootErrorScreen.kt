@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.theme.Blue1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -75,7 +76,7 @@ private fun SargonBootErrorContentContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(RadixTheme.colors.blue1)
+            .background(Blue1)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         BasicAlertDialog(
@@ -83,7 +84,7 @@ private fun SargonBootErrorContentContent(
         ) {
             Surface(
                 shape = RadixTheme.shapes.roundedRectSmall,
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.background,
                 tonalElevation = AlertDialogDefaults.TonalElevation
             ) {
                 Column(
@@ -93,14 +94,14 @@ private fun SargonBootErrorContentContent(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_errorAlertTitle),
                         style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
 
                     Text(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                         text = state.bootErrorMessage?.getMessage().orEmpty(),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
 
                     FlowRow(
@@ -111,13 +112,13 @@ private fun SargonBootErrorContentContent(
                         RadixTextButton(
                             text = stringResource(id = R.string.common_cancel),
                             onClick = onFinish,
-                            contentColor = RadixTheme.colors.blue2
+                            contentColor = RadixTheme.colors.textButton
                         )
 
                         RadixTextButton(
                             text = stringResource(id = R.string.troubleshooting_contactSupport_title),
                             onClick = onSendLogs,
-                            contentColor = RadixTheme.colors.blue2
+                            contentColor = RadixTheme.colors.textButton
                         )
                     }
                 }
