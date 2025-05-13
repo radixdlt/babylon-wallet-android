@@ -20,6 +20,7 @@ fun MainScreen(
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
+    onNavigateToBootError: () -> Unit,
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
@@ -45,6 +46,12 @@ fun MainScreen(
         is AppState.IncompatibleProfile -> {
             LaunchedEffect(Unit) {
                 onNavigateToIncompatibleProfile()
+            }
+        }
+
+        is AppState.ErrorBootingSargon -> {
+            LaunchedEffect(Unit) {
+                onNavigateToBootError()
             }
         }
 

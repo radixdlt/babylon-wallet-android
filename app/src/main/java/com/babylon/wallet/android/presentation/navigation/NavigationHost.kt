@@ -28,6 +28,8 @@ import com.babylon.wallet.android.presentation.account.settings.devsettings.devS
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
+import com.babylon.wallet.android.presentation.boot.bootError
+import com.babylon.wallet.android.presentation.boot.navigateToBootError
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
@@ -226,6 +228,9 @@ fun NavigationHost(
             },
             onNavigateToIncompatibleProfile = {
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+            },
+            onNavigateToBootError = {
+                navController.navigateToBootError()
             },
             showNPSSurvey = {
                 navController.npsSurveyDialog()
@@ -547,6 +552,7 @@ fun NavigationHost(
                 navController.popPersonaCreation()
             }
         )
+        bootError(onCloseApp)
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {

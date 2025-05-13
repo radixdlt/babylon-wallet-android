@@ -81,7 +81,12 @@ class CreatePersonaViewModel @Inject constructor(
                 sendEvent(Event.NavigateToCompletion)
             }.onFailure { error ->
                 Timber.w(error)
-                _state.update { state -> state.copy(isPersonaCreating = false) }
+                _state.update { state ->
+                    state.copy(
+                        isPersonaCreating = false,
+                        uiMessage = UiMessage.ErrorMessage(error)
+                    )
+                }
             }
         }
     }
