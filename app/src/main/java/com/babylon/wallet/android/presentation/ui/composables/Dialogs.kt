@@ -294,7 +294,7 @@ fun BasicPromptAlertDialog(
         title = title,
         text = message,
         shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.background // TODO Theme
+        containerColor = RadixTheme.colors.background
     )
 }
 
@@ -366,7 +366,7 @@ fun BasicPromptAlertDialog(
     messageText: String? = null,
     confirmText: String = stringResource(id = R.string.common_confirm),
     dismissText: String? = stringResource(id = R.string.common_cancel),
-    confirmTextColor: Color = RadixTheme.colors.primaryButton // TODO Theme
+    confirmTextColor: Color = RadixTheme.colors.primaryButton
 ) {
     BasicPromptAlertDialog(
         modifier = modifier,

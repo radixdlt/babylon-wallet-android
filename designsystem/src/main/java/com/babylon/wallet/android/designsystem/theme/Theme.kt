@@ -140,8 +140,8 @@ private val DarkColorPalette = RadixColors(
     ok = Green1,
     error = Orange2,
     errorSecondary = LightRed,
-    warning = Orange3,
-    warningSecondary = LightOrange,
+    warning = Color(0xFFC47F00),
+    warningSecondary = Color(0xFFE6DCCB),
     card = Color(0xFF28292A)
 )
 
