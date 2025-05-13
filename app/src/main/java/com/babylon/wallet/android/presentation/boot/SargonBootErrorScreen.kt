@@ -78,7 +78,6 @@ private fun SargonBootErrorContentContent(
             .background(RadixTheme.colors.blue1)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
-
         BasicAlertDialog(
             onDismissRequest = onFinish
         ) {

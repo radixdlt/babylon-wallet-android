@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
@@ -22,25 +21,17 @@ import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileState
-import com.radixdlt.sargon.ProfileStateChangeDriver
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.SargonOsState
-import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.combineLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -49,7 +40,6 @@ import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.hasNetworks
 import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
-import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
 import rdx.works.profile.domain.FirstAccountCreationStatus

@@ -77,7 +77,6 @@ class SargonBootErrorViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data object Finish : Event
-        data class OnSendLogs(val body: String): Event
+        data class OnSendLogs(val body: String) : Event
     }
-
 }
