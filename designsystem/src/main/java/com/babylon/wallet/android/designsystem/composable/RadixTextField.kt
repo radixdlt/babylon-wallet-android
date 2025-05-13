@@ -149,7 +149,7 @@ object RadixTextFieldDefaults {
         errorBorderColor: Color =  RadixTheme.colors.error,
         cursorColor: Color =  RadixTheme.colors.text,
         selectionColors: TextSelectionColors = TextSelectionColors(
-            RadixTheme.colors.text, // TODO Theme
+            RadixTheme.colors.text,
             LocalTextSelectionColors.current.backgroundColor
         )
     ) = OutlinedTextFieldDefaults.colors(

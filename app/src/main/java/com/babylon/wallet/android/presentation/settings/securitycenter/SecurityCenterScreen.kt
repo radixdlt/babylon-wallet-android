@@ -225,7 +225,6 @@ private fun SecurityCenterContent(
     }
 }
 
-// TODO Theme
 @Composable
 fun RecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(
@@ -249,7 +248,6 @@ fun RecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     }
 }
 
-// TODO Theme
 @Composable
 private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtitle: String) {
     Column(
@@ -319,7 +317,7 @@ private fun SecurityCenterCard(
             )
             .clickable { onClick() }
             .background(
-                color = RadixTheme.colors.background, // TODO Theme (card)
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(
@@ -333,7 +331,7 @@ private fun SecurityCenterCard(
             modifier = Modifier.size(80.dp),
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            tint = Color.Unspecified // TODO Theme
+            tint = Color.Unspecified
         )
 
         Column(

@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -286,12 +287,16 @@ private fun TransactionReviewContent(
                                 Modifier
                                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
                                     .background(
-                                        brush = Brush.verticalGradient(
-                                            listOf(
-                                                RadixTheme.colors.backgroundSecondary,
-                                                RadixTheme.colors.backgroundTertiary
+                                        brush = if (RadixTheme.config.isDarkTheme) {
+                                            SolidColor(RadixTheme.colors.backgroundSecondary)
+                                        } else {
+                                            Brush.verticalGradient(
+                                                listOf(
+                                                    RadixTheme.colors.backgroundSecondary,
+                                                    RadixTheme.colors.backgroundTertiary
+                                                )
                                             )
-                                        ),
+                                        },
                                         shape = RadixTheme.shapes.roundedRectMedium
                                     )
                             } else {
@@ -626,13 +631,56 @@ private fun BottomSheetContent(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @UsesSampleValues
 @Composable
-private fun TransactionPreviewContentPreview(
+private fun TransactionPreviewContentPreviewLight(
     @PreviewParameter(TransactionReviewPreviewProvider::class) state: State
 ) {
     RadixWalletPreviewTheme {
+        TransactionReviewContent(
+            state = state,
+            onBackClick = {},
+            onApproveTransaction = {},
+            onRawManifestToggle = {},
+            onMessageShown = {},
+            onGuaranteesApplyClick = {},
+            onCloseBottomSheetClick = {},
+            onEditGuaranteesClick = {},
+            onCustomizeClick = {},
+            onDAppClick = {},
+            onUnknownAddressesClick = {},
+            onTransferableFungibleClick = {},
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> },
+            onGuaranteeValueChanged = { _, _ -> },
+            onGuaranteeValueIncreased = {},
+            onGuaranteeValueDecreased = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
+            onFeePayerChanged = {},
+            onFeePayerSelected = {},
+            onFeePaddingAmountChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {},
+            dismissTransactionErrorDialog = {},
+            onAcknowledgeRawTransactionWarning = {},
+            onFeePayerSelectionDismiss = {},
+            onFailedSigningRestart = {},
+            onFailedSigningCancel = {},
+            onInfoClick = {}
+        )
+    }
+}
+
+@Preview
+@UsesSampleValues
+@Composable
+private fun TransactionPreviewContentPreviewDark(
+    @PreviewParameter(TransactionReviewPreviewProvider::class) state: State
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         TransactionReviewContent(
             state = state,
             onBackClick = {},

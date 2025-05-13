@@ -79,6 +79,7 @@ fun FeePayerSelectionSheet(
         },
         sheetState = sheetState,
         enableImePadding = true,
+        containerColor = RadixTheme.colors.backgroundSecondary,
         sheetContent = {
             FeePayerSelectionContent(
                 input = input,
@@ -155,7 +156,7 @@ private fun FeePayerSelectionContent(
                 text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_selectAccountButtonTitle)
             )
         },
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -189,7 +190,7 @@ private fun FeePayerCard(
             )
             .applyIf(candidate.hasEnoughBalance, Modifier.throttleClickable { onPayerSelected(candidate) }),
         shape = RadixTheme.shapes.roundedRectMedium,
-        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.background), // TODO Theme
+        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.card),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = if (RadixTheme.config.isDarkTheme) 0.dp else 6.dp
         )

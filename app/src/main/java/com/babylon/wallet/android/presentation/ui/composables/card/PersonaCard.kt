@@ -42,7 +42,6 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
-// TODO Theme
 @Composable
 fun SimplePersonaCard(
     modifier: Modifier = Modifier,

@@ -432,7 +432,7 @@ private fun EmergencyFallbackView(
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
                 .background(
-                    color = RadixTheme.colors.card, // TODO Theme
+                    color = RadixTheme.colors.card,
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
                 .throttleClickable { onNumberOfDaysClick() }

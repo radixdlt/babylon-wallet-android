@@ -326,7 +326,7 @@ private fun <F : FactorSource> AccessFactorSourceContent(
                         RadixTheme.colors.backgroundTertiary
                     } else {
                         RadixTheme.colors.background
-                    } // TODO Theme
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

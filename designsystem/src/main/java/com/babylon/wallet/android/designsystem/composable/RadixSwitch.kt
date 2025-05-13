@@ -15,7 +15,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 
-// TODO Theme
 @Composable
 fun RadixSwitch(
     modifier: Modifier = Modifier,

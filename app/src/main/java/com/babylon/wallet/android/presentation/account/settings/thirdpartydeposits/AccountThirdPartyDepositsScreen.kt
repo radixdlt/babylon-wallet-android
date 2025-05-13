@@ -338,7 +338,7 @@ private fun DepositOptionItem(
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = it),
-                    contentDescription = null // TODO Theme
+                    contentDescription = null
                 )
             }
         },

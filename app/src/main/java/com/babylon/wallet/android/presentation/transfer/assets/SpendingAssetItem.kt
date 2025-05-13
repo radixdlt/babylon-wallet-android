@@ -48,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Gray3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.displaySubtitle
@@ -173,7 +174,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                         modifier = Modifier.fillMaxWidth(),
                         text = "0.00",
                         style = RadixTheme.typography.header.copy(
-                            color = RadixTheme.colors.textSecondary,
+                            color = Gray3,
                             textAlign = TextAlign.End
                         )
                     )

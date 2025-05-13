@@ -104,7 +104,7 @@ fun StrokeLine(
     modifier: Modifier = Modifier,
     height: Dp = 24.dp
 ) {
-    val strokeColor = RadixTheme.colors.divider // TODO theme
+    val strokeColor = RadixTheme.colors.divider
     val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
     val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
     val lineHeight = with(LocalDensity.current) { height.toPx() }

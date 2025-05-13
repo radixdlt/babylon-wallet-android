@@ -25,7 +25,7 @@ fun TransactionRawManifestToggle(
     IconButton(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.backgroundTertiary, // TODO Theme
+                color = RadixTheme.colors.backgroundTertiary,
                 shape = RadixTheme.shapes.roundedRectSmall
             )
             .size(width = 50.dp, height = 40.dp),

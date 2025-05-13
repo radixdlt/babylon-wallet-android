@@ -234,7 +234,7 @@ data class MnemonicTextFieldColors(
             return MnemonicTextFieldColors(
                 textColor = RadixTheme.colors.text,
                 errorTextColor = RadixTheme.colors.error,
-                disabledTextColor = RadixTheme.colors.text, // TODO Theme
+                disabledTextColor = RadixTheme.colors.text,
                 highlightedTextColor = RadixTheme.colors.text,
                 borderColor = RadixTheme.colors.textFieldBorder,
                 focusedBorderColor = RadixTheme.colors.textFieldFocusedBorder,

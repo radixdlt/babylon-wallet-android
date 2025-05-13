@@ -123,7 +123,7 @@ fun BottomSheetDialogWrapper(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f))) // TODO theme
+            .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
             .clickable(interactionSource = interactionSource, indication = null) {
                 onDismissRequest()
             }
