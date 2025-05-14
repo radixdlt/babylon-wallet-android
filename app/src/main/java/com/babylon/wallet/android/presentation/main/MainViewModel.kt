@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
+import android.os.Build
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -238,12 +239,16 @@ class MainViewModel @Inject constructor(
         // used to be invoked in a different activity. This would result in biometrics being
         // requested once by the WalletInteractor and then another time by advanced lock
         // (if enabled), since the app would return to the foreground.
-        appLockStateProvider.pauseLocking()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            appLockStateProvider.pauseLocking()
+        }
     }
 
     fun onAfterBiometricsResult() {
         // Resumes app lock feature when biometrics respond to WalletInteractor
-        appLockStateProvider.resumeLocking()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            appLockStateProvider.resumeLocking()
+        }
     }
 
     private fun runForegroundChecks() {
