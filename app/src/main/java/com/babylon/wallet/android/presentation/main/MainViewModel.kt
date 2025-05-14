@@ -233,6 +233,19 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onBeforeBiometricsRequest() {
+        // Avoids double biometrics request. In older Android versions < 30 pin/pattern unlock
+        // used to be invoked in a different activity. This would result in biometrics being
+        // requested once by the WalletInteractor and then another time by advanced lock
+        // (if enabled), since the app would return to the foreground.
+        appLockStateProvider.pauseLocking()
+    }
+
+    fun onAfterBiometricsResult() {
+        // Resumes app lock feature when biometrics respond to WalletInteractor
+        appLockStateProvider.resumeLocking()
+    }
+
     private fun runForegroundChecks() {
         viewModelScope.launch {
             checkKeystoreIntegrityUseCase()
