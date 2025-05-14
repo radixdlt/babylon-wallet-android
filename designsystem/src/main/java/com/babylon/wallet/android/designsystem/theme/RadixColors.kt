@@ -46,6 +46,7 @@ data class RadixColors(
     val iconSecondary: Color,
     val iconTertiary: Color,
     val primaryButton: Color,
+    val secondaryButton: Color,
     val divider: Color,
     val border: Color,
     val textFieldBorder: Color,
@@ -73,6 +74,7 @@ private val LightColorPalette = RadixColors(
     iconSecondary = Gray2,
     iconTertiary = Gray3,
     primaryButton = Blue2,
+    secondaryButton = Gray4,
     divider = Gray4,
     border = Gray1,
     textFieldBorder = Gray4,
@@ -88,9 +90,9 @@ private val LightColorPalette = RadixColors(
 )
 
 private val DarkColorPalette = RadixColors(
-    background = Color(0xFF28292A),
-    backgroundSecondary = Color(0xFF1E1F1F),
-    backgroundTertiary = Color(0xFF404243),
+    background = Color(0xFF1E1F1F),
+    backgroundSecondary = Color(0xFF121212),
+    backgroundTertiary = Color(0xFF28292A),
     backgroundTransparent = Gray5.copy(alpha = 0.3f),
     text = Gray5,
     textSecondary = Gray4,
@@ -100,6 +102,7 @@ private val DarkColorPalette = RadixColors(
     iconSecondary = Gray4,
     iconTertiary = Gray2,
     primaryButton = Color(0xFF00C389),
+    secondaryButton = Color(0xFF404243),
     divider = Color(0xFF404243),
     border = Gray5,
     textFieldBorder = Color(0xFF797B7F),

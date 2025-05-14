@@ -35,7 +35,7 @@ fun RadixSecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = RadixTheme.colors.backgroundTertiary,
+    containerColor: Color = RadixTheme.colors.secondaryButton,
     contentColor: Color = RadixTheme.colors.text,
     shape: Shape = RadixTheme.shapes.roundedRectSmall,
     textStyle: TextStyle = RadixTheme.typography.body1Header,
