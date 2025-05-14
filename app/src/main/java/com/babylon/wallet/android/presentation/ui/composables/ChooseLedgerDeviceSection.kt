@@ -27,6 +27,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -51,7 +52,7 @@ fun ChooseLedgerDeviceSection(
     ) {
         Icon(
             painterResource(id = R.drawable.ic_hardware_ledger),
-            tint = Color.Unspecified,
+            tint = themedColorTint(),
             contentDescription = null
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

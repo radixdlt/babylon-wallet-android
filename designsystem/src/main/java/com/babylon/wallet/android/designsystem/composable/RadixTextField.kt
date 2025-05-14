@@ -35,6 +35,7 @@ import com.babylon.wallet.android.designsystem.theme.Gray3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 
 @Composable
 fun RadixTextField(
@@ -371,7 +372,7 @@ fun RadixTextFieldWithIconLight() {
                             id = R.drawable.check_circle_outline
                         ),
                         contentDescription = null,
-                        tint = Color.Unspecified
+                        tint = themedColorTint()
                     )
                 },
                 errorFixedSize = true,
@@ -402,7 +403,7 @@ fun RadixTextFieldWithIconDark() {
                             id = R.drawable.check_circle_outline
                         ),
                         contentDescription = null,
-                        tint = Color.Unspecified
+                        tint = themedColorTint()
                     )
                 },
                 errorFixedSize = true,

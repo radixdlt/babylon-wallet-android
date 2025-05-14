@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 
 val Blue1 = Color(0xFF060F8F)
 val Blue2 = Color(0xFF052CC0)
@@ -134,4 +135,18 @@ internal fun ProvideRadixColors(content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalRadixColors provides colors) {
         content()
     }
+}
+
+@Composable
+fun themedColorFilter() = if (RadixTheme.config.isDarkTheme) {
+    ColorFilter.tint(color = White)
+} else {
+    null
+}
+
+@Composable
+fun themedColorTint() = if (RadixTheme.config.isDarkTheme) {
+    White
+} else {
+    Color.Unspecified
 }

@@ -37,6 +37,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
@@ -110,7 +111,7 @@ fun AddLedgerDeviceScreen(
                         AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo -> {
                             Icon(
                                 painterResource(id = R.drawable.ic_hardware_ledger_big),
-                                tint = Color.Unspecified,
+                                tint = themedColorTint(),
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))

@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorFilter
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -241,7 +242,8 @@ private fun SuccessSheetContent(
 
         Image(
             painter = painterResource(DSR.check_circle_outline),
-            contentDescription = null
+            contentDescription = null,
+            colorFilter = themedColorFilter()
         )
 
         Text(

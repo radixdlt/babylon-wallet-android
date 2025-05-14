@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -310,7 +311,7 @@ fun MnemonicWordTextFieldTrailing1Preview() {
                         id = R.drawable.check_circle_outline
                     ),
                     contentDescription = null,
-                    tint = Color.Unspecified
+                    tint = themedColorTint()
                 )
             }
         )

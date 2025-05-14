@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorFilter
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -70,7 +71,8 @@ private fun FactorsReadyContent(
         ) {
             Image(
                 painter = painterResource(id = DSR.ic_factors_ready),
-                contentDescription = null
+                contentDescription = null,
+                colorFilter = themedColorFilter()
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))

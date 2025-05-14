@@ -38,6 +38,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -331,7 +332,7 @@ private fun SecurityCenterCard(
             modifier = Modifier.size(80.dp),
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            tint = Color.Unspecified
+            tint = themedColorTint()
         )
 
         Column(

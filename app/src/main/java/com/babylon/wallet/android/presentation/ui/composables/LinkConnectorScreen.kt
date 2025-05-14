@@ -25,6 +25,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
@@ -60,7 +61,7 @@ fun LinkConnectorScreen(
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_radix_connect),
-                tint = Color.Unspecified,
+                tint = themedColorTint(),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
