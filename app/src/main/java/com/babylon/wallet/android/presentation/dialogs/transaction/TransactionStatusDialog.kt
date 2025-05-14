@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.transaction.TransactionStatusDialogViewModel.State.DismissInfo.REQUIRE_COMPLETION
 import com.babylon.wallet.android.presentation.dialogs.transaction.TransactionStatusDialogViewModel.State.DismissInfo.STOP_WAITING
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -125,7 +126,8 @@ private fun InfoDialog(
                         STOP_WAITING -> R.string.transactionStatus_dismissDialog_message
                         REQUIRE_COMPLETION -> R.string.transactionStatus_dismissalDisabledDialog_text
                     }
-                )
+                ),
+                color = RadixTheme.colors.text
             )
         },
         confirmText = stringResource(id = R.string.common_ok),
