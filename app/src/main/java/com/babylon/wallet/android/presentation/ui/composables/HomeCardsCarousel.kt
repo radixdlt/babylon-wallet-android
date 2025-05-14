@@ -86,7 +86,7 @@ fun HomeCardsCarousel(
                 activeIndicatorWidth = 6.dp,
                 inactiveIndicatorWidth = 4.dp,
                 activeColor = RadixTheme.colors.iconSecondary,
-                inactiveColor = RadixTheme.colors.backgroundTertiary
+                inactiveColor = RadixTheme.colors.iconTertiary
             )
         }
     }
