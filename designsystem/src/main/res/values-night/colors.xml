@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Colors specifically used in vector icons. The same color sets exist in RadixColors.kt -->
-    <color name="background">#28292A</color>
-    <color name="backgroundTertiary">#404243</color>
+    <color name="background">#1E1F1F</color>
+    <color name="backgroundSecondary">#121212</color>
+    <color name="backgroundTertiary">#28292A</color>
     <color name="icon">#F4F5F9</color>
     <color name="iconSecondary">#CED0D6</color>
     <color name="iconTertiary">#8A8FA4</color>
