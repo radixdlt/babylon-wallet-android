@@ -42,7 +42,10 @@ fun SpecificAssetsTabs(
                     .fillMaxHeight()
                     .zIndex(-1f)
                     .padding(2.dp)
-                    .background(RadixTheme.colors.background, RadixTheme.shapes.roundedRectSmall)
+                    .background(
+                        color = RadixTheme.colors.selectedSegmentedControl,
+                        shape = RadixTheme.shapes.roundedRectSmall
+                    )
             )
         }
     ) {
