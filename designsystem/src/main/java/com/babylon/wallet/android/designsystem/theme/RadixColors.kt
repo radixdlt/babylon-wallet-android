@@ -33,7 +33,6 @@ val LightRed = Color(0xFFfcebeb)
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
 
-
 data class RadixColors(
     val background: Color,
     val backgroundSecondary: Color,

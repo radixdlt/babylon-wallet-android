@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
@@ -43,10 +44,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.SlideToSignLight
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.SlideToSignDark
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -138,11 +137,7 @@ fun SlideToSignButton(
             color = textColor
         )
 
-        val gradient = if (RadixTheme.config.isDarkTheme) {
-            SlideToSignDark
-        } else {
-            SlideToSignLight
-        }
+        val gradient = RadixTheme.gradients.slideToSignGradient
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -151,7 +146,7 @@ fun SlideToSignButton(
                     onDrawWithContent {
                         drawContent()
                         drawRect(
-                            brush = gradient,
+                            brush = Brush.linearGradient(gradient),
                             size = if (isSubmitting) {
                                 size
                             } else if (draggableState.requireOffset() > 0f) {

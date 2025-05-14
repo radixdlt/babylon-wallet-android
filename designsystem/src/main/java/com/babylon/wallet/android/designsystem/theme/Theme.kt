@@ -68,6 +68,8 @@ fun ProvideRadixThemeConfig(
 object RadixTheme {
     val colors: RadixColors
         @Composable get() = LocalRadixColors.current
+    val gradients: RadixGradients
+        @Composable get() = LocalRadixGradients.current
     val typography: RadixTypography
         @Composable get() = LocalRadixTypography.current
     val dimensions: RadixDimensions
@@ -85,13 +87,15 @@ fun RadixWalletTheme(
 ) {
     ProvideRadixThemeConfig(config = config) {
         ProvideRadixColors {
-            ProvideRadixTypography {
-                ProvideRadixDimensions {
-                    ProvideRadixShapes {
-                        MaterialTheme(
-                            typography = RadixMaterialTypography,
-                            content = content
-                        )
+            ProvideRadixGradients {
+                ProvideRadixTypography {
+                    ProvideRadixDimensions {
+                        ProvideRadixShapes {
+                            MaterialTheme(
+                                typography = RadixMaterialTypography,
+                                content = content
+                            )
+                        }
                     }
                 }
             }
