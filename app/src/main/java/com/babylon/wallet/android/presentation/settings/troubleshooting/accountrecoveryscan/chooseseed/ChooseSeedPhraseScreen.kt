@@ -158,7 +158,7 @@ private fun ChooseSeedPhraseContent(
                             .throttleClickable {
                                 onSelectionChanged(factorSource.data.deviceFactorSource.value.id.asGeneral())
                             }
-                            .defaultCardShadow(elevation = 4.dp)
+                            .defaultCardShadow(elevation = 6.dp)
                             .fillMaxWidth()
                             .background(
                                 RadixTheme.colors.card,
