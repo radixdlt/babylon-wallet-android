@@ -36,7 +36,7 @@ data class RadixGradients(
         listOf(blue5, blue3),
         listOf(blue2, green3),
         listOf(blue2, pink3),
-        listOf(blue2, blue2),
+        listOf(blue3, blue2),
         listOf(green2, green5),
         listOf(pink1, pink4),
         listOf(blue1, blue4),
