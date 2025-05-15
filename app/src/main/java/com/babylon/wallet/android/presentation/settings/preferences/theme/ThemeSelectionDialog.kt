@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.applyThemeSelection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -83,6 +85,8 @@ private fun ThemeSelectionContent(
     onSelected: (ThemeSelection) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
+
     DefaultModalSheetLayout(
         modifier = modifier.fillMaxSize(),
         onDismissRequest = onDismiss,
@@ -105,6 +109,7 @@ private fun ThemeSelectionContent(
                     isSelected = state.selection == ThemeSelection.LIGHT,
                     onSelected = {
                         onSelected(ThemeSelection.LIGHT)
+                        context.applyThemeSelection(ThemeSelection.LIGHT)
                     }
                 )
 
@@ -115,6 +120,7 @@ private fun ThemeSelectionContent(
                     isSelected = state.selection == ThemeSelection.DARK,
                     onSelected = {
                         onSelected(ThemeSelection.DARK)
+                        context.applyThemeSelection(ThemeSelection.DARK)
                     }
                 )
 
@@ -125,6 +131,7 @@ private fun ThemeSelectionContent(
                     isSelected = state.selection == ThemeSelection.SYSTEM,
                     onSelected = {
                         onSelected(ThemeSelection.SYSTEM)
+                        context.applyThemeSelection(ThemeSelection.SYSTEM)
                     }
                 )
             }

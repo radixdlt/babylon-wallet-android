@@ -55,7 +55,7 @@ private fun RadixSwitchPreviewLight() {
 @Preview
 @Composable
 private fun RadixSwitchPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Row(
             modifier = Modifier.background(RadixTheme.colors.background),
             horizontalArrangement = Arrangement.spacedBy(16.dp)

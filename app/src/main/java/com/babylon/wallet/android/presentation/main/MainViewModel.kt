@@ -116,7 +116,7 @@ class MainViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = ThemeSelection.DEFAULT
+            initialValue = null
         )
 
     init {

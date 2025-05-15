@@ -100,7 +100,7 @@ fun RadixSecondaryButtonPreviewLight() {
 @Preview
 @Composable
 fun RadixSecondaryButtonPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         RadixSecondaryButton(
             text = "Secondary button",
             onClick = {},
@@ -126,7 +126,7 @@ fun RadixSecondaryButtonWithIconPreviewLight() {
 @Preview
 @Composable
 fun RadixSecondaryButtonWithIconPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         RadixSecondaryButton(
             text = "Secondary Button",
             onClick = {},
@@ -153,7 +153,7 @@ fun RadixSecondaryButtonDisabledPreviewLight() {
 @Preview
 @Composable
 fun RadixSecondaryButtonDisabledPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         RadixSecondaryButton(
             text = "Secondary button",
             onClick = {},

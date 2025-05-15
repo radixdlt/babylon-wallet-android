@@ -311,7 +311,7 @@ private fun RadixRadioButtonNotSelectedDisabledColorsPreviewLight() {
 @Composable
 @Preview
 private fun RadixRadioButtonSelectedColorsPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier =
                 Modifier.background(RadixTheme.colors.background)
@@ -328,7 +328,7 @@ private fun RadixRadioButtonSelectedColorsPreviewDark() {
 @Composable
 @Preview
 private fun RadixRadioButtonNotSelectedColorsPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier =
                 Modifier.background(RadixTheme.colors.background)
@@ -345,7 +345,7 @@ private fun RadixRadioButtonNotSelectedColorsPreviewDark() {
 @Composable
 @Preview
 private fun RadixRadioButtonSelectedDisabledColorsPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier =
                 Modifier.background(RadixTheme.colors.background)
@@ -363,7 +363,7 @@ private fun RadixRadioButtonSelectedDisabledColorsPreviewDark() {
 @Composable
 @Preview
 private fun RadixRadioButtonNotSelectedDisabledColorsPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier =
                 Modifier.background(RadixTheme.colors.background)

@@ -248,7 +248,7 @@ fun RadixTextFieldPreviewLight() {
 @Preview
 @Composable
 fun RadixTextFieldPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier = Modifier
                 .background(RadixTheme.colors.background)
@@ -290,7 +290,7 @@ fun RadixTextFieldFilledLight() {
 @Preview
 @Composable
 fun RadixTextFieldFilledDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier = Modifier
                 .background(RadixTheme.colors.background)
@@ -333,7 +333,7 @@ fun RadixTextErrorFieldLight() {
 @Preview
 @Composable
 fun RadixTextErrorFieldDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier = Modifier
                 .background(RadixTheme.colors.background)
@@ -385,7 +385,7 @@ fun RadixTextFieldWithIconLight() {
 @Preview
 @Composable
 fun RadixTextFieldWithIconDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(
             modifier = Modifier
                 .background(RadixTheme.colors.background)

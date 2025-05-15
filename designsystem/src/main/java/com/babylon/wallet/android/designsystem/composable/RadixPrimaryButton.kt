@@ -107,7 +107,7 @@ fun RadixPrimaryButtonPreviewLight() {
 @Preview
 @Composable
 fun RadixPrimaryButtonPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(modifier = Modifier.background(RadixTheme.colors.background)) {
             RadixPrimaryButton(
                 modifier = Modifier
@@ -140,7 +140,7 @@ fun RadixPrimaryButtonLoadingPreviewLight() {
 @Preview
 @Composable
 fun RadixPrimaryButtonLoadingPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(modifier = Modifier.background(RadixTheme.colors.background)) {
             RadixPrimaryButton(
                 modifier = Modifier
@@ -179,7 +179,7 @@ fun RadixPrimaryButtonWithIconPreviewLight() {
 @Preview
 @Composable
 fun RadixPrimaryButtonWithIconPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(modifier = Modifier.background(RadixTheme.colors.background)) {
             RadixPrimaryButton(
                 modifier = Modifier
@@ -218,7 +218,7 @@ fun RadixPrimaryButtonDisabledPreviewLight() {
 @Preview
 @Composable
 fun RadixPrimaryButtonDisabledPreviewDark() {
-    RadixWalletTheme(config = RadixThemeConfig(isSystemDarkTheme = true)) {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
         Box(modifier = Modifier.background(RadixTheme.colors.background)) {
             RadixPrimaryButton(
                 modifier = Modifier

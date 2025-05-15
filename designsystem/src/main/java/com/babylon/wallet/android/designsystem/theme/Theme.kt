@@ -82,7 +82,7 @@ object RadixTheme {
 
 @Composable
 fun RadixWalletTheme(
-    config: RadixThemeConfig = RadixThemeConfig(isSystemDarkTheme = isSystemInDarkTheme()),
+    config: RadixThemeConfig = RadixThemeConfig(isDarkTheme = isSystemInDarkTheme()),
     content: @Composable () -> Unit,
 ) {
     ProvideRadixThemeConfig(config = config) {

@@ -20,8 +20,7 @@ fun RadixWalletPreviewTheme(
     ProvideMockActionableAddressViewEntryPoint {
         RadixWalletTheme(
             config = RadixThemeConfig(
-                themeSelection = ThemeSelection.SYSTEM,
-                isSystemDarkTheme = enableDarkTheme
+                isDarkTheme = enableDarkTheme
             ),
             content = {
                 if (backgroundType != PreviewBackgroundType.NONE) {

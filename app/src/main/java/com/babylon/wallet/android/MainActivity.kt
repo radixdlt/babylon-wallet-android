@@ -8,7 +8,7 @@ import android.view.WindowManager
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,16 +18,15 @@ import androidx.compose.runtime.remember
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.edgeToEdge
+import com.babylon.wallet.android.designsystem.theme.rememberRadixThemeConfig
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
 import com.babylon.wallet.android.presentation.main.AppState
@@ -45,7 +44,7 @@ import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
 @AndroidEntryPoint
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -95,15 +94,10 @@ class MainActivity : FragmentActivity() {
         }
 
         setContent {
-            val themeSelection by viewModel.themeSelection.collectAsStateWithLifecycle()
             val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsStateWithLifecycle()
-            val isSystemInDarkTheme = isSystemInDarkTheme()
-            val themeConfig = remember(themeSelection, isSystemInDarkTheme) {
-                RadixThemeConfig(
-                    themeSelection = themeSelection,
-                    isSystemDarkTheme = isSystemInDarkTheme
-                )
-            }
+
+            val selectedTheme by viewModel.themeSelection.collectAsStateWithLifecycle()
+            val themeConfig = rememberRadixThemeConfig(selectedTheme = selectedTheme)
             RadixWalletTheme(config = themeConfig) {
                 SetupEdgeToEdge(isDevBannerVisible)
 

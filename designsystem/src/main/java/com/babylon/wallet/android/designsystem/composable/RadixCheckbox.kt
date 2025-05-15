@@ -59,9 +59,7 @@ object RadixCheckboxDefaults {
 @Preview
 fun CheckBoxColorsPreviewLight() {
     RadixWalletTheme(
-        config = RadixThemeConfig(
-            isSystemDarkTheme = false
-        )
+        config = RadixThemeConfig(isDarkTheme = false)
     ) {
         Column(
             modifier = Modifier
@@ -140,9 +138,7 @@ fun CheckBoxColorsPreviewLight() {
 @Preview
 fun CheckBoxColorsPreviewDark() {
     RadixWalletTheme(
-        config = RadixThemeConfig(
-            isSystemDarkTheme = true
-        )
+        config = RadixThemeConfig(isDarkTheme = true)
     ) {
         Column(
             modifier = Modifier
@@ -215,9 +211,7 @@ fun CheckBoxColorsPreviewDark() {
 @Preview
 fun CheckBoxColorsOnAccountPreview() {
     RadixWalletTheme(
-        config = RadixThemeConfig(
-            isSystemDarkTheme = false
-        )
+        config = RadixThemeConfig(isDarkTheme = false)
     ) {
         Column(
             modifier = Modifier
