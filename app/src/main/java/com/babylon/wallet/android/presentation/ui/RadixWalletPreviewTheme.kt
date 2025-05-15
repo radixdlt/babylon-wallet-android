@@ -9,10 +9,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ProvideMockActionableAddressViewEntryPoint
-import rdx.works.core.domain.ThemeSelection
 
 @Composable
 fun RadixWalletPreviewTheme(
+    modifier: Modifier = Modifier,
     enableDarkTheme: Boolean = isSystemInDarkTheme(),
     backgroundType: PreviewBackgroundType = PreviewBackgroundType.NONE,
     content: @Composable () -> Unit,
@@ -25,11 +25,13 @@ fun RadixWalletPreviewTheme(
             content = {
                 if (backgroundType != PreviewBackgroundType.NONE) {
                     Box(
-                        modifier = Modifier.background(color = when (backgroundType) {
-                            PreviewBackgroundType.PRIMARY -> RadixTheme.colors.background
-                            PreviewBackgroundType.SECONDARY -> RadixTheme.colors.backgroundSecondary
-                            PreviewBackgroundType.NONE -> error("Not Possible")
-                        })
+                        modifier = modifier.background(
+                            color = when (backgroundType) {
+                                PreviewBackgroundType.PRIMARY -> RadixTheme.colors.background
+                                PreviewBackgroundType.SECONDARY -> RadixTheme.colors.backgroundSecondary
+                                PreviewBackgroundType.NONE -> error("Not Possible")
+                            }
+                        )
                     ) {
                         content()
                     }

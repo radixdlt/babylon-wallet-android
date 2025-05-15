@@ -45,11 +45,15 @@ fun <T : SelectorItem<*>> DefaultSelector(
                     color = RadixTheme.colors.textFieldBackground,
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
-                .border(1.dp, if (isMenuExpanded) {
-                    RadixTheme.colors.textFieldFocusedBorder
-                } else {
-                    RadixTheme.colors.textFieldBorder
-                }, RadixTheme.shapes.roundedRectSmall)
+                .border(
+                    1.dp,
+                    if (isMenuExpanded) {
+                        RadixTheme.colors.textFieldFocusedBorder
+                    } else {
+                        RadixTheme.colors.textFieldBorder
+                    },
+                    RadixTheme.shapes.roundedRectSmall
+                )
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically

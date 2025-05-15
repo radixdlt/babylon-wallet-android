@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber", "CompositionLocalAllowlist")
+
 package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.runtime.Composable
@@ -48,7 +50,6 @@ data class RadixGradients(
         pink3,
         blue3
     )
-
 }
 
 private val LightGradientsPalette = RadixGradients(

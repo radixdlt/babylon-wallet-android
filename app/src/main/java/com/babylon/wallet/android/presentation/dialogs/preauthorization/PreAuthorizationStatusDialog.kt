@@ -302,7 +302,6 @@ private fun PreAuthorizationStatusPreviewDark(
     }
 }
 
-
 @UsesSampleValues
 class PreAuthorizationStatusPreviewProvider : PreviewParameterProvider<PreAuthorizationStatusViewModel.State> {
 

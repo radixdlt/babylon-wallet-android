@@ -169,7 +169,6 @@ private fun LinkedConnectorsContent(
 
                 HorizontalDivider(color = RadixTheme.colors.divider)
             }
-
         },
         snackbarHost = {
             RadixSnackbarHost(

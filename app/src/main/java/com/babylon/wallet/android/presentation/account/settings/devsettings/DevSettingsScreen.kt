@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.account.settings.devsettings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize

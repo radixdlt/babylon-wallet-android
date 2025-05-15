@@ -124,7 +124,10 @@ private fun ChooseAccountsPreviewLight(
 private fun ChooseAccountsPreviewDark(
     @PreviewParameter(ChoosePersonasPreviewProvider::class) state: ChooseEntityUiState<Persona>
 ) {
-    RadixWalletPreviewTheme(enableDarkTheme = true, PreviewBackgroundType.PRIMARY) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true,
+        backgroundType = PreviewBackgroundType.PRIMARY
+    ) {
         ChoosePersonasContent(
             state = state,
             onDismiss = {},

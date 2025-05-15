@@ -49,7 +49,6 @@ import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.formattedSpans
-import com.google.accompanist.placeholder.placeholder
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.DApp
 

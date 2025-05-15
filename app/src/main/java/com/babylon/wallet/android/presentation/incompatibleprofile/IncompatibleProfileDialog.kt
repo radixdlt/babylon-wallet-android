@@ -29,7 +29,6 @@ import com.babylon.wallet.android.MainActivity
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.Blue1
-import com.babylon.wallet.android.designsystem.theme.RadixColors
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileViewModel.Event
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme

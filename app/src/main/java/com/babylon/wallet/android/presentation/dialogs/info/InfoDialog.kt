@@ -215,7 +215,7 @@ private fun InfoDialogContent(
                         h2 = RadixTheme.typography.title,
                         paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.text),
 
-                        ),
+                    ),
                     padding = markdownPadding(
                         block = RadixTheme.dimensions.paddingSmall,
                     ),

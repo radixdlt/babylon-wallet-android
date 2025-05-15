@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.designsystem.composable
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -136,19 +135,19 @@ fun RadixTextField(
 object RadixTextFieldDefaults {
     @Composable
     fun colors(
-        focusedContainerColor: Color =  RadixTheme.colors.textFieldBackground,
-        unfocusedContainerColor: Color =  RadixTheme.colors.textFieldBackground,
-        errorContainerColor: Color =  RadixTheme.colors.textFieldBackground,
-        focusedPlaceholderColor: Color =  Gray3,
-        unfocusedPlaceholderColor: Color =  Gray3,
-        errorPlaceholderColor: Color =  Gray3,
-        focusedTextColor: Color =  RadixTheme.colors.text,
-        unfocusedTextColor: Color =  RadixTheme.colors.text,
+        focusedContainerColor: Color = RadixTheme.colors.textFieldBackground,
+        unfocusedContainerColor: Color = RadixTheme.colors.textFieldBackground,
+        errorContainerColor: Color = RadixTheme.colors.textFieldBackground,
+        focusedPlaceholderColor: Color = Gray3,
+        unfocusedPlaceholderColor: Color = Gray3,
+        errorPlaceholderColor: Color = Gray3,
+        focusedTextColor: Color = RadixTheme.colors.text,
+        unfocusedTextColor: Color = RadixTheme.colors.text,
         errorTextColor: Color = RadixTheme.colors.text,
-        focusedBorderColor: Color =  RadixTheme.colors.textFieldFocusedBorder,
-        unfocusedBorderColor: Color =  RadixTheme.colors.textFieldBorder,
-        errorBorderColor: Color =  RadixTheme.colors.error,
-        cursorColor: Color =  RadixTheme.colors.text,
+        focusedBorderColor: Color = RadixTheme.colors.textFieldFocusedBorder,
+        unfocusedBorderColor: Color = RadixTheme.colors.textFieldBorder,
+        errorBorderColor: Color = RadixTheme.colors.error,
+        cursorColor: Color = RadixTheme.colors.text,
         selectionColors: TextSelectionColors = TextSelectionColors(
             RadixTheme.colors.text,
             LocalTextSelectionColors.current.backgroundColor

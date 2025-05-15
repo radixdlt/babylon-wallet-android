@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber", "CompositionLocalAllowlist")
 
 package com.babylon.wallet.android.designsystem.theme
 

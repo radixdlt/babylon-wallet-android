@@ -130,7 +130,6 @@ fun CheckBoxColorsPreviewLight() {
                 )
             }
         }
-
     }
 }
 
@@ -203,7 +202,6 @@ fun CheckBoxColorsPreviewDark() {
                 )
             }
         }
-
     }
 }
 
@@ -276,7 +274,5 @@ fun CheckBoxColorsOnAccountPreview() {
                 )
             }
         }
-
     }
 }
-

@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -21,8 +20,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.Black
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.mailReportMessage
 import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.domain.mailReportMessage
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.openEmail

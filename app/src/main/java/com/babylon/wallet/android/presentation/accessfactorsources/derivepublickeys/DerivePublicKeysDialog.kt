@@ -25,7 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
@@ -139,7 +138,8 @@ private fun DerivePublicKeysSheetContent(
                                 .fillMaxWidth()
                                 .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                                 .padding(RadixTheme.dimensions.paddingSmall),
-                            wordAutocompleteCandidates = accessFactorSourceState.seedPhraseInputState.delegateState.wordAutocompleteCandidates,
+                            wordAutocompleteCandidates = accessFactorSourceState
+                                .seedPhraseInputState.delegateState.wordAutocompleteCandidates,
                             onCandidateClick = { candidate ->
                                 focusedWordIndex?.let { index ->
                                     onSeedPhraseWordChanged(index, candidate)
@@ -244,7 +244,7 @@ private fun DerivePublicKeyPreview(
 private fun DerivePublicKeyPreviewDark(
     @PreviewParameter(DerivePublicKeysPreviewParameterProvider::class) param: Pair<AccessFactorSourcePurpose, FactorSource>
 ) {
-    RadixWalletPreviewTheme(enableDarkTheme = true)  {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         DerivePublicKeysSheetContent(
             state = DerivePublicKeysViewModel.State(
                 purpose = param.first,

@@ -13,7 +13,7 @@ object QRCodeGenerator {
     fun forAccount(
         address: AccountAddress,
         sizePx: Int = DEFAULT_QR_CODE_SIZE_PX,
-        @ColorInt containerColor:  Int = Color.WHITE,
+        @ColorInt containerColor: Int = Color.WHITE,
         @ColorInt contentColor: Int = Color.BLACK,
     ): Bitmap {
         val qrContent = "$ADDRESS_QR_PREFIX${address.string}"

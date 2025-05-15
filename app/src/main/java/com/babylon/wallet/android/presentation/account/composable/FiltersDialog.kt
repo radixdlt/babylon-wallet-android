@@ -114,11 +114,17 @@ fun FiltersDialog(
                     }
                 }
             }
-            HorizontalDivider(color = RadixTheme.colors.divider, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                color = RadixTheme.colors.divider,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
+            )
             FilterTypeSection(label = stringResource(id = R.string.transactionHistory_filters_assetTypeLabel)) {
                 ResourcesSection(state, onResourceFilterSelected)
             }
-            HorizontalDivider(color = RadixTheme.colors.divider, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                color = RadixTheme.colors.divider,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
+            )
             FilterTypeSection(label = stringResource(id = R.string.transactionHistory_filters_transactionTypeLabel)) {
                 TagContainer {
                     TransactionClass.entries.forEach { entry ->
@@ -132,7 +138,10 @@ fun FiltersDialog(
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             }
-            HorizontalDivider(color = RadixTheme.colors.divider, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                color = RadixTheme.colors.divider,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
+            )
         }
     }
 }

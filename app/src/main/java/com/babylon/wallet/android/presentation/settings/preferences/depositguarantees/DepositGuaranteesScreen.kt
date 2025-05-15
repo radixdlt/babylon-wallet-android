@@ -82,7 +82,6 @@ fun DepositGuaranteesContent(
 
                 HorizontalDivider(color = RadixTheme.colors.divider)
             }
-
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->

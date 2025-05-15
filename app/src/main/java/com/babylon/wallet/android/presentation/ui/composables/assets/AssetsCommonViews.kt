@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -19,18 +18,17 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.placeholder
-import com.google.accompanist.placeholder.shimmer
 
 fun Modifier.assetOutlineBorder(
     shape: Shape? = null
 ) = composed {
-    then(Modifier.border(
-        width = 1.dp,
-        color = RadixTheme.colors.divider,
-        shape = shape ?: RadixTheme.shapes.roundedRectMedium
-    ))
+    then(
+        Modifier.border(
+            width = 1.dp,
+            color = RadixTheme.colors.divider,
+            shape = shape ?: RadixTheme.shapes.roundedRectMedium
+        )
+    )
 }
 
 fun Modifier.assetPlaceholder(

@@ -889,6 +889,7 @@ fun HardwareImportWithVerifiedLedgersPreview() {
 }
 
 @UsesSampleValues
+@Preview
 @Composable
 fun HardwareImportNoAccountsLeftPreview() {
     RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.SECONDARY) {

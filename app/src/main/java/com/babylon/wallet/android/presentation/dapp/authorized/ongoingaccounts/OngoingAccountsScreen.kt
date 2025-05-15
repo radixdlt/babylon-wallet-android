@@ -265,7 +265,6 @@ fun OngoingAccountsContentPreviewDark() {
     }
 }
 
-
 @UsesSampleValues
 @Preview(device = "id:Nexus S")
 @Composable

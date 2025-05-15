@@ -85,7 +85,7 @@ fun rememberRadixThemeConfig(selectedTheme: ThemeSelection?): RadixThemeConfig {
             // Get the updated system night mode state and infer the theme
             val appNightMode = AppCompatDelegate.getDefaultNightMode()
             appNightMode == AppCompatDelegate.MODE_NIGHT_YES ||
-                    (appNightMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM && isSystemInDarkTheme)
+                (appNightMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM && isSystemInDarkTheme)
         }
     } else {
         // In newer versions (API >= 31) system preference is persisted.

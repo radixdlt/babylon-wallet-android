@@ -10,10 +10,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
 import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun LabeledRadioButton(

@@ -126,7 +126,6 @@ private fun GatewaysContent(
 
                 HorizontalDivider(color = RadixTheme.colors.divider)
             }
-
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
