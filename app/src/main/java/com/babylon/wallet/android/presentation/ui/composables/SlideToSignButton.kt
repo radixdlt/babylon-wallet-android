@@ -47,6 +47,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -197,7 +198,7 @@ fun SlideToSignButton(
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
                         contentDescription = null,
-                        tint = RadixTheme.colors.icon
+                        tint = if (enabled) RadixTheme.colors.icon else RadixTheme.colors.iconTertiary
                     )
                 }
                 AnimatedVisibility(modifier = Modifier.align(Alignment.Center), visible = crossedSwipeThreshold) {
@@ -219,8 +220,8 @@ enum class ButtonSliderPosition {
 
 @Preview
 @Composable
-fun AccountContentPreview() {
-    RadixWalletTheme {
+fun AccountContentPreviewLight() {
+    RadixWalletPreviewTheme {
         SlideToSignButton(
             title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = true,
@@ -232,8 +233,21 @@ fun AccountContentPreview() {
 
 @Preview
 @Composable
-fun AccountContentPreviewDisabled() {
-    RadixWalletTheme {
+fun AccountContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = true,
+            isSubmitting = false,
+            onSwipeComplete = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewDisabledLight() {
+    RadixWalletPreviewTheme {
         SlideToSignButton(
             title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = false,
@@ -245,8 +259,34 @@ fun AccountContentPreviewDisabled() {
 
 @Preview
 @Composable
-fun AccountContentPreviewSubmitting() {
-    RadixWalletTheme {
+fun AccountContentPreviewDisabledDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = false,
+            isSubmitting = false,
+            onSwipeComplete = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewSubmittingLight() {
+    RadixWalletPreviewTheme {
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = true,
+            isSubmitting = true,
+            onSwipeComplete = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewSubmittingDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         SlideToSignButton(
             title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = true,
