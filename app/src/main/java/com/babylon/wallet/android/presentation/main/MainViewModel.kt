@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
+import android.os.Build
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -230,6 +231,23 @@ class MainViewModel @Inject constructor(
         }
         if (!_state.value.isAppLocked) {
             runForegroundChecks()
+        }
+    }
+
+    fun onBeforeBiometricsRequest() {
+        // Avoids double biometrics request. In older Android versions < 30 pin/pattern unlock
+        // used to be invoked in a different activity. This would result in biometrics being
+        // requested once by the WalletInteractor and then another time by advanced lock
+        // (if enabled), since the app would return to the foreground.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            appLockStateProvider.pauseLocking()
+        }
+    }
+
+    fun onAfterBiometricsResult() {
+        // Resumes app lock feature when biometrics respond to WalletInteractor
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            appLockStateProvider.resumeLocking()
         }
     }
 

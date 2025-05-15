@@ -39,6 +39,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import com.radixdlt.sargon.os.driver.BiometricsHandler
+import com.radixdlt.sargon.os.driver.OnBiometricsLifecycleCallbacks
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
@@ -76,7 +77,18 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
 
         super.onCreate(savedInstanceState)
-        biometricsHandler.register(this)
+        biometricsHandler.register(
+            activity = this,
+            callbacks = object : OnBiometricsLifecycleCallbacks {
+                override fun onBeforeBiometricsRequest() {
+                    viewModel.onBeforeBiometricsRequest()
+                }
+
+                override fun onAfterBiometricsResult() {
+                    viewModel.onAfterBiometricsResult()
+                }
+            }
+        )
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         intent.data?.let {
