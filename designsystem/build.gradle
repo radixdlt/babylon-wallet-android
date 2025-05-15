@@ -43,6 +43,7 @@ dependencies {
     implementation libs.composeFoundation
     implementation libs.composeMaterial3
     implementation libs.activity
+    implementation libs.appcompat
 
     implementation libs.composeUi
     implementation libs.composeRuntime
