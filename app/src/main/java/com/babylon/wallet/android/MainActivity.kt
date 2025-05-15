@@ -87,7 +87,6 @@ class MainActivity : FragmentActivity() {
                 override fun onAfterBiometricsResult() {
                     viewModel.onAfterBiometricsResult()
                 }
-
             }
         )
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
