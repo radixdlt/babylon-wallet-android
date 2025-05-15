@@ -224,7 +224,13 @@ fun AccountCardHeader(
             .fillMaxWidth()
             .background(
                 brush = when (account) {
-                    is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.iconSecondary)
+                    is InvolvedAccount.Other -> SolidColor(
+                        if (RadixTheme.config.isDarkTheme) {
+                            RadixTheme.colors.backgroundTertiary
+                        } else {
+                            RadixTheme.colors.iconSecondary
+                        }
+                    )
                     is InvolvedAccount.Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape

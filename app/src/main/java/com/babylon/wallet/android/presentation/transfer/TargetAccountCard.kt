@@ -87,7 +87,11 @@ fun TargetAccountCard(
             is TargetAccount.Other ->
                 Modifier
                     .background(
-                        color = RadixTheme.colors.iconSecondary,
+                        color = if (RadixTheme.config.isDarkTheme) {
+                            RadixTheme.colors.backgroundTertiary
+                        } else {
+                            RadixTheme.colors.iconSecondary
+                        },
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
         }
