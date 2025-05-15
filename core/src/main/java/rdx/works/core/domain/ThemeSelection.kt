@@ -1,5 +1,7 @@
 package rdx.works.core.domain
 
+import android.os.Build
+
 private const val LITERAL_LIGHT = "light"
 private const val LITERAL_DARK = "dark"
 private const val LITERAL_SYSTEM = "system"
@@ -14,7 +16,9 @@ enum class ThemeSelection(
     internal fun toLiteral() = literal
 
     companion object {
-        val DEFAULT = SYSTEM
+        // System theme is available on Android 10 (API 29) and newer
+        // https://developer.android.com/develop/ui/views/theming/darktheme#change-themes
+        val DEFAULT = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) LIGHT else SYSTEM
 
         internal fun fromLiteral(literal: String) = when (literal) {
             LITERAL_LIGHT -> LIGHT

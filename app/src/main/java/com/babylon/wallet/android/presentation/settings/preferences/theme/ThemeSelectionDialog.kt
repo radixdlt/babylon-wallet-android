@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.settings.preferences.theme
 
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -124,16 +125,18 @@ private fun ThemeSelectionContent(
                     }
                 )
 
-                ThemeSelectionItem(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    selection = ThemeSelection.SYSTEM,
-                    isSelected = state.selection == ThemeSelection.SYSTEM,
-                    onSelected = {
-                        onSelected(ThemeSelection.SYSTEM)
-                        context.applyThemeSelection(ThemeSelection.SYSTEM)
-                    }
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ThemeSelectionItem(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        selection = ThemeSelection.SYSTEM,
+                        isSelected = state.selection == ThemeSelection.SYSTEM,
+                        onSelected = {
+                            onSelected(ThemeSelection.SYSTEM)
+                            context.applyThemeSelection(ThemeSelection.SYSTEM)
+                        }
+                    )
+                }
             }
         }
     )
