@@ -96,7 +96,7 @@ private val DarkColorPalette = RadixColors(
     background = Color(0xFF1E1F1F),
     backgroundSecondary = Color(0xFF121212),
     backgroundTertiary = Color(0xFF28292A),
-    backgroundTransparent = Gray5.copy(alpha = 0.3f),
+    backgroundTransparent = Color(0xFF1E1F1F).copy(alpha = 0.3f),
     text = Gray5,
     textSecondary = Gray4,
     textTertiary = Gray2,
