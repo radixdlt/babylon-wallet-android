@@ -11,5 +11,4 @@ data class DAppWithResources(
 
     val hasAnyResources: Boolean =
         fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
-
 }
