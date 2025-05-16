@@ -67,7 +67,7 @@ fun SecurifyEntityTypeContent(
                 .fillMaxWidth()
                 .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
                 .background(
-                    color = RadixTheme.colors.defaultBackground,
+                    color = RadixTheme.colors.background,
                     shape = RadixTheme.shapes.roundedRectDefault
                 )
                 .padding(RadixTheme.dimensions.paddingMedium),
@@ -79,7 +79,7 @@ fun SecurifyEntityTypeContent(
 
                 is ProfileEntity.PersonaEntity -> PersonaCardHeader(
                     persona = entity.persona,
-                    containerColor = RadixTheme.colors.white
+                    containerColor = RadixTheme.colors.card
                 )
             }
 
@@ -87,7 +87,7 @@ fun SecurifyEntityTypeContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.gray5,
+                        color = RadixTheme.colors.backgroundSecondary,
                         shape = RadixTheme.shapes.roundedRectBottomMedium
                     )
             ) {
@@ -96,14 +96,14 @@ fun SecurifyEntityTypeContent(
                     structure = preview.provisionalConfig
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray3)
+                HorizontalDivider(color = RadixTheme.colors.divider)
 
                 PrimaryView(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     primary = preview.provisionalConfig.matrixOfFactors.primaryRole
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray3)
+                HorizontalDivider(color = RadixTheme.colors.divider)
 
                 ProveOwnershipView(
                     modifier = Modifier.padding(
@@ -113,7 +113,7 @@ fun SecurifyEntityTypeContent(
                     authenticationSigningFactor = preview.provisionalConfig.authenticationSigningFactor
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray3)
+                HorizontalDivider(color = RadixTheme.colors.divider)
 
                 RecoveryAndConfirmationView(
                     modifier = Modifier
@@ -140,7 +140,7 @@ private fun ShieldConfigTitle(
         modifier = modifier,
         text = stringResource(R.string.transactionReview_updateShield_applyTitle, structure.metadata.displayName.value),
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray1
+        color = RadixTheme.colors.text
     )
 }
 
@@ -153,7 +153,7 @@ private fun PrimaryView(
         Text(
             text = stringResource(R.string.transactionReview_updateShield_regularAccessTitle),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -161,7 +161,7 @@ private fun PrimaryView(
         Text(
             text = stringResource(R.string.transactionReview_updateShield_regularAccessMessage),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -174,7 +174,7 @@ private fun PrimaryView(
                 SpanStyle(fontWeight = FontWeight.Bold)
             ),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -201,7 +201,7 @@ private fun PrimaryView(
                     SpanStyle(fontWeight = FontWeight.Bold)
                 ),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -230,7 +230,7 @@ private fun ProveOwnershipView(
         Text(
             text = stringResource(R.string.transactionReview_updateShield_authSigningTitle),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -238,7 +238,7 @@ private fun ProveOwnershipView(
         Text(
             text = stringResource(R.string.transactionReview_updateShield_authSigningMessage),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -246,7 +246,7 @@ private fun ProveOwnershipView(
         Text(
             text = stringResource(R.string.transactionReview_updateShield_authSigningThreshold),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -271,7 +271,7 @@ private fun RecoveryAndConfirmationView(
             modifier = Modifier,
             text = stringResource(R.string.transactionReview_updateShield_startConfirmTitle),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -279,13 +279,13 @@ private fun RecoveryAndConfirmationView(
         Text(
             text = stringResource(R.string.transactionReview_updateShield_startConfirmMessage),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         HorizontalDivider(
-            color = RadixTheme.colors.gray3
+            color = RadixTheme.colors.divider
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -294,7 +294,7 @@ private fun RecoveryAndConfirmationView(
             modifier = Modifier,
             text = stringResource(R.string.transactionReview_updateShield_startRecoveryTitle),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -306,7 +306,7 @@ private fun RecoveryAndConfirmationView(
                 SpanStyle(fontWeight = FontWeight.Bold)
             ),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -325,7 +325,7 @@ private fun RecoveryAndConfirmationView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        HorizontalDivider(color = RadixTheme.colors.gray3)
+        HorizontalDivider(color = RadixTheme.colors.divider)
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -333,7 +333,7 @@ private fun RecoveryAndConfirmationView(
             modifier = Modifier,
             text = stringResource(R.string.transactionReview_updateShield_confirmRecoveryTitle),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -345,7 +345,7 @@ private fun RecoveryAndConfirmationView(
                 SpanStyle(fontWeight = FontWeight.Bold)
             ),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -364,7 +364,7 @@ private fun RecoveryAndConfirmationView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        HorizontalDivider(color = RadixTheme.colors.gray3)
+        HorizontalDivider(color = RadixTheme.colors.divider)
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 

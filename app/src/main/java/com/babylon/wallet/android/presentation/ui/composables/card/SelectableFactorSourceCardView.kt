@@ -11,21 +11,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
@@ -117,7 +116,7 @@ fun RemovableFactorSourceCard(
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray2
+                tint = RadixTheme.colors.iconSecondary
             )
         }
     }
@@ -134,10 +133,6 @@ fun SimpleSelectableSingleChoiceFactorSourceCard(
     ) {
         SimpleFactorCardView(
             modifier = modifier
-                .background(
-                    color = RadixTheme.colors.white,
-                    shape = RadixTheme.shapes.roundedRectMedium
-                )
                 .noIndicationClickable { onSelect(item.data) },
             iconRes = item.data.kind.iconRes(),
             title = item.data.name,
@@ -162,7 +157,7 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
     SimpleFactorCardView(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.white,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .noIndicationClickable { onCheckedChange(!isChecked) },
@@ -187,14 +182,7 @@ private fun CheckboxSelectorView(
 
         Checkbox(
             checked = isChecked,
-            colors = CheckboxDefaults.colors().copy(
-                checkedCheckmarkColor = RadixTheme.colors.white,
-                checkedBorderColor = RadixTheme.colors.gray1,
-                checkedBoxColor = RadixTheme.colors.gray1,
-                uncheckedCheckmarkColor = Color.Transparent,
-                uncheckedBorderColor = RadixTheme.colors.gray2,
-                uncheckedBoxColor = RadixTheme.colors.gray5
-            ),
+            colors = RadixCheckboxDefaults.colors(),
             onCheckedChange = onCheckedChange
         )
 
@@ -213,7 +201,7 @@ private fun CardContainer(
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.white,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectDefault
             )
     ) {

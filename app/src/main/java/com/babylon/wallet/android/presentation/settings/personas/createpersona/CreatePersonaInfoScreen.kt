@@ -25,8 +25,8 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -70,7 +70,7 @@ private fun CreatePersonaInfoContent(
                 text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_continue)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -98,7 +98,7 @@ private fun CreatePersonaInfoContent(
             Text(
                 text = stringResource(id = R.string.createPersona_introduction_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             InfoButton(
                 modifier = Modifier.padding(
@@ -114,14 +114,14 @@ private fun CreatePersonaInfoContent(
             Text(
                 text = stringResource(id = R.string.createPersona_introduction_subtitle1),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = R.string.createPersona_introduction_subtitle2),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }
@@ -130,8 +130,21 @@ private fun CreatePersonaInfoContent(
 
 @Preview(showBackground = true)
 @Composable
-fun CreatePersonaInfoContentPreview() {
-    RadixWalletTheme {
+fun CreatePersonaInfoContentPreviewLight() {
+    RadixWalletPreviewTheme {
+        CreatePersonaInfoContent(
+            onBackClick = {},
+            modifier = Modifier,
+            onContinueClick = {},
+            onInfoClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun CreatePersonaInfoContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         CreatePersonaInfoContent(
             onBackClick = {},
             modifier = Modifier,

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DAppWebsiteAddressRow
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDefinitionAddressRow
@@ -64,21 +65,27 @@ fun DappDetails(
                         dapp = dAppWithResources.dApp
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                    HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = dimensions.paddingXLarge))
+                    HorizontalDivider(
+                        color = RadixTheme.colors.divider,
+                        modifier = Modifier.padding(horizontal = dimensions.paddingXLarge)
+                    )
                 }
                 dAppWithResources.dApp.description?.let { description ->
                     item {
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingXLarge, vertical = dimensions.paddingLarge),
+                                .padding(
+                                    horizontal = dimensions.paddingXLarge,
+                                    vertical = dimensions.paddingLarge
+                                ),
                             text = description,
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             textAlign = TextAlign.Start
                         )
                         HorizontalDivider(
-                            color = RadixTheme.colors.gray4,
+                            color = RadixTheme.colors.divider,
                             modifier = Modifier.padding(horizontal = dimensions.paddingXLarge)
                         )
                     }
@@ -104,66 +111,88 @@ fun DappDetails(
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     }
                 }
+
+                if (dAppWithResources.hasAnyResources) {
+                    item {
+                        HorizontalDivider(color = RadixTheme.colors.divider)
+                    }
+                }
+
                 if (dAppWithResources.fungibleResources.isNotEmpty()) {
                     item {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingXLarge),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2,
-                            textAlign = TextAlign.Start
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                        GrayBackgroundWrapper(
+                            contentPadding = PaddingValues(
+                                vertical = dimensions.paddingDefault,
+                                horizontal = dimensions.paddingXLarge
+                            ) + PaddingValues(top = dimensions.paddingSmall)
+                        ) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                        }
                     }
                     itemsIndexed(dAppWithResources.fungibleResources) { index, fungibleToken ->
-                        val spacerHeight = if (dAppWithResources.fungibleResources.lastIndex == index) {
-                            dimensions.paddingLarge
-                        } else {
-                            dimensions.paddingDefault
+                        GrayBackgroundWrapper(
+                            contentPadding = PaddingValues(
+                                horizontal = dimensions.paddingDefault
+                            ) + PaddingValues(top = dimensions.paddingSmall)
+                        ) {
+                            FungibleCard(
+                                fungible = fungibleToken,
+                                showChevron = false,
+                                onClick = {
+                                    onFungibleTokenClick(fungibleToken)
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                         }
-                        FungibleCard(
-                            modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
-                            fungible = fungibleToken,
-                            showChevron = false,
-                            onClick = {
-                                onFungibleTokenClick(fungibleToken)
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(spacerHeight))
                     }
                 }
                 if (dAppWithResources.nonFungibleResources.isNotEmpty()) {
                     item {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingXLarge),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2,
-                            textAlign = TextAlign.Start
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                        GrayBackgroundWrapper(
+                            contentPadding = PaddingValues(
+                                vertical = dimensions.paddingDefault,
+                                horizontal = dimensions.paddingXLarge
+                            )
+                        ) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                        }
                     }
                     itemsIndexed(dAppWithResources.nonFungibleResources) { index, nonFungibleResource ->
-                        val spacerHeight = if (dAppWithResources.nonFungibleResources.lastIndex == index) {
-                            dimensions.paddingLarge
-                        } else {
-                            dimensions.paddingDefault
+                        GrayBackgroundWrapper(
+                            contentPadding = PaddingValues(
+                                horizontal = dimensions.paddingDefault
+                            )
+                        ) {
+                            NonFungibleCard(
+                                nonFungible = nonFungibleResource,
+                                showChevron = false,
+                                onClick = {
+                                    onNonFungibleClick(nonFungibleResource)
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                         }
-                        NonFungibleCard(
-                            modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
-                            nonFungible = nonFungibleResource,
-                            showChevron = false,
-                            onClick = {
-                                onNonFungibleClick(nonFungibleResource)
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(spacerHeight))
                     }
                 }
+
+                item {
+                    HorizontalDivider(
+                        color = RadixTheme.colors.divider,
+                    )
+                }
+
                 item {
                     GrayBackgroundWrapper(contentPadding = PaddingValues(horizontal = dimensions.paddingLarge)) {
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
@@ -171,7 +200,7 @@ fun DappDetails(
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(R.string.authorizedDapps_dAppDetails_personasHeading),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
+                            color = RadixTheme.colors.textSecondary
                         )
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     }
@@ -202,7 +231,7 @@ fun DappDetails(
 
                         SwitchSettingsItem(
                             modifier = Modifier
-                                .background(RadixTheme.colors.defaultBackground)
+                                .background(RadixTheme.colors.background)
                                 .fillMaxWidth()
                                 .padding(horizontal = dimensions.paddingDefault),
                             titleRes = R.string.authorizedDapps_dAppDetails_depositsTitle,
@@ -212,7 +241,7 @@ fun DappDetails(
                                 R.string.authorizedDapps_dAppDetails_depositsHidden
                             },
                             icon = null,
-                            subtitleTextColor = RadixTheme.colors.gray2,
+                            subtitleTextColor = RadixTheme.colors.textSecondary,
                             checked = isShowLockerDepositsChecked,
                             onCheckedChange = onShowLockerDepositsCheckedChange
                         )
@@ -220,7 +249,7 @@ fun DappDetails(
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
                         HorizontalDivider(
-                            color = RadixTheme.colors.gray4,
+                            color = RadixTheme.colors.divider,
                             modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
                         )
 

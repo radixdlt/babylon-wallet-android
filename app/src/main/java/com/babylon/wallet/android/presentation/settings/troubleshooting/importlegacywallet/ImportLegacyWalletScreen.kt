@@ -3,6 +3,7 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet
 
 import android.Manifest
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -40,7 +41,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +66,8 @@ import com.babylon.wallet.android.presentation.settings.troubleshooting.importle
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
@@ -85,6 +87,7 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestion
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -276,7 +279,8 @@ private fun ImportLegacyWalletContent(
                     title = stringResource(R.string.empty),
                     onBackClick = if (currentPage == Page.ImportComplete) onCloseScreen else onBackClick,
                     backIconType = if (currentPage == Page.ImportComplete) BackIconType.Close else BackIconType.Back,
-                    windowInsets = WindowInsets.statusBarsAndBanner
+                    windowInsets = WindowInsets.statusBarsAndBanner,
+                    containerColor = RadixTheme.colors.backgroundSecondary
                 )
             },
             snackbarHost = {
@@ -302,7 +306,7 @@ private fun ImportLegacyWalletContent(
                     )
                 }
             },
-            containerColor = RadixTheme.colors.defaultBackground
+            containerColor = RadixTheme.colors.backgroundSecondary
         ) { padding ->
             HorizontalPager(
                 state = pagerState,
@@ -452,7 +456,7 @@ private fun ScanQrPage(
             Text(
                 text = stringResource(id = R.string.importOlympiaAccounts_scanQR_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             qrChunkInfo?.let { chunkInfo ->
@@ -463,13 +467,13 @@ private fun ScanQrPage(
                         chunkInfo.total
                     ),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
             Text(
                 text = stringResource(id = R.string.scanQR_importOlympia_instructions),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
@@ -498,7 +502,7 @@ private fun AccountsToImportListPage(
             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         LazyColumn(
             contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
@@ -514,7 +518,7 @@ private fun AccountsToImportListPage(
                     text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_subtitle),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
             items(olympiaAccountsToImport) { item ->
@@ -571,14 +575,14 @@ private fun VerifyWithLedgerDevicePage(
                 Text(
                     text = stringResource(id = R.string.importOlympiaLedgerAccounts_title),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(id = R.string.importOlympiaLedgerAccounts_subtitle),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
@@ -589,7 +593,7 @@ private fun VerifyWithLedgerDevicePage(
                     Text(
                         text = stringResource(id = R.string.importOlympiaLedgerAccounts_listHeading),
                         style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )
@@ -605,9 +609,15 @@ private fun VerifyWithLedgerDevicePage(
                             LedgerListItem(
                                 ledgerFactorSource = item,
                                 modifier = Modifier
-                                    .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
+                                    .defaultCardShadow(
+                                        elevation = 4.dp,
+                                        shape = RadixTheme.shapes.roundedRectSmall
+                                    )
                                     .fillMaxWidth()
-                                    .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
+                                    .background(
+                                        color = RadixTheme.colors.card,
+                                        shape = RadixTheme.shapes.roundedRectSmall
+                                    )
                                     .padding(RadixTheme.dimensions.paddingLarge),
                             )
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -619,7 +629,7 @@ private fun VerifyWithLedgerDevicePage(
                     modifier = Modifier.weight(1f),
                     text = stringResource(id = R.string.importOlympiaLedgerAccounts_instruction),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
@@ -641,7 +651,7 @@ private fun AccountsLeftText(accountsLeft: Int, modifier: Modifier = Modifier) {
         modifier = modifier,
         text = stringResource(id = R.string.importOlympiaLedgerAccounts_accountCount, accountsLeft),
         style = RadixTheme.typography.body1Header,
-        color = RadixTheme.colors.gray1,
+        color = RadixTheme.colors.text,
         overflow = TextOverflow.Ellipsis,
         textAlign = TextAlign.Center
     )
@@ -659,7 +669,7 @@ private fun ImportCompletePage(
             text = stringResource(id = R.string.importOlympiaAccounts_completion_title),
             maxLines = 1,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         LazyColumn(
             contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingMedium),
@@ -675,7 +685,7 @@ private fun ImportCompletePage(
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_subtitleMultiple),
                     textAlign = TextAlign.Start,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
             itemsIndexed(migratedAccounts) { index, item ->
@@ -714,7 +724,7 @@ private fun ImportCompletePage(
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_explanation),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
         }
@@ -749,7 +759,7 @@ private fun VerifyWithYourSeedPhrasePage(
                 Text(
                     text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePrompt),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePromptConfirmation),
@@ -774,13 +784,13 @@ private fun VerifyWithYourSeedPhrasePage(
             Text(
                 text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
@@ -865,12 +875,11 @@ fun HardwareImportNoVerifiedLedgersPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HardwareImportWithVerifiedLedgersPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.SECONDARY) {
         VerifyWithLedgerDevicePage(
-            modifier = Modifier,
             hardwareAccountsLeft = 3,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = FactorSource.Ledger.sample.all.toPersistentList(),
@@ -880,10 +889,10 @@ fun HardwareImportWithVerifiedLedgersPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun HardwareImportNoAccountsLeftPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.SECONDARY) {
         VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 0,
@@ -895,10 +904,10 @@ fun HardwareImportNoAccountsLeftPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun ImportCompletePagePreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.SECONDARY) {
         ImportCompletePage(
             modifier = Modifier,
             migratedAccounts = accountItemUiModelsList,

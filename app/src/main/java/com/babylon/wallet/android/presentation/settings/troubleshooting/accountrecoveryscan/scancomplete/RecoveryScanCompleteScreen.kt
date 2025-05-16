@@ -47,7 +47,7 @@ private fun RecoveryScanCompleteContent(
                 backIconType = BackIconType.None
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -63,7 +63,7 @@ private fun RecoveryScanCompleteContent(
                         .recoverWalletWithoutProfile_complete_headerTitle
                 ),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             Text(
@@ -74,7 +74,7 @@ private fun RecoveryScanCompleteContent(
                     RadixTheme.typography.body1Header.toSpanStyle()
                 ),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.weight(1f))
             RadixPrimaryButton(

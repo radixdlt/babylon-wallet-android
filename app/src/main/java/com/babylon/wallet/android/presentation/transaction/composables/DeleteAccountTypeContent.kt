@@ -65,7 +65,7 @@ fun DeleteAccountTypeContent(
                 .fillMaxWidth()
                 .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
                 .background(
-                    color = RadixTheme.colors.defaultBackground,
+                    color = RadixTheme.colors.background,
                     shape = RadixTheme.shapes.roundedRectDefault
                 )
                 .padding(RadixTheme.dimensions.paddingMedium),
@@ -76,7 +76,7 @@ fun DeleteAccountTypeContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.gray5,
+                        color = RadixTheme.colors.backgroundSecondary,
                         shape = RadixTheme.shapes.roundedRectBottomMedium
                     )
                     .padding(
@@ -88,7 +88,7 @@ fun DeleteAccountTypeContent(
                 Icon(
                     painter = painterResource(id = DSR.ic_delete_outline),
                     contentDescription = null,
-                    tint = RadixTheme.colors.red1
+                    tint = RadixTheme.colors.error
                 )
 
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
@@ -96,7 +96,7 @@ fun DeleteAccountTypeContent(
                 Text(
                     text = stringResource(id = R.string.transactionReview_deletingAccount_message),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.red1
+                    color = RadixTheme.colors.error
                 )
             }
         }

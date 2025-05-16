@@ -20,7 +20,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 fun InfoButton(
     modifier: Modifier = Modifier,
     text: String,
-    color: Color = RadixTheme.colors.blue2,
+    color: Color = RadixTheme.colors.textButton,
     textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
     onClick: () -> Unit
 ) {

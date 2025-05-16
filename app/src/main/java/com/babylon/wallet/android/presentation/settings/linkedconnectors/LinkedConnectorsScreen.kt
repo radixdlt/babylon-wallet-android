@@ -160,60 +160,66 @@ private fun LinkedConnectorsContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.linkedConnectors_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.linkedConnectors_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+
+                HorizontalDivider(color = RadixTheme.colors.divider)
+            }
         },
         snackbarHost = {
             RadixSnackbarHost(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 hostState = snackbarHostState
             )
-        }
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         var connectionLinkToDelete by remember { mutableStateOf<PublicKeyHash?>(null) }
 
-        Column(modifier = Modifier.padding(padding)) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            ActiveLinkedConnectorsListContent(
+                modifier = Modifier.fillMaxWidth(),
+                activeLinkedConnectorsList = activeLinkedConnectorsList,
+                onLinkNewConnectorClick = onLinkNewConnectorClick,
+                onRenameConnectorClick = onRenameConnectorClick,
+                onDeleteConnectorClick = { connectionLinkToDelete = it },
+                isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress
+            )
 
-            Box(modifier = Modifier.fillMaxSize().background(color = RadixTheme.colors.gray5)) {
-                ActiveLinkedConnectorsListContent(
-                    modifier = Modifier.fillMaxWidth(),
-                    activeLinkedConnectorsList = activeLinkedConnectorsList,
-                    onLinkNewConnectorClick = onLinkNewConnectorClick,
-                    onRenameConnectorClick = onRenameConnectorClick,
-                    onDeleteConnectorClick = { connectionLinkToDelete = it },
-                    isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress
+            if (connectionLinkToDelete != null) {
+                @Suppress("UnsafeCallOnNullableType")
+                BasicPromptAlertDialog(
+                    finish = {
+                        if (it) {
+                            onDeleteConnectorClick(connectionLinkToDelete!!)
+                        }
+                        connectionLinkToDelete = null
+                    },
+                    title = {
+                        Text(
+                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
+                            style = RadixTheme.typography.body2Header,
+                            color = RadixTheme.colors.text
+                        )
+                    },
+                    message = {
+                        Text(
+                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.text
+                        )
+                    },
+                    confirmText = stringResource(id = R.string.common_remove),
+                    confirmTextColor = RadixTheme.colors.error
                 )
-
-                if (connectionLinkToDelete != null) {
-                    @Suppress("UnsafeCallOnNullableType")
-                    BasicPromptAlertDialog(
-                        finish = {
-                            if (it) {
-                                onDeleteConnectorClick(connectionLinkToDelete!!)
-                            }
-                            connectionLinkToDelete = null
-                        },
-                        title = {
-                            Text(
-                                text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
-                                style = RadixTheme.typography.body2Header,
-                                color = RadixTheme.colors.gray1
-                            )
-                        },
-                        message = {
-                            Text(
-                                text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
-                                style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray1
-                            )
-                        },
-                        confirmText = stringResource(id = R.string.common_remove)
-                    )
-                }
             }
         }
     }
@@ -234,7 +240,7 @@ private fun ActiveLinkedConnectorsListContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.linkedConnectors_subtitle),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         itemsIndexed(activeLinkedConnectorsList) { index, activeLinkedConnector ->
@@ -245,7 +251,7 @@ private fun ActiveLinkedConnectorsListContent(
             )
             if (remember(activeLinkedConnectorsList.size) { index < activeLinkedConnectorsList.size - 1 }) {
                 HorizontalDivider(
-                    color = RadixTheme.colors.gray4,
+                    color = RadixTheme.colors.divider,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -254,7 +260,7 @@ private fun ActiveLinkedConnectorsListContent(
         }
         item {
             HorizontalDivider(
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.divider,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -271,7 +277,7 @@ private fun ActiveLinkedConnectorsListContent(
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = DSR.ic_qr_code_scanner),
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     },
                     isLoading = isAddingNewLinkConnectorInProgress,
@@ -289,7 +295,7 @@ private fun ActiveLinkedConnectorContent(
     onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
     onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
 ) {
-    Column(modifier = modifier.background(color = RadixTheme.colors.white)) {
+    Column(modifier = modifier.background(color = RadixTheme.colors.background)) {
         Row(
             Modifier
                 .fillMaxWidth()
@@ -300,7 +306,7 @@ private fun ActiveLinkedConnectorContent(
                 modifier = Modifier.weight(1f),
                 text = activeLinkedConnector.name,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -310,7 +316,7 @@ private fun ActiveLinkedConnectorContent(
                 Icon(
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_account_label),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.icon
                 )
             }
             IconButton(onClick = {
@@ -319,7 +325,7 @@ private fun ActiveLinkedConnectorContent(
                 Icon(
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.icon
                 )
             }
         }

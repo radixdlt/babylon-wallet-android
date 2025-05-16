@@ -17,11 +17,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.ImmutableList
@@ -55,7 +55,7 @@ fun PersonaDetailCard(
             Text(
                 text = persona.persona.displayName.value,
                 style = RadixTheme.typography.header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             if (onSelectPersona != null) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -64,11 +64,11 @@ fun PersonaDetailCard(
                     onClick = {
                         onSelectPersona(persona.persona)
                     },
-                    colors = RadixRadioButtonDefaults.darkColors()
+                    colors = RadixRadioButtonDefaults.colors()
                 )
             }
         }
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.divider)
         val personalInfo = persona.personalInfoFormatted()
         if (personalInfo.isNotEmpty()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -76,7 +76,7 @@ fun PersonaDetailCard(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 text = personalInfo,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         if (missingFields.isNotEmpty()) {

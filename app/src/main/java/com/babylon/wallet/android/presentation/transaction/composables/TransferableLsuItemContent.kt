@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -35,6 +34,7 @@ import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -51,7 +51,7 @@ fun TransferableLsuItemContent(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = shape
             )
             .padding(
@@ -73,14 +73,14 @@ fun TransferableLsuItemContent(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferableLSU.asset.displayTitle(),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = transferableLSU.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -97,13 +97,13 @@ fun TransferableLsuItemContent(
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             text = stringResource(id = R.string.interactionReview_worth).uppercase(),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             maxLines = 1
         )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                .assetOutlineBorder(shape = RadixTheme.shapes.roundedRectSmall)
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
             Row(
@@ -123,7 +123,7 @@ fun TransferableLsuItemContent(
                 Text(
                     text = XrdResource.SYMBOL,
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 2
                 )
 

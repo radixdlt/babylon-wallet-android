@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -23,13 +24,13 @@ fun AccountPromptLabel(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     text: String,
-    labelColor: Color = RadixTheme.colors.white,
-    contentColor: Color = RadixTheme.colors.white,
+    labelColor: Color = White,
+    contentColor: Color = White,
     @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
 ) {
     PromptLabel(
         modifier = modifier
-            .background(labelColor.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectSmall)
+            .background(RadixTheme.colors.backgroundTransparent, RadixTheme.shapes.roundedRectSmall)
             .clip(RadixTheme.shapes.roundedRectSmall)
             .applyIf(
                 onClick != null,

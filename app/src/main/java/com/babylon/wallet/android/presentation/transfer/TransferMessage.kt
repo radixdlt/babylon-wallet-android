@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,8 +25,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
+import com.babylon.wallet.android.designsystem.composable.RadixTextFieldDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun TransferMessage(
@@ -47,7 +48,7 @@ fun TransferMessage(
                 ),
             text = stringResource(id = R.string.assetTransfer_transactionMessage).uppercase(),
             style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             overflow = TextOverflow.Ellipsis,
         )
 
@@ -56,13 +57,14 @@ fun TransferMessage(
                 .fillMaxWidth()
                 .border(
                     width = 1.dp,
-                    color = RadixTheme.colors.gray4,
+                    color = RadixTheme.colors.divider,
                     shape = RadixTheme.shapes.roundedRectMedium
                 )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(RadixTheme.colors.background)
                     .padding(RadixTheme.dimensions.paddingXXSmall),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -70,18 +72,19 @@ fun TransferMessage(
                 IconButton(onClick = onMessageClose) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
-                        contentDescription = "clear"
+                        contentDescription = "clear",
+                        tint = RadixTheme.colors.icon
                     )
                 }
             }
 
-            HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
+            HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.divider)
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.gray5,
+                        color = RadixTheme.colors.backgroundSecondary,
                         shape = RadixTheme.shapes.roundedRectBottomMedium
                     )
                     .padding(RadixTheme.dimensions.paddingSmall),
@@ -93,10 +96,11 @@ fun TransferMessage(
                     onValueChanged = onMessageChanged,
                     value = message,
                     hint = stringResource(id = R.string.assetTransfer_header_addMessageButton),
-                    hintColor = RadixTheme.colors.gray2,
-                    colors = OutlinedTextFieldDefaults.colors(
+                    colors = RadixTextFieldDefaults.colors(
                         focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     ),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences
@@ -110,11 +114,8 @@ fun TransferMessage(
 @Preview(showBackground = true)
 @Composable
 fun TransferMessagePreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.PRIMARY) {
         TransferMessage(
-            modifier = Modifier
-                .padding(10.dp)
-                .background(color = Color.Gray),
             message = "",
             onMessageChanged = {},
             onMessageClose = {}

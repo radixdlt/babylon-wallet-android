@@ -57,7 +57,7 @@ import coil.request.NullRequestDataException
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -140,15 +140,15 @@ object Thumbnail {
     @Composable
     fun NonFungible(
         modifier: Modifier = Modifier,
-        collection: Resource.NonFungibleResource?,
+        image: Uri?,
+        name: String? = null,
         radius: CornerSize = CornerSize(size = RadixTheme.dimensions.paddingSmall)
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
-        val imageType = remember(collection, viewSize) {
-            val icon = collection?.iconUrl
+        val imageType = remember(image, viewSize) {
             val size = viewSize
-            if (icon != null && size != null) {
-                ImageType.External(icon, ThumbnailRequestSize.closest(size))
+            if (image != null && size != null) {
+                ImageType.External(image, ThumbnailRequestSize.closest(size))
             } else {
                 null
             }
@@ -161,7 +161,21 @@ object Thumbnail {
             emptyDrawable = R.drawable.ic_nfts,
             emptyContentScale = CustomContentScale.standard(density = density),
             shape = RoundedCornerShape(radius),
-            contentDescription = collection?.name.orEmpty()
+            contentDescription = name.orEmpty()
+        )
+    }
+
+    @Composable
+    fun NonFungible(
+        modifier: Modifier = Modifier,
+        collection: Resource.NonFungibleResource?,
+        radius: CornerSize = CornerSize(size = RadixTheme.dimensions.paddingSmall)
+    ) {
+        NonFungible(
+            modifier = modifier,
+            image = collection?.iconUrl,
+            name = collection?.name,
+            radius = radius
         )
     }
 
@@ -222,7 +236,7 @@ object Thumbnail {
                         .clip(RoundedCornerShape(cornerRadius))
                         .applyIf(
                             condition = painterState !is AsyncImagePainter.State.Success,
-                            modifier = Modifier.background(RadixTheme.colors.gray4)
+                            modifier = Modifier.background(RadixTheme.colors.backgroundTertiary)
                         )
                         .applyIf(
                             condition = cropped,
@@ -430,7 +444,7 @@ object Thumbnail {
         errorContentScale: CustomContentScale = CustomContentScale.standard(LocalDensity.current),
         shape: Shape,
         contentDescription: String,
-        backgroundColor: Color = RadixTheme.colors.gray4
+        backgroundColor: Color = RadixTheme.colors.backgroundTertiary
     ) {
         val context = LocalContext.current
         val data: Any? = when (imageType) {
@@ -563,10 +577,9 @@ private fun ImageRequest.Builder.applyCorrectDecoderBasedOnMimeType() = apply {
 @Composable
 @Preview(name = "Fungibles Preview")
 fun FungibleResourcesPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         Column(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground)
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -620,10 +633,9 @@ fun FungibleResourcesPreview() {
 @Composable
 @Preview(name = "NonFungibles Preview")
 fun NonFungibleResourcesPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         Column(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground)
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -713,10 +725,9 @@ fun NonFungibleResourcesPreview() {
 @Composable
 @Preview(name = "NFTs Preview")
 fun NFTsPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         Column(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground)
                 .padding(RadixTheme.dimensions.paddingDefault)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),

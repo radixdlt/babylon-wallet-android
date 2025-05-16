@@ -9,8 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -20,6 +18,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.bubbleShape
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 
 @Composable
 fun ColumnScope.TransactionMessageContent(
@@ -39,15 +38,18 @@ fun ColumnScope.TransactionMessageContent(
             .padding(RadixTheme.dimensions.paddingDefault),
         text = stringResource(id = R.string.interactionReview_messageHeading).uppercase(),
         style = RadixTheme.typography.body1Link,
-        color = RadixTheme.colors.gray2,
+        color = RadixTheme.colors.textSecondary,
         overflow = TextOverflow.Ellipsis,
     )
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(6.dp, bubbleShape)
+            .defaultCardShadow(
+                elevation = 6.dp,
+                shape = bubbleShape
+            )
             .background(
-                color = Color.White,
+                color = RadixTheme.colors.background,
                 shape = bubbleShape
             )
             .padding(
@@ -58,7 +60,7 @@ fun ColumnScope.TransactionMessageContent(
         Text(
             text = transactionMessage,
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
         )
     }
 }

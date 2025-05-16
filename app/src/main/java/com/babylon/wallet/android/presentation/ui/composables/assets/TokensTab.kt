@@ -109,7 +109,7 @@ fun LazyListScope.tokensTab(
                 if (index != assetsViewData.nonXrdTokens.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 20.dp),
-                        color = RadixTheme.colors.gray4
+                        color = RadixTheme.colors.divider
                     )
                 }
             }
@@ -155,7 +155,7 @@ private fun TokenItem(
             modifier = Modifier.weight(1f),
             text = token.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 1
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
@@ -165,7 +165,7 @@ private fun TokenItem(
                 Text(
                     text = amount.formatted(),
                     style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 2
                 )
 

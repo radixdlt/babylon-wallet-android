@@ -13,13 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
@@ -45,12 +43,10 @@ import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTIO
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
-import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.LockScreenBackground
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.utils.AppEvent
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
 
 @Composable
@@ -191,24 +187,6 @@ fun WalletApp(
                 messageText = stringResource(id = R.string.mobileConnect_noProfileDialog_subtitle),
                 confirmText = stringResource(id = R.string.common_ok),
                 dismissText = null
-            )
-        }
-        SyncStatusBarWithScreenChanges(navController)
-    }
-}
-
-@Composable
-private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
-    val devBannerState = LocalDevBannerState.current
-    val systemUiController = rememberSystemUiController()
-    LaunchedEffect(navController, devBannerState) {
-        // When a new screen is appeared we might need to reset the status bar's icons appearance.
-        // Each screen composable can override the darkIcons parameter (such as AccountScreen), since
-        // their invocation comes later.
-        navController.currentBackStackEntryFlow.collect {
-            systemUiController.setStatusBarColor(
-                color = Color.Transparent,
-                darkIcons = !devBannerState.isVisible
             )
         }
     }

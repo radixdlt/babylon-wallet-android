@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +26,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -51,7 +51,7 @@ fun ChooseLedgerDeviceSection(
     ) {
         Icon(
             painterResource(id = R.drawable.ic_hardware_ledger),
-            tint = Color.Unspecified,
+            tint = themedColorTint(),
             contentDescription = null
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -62,7 +62,7 @@ fun ChooseLedgerDeviceSection(
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection)
             },
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
@@ -74,7 +74,7 @@ fun ChooseLedgerDeviceSection(
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger)
             },
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
@@ -83,11 +83,11 @@ fun ChooseLedgerDeviceSection(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
+                    .background(RadixTheme.colors.card, RadixTheme.shapes.roundedRectSmall)
                     .padding(RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
@@ -118,7 +118,7 @@ fun ChooseLedgerDeviceSection(
                             modifier = Modifier
                                 .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
+                                .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectSmall)
                                 .throttleClickable {
                                     onLedgerDeviceSelected(ledgerItem.data)
                                 }

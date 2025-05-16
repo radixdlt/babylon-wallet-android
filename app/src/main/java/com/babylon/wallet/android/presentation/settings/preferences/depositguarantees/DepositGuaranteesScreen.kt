@@ -19,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -37,6 +35,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.utils.replaceDoublePercent
 
 @Composable
@@ -72,102 +71,107 @@ fun DepositGuaranteesContent(
     BackHandler(onBack = onBackClick)
 
     Scaffold(
+        modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.accountSecuritySettings_depositGuarantees_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.accountSecuritySettings_depositGuarantees_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+
+                HorizontalDivider(color = RadixTheme.colors.divider)
+            }
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
-            Column(modifier) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.accountSecuritySettings_depositGuarantees_text),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.textSecondary
+            )
+            InfoButton(
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingLarge
+                ),
+                text = stringResource(id = R.string.infoLink_title_guarantees),
+                onClick = {
+                    onInfoClick(GlossaryItem.guarantees)
+                }
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                    .defaultCardShadow(
+                        elevation = 6.dp,
+                        shape = RadixTheme.shapes.roundedRectDefault
+                    )
+                    .background(
+                        color = RadixTheme.colors.card,
+                        shape = RadixTheme.shapes.roundedRectDefault
+                    )
+                    .padding(RadixTheme.dimensions.paddingDefault),
+            ) {
                 Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.accountSecuritySettings_depositGuarantees_text),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                InfoButton(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingLarge
-                    ),
-                    text = stringResource(id = R.string.infoLink_title_guarantees),
-                    onClick = {
-                        onInfoClick(GlossaryItem.guarantees)
-                    }
-                )
-                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                        .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
-                        .background(
-                            color = Color.White,
-                            shape = RadixTheme.shapes.roundedRectDefault
-                        )
-                        .padding(RadixTheme.dimensions.paddingDefault),
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(
+                        id = R.string.transactionReview_guarantees_setGuaranteedMinimum
+                    ).replaceDoublePercent(),
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.text,
+                    textAlign = TextAlign.Center
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(
-                            id = R.string.transactionReview_guarantees_setGuaranteedMinimum
-                        ).replaceDoublePercent(),
-                        style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Center
+                    IconButton(
+                        modifier = Modifier.weight(0.7f),
+                        onClick = onDepositGuaranteeDecreased
+                    ) {
+                        Icon(
+                            painterResource(
+                                id = R.drawable.ic_minus
+                            ),
+                            tint = RadixTheme.colors.icon,
+                            contentDescription = "minus button"
+                        )
+                    }
+
+                    RadixTextField(
+                        modifier = Modifier.weight(1.1f),
+                        onValueChanged = { value ->
+                            onDepositGuaranteeChanged(value)
+                        },
+                        value = state.depositGuarantee.orEmpty(),
+                        errorHighlight = !state.isDepositInputValid,
+                        singleLine = true,
+                        textStyle = RadixTheme.typography.body1Regular.copy(textAlign = TextAlign.Center),
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done,
+                            keyboardType = KeyboardType.Number
+                        )
                     )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                    IconButton(
+                        modifier = Modifier.weight(0.7f),
+                        onClick = onDepositGuaranteeIncreased
                     ) {
-                        IconButton(
-                            modifier = Modifier.weight(0.7f),
-                            onClick = onDepositGuaranteeDecreased
-                        ) {
-                            Icon(
-                                painterResource(
-                                    id = R.drawable.ic_minus
-                                ),
-                                tint = RadixTheme.colors.gray1,
-                                contentDescription = "minus button"
-                            )
-                        }
-
-                        RadixTextField(
-                            modifier = Modifier.weight(1.1f),
-                            onValueChanged = { value ->
-                                onDepositGuaranteeChanged(value)
-                            },
-                            value = state.depositGuarantee.orEmpty(),
-                            errorHighlight = !state.isDepositInputValid,
-                            singleLine = true,
-                            textStyle = RadixTheme.typography.body1Regular.copy(textAlign = TextAlign.Center),
-                            keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.Done,
-                                keyboardType = KeyboardType.Number
-                            )
+                        Icon(
+                            painterResource(
+                                id = R.drawable.ic_plus
+                            ),
+                            tint = RadixTheme.colors.icon,
+                            contentDescription = "plus button"
                         )
-
-                        IconButton(
-                            modifier = Modifier.weight(0.7f),
-                            onClick = onDepositGuaranteeIncreased
-                        ) {
-                            Icon(
-                                painterResource(
-                                    id = R.drawable.ic_plus
-                                ),
-                                tint = RadixTheme.colors.gray1,
-                                contentDescription = "plus button"
-                            )
-                        }
                     }
                 }
             }

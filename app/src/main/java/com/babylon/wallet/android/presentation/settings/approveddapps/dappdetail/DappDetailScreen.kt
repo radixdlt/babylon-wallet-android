@@ -172,17 +172,18 @@ private fun DappDetailContent(
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_title),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
-            confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget)
+            confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget),
+            confirmTextColor = RadixTheme.colors.error
         )
     }
 
@@ -195,13 +196,13 @@ private fun DappDetailContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
-        }
+        },
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Box(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground)
                 .padding(padding)
         ) {
             DappDetails(
@@ -292,14 +293,14 @@ fun DappDefinitionAddressRow(
         Text(
             text = stringResource(id = R.string.authorizedDapps_dAppDetails_dAppDefinition),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         ActionableAddressView(
             address = Address.Account(dappDefinitionAddress),
             textStyle = RadixTheme.typography.body1HighImportance,
-            textColor = RadixTheme.colors.gray1,
-            iconColor = RadixTheme.colors.gray2
+            textColor = RadixTheme.colors.text,
+            iconColor = RadixTheme.colors.iconSecondary
         )
     }
 }
@@ -318,7 +319,7 @@ fun DAppWebsiteAddressRow(
                 if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
             },
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         LinkText(
@@ -326,8 +327,7 @@ fun DAppWebsiteAddressRow(
                 .fillMaxWidth()
                 .radixPlaceholder(visible = website == null),
             clickable = website != null,
-            url = website.orEmpty(),
-            linkIconColor = RadixTheme.colors.gray3
+            url = website.orEmpty()
         )
     }
 }
@@ -350,10 +350,9 @@ private fun PersonaDetailsSheet(
                 windowInsets = WindowInsets.none,
                 title = persona.persona.displayName.value,
                 onBackClick = onCloseClick,
-                contentColor = RadixTheme.colors.gray1,
                 backIconType = BackIconType.Close
             )
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -381,14 +380,14 @@ private fun PersonaDetailsSheet(
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_title),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_confirm)
@@ -429,7 +428,8 @@ private fun PersonaDetailList(
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
             HorizontalDivider(
-                modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
+                modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                color = RadixTheme.colors.divider
             )
         }
         val nonEmptyPersonaFields = persona.persona.personaData.fields
@@ -445,7 +445,7 @@ private fun PersonaDetailList(
                         dappName
                     ),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             }
@@ -478,7 +478,7 @@ private fun PersonaDetailList(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.authorizedDapps_personaDetails_accountSharingDescription, dappName),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
@@ -517,7 +517,7 @@ private fun PersonaDetailList(
             }
         }
         item {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             WarningButton(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault),

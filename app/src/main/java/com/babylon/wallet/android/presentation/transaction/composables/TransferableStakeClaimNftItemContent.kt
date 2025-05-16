@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -37,6 +36,7 @@ import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -57,7 +57,7 @@ fun TransferableStakeClaimNftItemContent(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = shape
             )
             .padding(vertical = RadixTheme.dimensions.paddingMedium)
@@ -89,16 +89,14 @@ fun TransferableStakeClaimNftItemContent(
                             .padding(vertical = RadixTheme.dimensions.paddingSmall),
                         text = stringResource(id = R.string.interactionReview_toBeClaimed).uppercase(),
                         style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         maxLines = 1
                     )
 
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(
-                                width = 1.dp,
-                                color = RadixTheme.colors.gray3,
+                            .assetOutlineBorder(
                                 shape = RadixTheme.shapes.roundedRectSmall
                             )
                             .padding(RadixTheme.dimensions.paddingMedium)
@@ -120,7 +118,7 @@ fun TransferableStakeClaimNftItemContent(
                             Text(
                                 text = XrdResource.SYMBOL,
                                 style = RadixTheme.typography.body2HighImportance,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 maxLines = 2
                             )
 
@@ -132,7 +130,7 @@ fun TransferableStakeClaimNftItemContent(
                                 modifier = Modifier.weight(1f),
                                 text = item.claimAmountXrd?.formatted().orEmpty(),
                                 style = RadixTheme.typography.body1HighImportance,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 textAlign = TextAlign.End,
                                 maxLines = 2
                             )
@@ -154,7 +152,7 @@ fun TransferableStakeClaimNftItemContent(
             if (addDivider) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
@@ -188,7 +186,7 @@ fun TransferableStakeClaimItemHeader(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferableStakeClaim.asset.displayTitle(),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -196,7 +194,7 @@ fun TransferableStakeClaimItemHeader(
                 Text(
                     text = transferableStakeClaim.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -206,7 +204,7 @@ fun TransferableStakeClaimItemHeader(
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                     text = stringResource(R.string.interactionReview_estimated),
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     style = RadixTheme.typography.body3Regular
                 )
             } else {

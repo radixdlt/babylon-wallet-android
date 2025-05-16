@@ -105,7 +105,7 @@ fun List<Metadata>.dAppDefinition(): String? {
 
 fun List<Metadata>.dAppDefinitions(): List<String> = findCollection(
     key = ExplicitMetadataKey.DAPP_DEFINITIONS,
-    type = MetadataType.String
+    type = MetadataType.Address
 )?.map { it.value }.orEmpty()
 
 fun List<Metadata>.claimedWebsites(): List<String>? = findCollection(

@@ -133,7 +133,7 @@ private fun AddFactorContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             contentPadding = padding,
@@ -151,7 +151,7 @@ private fun AddFactorContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     text = state.mode.title(),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -161,7 +161,7 @@ private fun AddFactorContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                     text = state.mode.subtitle(),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 

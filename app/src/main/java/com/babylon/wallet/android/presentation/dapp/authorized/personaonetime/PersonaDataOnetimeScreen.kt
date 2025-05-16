@@ -32,13 +32,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -165,12 +165,11 @@ private fun PersonaDataOnetimeContent(
                 enabled = continueButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .background(RadixTheme.colors.defaultBackground),
+                    .navigationBarsPadding(),
                 text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             contentPadding = padding + PaddingValues(RadixTheme.dimensions.paddingDefault),
@@ -187,7 +186,7 @@ private fun PersonaDataOnetimeContent(
                     text = stringResource(id = R.string.dAppRequest_personalDataOneTime_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 PermissionRequestHeader(
@@ -198,7 +197,7 @@ private fun PersonaDataOnetimeContent(
                     text = stringResource(id = R.string.dAppRequest_personalDataOneTime_chooseDataToProvide),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
@@ -218,7 +217,7 @@ private fun PersonaDataOnetimeContent(
                         )
                         .fillMaxWidth()
                         .background(
-                            color = RadixTheme.colors.gray5,
+                            color = RadixTheme.colors.backgroundSecondary,
                             shape = RadixTheme.shapes.roundedRectMedium
                         ),
                     onSelectPersona = onSelectPersona
@@ -242,21 +241,43 @@ private fun PermissionRequestHeader(
     modifier: Modifier = Modifier
 ) {
     val text = stringResource(id = R.string.dAppRequest_personalDataOneTime_subtitle, dappName)
-        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
+        .formattedSpans(
+            boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.text)
+        )
     Text(
         modifier = modifier,
         text = text,
         textAlign = TextAlign.Center,
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-private fun PersonaDataOnetimePreview() {
-    RadixWalletTheme {
+private fun PersonaDataOnetimePreviewLight() {
+    RadixWalletPreviewTheme {
+        PersonaDataOnetimeContent(
+            onContinueClick = {},
+            dapp = DApp.sampleMainnet(),
+            onBackClick = {},
+            modifier = Modifier.fillMaxSize(),
+            showBack = true,
+            personas = persistentListOf(PersonaUiModel(Persona.sampleMainnet())),
+            onSelectPersona = {},
+            onCreatePersona = {},
+            onEditClick = {},
+            continueButtonEnabled = false
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+private fun PersonaDataOnetimePreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         PersonaDataOnetimeContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),

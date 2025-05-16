@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 @Composable
@@ -40,7 +41,14 @@ fun AssetsTabs(
                     .tabIndicatorOffset(tabPositions[tabIndex])
                     .fillMaxHeight()
                     .zIndex(-1f)
-                    .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
+                    .background(
+                        color = if (RadixTheme.config.isDarkTheme) {
+                            RadixTheme.colors.backgroundTertiary
+                        } else {
+                            RadixTheme.colors.icon
+                        },
+                        shape = RadixTheme.shapes.circle
+                    )
             )
         }
     ) {
@@ -54,8 +62,8 @@ fun AssetsTabs(
                         onTabSelected(tab)
                     }
                 },
-                selectedContentColor = RadixTheme.colors.white,
-                unselectedContentColor = RadixTheme.colors.gray1
+                selectedContentColor = White,
+                unselectedContentColor = RadixTheme.colors.text
             ) {
                 Text(
                     modifier = Modifier.padding(

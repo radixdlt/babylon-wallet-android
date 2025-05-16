@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -140,7 +140,7 @@ private fun PersonaDataOngoingPermissionContent(
                 text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -159,7 +159,7 @@ private fun PersonaDataOngoingPermissionContent(
                 text = stringResource(id = R.string.dAppRequest_personalDataPermission_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             PermissionRequestHeader(
@@ -177,7 +177,7 @@ private fun PersonaDataOngoingPermissionContent(
                         .clip(RadixTheme.shapes.roundedRectMedium)
                         .fillMaxWidth()
                         .background(
-                            color = RadixTheme.colors.gray5,
+                            color = RadixTheme.colors.backgroundSecondary,
                             shape = RadixTheme.shapes.roundedRectMedium
                         )
                 )
@@ -188,7 +188,7 @@ private fun PersonaDataOngoingPermissionContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.dAppRequest_personalDataPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -201,21 +201,41 @@ private fun PermissionRequestHeader(
     modifier: Modifier = Modifier
 ) {
     val text = stringResource(id = R.string.dAppRequest_personalDataPermission_subtitle, dappName)
-        .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
+        .formattedSpans(
+            boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.text)
+        )
     Text(
         modifier = modifier,
         text = text,
         textAlign = TextAlign.Center,
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun PersonaDataOngoingPermissionContentPreview() {
-    RadixWalletTheme {
+fun PersonaDataOngoingPermissionContentPreviewLight() {
+    RadixWalletPreviewTheme {
+        PersonaDataOngoingPermissionContent(
+            onContinueClick = {},
+            dapp = DApp.sampleMainnet(),
+            onBackClick = {},
+            modifier = Modifier.fillMaxSize(),
+            showBack = true,
+            persona = PersonaUiModel(Persona.sampleMainnet()),
+            onEditClick = {},
+            continueButtonEnabled = true
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun PersonaDataOngoingPermissionContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         PersonaDataOngoingPermissionContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),

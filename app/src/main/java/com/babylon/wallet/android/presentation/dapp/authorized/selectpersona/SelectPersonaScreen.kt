@@ -32,12 +32,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event.CreatePersona
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -174,7 +174,7 @@ private fun SelectPersonaContent(
                 isLoading = state.isSigningInProgress
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         AnimatedVisibility(
             visible = state.isLoading,
@@ -216,7 +216,7 @@ private fun SelectPersonaContent(
                         ),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     LoginRequestHeader(
@@ -230,7 +230,7 @@ private fun SelectPersonaContent(
                             text = stringResource(R.string.dAppRequest_login_choosePersona),
                             textAlign = TextAlign.Center,
                             style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                     }
                 }
@@ -240,7 +240,7 @@ private fun SelectPersonaContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                RadixTheme.colors.gray5,
+                                RadixTheme.colors.backgroundSecondary,
                                 shape = RadixTheme.shapes.roundedRectMedium
                             )
                             .clip(RadixTheme.shapes.roundedRectMedium)
@@ -279,21 +279,21 @@ private fun LoginRequestHeader(dappName: String, firstTimeLogin: Boolean, modifi
             R.string.dAppRequest_login_subtitleKnownDapp,
             dappName
         )
-    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.gray1))
+    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.text))
     Text(
         modifier = modifier,
         text = text,
         textAlign = TextAlign.Center,
         style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun SelectPersonaPreview() {
-    RadixWalletTheme {
+fun SelectPersonaPreviewLight() {
+    RadixWalletPreviewTheme {
         SelectPersonaContent(
             onCancelClick = {},
             onContinueClick = {},
@@ -310,10 +310,50 @@ fun SelectPersonaPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun SelectPersonaFirstTimePreview() {
-    RadixWalletTheme {
+fun SelectPersonaPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        SelectPersonaContent(
+            onCancelClick = {},
+            onContinueClick = {},
+            onPersonaSelected = {},
+            createNewPersona = {},
+            dapp = DApp.sampleMainnet(),
+            state = SelectPersonaViewModel.State(
+                isLoading = false,
+                authorizedDApp = AuthorizedDapp.sampleMainnet(),
+                personas = persistentListOf(Persona.sampleMainnet().toUiModel())
+            )
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun SelectPersonaFirstTimePreviewLight() {
+    RadixWalletPreviewTheme {
+        SelectPersonaContent(
+            onCancelClick = {},
+            onContinueClick = {},
+            onPersonaSelected = {},
+            createNewPersona = {},
+            dapp = DApp.sampleMainnet(),
+            state = SelectPersonaViewModel.State(
+                isLoading = false,
+                authorizedDApp = null,
+                personas = persistentListOf()
+            )
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun SelectPersonaFirstTimePreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         SelectPersonaContent(
             onCancelClick = {},
             onContinueClick = {},

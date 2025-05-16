@@ -33,9 +33,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -61,22 +61,15 @@ fun CreateAccountScreen(
 
     BackHandler(onBack = viewModel::onBackClick)
 
-    val accountName by viewModel.accountName.collectAsStateWithLifecycle()
-    val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
-
     CreateAccountContent(
         onAccountNameChange = viewModel::onAccountNameChange,
         onAccountCreateClick = {
             viewModel.onAccountCreateClick(isWithLedger = it)
         },
-        accountName = accountName,
-        isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
         onBackClick = viewModel::onBackClick,
         modifier = modifier,
-        firstTime = state.isFirstAccount,
-        isWithLedger = state.isWithLedger,
+        state = state,
         uiMessage = state.uiMessage,
-        isCreatingAccount = state.isCreatingAccount,
         onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown
     )
@@ -104,13 +97,9 @@ fun CreateAccountScreen(
 fun CreateAccountContent(
     onAccountNameChange: (String) -> Unit,
     onAccountCreateClick: (Boolean) -> Unit,
-    accountName: String,
-    isAccountNameLengthMoreThanTheMaximum: Boolean,
     onBackClick: () -> Unit,
     modifier: Modifier,
-    firstTime: Boolean,
-    isWithLedger: Boolean,
-    isCreatingAccount: Boolean,
+    state: CreateAccountViewModel.CreateAccountUiState,
     onUseLedgerSelectionChanged: (Boolean) -> Unit,
     uiMessage: UiMessage? = null,
     onUiMessageShown: () -> Unit = {}
@@ -129,7 +118,7 @@ fun CreateAccountContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = if (firstTime) BackIconType.Back else BackIconType.Close,
+                backIconType = if (state.isFirstAccount) BackIconType.Back else BackIconType.Close,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
@@ -137,14 +126,15 @@ fun CreateAccountContent(
             RadixBottomBar(
                 onClick = {
                     keyboardController?.hide()
-                    onAccountCreateClick(isWithLedger)
+                    onAccountCreateClick(state.isWithLedger)
                 },
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
-                isLoading = isCreatingAccount,
+                isLoading = state.isCreatingAccount,
+                enabled = state.isSubmitEnabled,
                 insets = if (isKeyboardVisible()) WindowInsets.ime else WindowInsets.navigationBars
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         snackbarHost = {
             RadixSnackbarHost(
                 hostState = snackBarHostState,
@@ -161,13 +151,13 @@ fun CreateAccountContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (firstTime) {
+                text = if (state.isFirstAccount) {
                     stringResource(id = R.string.createAccount_titleFirst)
                 } else {
                     stringResource(id = R.string.createAccount_titleNotFirst)
                 },
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -175,27 +165,26 @@ fun CreateAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = stringResource(id = R.string.createAccount_nameNewAccount_explanation),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onAccountNameChange,
-                value = accountName,
-                error = if (isAccountNameLengthMoreThanTheMaximum) {
+                value = state.accountName,
+                error = if (state.isAccountNameErrorVisible) {
                     stringResource(id = R.string.error_accountLabel_tooLong)
                 } else {
                     null
                 },
                 hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
-                hintColor = RadixTheme.colors.gray2,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     capitalization = KeyboardCapitalization.Sentences
@@ -203,7 +192,7 @@ fun CreateAccountContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             CreateWithLedgerSwitch(
-                isChecked = isWithLedger,
+                isChecked = state.isWithLedger,
                 onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -226,12 +215,12 @@ private fun CreateWithLedgerSwitch(
             Text(
                 text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerTitle),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Text(
                 text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         RadixSwitch(
@@ -245,17 +234,15 @@ private fun CreateWithLedgerSwitch(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun CreateAccountContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         CreateAccountContent(
             onAccountNameChange = {},
             onAccountCreateClick = {},
-            accountName = "Name",
-            isAccountNameLengthMoreThanTheMaximum = false,
             onBackClick = {},
             modifier = Modifier,
-            firstTime = false,
-            isWithLedger = false,
-            isCreatingAccount = false,
+            state = CreateAccountViewModel.CreateAccountUiState(
+                accountName = "Main"
+            ),
             onUseLedgerSelectionChanged = {}
         )
     }

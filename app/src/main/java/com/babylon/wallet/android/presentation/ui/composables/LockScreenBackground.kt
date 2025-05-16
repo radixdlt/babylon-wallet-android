@@ -21,7 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Blue1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
@@ -29,7 +31,7 @@ fun LockScreenBackground(modifier: Modifier = Modifier, onTapToUnlock: (() -> Un
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(RadixTheme.colors.blue1)
+            .background(Blue1)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
@@ -50,14 +52,14 @@ fun LockScreenBackground(modifier: Modifier = Modifier, onTapToUnlock: (() -> Un
                 Icon(
                     painter = painterResource(id = DSR.ic_lock),
                     contentDescription = null,
-                    tint = RadixTheme.colors.blue1,
+                    tint = Blue1,
                     modifier = Modifier
                         .clip(RadixTheme.shapes.circle)
                         .clickable {
                             onTapToUnlock()
                         }
                         .size(40.dp)
-                        .background(RadixTheme.colors.white, shape = RadixTheme.shapes.circle)
+                        .background(White, shape = RadixTheme.shapes.circle)
                         .padding(RadixTheme.dimensions.paddingSmall)
                 )
                 Text(
@@ -65,7 +67,7 @@ fun LockScreenBackground(modifier: Modifier = Modifier, onTapToUnlock: (() -> Un
                         .clickable { onTapToUnlock() },
                     text = stringResource(R.string.splash_tapAnywhereToUnlock),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.white,
+                    color = White,
                     textAlign = TextAlign.Center
                 )
             }

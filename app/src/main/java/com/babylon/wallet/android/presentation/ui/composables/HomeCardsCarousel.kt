@@ -3,7 +3,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import android.net.Uri
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -48,7 +47,6 @@ import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeCardsCarousel(
     modifier: Modifier = Modifier,
@@ -86,8 +84,8 @@ fun HomeCardsCarousel(
                 pagerState = pagerState,
                 activeIndicatorWidth = 6.dp,
                 inactiveIndicatorWidth = 4.dp,
-                activeColor = RadixTheme.colors.gray2,
-                inactiveColor = RadixTheme.colors.gray4
+                activeColor = RadixTheme.colors.iconSecondary,
+                inactiveColor = RadixTheme.colors.iconTertiary
             )
         }
     }
@@ -107,10 +105,10 @@ private fun CardView(
             .fillMaxWidth(),
         shape = RadixTheme.shapes.roundedRectMedium,
         colors = CardColors(
-            containerColor = RadixTheme.colors.gray5,
-            contentColor = RadixTheme.colors.gray1,
-            disabledContainerColor = RadixTheme.colors.gray5,
-            disabledContentColor = RadixTheme.colors.gray1
+            containerColor = RadixTheme.colors.backgroundSecondary,
+            contentColor = RadixTheme.colors.text,
+            disabledContainerColor = RadixTheme.colors.backgroundSecondary,
+            disabledContentColor = RadixTheme.colors.text
         )
     ) {
         ConstraintLayout(
@@ -149,6 +147,7 @@ private fun CardView(
             }
 
             val titleStyle = RadixTheme.typography.body1Header
+                .copy(color = RadixTheme.colors.text)
             Text(
                 modifier = Modifier
                     .constrainAs(titleView) {
@@ -178,7 +177,7 @@ private fun CardView(
                                 .height(12.dp),
                             painter = painterResource(id = R.drawable.ic_external_link),
                             contentDescription = null,
-                            tint = RadixTheme.colors.gray2
+                            tint = RadixTheme.colors.iconSecondary
                         )
                     }
                 ),
@@ -202,6 +201,7 @@ private fun CardView(
                 },
                 text = card.description(),
                 style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -230,7 +230,7 @@ private fun CardView(
                         },
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray2
+                    tint = RadixTheme.colors.iconSecondary
                 )
             }
         }
@@ -289,9 +289,9 @@ private fun HomeCard.EndIcon(
 @Composable
 private fun HomeCard.EndGraphicRes() = when (this) {
     HomeCard.Connector -> painterResource(id = R.drawable.ic_homecarousel_connect)
-    HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
+    HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
     is HomeCard.Dapp -> null
-    HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
+    HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
     HomeCard.DiscoverRadixDapps -> painterResource(id = R.drawable.ic_homecarousel_discover_dapps)
 }
 
@@ -299,7 +299,7 @@ private const val INLINE_LINK_ICON = "link_icon"
 
 @Preview
 @Composable
-fun HomeCardsCarouselContinueRadQuestPreview() {
+fun HomeCardsCarouselContinueRadQuestPreviewLight() {
     RadixWalletPreviewTheme {
         val cards = remember {
             persistentListOf(
@@ -321,7 +321,29 @@ fun HomeCardsCarouselContinueRadQuestPreview() {
 
 @Preview
 @Composable
-fun HomeCardsCarouselStartRadQuestPreview() {
+fun HomeCardsCarouselContinueRadQuestPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun HomeCardsCarouselStartRadQuestPreviewLight() {
     RadixWalletPreviewTheme {
         val cards = remember {
             persistentListOf(
@@ -344,7 +366,30 @@ fun HomeCardsCarouselStartRadQuestPreview() {
 
 @Preview
 @Composable
-fun HomeCardsCarouselDAppPreview() {
+fun HomeCardsCarouselStartRadQuestPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            initialPage = 1,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun HomeCardsCarouselDAppPreviewLight() {
     RadixWalletPreviewTheme {
         val cards = remember {
             persistentListOf(
@@ -367,8 +412,54 @@ fun HomeCardsCarouselDAppPreview() {
 
 @Preview
 @Composable
-fun HomeCardsCarouselConnectorPreview() {
+fun HomeCardsCarouselDAppPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            initialPage = 2,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun HomeCardsCarouselConnectorPreviewLight() {
     RadixWalletPreviewTheme {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            initialPage = 3,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun HomeCardsCarouselConnectorPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         val cards = remember {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
@@ -390,8 +481,31 @@ fun HomeCardsCarouselConnectorPreview() {
 
 @Preview(fontScale = 1.5f)
 @Composable
-fun HomeCardsCarouselScaledFontPreview() {
+fun HomeCardsCarouselScaledFontPreviewLight() {
     RadixWalletPreviewTheme {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            initialPage = 1,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview(fontScale = 1.5f)
+@Composable
+fun HomeCardsCarouselScaledFontPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         val cards = remember {
             persistentListOf(
                 HomeCard.ContinueRadQuest,

@@ -142,7 +142,7 @@ private fun AccountRecoveryScanContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         bottomBar = {
             if (state.contentState == AccountRecoveryScanViewModel.State.ContentState.ScanComplete) {
                 RadixBottomBar(
@@ -262,7 +262,7 @@ private fun ActiveAccountsPage(
                 text = stringResource(id = R.string.accountRecoveryScan_scanComplete_headerTitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(
@@ -277,7 +277,7 @@ private fun ActiveAccountsPage(
                 ),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
@@ -288,10 +288,13 @@ private fun ActiveAccountsPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                        .background(RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)
+                        .background(
+                            color = RadixTheme.colors.backgroundTertiary,
+                            shape = RadixTheme.shapes.roundedRectMedium
+                        )
                         .padding(RadixTheme.dimensions.paddingXXLarge),
                     text = stringResource(id = R.string.accountRecoveryScan_scanComplete_noAccounts),
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.secondaryHeader
                 )
@@ -324,7 +327,7 @@ private fun InactiveAccountsPage(
                 text = stringResource(id = R.string.accountRecoveryScan_selectInactiveAccounts_header_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(
@@ -336,7 +339,7 @@ private fun InactiveAccountsPage(
                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
@@ -385,7 +388,7 @@ private fun ScanInProgressContent(
             text = stringResource(id = R.string.accountRecoveryScan_inProgress_headerTitle),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -415,13 +418,13 @@ private fun ScanInProgressContent(
             text = text,
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(64.dp))
         if (isScanningNetwork) {
             CircularProgressIndicator(
                 modifier = Modifier.size(48.dp),
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.icon
             )
         }
     }

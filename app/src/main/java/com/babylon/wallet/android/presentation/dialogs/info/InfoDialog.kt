@@ -1,20 +1,26 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.dialogs.info
 
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -35,11 +41,15 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.InfoViewModel.Companion.GLOSSARY_ANCHOR
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.none
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.DefaultMarkdownColors
 import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.utils.MARKDOWN_TAG_URL
@@ -63,20 +73,36 @@ fun InfoDialog(
     onDismiss: () -> Unit
 ) {
     val glossaryItem by viewModel.glossaryItem.collectAsStateWithLifecycle()
-
-    BottomSheetDialogWrapper(
-        modifier = modifier,
-        showDragHandle = true,
-        dragToDismissEnabled = true,
-        onDismiss = onDismiss
-    ) {
-        InfoDialogContent(
-            scrollState = rememberScrollState(),
-            markdownContent = glossaryItem?.resolveTextFromGlossaryItem(),
-            drawableRes = glossaryItem?.resolveIconFromGlossaryItem(),
-            onGlossaryItemClick = viewModel::onGlossaryItemClick,
-        )
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
+        }
     }
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
+
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = sheetState,
+        onDismissRequest = onDismissRequest,
+        sheetContent = {
+            InfoDialogContent(
+                scrollState = rememberScrollState(),
+                markdownContent = glossaryItem?.resolveTextFromGlossaryItem(),
+                drawableRes = glossaryItem?.resolveIconFromGlossaryItem(),
+                onGlossaryItemClick = viewModel::onGlossaryItemClick,
+                onDismiss = onDismissRequest
+            )
+        }
+    )
 }
 
 @Composable
@@ -86,26 +112,31 @@ private fun InfoDialogContent(
     markdownContent: String?,
     @DrawableRes drawableRes: Int?,
     onGlossaryItemClick: (String) -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
     val customHeading2: MarkdownComponent = { markdownComponentModel ->
-        markdownComponentModel.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let { markDownNode ->
-            val styledText = buildAnnotatedString {
-                pushStyle(RadixTheme.typography.title.toSpanStyle().copy(color = RadixTheme.colors.gray1))
-                buildMarkdownAnnotatedString(markdownComponentModel.content, markDownNode)
-                pop()
+        markdownComponentModel.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)
+            ?.let { markDownNode ->
+                val styledText = buildAnnotatedString {
+                    pushStyle(
+                        RadixTheme.typography.title.toSpanStyle()
+                            .copy(color = RadixTheme.colors.text)
+                    )
+                    buildMarkdownAnnotatedString(markdownComponentModel.content, markDownNode)
+                    pop()
+                }
+                Text(
+                    styledText,
+                    modifier = Modifier.fillMaxSize(),
+                    textAlign = TextAlign.Center
+                )
             }
-            Text(
-                styledText,
-                modifier = Modifier.fillMaxSize(),
-                textAlign = TextAlign.Center
-            )
-        }
     }
 
-    val linkColor = RadixTheme.colors.blue2
+    val linkColor = RadixTheme.colors.textButton
     val linkAnnotator = markdownAnnotator { content, child ->
         if (child.type == INLINE_LINK) {
             val linkText = child.findChildOfType(LINK_TEXT)?.children?.innerList()?.firstOrNull()
@@ -132,57 +163,78 @@ private fun InfoDialogContent(
         }
     }
 
-    Column(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxHeight(0.9f)
-            .verticalScroll(scrollState)
-            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-            .padding(top = RadixTheme.dimensions.paddingSmall)
-            .padding(bottom = RadixTheme.dimensions.paddingDefault),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        drawableRes?.let {
-            Icon(
-                painterResource(id = drawableRes),
-                tint = Color.Unspecified,
-                contentDescription = null
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = "",
+                onBackClick = onDismiss,
+                backIconType = BackIconType.Close,
+                windowInsets = WindowInsets.none
             )
-        }
+        },
+        containerColor = RadixTheme.colors.background
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(padding)
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(top = RadixTheme.dimensions.paddingSmall)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            drawableRes?.let {
+                Icon(
+                    painterResource(id = drawableRes),
+                    tint = Color.Unspecified,
+                    contentDescription = null
+                )
+            }
 
-        CompositionLocalProvider(
-            LocalUriHandler provides object : UriHandler {
-                override fun openUri(uri: String) {
-                    if (uri.contains(GLOSSARY_ANCHOR)) {
-                        onGlossaryItemClick(uri.drop(GLOSSARY_ANCHOR.length))
-                        coroutineScope.launch {
-                            // dialog updated with new glossary item therefore scroll to top
-                            scrollState.animateScrollTo(0)
+            CompositionLocalProvider(
+                LocalUriHandler provides object : UriHandler {
+                    override fun openUri(uri: String) {
+                        if (uri.contains(GLOSSARY_ANCHOR)) {
+                            onGlossaryItemClick(uri.drop(GLOSSARY_ANCHOR.length))
+                            coroutineScope.launch {
+                                // dialog updated with new glossary item therefore scroll to top
+                                scrollState.animateScrollTo(0)
+                            }
+                        } else {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
                         }
-                    } else {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
                     }
                 }
-            }
-        ) {
-            Markdown(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(),
-                typography = markdownTypography(
-                    h2 = RadixTheme.typography.title,
-                    paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.gray1),
+            ) {
+                Markdown(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(),
+                    typography = markdownTypography(
+                        h2 = RadixTheme.typography.title,
+                        paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.text),
 
-                ),
-                padding = markdownPadding(
-                    block = RadixTheme.dimensions.paddingSmall,
-                ),
-                components = markdownComponents(
-                    heading2 = customHeading2
-                ),
-                annotator = linkAnnotator,
-                content = markdownContent ?: stringResource(id = R.string.empty),
-            )
+                    ),
+                    padding = markdownPadding(
+                        block = RadixTheme.dimensions.paddingSmall,
+                    ),
+                    components = markdownComponents(
+                        heading2 = customHeading2
+                    ),
+                    annotator = linkAnnotator,
+                    content = markdownContent ?: stringResource(id = R.string.empty),
+                    colors = DefaultMarkdownColors(
+                        text = RadixTheme.colors.text,
+                        codeText = RadixTheme.colors.text,
+                        inlineCodeText = RadixTheme.colors.text,
+                        linkText = RadixTheme.colors.textButton,
+                        codeBackground = RadixTheme.colors.backgroundTertiary,
+                        inlineCodeBackground = RadixTheme.colors.backgroundTertiary,
+                        dividerColor = RadixTheme.colors.divider,
+                    )
+                )
+            }
         }
     }
 }
@@ -259,6 +311,7 @@ private fun InfoTokensPreview() {
             markdownContent = stringResource(R.string.infoLink_glossary_tokens),
             drawableRes = DSR.icon_tokens,
             onGlossaryItemClick = {},
+            onDismiss = {}
         )
     }
 }
@@ -273,6 +326,7 @@ private fun InfoNFTsPreview() {
             markdownContent = stringResource(R.string.infoLink_glossary_nfts),
             drawableRes = DSR.ic_nfts,
             onGlossaryItemClick = {},
+            onDismiss = {}
         )
     }
 }

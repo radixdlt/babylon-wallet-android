@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables.securityfactors
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -52,9 +51,7 @@ fun SelectableFactorSourcesListView(
     onContinueClick: () -> Unit
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(color = RadixTheme.colors.gray5)
+        modifier = modifier.fillMaxSize()
     ) {
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -70,7 +67,7 @@ fun SelectableFactorSourcesListView(
                     ),
                     text = factorSourceKind.subtitle(),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
             }
 
@@ -96,7 +93,7 @@ fun SelectableFactorSourcesListView(
         }
 
         RadixBottomBar(
-            dividerColor = RadixTheme.colors.gray4,
+            dividerColor = RadixTheme.colors.divider,
             button = {
                 RadixPrimaryButton(
                     modifier = Modifier

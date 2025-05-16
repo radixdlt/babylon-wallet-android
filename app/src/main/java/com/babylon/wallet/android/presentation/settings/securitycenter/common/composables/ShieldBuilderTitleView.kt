@@ -36,7 +36,7 @@ fun ShieldBuilderTitleView(
         Text(
             text = title,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
     }

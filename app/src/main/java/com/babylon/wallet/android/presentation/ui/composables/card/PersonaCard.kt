@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -18,23 +17,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixCheckboxDefaults
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -67,7 +65,7 @@ fun SimplePersonaCard(
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
     }
@@ -83,7 +81,7 @@ fun SimplePersonaCardWithShadow(
             Modifier
                 .defaultCardShadow(elevation = 6.dp)
                 .background(
-                    brush = SolidColor(RadixTheme.colors.gray5),
+                    brush = SolidColor(RadixTheme.colors.backgroundSecondary),
                     shape = RadixTheme.shapes.roundedRectMedium
                 )
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -103,7 +101,7 @@ fun SimplePersonaCardWithShadow(
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
     }
@@ -114,15 +112,14 @@ fun PersonaCard(
     modifier: Modifier = Modifier,
     persona: Persona,
     showChevron: Boolean = true,
-    elevation: Dp = 2.dp,
     onNavigateToSecurityCenter: (() -> Unit)? = null,
     securityPrompts: ImmutableList<SecurityPromptType>? = null
 ) {
     Column(
         modifier = modifier
-            .defaultCardShadow(elevation = elevation)
+            .defaultCardShadow()
             .fillMaxWidth()
-            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.background, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault
@@ -142,7 +139,7 @@ fun PersonaCard(
                 modifier = Modifier.weight(1f),
                 text = persona.displayName.value,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -152,7 +149,7 @@ fun PersonaCard(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
                     ),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.text
                 )
             }
         }
@@ -193,13 +190,13 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
         )
         persona.lastUsedOn?.let {
             Column(modifier = Modifier.fillMaxWidth()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
                 Spacer(modifier = Modifier.height(paddingDefault))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.dAppRequest_login_lastLoginWasOn, it),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(paddingDefault))
             }
@@ -230,25 +227,18 @@ fun SimplePersonaSelectionCard(
             textAlign = TextAlign.Start,
             maxLines = 2,
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         if (isSingleChoice) {
             RadixRadioButton(
                 selected = checked,
                 onClick = { onSelectPersona(persona) },
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
             )
         } else {
             Checkbox(
                 checked = checked,
-                colors = CheckboxDefaults.colors().copy(
-                    checkedCheckmarkColor = RadixTheme.colors.white,
-                    checkedBorderColor = RadixTheme.colors.gray1,
-                    checkedBoxColor = RadixTheme.colors.gray1,
-                    uncheckedCheckmarkColor = Color.Transparent,
-                    uncheckedBorderColor = RadixTheme.colors.gray2,
-                    uncheckedBoxColor = RadixTheme.colors.gray5
-                ),
+                colors = RadixCheckboxDefaults.colors(),
                 onCheckedChange = null
             )
         }

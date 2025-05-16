@@ -82,7 +82,7 @@ private fun RequestAuthorizationBottomSheetContent(
                         backIconType = BackIconType.Close
                     )
                 },
-                containerColor = RadixTheme.colors.defaultBackground,
+                containerColor = RadixTheme.colors.background,
             ) { padding ->
                 AccessContent(
                     modifier = Modifier.fillMaxWidth().padding(padding),
@@ -108,7 +108,7 @@ private fun RequestAuthorizationBottomSheetContent(
 
 @Preview
 @Composable
-private fun RequestAuthorizationCreatingAccountPreview() {
+private fun RequestAuthorizationCreatingAccountPreviewLight() {
     RadixWalletPreviewTheme {
         RequestAuthorizationBottomSheetContent(
             state = RequestAuthorizationViewModel.State(
@@ -123,8 +123,38 @@ private fun RequestAuthorizationCreatingAccountPreview() {
 
 @Preview
 @Composable
-private fun RequestAuthorizationCreatingPersonaPreview() {
+private fun RequestAuthorizationCreatingAccountPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        RequestAuthorizationBottomSheetContent(
+            state = RequestAuthorizationViewModel.State(
+                purpose = AuthorizationPurpose.CREATING_ACCOUNT,
+                isRequestingAuthorization = false
+            ),
+            onRetry = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun RequestAuthorizationCreatingPersonaPreviewLight() {
     RadixWalletPreviewTheme {
+        RequestAuthorizationBottomSheetContent(
+            state = RequestAuthorizationViewModel.State(
+                purpose = AuthorizationPurpose.CREATING_PERSONA,
+                isRequestingAuthorization = false
+            ),
+            onRetry = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun RequestAuthorizationCreatingPersonaPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         RequestAuthorizationBottomSheetContent(
             state = RequestAuthorizationViewModel.State(
                 purpose = AuthorizationPurpose.CREATING_PERSONA,

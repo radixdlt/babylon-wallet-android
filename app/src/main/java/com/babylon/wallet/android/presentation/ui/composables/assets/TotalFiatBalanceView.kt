@@ -37,8 +37,8 @@ fun TotalFiatBalanceView(
     fiatPrice: FiatPrice?,
     currency: SupportedCurrency,
     isLoading: Boolean,
-    contentColor: Color = RadixTheme.colors.gray1,
-    hiddenContentColor: Color = RadixTheme.colors.gray3,
+    contentColor: Color = RadixTheme.colors.text,
+    hiddenContentColor: Color = RadixTheme.colors.textTertiary,
     contentStyle: TextStyle = RadixTheme.typography.title,
     formattedContentStyle: TextStyle = contentStyle,
     shimmeringColor: Color? = null,
@@ -152,7 +152,8 @@ private fun TotalBalanceContent(
 @Composable
 fun TotalFiatBalanceViewToggle(
     modifier: Modifier = Modifier,
-    onToggle: (isVisible: Boolean) -> Unit
+    onToggle: (isVisible: Boolean) -> Unit,
+    color: Color = RadixTheme.colors.iconTertiary
 ) {
     val isPriceVisible = LocalBalanceVisibility.current
     Icon(
@@ -164,7 +165,7 @@ fun TotalFiatBalanceViewToggle(
             }
         ),
         contentDescription = "",
-        tint = RadixTheme.colors.gray3,
+        tint = color,
         modifier = modifier
             .padding(start = RadixTheme.dimensions.paddingSmall)
             .size(22.dp)

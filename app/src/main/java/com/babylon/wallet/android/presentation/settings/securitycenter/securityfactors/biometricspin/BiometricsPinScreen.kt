@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,6 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetSta
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
+import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -118,7 +118,11 @@ fun BiometricsPinScreen(
                     onDismissClick = viewModel::onDismissMainDeviceFactorSourceBottomSheet
                 )
             },
-            onDismissRequest = viewModel::onDismissMainDeviceFactorSourceBottomSheet
+            onDismissRequest = viewModel::onDismissMainDeviceFactorSourceBottomSheet,
+            containerColor = RadixTheme.colors.backgroundSecondary,
+            windowInsets = {
+                WindowInsets.none // Handled by inner scaffold
+            }
         )
     }
 }
@@ -143,13 +147,13 @@ private fun BiometricsPinContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
                 mainFactorSource = state.mainDeviceFactorSource,
@@ -182,10 +186,10 @@ private fun ChangeMainDeviceFactorSourceContent(
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.empty),
-                containerColor = RadixTheme.colors.defaultBackground,
                 windowInsets = WindowInsets(0.dp),
                 backIconType = BackIconType.Close,
                 onBackClick = onDismissClick,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
         bottomBar = {
@@ -194,13 +198,13 @@ private fun ChangeMainDeviceFactorSourceContent(
                 isLoading = isChangingMainDeviceFactorSourceInProgress,
                 onClick = onContinueClick,
                 text = stringResource(R.string.common_continue),
-                insets = WindowInsets(0.dp)
             )
-        }
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary,
+        contentWindowInsets = WindowInsets.none
     ) { padding ->
         LazyColumn(
             modifier = Modifier
-                .background(RadixTheme.colors.defaultBackground)
                 .fillMaxSize()
                 .padding(padding),
             contentPadding = PaddingValues(
@@ -214,7 +218,7 @@ private fun ChangeMainDeviceFactorSourceContent(
                 Text(
                     text = stringResource(R.string.factorSources_changeMain_title),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
             }
@@ -223,7 +227,7 @@ private fun ChangeMainDeviceFactorSourceContent(
                 Text(
                     text = stringResource(id = R.string.factorSources_changeMain_subtitle),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))

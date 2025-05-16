@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -192,29 +193,33 @@ private fun WalletContent(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = RadixTheme.colors.defaultBackground),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = RadixTheme.colors.background
+                ),
                 title = {
                     Text(
                         text = stringResource(id = R.string.homePage_title),
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 },
                 actions = {
-                    Box {
-                        IconButton(onClick = onMenuClick) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(
-                                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
-                                ),
-                                contentDescription = null,
-                                tint = RadixTheme.colors.gray1
-                            )
-                        }
+                    IconButton(onClick = onMenuClick) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(
+                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
+                            ),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.icon
+                        )
                     }
                 },
-                windowInsets = WindowInsets.statusBarsAndBanner
+                windowInsets = WindowInsets.statusBarsAndBanner.add(
+                    WindowInsets(
+                        left = RadixTheme.dimensions.paddingDefault,
+                        right = RadixTheme.dimensions.paddingDefault
+                    )
+                )
             )
         },
         snackbarHost = {
@@ -223,8 +228,7 @@ private fun WalletContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
-        contentColor = RadixTheme.colors.defaultText
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val pullToRefreshState = rememberPullToRefreshState()
         Box {
@@ -253,8 +257,8 @@ private fun WalletContent(
                     .align(Alignment.TopCenter),
                 state = pullToRefreshState,
                 isRefreshing = state.isRefreshing,
-                color = RadixTheme.colors.gray1,
-                containerColor = RadixTheme.colors.defaultBackground
+                color = RadixTheme.colors.icon,
+                containerColor = RadixTheme.colors.backgroundTertiary
             )
         }
     }
@@ -295,7 +299,7 @@ private fun WalletAccountList(
                 Text(
                     text = stringResource(R.string.homePage_totalValue).uppercase(),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                 TotalFiatBalanceView(

@@ -2,18 +2,15 @@ package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AnticipateInterpolator
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -21,15 +18,15 @@ import androidx.compose.runtime.remember
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
-import com.babylon.wallet.android.designsystem.theme.DefaultDarkScrim
-import com.babylon.wallet.android.designsystem.theme.DefaultLightScrim
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.edgeToEdge
+import com.babylon.wallet.android.designsystem.theme.rememberRadixThemeConfig
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
 import com.babylon.wallet.android.presentation.main.AppState
@@ -47,7 +44,7 @@ import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
 @AndroidEntryPoint
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -97,15 +94,18 @@ class MainActivity : FragmentActivity() {
         }
 
         setContent {
-            RadixWalletTheme {
-                SyncEdgeToEdgeSetupWithSelectedTheme()
-                val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
+            val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsStateWithLifecycle()
 
+            val selectedTheme by viewModel.themeSelection.collectAsStateWithLifecycle()
+            val themeConfig = rememberRadixThemeConfig(selectedTheme = selectedTheme)
+            RadixWalletTheme(config = themeConfig) {
+                SetupEdgeToEdge(isDevBannerVisible)
+
+                val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
                 CustomCompositionProviders(
                     isBalanceVisible = isVisible,
                     actionableAddressViewEntryPoint = actionableAddressViewEntryPoint
                 ) {
-                    val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsStateWithLifecycle()
                     val devBannerState by remember(isDevBannerVisible) {
                         derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                     }
@@ -135,20 +135,13 @@ class MainActivity : FragmentActivity() {
     }
 
     @Composable
-    private fun SyncEdgeToEdgeSetupWithSelectedTheme() {
-        val isSystemInDarkTheme = isSystemInDarkTheme()
-        DisposableEffect(isSystemInDarkTheme) {
-            enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.auto(
-                    Color.TRANSPARENT,
-                    Color.TRANSPARENT,
-                ) { isSystemInDarkTheme },
-                navigationBarStyle = SystemBarStyle.light(
-                    scrim = DefaultLightScrim,
-                    darkScrim = DefaultDarkScrim
-                ),
+    private fun SetupEdgeToEdge(isDevBannerVisible: Boolean) {
+        val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
+        LaunchedEffect(isDarkThemeEnabled, isDevBannerVisible) {
+            edgeToEdge(
+                isDarkThemeEnabled = isDarkThemeEnabled,
+                forceDarkStatusBar = isDevBannerVisible
             )
-            onDispose {}
         }
     }
 
@@ -201,12 +194,6 @@ class MainActivity : FragmentActivity() {
             fadeIn.duration = splashExitAnimDurationMs
             fadeIn.doOnEnd {
                 splashScreenView.remove()
-                enableEdgeToEdge(
-                    navigationBarStyle = SystemBarStyle.light(
-                        scrim = DefaultLightScrim,
-                        darkScrim = DefaultDarkScrim
-                    )
-                )
             }
             fadeIn.start()
         }

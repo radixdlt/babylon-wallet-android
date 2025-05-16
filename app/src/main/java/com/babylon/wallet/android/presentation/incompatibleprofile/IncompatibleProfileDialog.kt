@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.MainActivity
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.theme.Blue1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileViewModel.Event
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -86,7 +87,7 @@ private fun IncompatibleWalletContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(RadixTheme.colors.blue1)
+            .background(Blue1)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         BasicAlertDialog(
@@ -94,7 +95,7 @@ private fun IncompatibleWalletContent(
         ) {
             Surface(
                 shape = RadixTheme.shapes.roundedRectSmall,
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.background,
                 tonalElevation = AlertDialogDefaults.TonalElevation
             ) {
                 Column(
@@ -104,14 +105,14 @@ private fun IncompatibleWalletContent(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_title),
                         style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
 
                     Text(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                         text = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_message),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
 
                     FlowRow(
@@ -122,21 +123,21 @@ private fun IncompatibleWalletContent(
                         RadixTextButton(
                             text = stringResource(id = R.string.common_cancel),
                             onClick = onDismiss,
-                            contentColor = RadixTheme.colors.blue2
+                            contentColor = RadixTheme.colors.textButton
                         )
 
                         if (state.incompatibleCause != null) {
                             RadixTextButton(
                                 text = stringResource(id = R.string.troubleshooting_contactSupport_title),
                                 onClick = onSendLogs,
-                                contentColor = RadixTheme.colors.blue2
+                                contentColor = RadixTheme.colors.textButton
                             )
                         }
 
                         RadixTextButton(
                             text = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_delete),
                             onClick = onDeleteProfile,
-                            contentColor = RadixTheme.colors.red1
+                            contentColor = RadixTheme.colors.error
                         )
                     }
                 }
@@ -147,7 +148,7 @@ private fun IncompatibleWalletContent(
 
 @Preview
 @Composable
-private fun IncompatibleWalletWithCausePreview() {
+private fun IncompatibleWalletWithCausePreviewLight() {
     RadixWalletPreviewTheme {
         IncompatibleWalletContent(
             state = IncompatibleProfileViewModel.State(
@@ -162,8 +163,36 @@ private fun IncompatibleWalletWithCausePreview() {
 
 @Preview
 @Composable
-private fun IncompatibleWalletWithoutCausePreview() {
+private fun IncompatibleWalletWithCausePreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        IncompatibleWalletContent(
+            state = IncompatibleProfileViewModel.State(
+                incompatibleCause = CommonException.Unknown()
+            ),
+            onDismiss = {},
+            onDeleteProfile = {},
+            onSendLogs = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun IncompatibleWalletWithoutCausePreviewLight() {
     RadixWalletPreviewTheme {
+        IncompatibleWalletContent(
+            state = IncompatibleProfileViewModel.State(),
+            onDismiss = {},
+            onDeleteProfile = {},
+            onSendLogs = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun IncompatibleWalletWithoutCausePreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         IncompatibleWalletContent(
             state = IncompatibleProfileViewModel.State(),
             onDismiss = {},

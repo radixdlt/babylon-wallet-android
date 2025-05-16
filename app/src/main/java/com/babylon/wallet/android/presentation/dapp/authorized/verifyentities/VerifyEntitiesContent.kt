@@ -72,7 +72,7 @@ fun VerifyEntitiesContent(
                 isLoading = isSigningInProgress
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { paddingValues ->
         LazyColumn(
             contentPadding = paddingValues + PaddingValues(RadixTheme.dimensions.paddingDefault),
@@ -97,7 +97,7 @@ fun VerifyEntitiesContent(
                     },
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
@@ -110,10 +110,15 @@ fun VerifyEntitiesContent(
                             id = R.string.dAppRequest_accountsProofOfOwnership_subtitle,
                             dapp.displayName()
                         )
-                    }.formattedSpans(boldStyle = SpanStyle(color = RadixTheme.colors.gray1, fontWeight = FontWeight.SemiBold)),
+                    }.formattedSpans(
+                        boldStyle = SpanStyle(
+                            color = RadixTheme.colors.text,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    ),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
@@ -141,9 +146,9 @@ fun VerifyEntitiesContent(
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun VerifyPersonaScreenPreview() {
+fun VerifyPersonaScreenPreviewLight() {
     RadixWalletPreviewTheme {
         VerifyEntitiesContent(
             dapp = DApp.sampleMainnet(),
@@ -158,10 +163,46 @@ fun VerifyPersonaScreenPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun VerifyAccountsScreenPreview() {
+fun VerifyPersonaScreenPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        VerifyEntitiesContent(
+            dapp = DApp.sampleMainnet(),
+            entityType = VerifyEntitiesViewModel.State.EntityType.Persona,
+            profileEntities = listOf(Persona.sampleMainnet.ripley.asProfileEntity()).toImmutableList(),
+            canNavigateBack = false,
+            isSigningInProgress = false,
+            onContinueClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun VerifyAccountsScreenPreviewLight() {
     RadixWalletPreviewTheme {
+        VerifyEntitiesContent(
+            dapp = DApp.sampleMainnet(),
+            entityType = VerifyEntitiesViewModel.State.EntityType.Account,
+            profileEntities = Account.sampleMainnet.all.map {
+                it.asProfileEntity()
+            }.toImmutableList(),
+            canNavigateBack = true,
+            isSigningInProgress = true,
+            onContinueClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun VerifyAccountsScreenPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         VerifyEntitiesContent(
             dapp = DApp.sampleMainnet(),
             entityType = VerifyEntitiesViewModel.State.EntityType.Account,

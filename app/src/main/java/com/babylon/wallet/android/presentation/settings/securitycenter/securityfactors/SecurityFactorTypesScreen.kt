@@ -55,9 +55,10 @@ private fun SecurityFactorTypesContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
-        }
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         SecurityFactorTypesListView(
             modifier = Modifier
@@ -67,7 +68,7 @@ private fun SecurityFactorTypesContent(
                 Text(
                     text = stringResource(id = R.string.securityFactors_subtitle),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
                 )
             },

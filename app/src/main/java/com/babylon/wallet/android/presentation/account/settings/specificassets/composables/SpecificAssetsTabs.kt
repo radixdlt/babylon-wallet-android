@@ -42,11 +42,14 @@ fun SpecificAssetsTabs(
                     .fillMaxHeight()
                     .zIndex(-1f)
                     .padding(2.dp)
-                    .background(RadixTheme.colors.white, RadixTheme.shapes.roundedRectSmall)
+                    .background(
+                        color = RadixTheme.colors.selectedSegmentedControl,
+                        shape = RadixTheme.shapes.roundedRectSmall
+                    )
             )
         }
     ) {
-        SpecificAssetsTab.values().forEach { tab ->
+        SpecificAssetsTab.entries.forEach { tab ->
             val isSelected = tab == selectedTab
             Tab(
                 selected = isSelected,
@@ -55,8 +58,8 @@ fun SpecificAssetsTabs(
                         onTabSelected(tab)
                     }
                 },
-                selectedContentColor = RadixTheme.colors.gray1,
-                unselectedContentColor = RadixTheme.colors.gray1
+                selectedContentColor = RadixTheme.colors.text,
+                unselectedContentColor = RadixTheme.colors.textSecondary
             ) {
                 Text(
                     modifier = Modifier.padding(

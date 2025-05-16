@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.designsystem.composable
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,8 +30,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.designsystem.theme.Gray3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 
 @Composable
 fun RadixTextField(
@@ -38,7 +43,6 @@ fun RadixTextField(
     value: String,
     colors: TextFieldColors? = null,
     hint: String? = null,
-    hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
     errorHighlight: Boolean = false,
     leftLabel: LabelType? = null,
@@ -73,27 +77,12 @@ fun RadixTextField(
                 value = value,
                 onValueChange = onValueChanged,
                 shape = RadixTheme.shapes.roundedRectSmall,
-                colors = colors ?: OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = RadixTheme.colors.gray5,
-                    focusedPlaceholderColor = RadixTheme.colors.gray2,
-                    focusedTextColor = RadixTheme.colors.gray1,
-                    focusedBorderColor = RadixTheme.colors.gray1,
-                    unfocusedBorderColor = RadixTheme.colors.gray4,
-                    errorBorderColor = RadixTheme.colors.red1,
-                    cursorColor = RadixTheme.colors.gray1,
-                    selectionColors = TextSelectionColors(
-                        RadixTheme.colors.gray1,
-                        LocalTextSelectionColors.current.backgroundColor
-                    ),
-                    unfocusedContainerColor = RadixTheme.colors.gray5,
-                    errorContainerColor = RadixTheme.colors.gray5
-                ),
+                colors = colors ?: RadixTextFieldDefaults.colors(),
                 placeholder = {
                     hint?.let {
                         Text(
                             text = it,
                             style = RadixTheme.typography.body1Regular,
-                            color = hintColor ?: RadixTheme.colors.gray1
                         )
                     }
                 },
@@ -122,17 +111,63 @@ fun RadixTextField(
                         modifier = Modifier.size(14.dp),
                         painter = painterResource(id = R.drawable.ic_warning_error),
                         contentDescription = null,
-                        tint = RadixTheme.colors.red1
+                        tint = RadixTheme.colors.error
                     )
                 }
-                Text(text = error.orEmpty(), style = RadixTheme.typography.body2HighImportance, color = RadixTheme.colors.red1)
+                Text(
+                    text = error.orEmpty(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.error
+                )
             }
         } else {
             optionalHint?.let { hint ->
-                Text(text = hint, style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.gray2)
+                Text(
+                    text = hint,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.textSecondary
+                )
             }
         }
     }
+}
+
+object RadixTextFieldDefaults {
+    @Composable
+    fun colors(
+        focusedContainerColor: Color = RadixTheme.colors.textFieldBackground,
+        unfocusedContainerColor: Color = RadixTheme.colors.textFieldBackground,
+        errorContainerColor: Color = RadixTheme.colors.textFieldBackground,
+        focusedPlaceholderColor: Color = Gray3,
+        unfocusedPlaceholderColor: Color = Gray3,
+        errorPlaceholderColor: Color = Gray3,
+        focusedTextColor: Color = RadixTheme.colors.text,
+        unfocusedTextColor: Color = RadixTheme.colors.text,
+        errorTextColor: Color = RadixTheme.colors.text,
+        focusedBorderColor: Color = RadixTheme.colors.textFieldFocusedBorder,
+        unfocusedBorderColor: Color = RadixTheme.colors.textFieldBorder,
+        errorBorderColor: Color = RadixTheme.colors.error,
+        cursorColor: Color = RadixTheme.colors.text,
+        selectionColors: TextSelectionColors = TextSelectionColors(
+            RadixTheme.colors.text,
+            LocalTextSelectionColors.current.backgroundColor
+        )
+    ) = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = focusedContainerColor,
+        unfocusedContainerColor = unfocusedContainerColor,
+        errorContainerColor = errorContainerColor,
+        focusedPlaceholderColor = focusedPlaceholderColor,
+        unfocusedPlaceholderColor = unfocusedPlaceholderColor,
+        errorPlaceholderColor = errorPlaceholderColor,
+        focusedTextColor = focusedTextColor,
+        unfocusedTextColor = unfocusedTextColor,
+        errorTextColor = errorTextColor,
+        focusedBorderColor = focusedBorderColor,
+        unfocusedBorderColor = unfocusedBorderColor,
+        errorBorderColor = errorBorderColor,
+        cursorColor = cursorColor,
+        selectionColors = selectionColors
+    )
 }
 
 @Composable
@@ -155,7 +190,7 @@ private fun TopLabelRow(
                     modifier = Modifier.weight(1f),
                     text = leftLabel.value,
                     style = RadixTheme.typography.body1Link,
-                    color = if (isError) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+                    color = if (isError) RadixTheme.colors.error else RadixTheme.colors.text
                 )
             }
 
@@ -167,7 +202,7 @@ private fun TopLabelRow(
                     modifier = Modifier.weight(1f),
                     text = rightLabel.value,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     textAlign = TextAlign.End
                 )
             }
@@ -189,72 +224,190 @@ sealed interface LabelType {
     data class Custom(val content: @Composable () -> Unit) : LabelType
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextFieldPreview() {
+fun RadixTextFieldPreviewLight() {
     RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = {},
-            value = "",
-            hint = "Placeholder",
-            optionalHint = "This is a hint text, It should be short and sweet"
-        )
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextFieldFilled() {
-    RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = {},
-            value = "Input Text",
-            hint = "Placeholder",
-            leftLabel = LabelType.Default("Left Label"),
-            rightLabel = LabelType.Default("Right label"),
-            optionalHint = "This is a hint text, It should be short and sweet"
-        )
+fun RadixTextFieldPreviewDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextErrorField() {
+fun RadixTextFieldFilledLight() {
     RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = {},
-            value = "",
-            hint = "Placeholder",
-            error = "Error",
-            optionalHint = "This is a hint text, It should be short and sweet"
-        )
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "Input Text",
+                hint = "Placeholder",
+                leftLabel = LabelType.Default("Left Label"),
+                rightLabel = LabelType.Default("Right label"),
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun RadixTextFieldWithIcon() {
+fun RadixTextFieldFilledDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "Input Text",
+                hint = "Placeholder",
+                leftLabel = LabelType.Default("Left Label"),
+                rightLabel = LabelType.Default("Right label"),
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextErrorFieldLight() {
     RadixWalletTheme {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = { },
-            value = "casino",
-            rightLabel = LabelType.Default("Abc"),
-            trailingIcon = {
-                Icon(
-                    modifier = Modifier.size(20.dp),
-                    painter = painterResource(
-                        id = R.drawable.check_circle_outline
-                    ),
-                    contentDescription = null,
-                    tint = Color.Unspecified
-                )
-            },
-            errorFixedSize = true,
-            singleLine = true
-        )
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                error = "Error",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextErrorFieldDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = {},
+                value = "",
+                hint = "Placeholder",
+                error = "Error",
+                optionalHint = "This is a hint text, It should be short and sweet"
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextFieldWithIconLight() {
+    RadixWalletTheme {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = { },
+                value = "casino",
+                rightLabel = LabelType.Default("Abc"),
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(
+                            id = R.drawable.check_circle_outline
+                        ),
+                        contentDescription = null,
+                        tint = themedColorTint()
+                    )
+                },
+                errorFixedSize = true,
+                singleLine = true
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun RadixTextFieldWithIconDark() {
+    RadixWalletTheme(config = RadixThemeConfig(isDarkTheme = true)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.background)
+                .padding(RadixTheme.dimensions.paddingDefault)
+        ) {
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = { },
+                value = "casino",
+                rightLabel = LabelType.Default("Abc"),
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(
+                            id = R.drawable.check_circle_outline
+                        ),
+                        contentDescription = null,
+                        tint = themedColorTint()
+                    )
+                },
+                errorFixedSize = true,
+                singleLine = true
+            )
+        }
     }
 }

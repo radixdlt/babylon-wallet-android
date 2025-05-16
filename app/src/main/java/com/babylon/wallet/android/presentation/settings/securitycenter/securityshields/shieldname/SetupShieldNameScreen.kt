@@ -107,7 +107,7 @@ private fun SetupShieldNameContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val inputFocusRequester = remember { FocusRequester() }
 
@@ -129,7 +129,7 @@ private fun SetupShieldNameContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldWizardName_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -141,7 +141,7 @@ private fun SetupShieldNameContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.shieldWizardName_subtitle),
                 style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -156,7 +156,6 @@ private fun SetupShieldNameContent(
                 keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                 value = state.name,
                 singleLine = true,
-                hintColor = RadixTheme.colors.gray2,
                 error = stringResource(id = R.string.shieldWizardName_tooLong).takeIf { state.isNameTooLong }
             )
 

@@ -60,7 +60,7 @@ fun FactorSourcesList(
                 ),
                 text = stringResource(id = factorSourceDescriptionText),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         mainFactorSource?.let {
@@ -73,7 +73,7 @@ fun FactorSourcesList(
                         Text(
                             text = stringResource(id = R.string.factorSources_list_default),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
+                            color = RadixTheme.colors.textSecondary
                         )
                         Spacer(
                             Modifier
@@ -90,7 +90,7 @@ fun FactorSourcesList(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.factorSources_list_default),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
 
@@ -113,7 +113,7 @@ fun FactorSourcesList(
                 Text(
                     text = stringResource(id = R.string.factorSources_list_others),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
             }
         }

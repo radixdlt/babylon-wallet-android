@@ -120,7 +120,7 @@ private fun FactorSourceDetailsContent(
 
     Scaffold(
         modifier = modifier,
-        containerColor = RadixTheme.colors.gray5,
+        containerColor = RadixTheme.colors.backgroundSecondary,
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
@@ -128,7 +128,7 @@ private fun FactorSourceDetailsContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         snackbarHost = {
@@ -144,7 +144,7 @@ private fun FactorSourceDetailsContent(
             Text(
                 text = "Manage Factor",
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
 
@@ -155,14 +155,14 @@ private fun FactorSourceDetailsContent(
                 onClick = onRenameFactorSourceClick
             )
 
+            HorizontalDivider(color = RadixTheme.colors.divider)
+
             state.factorSourceKind.AdditionalSettingsItems(
                 state = state,
                 onViewSeedPhraseClick = onViewSeedPhraseClick,
                 onArculusPinCheckedChange = onArculusPinCheckedChange,
                 onChangeArculusPinClick = onChangeArculusPinClick
             )
-
-            HorizontalDivider(color = RadixTheme.colors.gray4)
 
 //            Text(
 //                text = "Test",
@@ -191,12 +191,6 @@ private fun FactorSourceKind.AdditionalSettingsItems(
 ) {
     when (this) {
         FactorSourceKind.DEVICE -> {
-            HorizontalDivider(
-                modifier = Modifier
-                    .background(color = RadixTheme.colors.defaultBackground)
-                    .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                color = RadixTheme.colors.gray4
-            )
             DefaultSettingsItem(
                 title = if (state.isDeviceFactorSourceMnemonicNotAvailable) {
                     stringResource(id = R.string.factorSources_detail_seedPhraseLost)
@@ -222,15 +216,9 @@ private fun FactorSourceKind.AdditionalSettingsItems(
         }
 
         FactorSourceKind.ARCULUS_CARD -> {
-            HorizontalDivider(
-                modifier = Modifier
-                    .background(color = RadixTheme.colors.defaultBackground)
-                    .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                color = RadixTheme.colors.gray4
-            )
             SwitchSettingsItem(
                 modifier = Modifier
-                    .background(RadixTheme.colors.defaultBackground)
+                    .background(RadixTheme.colors.card)
                     .fillMaxWidth()
                     .padding(all = RadixTheme.dimensions.paddingDefault),
                 titleRes = R.string.factorSources_detail_changePin,
@@ -240,9 +228,9 @@ private fun FactorSourceKind.AdditionalSettingsItems(
             )
             HorizontalDivider(
                 modifier = Modifier
-                    .background(color = RadixTheme.colors.defaultBackground)
+                    .background(color = RadixTheme.colors.card)
                     .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
             DefaultSettingsItem(
                 title = stringResource(id = R.string.factorSources_detail_changePin),

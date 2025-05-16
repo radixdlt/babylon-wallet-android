@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
@@ -69,7 +70,7 @@ fun TransactionAccountWithGuaranteesCard(
                 .fillMaxWidth()
                 .background(
                     brush = when (val involvedAccount = guaranteeItem.account) {
-                        is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2)
+                        is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.iconSecondary)
                         is InvolvedAccount.Owned -> involvedAccount.account.appearanceId.gradient()
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
@@ -87,15 +88,15 @@ fun TransactionAccountWithGuaranteesCard(
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
                 modifier = Modifier.weight(1f, false),
-                color = RadixTheme.colors.white
+                color = White
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             ActionableAddressView(
                 address = guaranteeItem.accountAddress.asGeneral(),
                 textStyle = RadixTheme.typography.body1Regular,
-                textColor = RadixTheme.colors.white,
-                iconColor = RadixTheme.colors.white
+                textColor = White,
+                iconColor = White
             )
         }
 
@@ -103,7 +104,7 @@ fun TransactionAccountWithGuaranteesCard(
             modifier = Modifier
                 .height(IntrinsicSize.Min)
                 .background(
-                    color = RadixTheme.colors.white,
+                    color = RadixTheme.colors.background,
                     shape = RadixTheme.shapes.roundedRectBottomMedium
                 )
                 .padding(
@@ -124,7 +125,7 @@ fun TransactionAccountWithGuaranteesCard(
                     modifier = Modifier.weight(1f),
                     text = guaranteeItem.transferable.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -139,7 +140,7 @@ fun TransactionAccountWithGuaranteesCard(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
                             text = stringResource(id = com.babylon.wallet.android.R.string.interactionReview_estimated),
                             style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.End
@@ -148,7 +149,7 @@ fun TransactionAccountWithGuaranteesCard(
                             modifier = Modifier,
                             text = guaranteeItem.updatedAmount.estimated.formatted(),
                             style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.End
@@ -159,7 +160,7 @@ fun TransactionAccountWithGuaranteesCard(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
                             text = stringResource(id = com.babylon.wallet.android.R.string.interactionReview_guaranteed),
                             style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray2,
+                            color = RadixTheme.colors.textSecondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.End
@@ -168,7 +169,7 @@ fun TransactionAccountWithGuaranteesCard(
                             modifier = Modifier,
                             text = guaranteeItem.updatedAmount.guaranteed.formatted(),
                             style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray2,
+                            color = RadixTheme.colors.textSecondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.End
@@ -179,7 +180,7 @@ fun TransactionAccountWithGuaranteesCard(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
+            HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.divider)
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -193,7 +194,7 @@ fun TransactionAccountWithGuaranteesCard(
                         id = com.babylon.wallet.android.R.string.transactionReview_guarantees_setGuaranteedMinimum
                     ).replace("%%", "%"),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
 
                 IconButton(
@@ -201,7 +202,8 @@ fun TransactionAccountWithGuaranteesCard(
                     onClick = onGuaranteePercentDecreased,
                     enabled = guaranteeItem.isDecreaseAllowed,
                     colors = IconButtonDefaults.iconButtonColors().copy(
-                        contentColor = RadixTheme.colors.gray1
+                        contentColor = RadixTheme.colors.icon,
+                        disabledContentColor = RadixTheme.colors.icon.copy(alpha = 0.5f)
                     )
                 ) {
                     Icon(
@@ -228,7 +230,8 @@ fun TransactionAccountWithGuaranteesCard(
                     modifier = Modifier.weight(0.7f),
                     onClick = onGuaranteePercentIncreased,
                     colors = IconButtonDefaults.iconButtonColors().copy(
-                        contentColor = RadixTheme.colors.gray1
+                        contentColor = RadixTheme.colors.icon,
+                        disabledContentColor = RadixTheme.colors.icon.copy(alpha = 0.5f)
                     )
                 ) {
                     Icon(

@@ -57,7 +57,7 @@ fun PresentingProofsContent(
                 Text(
                     text = stringResource(id = R.string.interactionReview_presentingHeading).uppercase(),
                     style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     overflow = TextOverflow.Ellipsis,
                 )
                 InfoButton(
@@ -65,7 +65,7 @@ fun PresentingProofsContent(
                         .fillMaxHeight()
                         .height(1.dp),
                     text = stringResource(R.string.empty),
-                    color = RadixTheme.colors.gray3,
+                    color = RadixTheme.colors.iconTertiary,
                     onClick = {
                         onInfoClick(GlossaryItem.badges)
                     }
@@ -92,14 +92,14 @@ fun PresentingProofsContent(
                         Text(
                             text = badge.displayTitle(),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
 
                         badge.displaySubtitle()?.let { subtitle ->
                             Text(
                                 text = subtitle,
                                 style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray2
+                                color = RadixTheme.colors.textSecondary
                             )
                         }
                     }
@@ -108,7 +108,7 @@ fun PresentingProofsContent(
                         Text(
                             text = amount.formatted(),
                             style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.End
@@ -121,7 +121,7 @@ fun PresentingProofsContent(
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
         }
     }

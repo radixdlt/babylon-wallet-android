@@ -21,7 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorFilter
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 
 @Composable
@@ -63,7 +64,7 @@ private fun DappInteractionDialogContent(
         Column(
             modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.defaultBackground)
+                .background(color = RadixTheme.colors.background)
                 .padding(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -72,40 +73,55 @@ private fun DappInteractionDialogContent(
                 painter = painterResource(
                     id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
                 ),
-                contentDescription = null
+                contentDescription = null,
+                colorFilter = themedColorFilter()
             )
             Text(
                 text = stringResource(id = R.string.dAppRequest_completion_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Text(
                 text = stringResource(id = R.string.dAppRequest_completion_subtitle, state.dAppName),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }
         if (state.isMobileConnect) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = RadixTheme.colors.gray5)
+                    .background(color = RadixTheme.colors.backgroundSecondary)
                     .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun DappInteractionDialogPreview() {
-    RadixWalletTheme {
+fun DappInteractionDialogPreviewLight() {
+    RadixWalletPreviewTheme {
+        DappInteractionDialogContent(
+            state = DappInteractionDialogViewModel.State(
+                requestId = "abc",
+                dAppName = "dApp",
+                isMobileConnect = true
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun DappInteractionDialogPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         DappInteractionDialogContent(
             state = DappInteractionDialogViewModel.State(
                 requestId = "abc",

@@ -17,7 +17,7 @@ fun buildStatusMessageAnnotatedString(
     withStyle(
         RadixTheme.typography.body1StandaloneLink.copy(
             fontSize = 14.sp,
-            color = RadixTheme.colors.blue2
+            color = RadixTheme.colors.textButton
         ).toSpanStyle()
     ) {
         pushStringAnnotation(

@@ -47,9 +47,10 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.formattedSpans
-import com.google.accompanist.placeholder.placeholder
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.domain.DApp
 
 @Composable
 fun MobileConnectLinkScreen(
@@ -111,7 +112,7 @@ fun MobileConnectLinkContent(
 
     Scaffold(
         modifier = modifier,
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         snackbarHost = {
             RadixSnackbarHost(
                 hostState = snackBarHostState,
@@ -157,7 +158,7 @@ fun MobileConnectLinkContent(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.mobileConnect_linkTitle),
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.title,
                 textAlign = TextAlign.Center
             )
@@ -167,16 +168,15 @@ fun MobileConnectLinkContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
-                    .placeholder(
+                    .radixPlaceholder(
                         visible = state.isLoading,
-                        color = RadixTheme.colors.gray4,
-                        shape = RadixTheme.shapes.roundedRectSmall,
+                        shape = RadixTheme.shapes.roundedRectSmall
                     ),
                 text = stringResource(
                     id = R.string.mobileConnect_linkSubtitle,
                     dAppDisplayName
                 ).formattedSpans(RadixTheme.typography.body2Header.copy(fontSize = 16.sp).toSpanStyle()),
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1Link,
                 textAlign = TextAlign.Center
             )
@@ -185,12 +185,15 @@ fun MobileConnectLinkContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
-                    .background(color = RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
+                    .background(
+                        color = RadixTheme.colors.backgroundSecondary,
+                        shape = RadixTheme.shapes.roundedRectSmall
+                    )
                     .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingDefault),
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
                 NumberedListItem(number = 1, text = stringResource(id = R.string.mobileConnect_linkBody1))
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
                 NumberedListItem(number = 2, text = stringResource(id = R.string.mobileConnect_linkBody2))
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -205,23 +208,22 @@ private fun NumberedListItem(modifier: Modifier = Modifier, number: Int, text: S
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        val color = RadixTheme.colors.gray1
         Box(
             modifier = Modifier
                 .size(28.dp)
-                .border(1.dp, color, RadixTheme.shapes.circle)
+                .border(1.dp, RadixTheme.colors.divider, RadixTheme.shapes.circle)
         ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = number.toString(),
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1Header.copy(fontSize = 20.sp),
                 textAlign = TextAlign.Start
             )
         }
         Text(
             text = text,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             style = RadixTheme.typography.body1Regular,
             textAlign = TextAlign.Start
         )
@@ -231,10 +233,28 @@ private fun NumberedListItem(modifier: Modifier = Modifier, number: Int, text: S
 @UsesSampleValues
 @Composable
 @Preview
-fun MobileConnectScreenPreview() {
+fun MobileConnectScreenPreviewLight() {
     RadixWalletPreviewTheme {
         MobileConnectLinkContent(
             state = MobileConnectLinkViewModel.State(),
+            onMessageShown = {},
+            onVerify = {},
+            onDeny = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Composable
+@Preview
+fun MobileConnectScreenPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        MobileConnectLinkContent(
+            state = MobileConnectLinkViewModel.State(
+                isLoading = false,
+                isVerifying = false,
+                dApp = DApp.sampleMainnet()
+            ),
             onMessageShown = {},
             onVerify = {},
             onDeny = {}

@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -61,7 +60,7 @@ fun DepositAccountContent(
                     .padding(top = RadixTheme.dimensions.paddingSmall)
                     .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
                     .background(
-                        color = Color.White,
+                        color = RadixTheme.colors.background,
                         shape = RadixTheme.shapes.roundedRectDefault
                     )
                     .padding(RadixTheme.dimensions.paddingMedium),
@@ -104,7 +103,7 @@ fun StrokeLine(
     modifier: Modifier = Modifier,
     height: Dp = 24.dp
 ) {
-    val strokeColor = RadixTheme.colors.gray3
+    val strokeColor = RadixTheme.colors.divider
     val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
     val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
     val lineHeight = with(LocalDensity.current) { height.toPx() }

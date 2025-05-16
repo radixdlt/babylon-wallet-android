@@ -153,7 +153,7 @@ fun PersonaDataStringInput(
                             modifier = Modifier.weight(1f),
                             text = stringResource(id = R.string.editPersona_requiredByDapp),
                             style = RadixTheme.typography.body1Regular,
-                            color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray2,
+                            color = if (error != null) RadixTheme.colors.error else RadixTheme.colors.textSecondary,
                             textAlign = TextAlign.End
                         )
                     }
@@ -168,7 +168,7 @@ fun PersonaDataStringInput(
                                     onClick = onDeleteField
                                 )
                                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                            tint = RadixTheme.colors.gray1,
+                            tint = RadixTheme.colors.icon,
                             contentDescription = null,
                             painter = painterResource(id = DSR.ic_delete_outline)
                         )
@@ -211,18 +211,18 @@ fun PersonaNameInput(
                 modifier = Modifier.weight(1f),
                 text = label,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             if (required) {
                 Text(
                     text = stringResource(id = R.string.editPersona_requiredByDapp),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
             }
             IconButton(onClick = onDeleteField) {
                 Icon(
-                    tint = RadixTheme.colors.gray1,
+                    tint = RadixTheme.colors.icon,
                     contentDescription = null,
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
                 )
@@ -234,7 +234,7 @@ fun PersonaNameInput(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_nameVariant),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             DefaultSelector(

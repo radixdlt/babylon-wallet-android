@@ -25,7 +25,7 @@ fun RadixTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = RadixTheme.typography.body1Header,
-    contentColor: Color = RadixTheme.colors.blue2,
+    contentColor: Color = RadixTheme.colors.textButton,
     enabled: Boolean = true,
     isWithoutPadding: Boolean = false,
     fontSize: TextUnit? = null,
@@ -48,7 +48,7 @@ fun RadixTextButton(
         enabled = enabled,
         colors = ButtonDefaults.textButtonColors(
             contentColor = contentColor,
-            disabledContentColor = RadixTheme.colors.gray3,
+            disabledContentColor = RadixTheme.colors.textTertiary,
         ),
         contentPadding = if (isWithoutPadding) {
             PaddingValues(0.dp)

@@ -51,7 +51,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -69,7 +68,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.TransactionClass
@@ -78,6 +76,8 @@ import com.babylon.wallet.android.presentation.account.composable.FiltersDialog
 import com.babylon.wallet.android.presentation.account.composable.FiltersStrip
 import com.babylon.wallet.android.presentation.account.composable.TransactionHistoryItem
 import com.babylon.wallet.android.presentation.common.NetworkContent
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -249,7 +249,6 @@ fun HistoryContent(
                     onBackClick = onBackClick,
                     backIconType = BackIconType.Close,
                     windowInsets = WindowInsets.statusBarsAndBanner,
-                    containerColor = RadixTheme.colors.defaultBackground,
                     actions = {
                         AnimatedVisibility(visible = state.shouldShowFiltersButton, enter = fadeIn(), exit = fadeOut()) {
                             IconButton(onClick = { onShowFilters(true) }) {
@@ -257,7 +256,7 @@ fun HistoryContent(
                                     painterResource(
                                         id = DSR.ic_filter_list
                                     ),
-                                    tint = Color.Unspecified,
+                                    tint = RadixTheme.colors.icon,
                                     contentDescription = null
                                 )
                             }
@@ -271,7 +270,7 @@ fun HistoryContent(
                     hostState = snackBarHostState
                 )
             },
-            containerColor = RadixTheme.colors.gray5
+            containerColor = RadixTheme.colors.backgroundSecondary
         ) { padding ->
             var accountCardHeight by rememberSaveable {
                 mutableIntStateOf(0)
@@ -318,14 +317,14 @@ fun HistoryContent(
                                                 Text(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .background(RadixTheme.colors.gray5)
+                                                        .background(RadixTheme.colors.backgroundSecondary)
                                                         .padding(RadixTheme.dimensions.paddingMedium)
                                                         .radixPlaceholder(
                                                             visible = state.loadMoreState == State.LoadingMoreState.NewRange
                                                         ),
                                                     text = historyItem.item.toInstant().dayMonthDateFull(),
                                                     style = RadixTheme.typography.body2Header,
-                                                    color = RadixTheme.colors.gray2
+                                                    color = RadixTheme.colors.textSecondary
                                                 )
                                             }
                                         }
@@ -385,7 +384,7 @@ fun HistoryContent(
                         SimpleAccountCard(
                             account = it.account,
                             modifier = Modifier
-                                .background(RadixTheme.colors.defaultBackground)
+                                .background(RadixTheme.colors.background)
                                 .fillMaxWidth()
                                 .heightIn(min = 50.dp)
                                 .padding(
@@ -433,8 +432,8 @@ fun HistoryContent(
                 .align(Alignment.TopCenter),
             state = pullToRefreshState,
             isRefreshing = state.isRefreshing,
-            color = RadixTheme.colors.gray1,
-            containerColor = RadixTheme.colors.defaultBackground,
+            color = RadixTheme.colors.icon,
+            containerColor = RadixTheme.colors.backgroundTertiary,
             threshold = WindowInsets
                 .statusBarsAndBanner
                 .asPaddingValues()
@@ -455,7 +454,7 @@ fun HistoryContent(
                 onTransactionClassFilterSelected = onTransactionClassFilterSelected,
                 onResourceFilterSelected = onResourceFilterSelected,
             )
-        }, showDragHandle = true, containerColor = RadixTheme.colors.defaultBackground, onDismissRequest = {
+        }, showDragHandle = true, containerColor = RadixTheme.colors.background, onDismissRequest = {
             onShowFilters(false)
             onShowResults()
         })
@@ -492,7 +491,7 @@ private fun LoadingItemPlaceholder(modifier: Modifier = Modifier) {
             .height(150.dp)
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.background,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .radixPlaceholder(visible = true)
@@ -512,7 +511,7 @@ private fun EmptyContent(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(id = R.string.transactionHistory_noTransactions),
             style = RadixTheme.typography.secondaryHeader.copy(fontSize = 20.sp),
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
@@ -527,7 +526,7 @@ private fun TimePicker(
 ) {
     LazyRow(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         state = timeFilterState,
@@ -545,7 +544,7 @@ private fun TimePicker(
                         .applyIf(userInteractionEnabled, Modifier.clickable { onTimeFilterSelected(item.data) })
                         .applyIf(
                             item.selected,
-                            Modifier.background(RadixTheme.colors.gray4, RadixTheme.shapes.circle)
+                            Modifier.background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.circle)
                         )
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingDefault,
@@ -554,7 +553,7 @@ private fun TimePicker(
                     text = item.data.month,
                     style = RadixTheme.typography.body2HighImportance,
                     maxLines = 1,
-                    color = if (item.selected) RadixTheme.colors.gray1 else RadixTheme.colors.gray2,
+                    color = if (item.selected) RadixTheme.colors.text else RadixTheme.colors.textSecondary,
                     textAlign = TextAlign.Center
                 )
             }
@@ -652,11 +651,8 @@ data class ScrollInfo(
 @Preview(showBackground = true)
 @Composable
 fun HistoryContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.SECONDARY) {
         HistoryContent(
-            modifier = Modifier
-                .padding(10.dp)
-                .background(color = Color.Gray),
             onBackClick = {},
             state = State(
                 accountWithAssets = AccountWithAssets(

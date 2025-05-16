@@ -1,13 +1,13 @@
-@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber", "CompositionLocalAllowlist")
 
 package com.babylon.wallet.android.designsystem.theme
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import com.radixdlt.sargon.AppearanceId
+import androidx.compose.ui.graphics.ColorFilter
 
 val Blue1 = Color(0xFF060F8F)
 val Blue2 = Color(0xFF052CC0)
@@ -34,56 +34,122 @@ val LightRed = Color(0xFFfcebeb)
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
 
-val DefaultLightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
-val DefaultDarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
-
-val GradientBrand1 = Brush.linearGradient(
-    listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F)),
-    start = Offset(0f, Float.POSITIVE_INFINITY),
-    end = Offset(
-        x = Float.POSITIVE_INFINITY,
-        y = 0f
-    )
+data class RadixColors(
+    val background: Color,
+    val backgroundSecondary: Color,
+    val backgroundTertiary: Color,
+    val backgroundTransparent: Color,
+    val text: Color,
+    val textSecondary: Color,
+    val textTertiary: Color,
+    val textButton: Color,
+    val icon: Color,
+    val iconSecondary: Color,
+    val iconTertiary: Color,
+    val primaryButton: Color,
+    val secondaryButton: Color,
+    val divider: Color,
+    val border: Color,
+    val textFieldBorder: Color,
+    val textFieldFocusedBorder: Color,
+    val textFieldBackground: Color,
+    val toggleActive: Color,
+    val ok: Color,
+    val error: Color,
+    val errorSecondary: Color,
+    val warning: Color,
+    val warningSecondary: Color,
+    val card: Color,
+    val selectedSegmentedControl: Color
 )
 
-val GradientBrand2 = Brush.linearGradient(
-    listOf(Color(0xFF03B797), Color(0xFF1544F5), Color(0xFFFF07E6), Color(0xFF060F8F))
+private val LightColorPalette = RadixColors(
+    background = White,
+    backgroundSecondary = Gray5,
+    backgroundTertiary = Gray4,
+    backgroundTransparent = White.copy(alpha = 0.3f),
+    text = Gray1,
+    textSecondary = Gray2,
+    textTertiary = Gray3,
+    textButton = Blue2,
+    icon = Gray1,
+    iconSecondary = Gray2,
+    iconTertiary = Gray3,
+    primaryButton = Blue2,
+    secondaryButton = Gray4,
+    divider = Gray4,
+    border = Gray1,
+    textFieldBorder = Gray4,
+    textFieldFocusedBorder = Gray1,
+    textFieldBackground = Gray5,
+    toggleActive = Gray1,
+    ok = Green1,
+    error = Red1,
+    errorSecondary = LightRed,
+    warning = Orange3,
+    warningSecondary = LightOrange,
+    card = White,
+    selectedSegmentedControl = White
 )
 
-val GradientAccount1 = listOf(Color(0xFF052CC0), Color(0xFF01E2A0))
-val GradientAccount2 = listOf(Color(0xFF052CC0), Color(0xFFFF43CA))
-val GradientAccount3 = listOf(Color(0xFF052CC0), Color(0xFF20E4FF))
-val GradientAccount4 = listOf(Color(0xFF00AB84), Color(0xFF052CC0))
-val GradientAccount5 = listOf(Color(0xFFCE0D98), Color(0xFF052CC0))
-val GradientAccount6 = listOf(Color(0xFF0DCAE4), Color(0xFF052CC0))
-val GradientAccount7 = listOf(Color(0xFF003057), Color(0xFF03D497))
-val GradientAccount8 = listOf(Color(0xFF003057), Color(0xFFF31DBE))
-val GradientAccount9 = listOf(Color(0xFF052CC0), Color(0xFF003057))
-val GradientAccount10 = listOf(Color(0xFF0BA97D), Color(0xFF1AF4B5))
-val GradientAccount11 = listOf(Color(0xFF7E0D5F), Color(0xFFE225B3))
-val GradientAccount12 = listOf(Color(0xFF040B72), Color(0xFF1F48E2))
+private val DarkColorPalette = RadixColors(
+    background = Color(0xFF1E1F1F),
+    backgroundSecondary = Color(0xFF121212),
+    backgroundTertiary = Color(0xFF28292A),
+    backgroundTransparent = Color(0xFF1E1F1F).copy(alpha = 0.3f),
+    text = Gray5,
+    textSecondary = Gray4,
+    textTertiary = Gray2,
+    textButton = Color(0xFF90CAF9),
+    icon = Gray5,
+    iconSecondary = Gray4,
+    iconTertiary = Gray2,
+    primaryButton = Color(0xFF00C389),
+    secondaryButton = Color(0xFF404243),
+    divider = Color(0xFF404243),
+    border = Gray5,
+    textFieldBorder = Color(0xFF797B7F),
+    textFieldFocusedBorder = Gray5,
+    textFieldBackground = Color(0xFF404243),
+    toggleActive = Color(0xFF00C389),
+    ok = Green1,
+    error = Orange2,
+    errorSecondary = LightRed,
+    warning = Color(0xFFC47F00),
+    warningSecondary = Color(0xFFE6DCCB),
+    card = Color(0xFF28292A),
+    selectedSegmentedControl = Color(0xFF646469)
+)
 
-val AccountGradientList =
-    listOf(
-        GradientAccount1,
-        GradientAccount2,
-        GradientAccount3,
-        GradientAccount4,
-        GradientAccount5,
-        GradientAccount6,
-        GradientAccount7,
-        GradientAccount8,
-        GradientAccount9,
-        GradientAccount10,
-        GradientAccount11,
-        GradientAccount12,
-    )
+internal val LocalRadixColors = staticCompositionLocalOf<RadixColors> {
+    error("No RadixColors provided")
+}
 
 @Composable
-fun AppearanceId.gradient(alpha: Float = 1f): Brush {
-    val colors = remember(this, alpha) {
-        AccountGradientList[value.toInt() % AccountGradientList.size].map { it.copy(alpha = alpha) }
+internal fun ProvideRadixColors(content: @Composable () -> Unit) {
+    val isDarkMode = LocalRadixThemeConfig.current.isDarkTheme
+    val colors = remember(isDarkMode) {
+        if (isDarkMode) {
+            DarkColorPalette
+        } else {
+            LightColorPalette
+        }
     }
+    CompositionLocalProvider(LocalRadixColors provides colors) {
+        content()
+    }
+}
 
-    return Brush.horizontalGradient(colors)
+@Composable
+fun themedColorFilter() = if (RadixTheme.config.isDarkTheme) {
+    ColorFilter.tint(color = White)
+} else {
+    null
+}
+
+@Composable
+fun themedColorTint() = if (RadixTheme.config.isDarkTheme) {
+    White
+} else {
+    Color.Unspecified
 }

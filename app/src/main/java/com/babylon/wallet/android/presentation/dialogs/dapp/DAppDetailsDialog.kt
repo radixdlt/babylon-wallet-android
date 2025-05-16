@@ -72,17 +72,18 @@ private fun DAppDetailsDialogContent(
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_title),
                     style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             message = {
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_message),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
-            confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget)
+            confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget),
+            confirmTextColor = RadixTheme.colors.error
         )
     }
     BottomSheetDialogWrapper(

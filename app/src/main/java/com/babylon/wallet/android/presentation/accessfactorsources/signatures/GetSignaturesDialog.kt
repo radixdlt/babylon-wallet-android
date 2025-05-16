@@ -157,7 +157,7 @@ private fun GetSignaturesBottomSheetContent(
                         )
                     }
                 },
-                containerColor = RadixTheme.colors.defaultBackground,
+                containerColor = RadixTheme.colors.background,
                 content = { padding ->
                     val purpose = remember(state.signPurpose) { state.signPurpose.toAccessFactorSourcePurpose() }
 
@@ -233,10 +233,39 @@ private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
 @UsesSampleValues
 @Preview
 @Composable
-private fun GetSignaturesPreview(
+private fun GetSignaturesPreviewLight(
     @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
 ) {
     RadixWalletPreviewTheme {
+        GetSignaturesBottomSheetContent(
+            state = GetSignaturesViewModel.State(
+                signPurpose = sample.first,
+                accessState = AccessFactorSourceDelegate.State(
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(factorSource = sample.second),
+                    seedPhraseInputState = remember(sample.second) {
+                        AccessFactorSourceDelegate.State.SeedPhraseInputState(
+                            delegateState = SeedPhraseInputDelegate.State()
+                        )
+                    }
+                ),
+            ),
+            onDismiss = {},
+            onSeedPhraseWordChanged = { _, _ -> },
+            onPasswordTyped = {},
+            onRetryClick = {},
+            onInputConfirmed = {},
+            onSkipClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+private fun GetSignaturesPreviewDark(
+    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         GetSignaturesBottomSheetContent(
             state = GetSignaturesViewModel.State(
                 signPurpose = sample.first,

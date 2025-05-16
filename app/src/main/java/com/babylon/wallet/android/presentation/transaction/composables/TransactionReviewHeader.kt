@@ -92,7 +92,7 @@ fun TransactionReviewHeader(
                             Text(
                                 modifier = Modifier.weight(1.5f),
                                 text = title,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 textAlign = TextAlign.Start,
                                 maxLines = 2,
                             )
@@ -121,7 +121,7 @@ fun TransactionReviewHeader(
                             Text(
                                 text = stringResource(id = R.string.interactionReview_subtitle, dAppName),
                                 style = RadixTheme.typography.body2HighImportance,
-                                color = RadixTheme.colors.gray1,
+                                color = RadixTheme.colors.text,
                                 textAlign = TextAlign.Start,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -136,7 +136,7 @@ fun TransactionReviewHeader(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center,
                 maxLines = 2
             )
@@ -152,7 +152,7 @@ fun TransactionReviewHeader(
                     painterResource(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_close
                     ),
-                    tint = RadixTheme.colors.gray1,
+                    tint = RadixTheme.colors.icon,
                     contentDescription = "close"
                 )
             }

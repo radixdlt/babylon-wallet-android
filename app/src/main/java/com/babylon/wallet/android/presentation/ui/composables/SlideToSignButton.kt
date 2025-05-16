@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
@@ -43,9 +44,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -60,8 +61,16 @@ fun SlideToSignButton(
     onSwipeComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val buttonColor = if (enabled) RadixTheme.colors.blue1 else RadixTheme.colors.gray4
-    val textColor = if (enabled) RadixTheme.colors.white else RadixTheme.colors.gray3
+    val buttonColor = if (enabled) {
+        RadixTheme.colors.primaryButton
+    } else {
+        RadixTheme.colors.backgroundTertiary
+    }
+    val textColor = if (enabled) {
+        White
+    } else {
+        RadixTheme.colors.textTertiary
+    }
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
@@ -127,6 +136,8 @@ fun SlideToSignButton(
             style = RadixTheme.typography.body1Header,
             color = textColor
         )
+
+        val gradient = RadixTheme.gradients.slideToSignGradient
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -135,8 +146,10 @@ fun SlideToSignButton(
                     onDrawWithContent {
                         drawContent()
                         drawRect(
-                            brush = GradientBrand2,
-                            size = if (draggableState.requireOffset() > 0f) {
+                            brush = Brush.linearGradient(gradient),
+                            size = if (isSubmitting) {
+                                size
+                            } else if (draggableState.requireOffset() > 0f) {
                                 Size(draggableState.requireOffset() + indicatorWidthPx / 2, size.height)
                             } else {
                                 Size.Zero
@@ -159,7 +172,7 @@ fun SlideToSignButton(
                 }
                 .padding(indicatorPadding)
                 .size(indicatorSize)
-                .background(RadixTheme.colors.white, RadixTheme.shapes.circle)
+                .background(RadixTheme.colors.card, RadixTheme.shapes.circle)
                 .applyIf(
                     enabled && !isSubmitting,
                     Modifier.anchoredDraggable(
@@ -175,7 +188,7 @@ fun SlideToSignButton(
                     modifier = Modifier
                         .size(20.dp)
                         .align(Alignment.Center),
-                    color = RadixTheme.colors.blue1,
+                    color = RadixTheme.colors.icon,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -184,7 +197,7 @@ fun SlideToSignButton(
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
                         contentDescription = null,
-                        tint = RadixTheme.colors.blue1
+                        tint = if (enabled) RadixTheme.colors.icon else RadixTheme.colors.iconTertiary
                     )
                 }
                 AnimatedVisibility(modifier = Modifier.align(Alignment.Center), visible = crossedSwipeThreshold) {
@@ -192,7 +205,7 @@ fun SlideToSignButton(
                         modifier = Modifier.align(Alignment.Center),
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix),
                         contentDescription = null,
-                        tint = RadixTheme.colors.blue1
+                        tint = RadixTheme.colors.icon
                     )
                 }
             }
@@ -206,8 +219,8 @@ enum class ButtonSliderPosition {
 
 @Preview
 @Composable
-fun AccountContentPreview() {
-    RadixWalletTheme {
+fun AccountContentPreviewLight() {
+    RadixWalletPreviewTheme {
         SlideToSignButton(
             title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = true,
@@ -219,8 +232,21 @@ fun AccountContentPreview() {
 
 @Preview
 @Composable
-fun AccountContentPreviewDisabled() {
-    RadixWalletTheme {
+fun AccountContentPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = true,
+            isSubmitting = false,
+            onSwipeComplete = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewDisabledLight() {
+    RadixWalletPreviewTheme {
         SlideToSignButton(
             title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = false,
@@ -232,8 +258,34 @@ fun AccountContentPreviewDisabled() {
 
 @Preview
 @Composable
-fun AccountContentPreviewSubmitting() {
-    RadixWalletTheme {
+fun AccountContentPreviewDisabledDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = false,
+            isSubmitting = false,
+            onSwipeComplete = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewSubmittingLight() {
+    RadixWalletPreviewTheme {
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = true,
+            isSubmitting = true,
+            onSwipeComplete = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewSubmittingDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         SlideToSignButton(
             title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = true,

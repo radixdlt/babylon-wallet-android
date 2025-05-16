@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -85,7 +88,7 @@ fun NonFungibleAssetDialogContent(
     val item = asset?.resource?.items?.firstOrNull()
     Column(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -126,14 +129,14 @@ fun NonFungibleAssetDialogContent(
                         .fillMaxWidth(),
                     text = item?.description.orEmpty(),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
+                    color = RadixTheme.colors.divider
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
@@ -149,8 +152,8 @@ fun NonFungibleAssetDialogContent(
                         globalId = item.globalId,
                         isVisitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
-                        textColor = RadixTheme.colors.gray1,
-                        iconColor = RadixTheme.colors.gray2
+                        textColor = RadixTheme.colors.text,
+                        iconColor = RadixTheme.colors.iconSecondary
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -165,7 +168,7 @@ fun NonFungibleAssetDialogContent(
                         Text(
                             text = item.name.orEmpty(),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             textAlign = TextAlign.End
                         )
                     }
@@ -191,7 +194,7 @@ fun NonFungibleAssetDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
+                    color = RadixTheme.colors.divider
                 )
 
                 item?.nonStandardMetadata?.forEach { metadata ->
@@ -211,7 +214,7 @@ fun NonFungibleAssetDialogContent(
         if (localId != null) {
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
         }
 
@@ -255,7 +258,7 @@ fun NonFungibleAssetDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                color = RadixTheme.colors.gray4
+                color = RadixTheme.colors.divider
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -285,7 +288,7 @@ fun NonFungibleAssetDialogContent(
                     Text(
                         text = asset?.resource?.name.orEmpty(),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
             }
@@ -311,7 +314,7 @@ fun NonFungibleAssetDialogContent(
                             else -> ""
                         },
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.End
                     )
                 }
@@ -339,20 +342,27 @@ fun NonFungibleAssetDialogContent(
                 Spacer(modifier = Modifier.weight(1f))
 
                 RadixBottomBar(
-                    modifier = Modifier.padding(
-                        top = RadixTheme.dimensions.paddingLarge,
-                        start = RadixTheme.dimensions.paddingDefault,
-                        end = RadixTheme.dimensions.paddingDefault
-                    ),
-                    color = RadixTheme.colors.gray5,
-                    dividerColor = RadixTheme.colors.gray4,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = RadixTheme.dimensions.paddingLarge,
+                            start = RadixTheme.dimensions.paddingDefault,
+                            end = RadixTheme.dimensions.paddingDefault
+                        ),
                     button = {
                         RadixSecondaryButton(
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(id = R.string.assetDetails_hideCollection),
                             onClick = { onHideClick?.invoke() }
                         )
-                    }
+                    },
+                    color = RadixTheme.colors.backgroundSecondary
+                )
+            } else {
+                Spacer(
+                    modifier = Modifier.height(
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    )
                 )
             }
         }
@@ -369,7 +379,8 @@ private fun ClaimNFTInfo(
     isLoadingBalance: Boolean,
     onClaimClick: () -> Unit
 ) {
-    val showClaimButton = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
+    val showClaimButton =
+        claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
     Column(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -379,7 +390,7 @@ private fun ClaimNFTInfo(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
 
         Text(
@@ -391,7 +402,7 @@ private fun ClaimNFTInfo(
                 ),
             text = stringResource(id = R.string.assetDetails_staking_currentRedeemableValue),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -425,13 +436,13 @@ private fun ClaimNFTInfo(
                     Text(
                         text = stringResource(id = R.string.assetDetails_staking_readyToClaimIn),
                         style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
 
                     Text(
                         text = approximateClaimTimeText(approximateClaimMinutes = claimState.approximateClaimMinutes),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
             }
@@ -480,7 +491,10 @@ private fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
             if (approximateClaimMinutes == 1L) {
                 stringResource(id = R.string.assetDetails_staking_readyToClaimInMinute)
             } else {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, approximateClaimMinutes)
+                stringResource(
+                    id = R.string.assetDetails_staking_readyToClaimInMinutes,
+                    approximateClaimMinutes
+                )
             }
         }
     }

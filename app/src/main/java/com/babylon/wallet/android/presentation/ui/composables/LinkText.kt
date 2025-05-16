@@ -26,8 +26,8 @@ fun LinkText(
     url: Uri,
     clickable: Boolean = true,
     linkStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    linkColor: Color = RadixTheme.colors.blue1,
-    linkIconColor: Color = RadixTheme.colors.gray2
+    linkColor: Color = RadixTheme.colors.textButton,
+    linkIconColor: Color = RadixTheme.colors.iconSecondary
 ) {
     LinkText(
         modifier = modifier,
@@ -45,8 +45,8 @@ fun LinkText(
     url: String,
     clickable: Boolean = true,
     linkStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    linkColor: Color = RadixTheme.colors.blue1,
-    linkIconColor: Color = RadixTheme.colors.gray2
+    linkColor: Color = RadixTheme.colors.textButton,
+    linkIconColor: Color = RadixTheme.colors.iconSecondary
 ) {
     val context = LocalContext.current
     Text(

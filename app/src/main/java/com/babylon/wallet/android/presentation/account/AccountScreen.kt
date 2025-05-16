@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.account
 
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +35,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -48,9 +52,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.designsystem.theme.edgeToEdge
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -112,10 +117,7 @@ fun AccountScreen(
         }
     }
 
-    val devBannerState = LocalDevBannerState.current
-    if (!devBannerState.isVisible) {
-        SetStatusBarColor(useDarkIcons = false)
-    }
+    SetStatusBarColors()
 
     AccountScreenContent(
         modifier = modifier,
@@ -142,6 +144,30 @@ fun AccountScreen(
         onHistoryClick = onHistoryClick,
         onInfoClick = onInfoClick
     )
+}
+
+@Composable
+private fun SetStatusBarColors() {
+    val isDevBannerVisible = LocalDevBannerState.current.isVisible
+    val isDarkThemeEnabled = RadixTheme.config.isDarkTheme
+    val context = LocalContext.current
+    DisposableEffect(
+        isDevBannerVisible,
+        isDarkThemeEnabled
+    ) {
+        (context as ComponentActivity).edgeToEdge(
+            isDarkThemeEnabled = isDarkThemeEnabled,
+            forceDarkStatusBar = true
+        )
+
+        // When screen is closed, then reset the theme
+        onDispose {
+            (context as ComponentActivity).edgeToEdge(
+                isDarkThemeEnabled = isDarkThemeEnabled,
+                forceDarkStatusBar = isDevBannerVisible
+            )
+        }
+    }
 }
 
 @Composable
@@ -194,7 +220,7 @@ private fun AccountScreenContent(
                 RadixCenteredTopAppBar(
                     title = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
                     onBackClick = onBackClick,
-                    contentColor = RadixTheme.colors.white,
+                    contentColor = White,
                     containerColor = Color.Transparent,
                     actions = {
                         IconButton(
@@ -208,7 +234,7 @@ private fun AccountScreenContent(
                                 imageVector = ImageVector.vectorResource(
                                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
                                 ),
-                                tint = RadixTheme.colors.white,
+                                tint = White,
                                 contentDescription = "account settings"
                             )
                         }
@@ -220,7 +246,9 @@ private fun AccountScreenContent(
             floatingActionButtonPosition = FabPosition.Center,
             snackbarHost = {
                 RadixSnackbarHost(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(RadixTheme.dimensions.paddingDefault),
                     hostState = snackBarHostState
                 )
             },
@@ -262,8 +290,8 @@ private fun AccountScreenContent(
                 .align(Alignment.TopCenter),
             state = pullToRefreshState,
             isRefreshing = state.isRefreshing,
-            color = RadixTheme.colors.gray1,
-            containerColor = RadixTheme.colors.defaultBackground,
+            color = RadixTheme.colors.icon,
+            containerColor = RadixTheme.colors.backgroundTertiary,
             threshold = WindowInsets.statusBarsAndBanner
                 .asPaddingValues()
                 .calculateTopPadding() + PullToRefreshDefaults.PositionalThreshold
@@ -295,7 +323,7 @@ fun AssetsContent(
 ) {
     Surface(
         modifier = modifier,
-        color = RadixTheme.colors.gray5
+        color = RadixTheme.colors.backgroundSecondary
     ) {
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address
@@ -380,8 +408,8 @@ private fun AccountHeader(
                     modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                     address = Address.Account(it),
                     textStyle = RadixTheme.typography.body2HighImportance,
-                    textColor = RadixTheme.colors.white.copy(alpha = 0.6f),
-                    iconColor = RadixTheme.colors.white.copy(alpha = 0.6f)
+                    textColor = White.copy(alpha = 0.6f),
+                    iconColor = White.copy(alpha = 0.6f)
                 )
             }
 
@@ -391,12 +419,16 @@ private fun AccountHeader(
                     fiatPrice = state.totalFiatValue,
                     isLoading = state.isAccountBalanceLoading,
                     currency = SupportedCurrency.USD,
-                    contentColor = RadixTheme.colors.white,
-                    shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                    contentColor = White,
+                    shimmeringColor = White.copy(alpha = 0.6f),
+                    hiddenContentColor = White.copy(alpha = 0.6f),
                     formattedContentStyle = RadixTheme.typography.header,
                     onVisibilityToggle = onShowHideBalanceToggle,
                     trailingContent = {
-                        TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
+                        TotalFiatBalanceViewToggle(
+                            onToggle = onShowHideBalanceToggle,
+                            color = White.copy(alpha = 0.6f)
+                        )
                     }
                 )
             }
@@ -478,7 +510,7 @@ private fun AccountHeader(
                 .fillMaxWidth()
                 .height(RadixTheme.dimensions.paddingSemiLarge)
                 .background(
-                    color = RadixTheme.colors.gray5,
+                    color = RadixTheme.colors.backgroundSecondary,
                     shape = RadixTheme.shapes.roundedRectTopDefault
                 )
         )
@@ -495,14 +527,14 @@ private fun TransferButton(
         modifier = modifier,
         text = stringResource(id = R.string.account_transfer),
         onClick = { onTransferClick(accountAddress) },
-        containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-        contentColor = RadixTheme.colors.white,
+        containerColor = RadixTheme.colors.backgroundTransparent,
+        contentColor = White,
         shape = RadixTheme.shapes.circle,
         leadingContent = {
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = null
             )
         }
@@ -518,14 +550,14 @@ private fun HistoryButton(
         text = stringResource(id = R.string.common_history),
         onClick = onHistoryClick,
         modifier = modifier,
-        containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-        contentColor = RadixTheme.colors.white,
+        containerColor = RadixTheme.colors.backgroundTransparent,
+        contentColor = White,
         shape = RadixTheme.shapes.circle,
         leadingContent = {
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-                tint = RadixTheme.colors.white,
+                tint = White,
                 contentDescription = null
             )
         }

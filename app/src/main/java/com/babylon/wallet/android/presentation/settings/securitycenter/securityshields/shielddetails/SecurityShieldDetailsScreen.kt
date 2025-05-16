@@ -137,16 +137,14 @@ private fun SecurityShieldDetailsContent(
     var isRecoveryCardCollapsed by remember { mutableStateOf(true) }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .background(color = RadixTheme.colors.gray5),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner,
-                contentColor = RadixTheme.colors.gray1,
-                containerColor = RadixTheme.colors.gray5
+                contentColor = RadixTheme.colors.text,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
         bottomBar = {
@@ -161,13 +159,13 @@ private fun SecurityShieldDetailsContent(
                     )
                 }
             )
-        }
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(color = RadixTheme.colors.gray5)
                 .verticalScroll(rememberScrollState())
         ) {
             Column {
@@ -175,7 +173,7 @@ private fun SecurityShieldDetailsContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
                     text = securityShieldName,
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
 
                 RadixTextButton(
@@ -250,13 +248,13 @@ private fun RegularAccessCollapsibleCard(
                     Text(
                         text = stringResource(R.string.transactionReview_updateShield_regularAccessTitle),
                         style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     Text(
                         text = stringResource(R.string.transactionReview_updateShield_regularAccessMessage),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
             }
@@ -273,7 +271,7 @@ private fun RegularAccessCollapsibleCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.gray5),
+                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.backgroundSecondary),
                 ) {
                     Column(
                         modifier = Modifier
@@ -288,7 +286,7 @@ private fun RegularAccessCollapsibleCard(
                                 SpanStyle(fontWeight = FontWeight.Bold)
                             ),
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         primaryRoleWithFactorSources.thresholdFactors.forEachIndexed { index, factorSource ->
@@ -314,7 +312,7 @@ private fun RegularAccessCollapsibleCard(
                                     SpanStyle(fontWeight = FontWeight.Bold)
                                 ),
                                 style = RadixTheme.typography.body1Regular,
-                                color = RadixTheme.colors.gray1
+                                color = RadixTheme.colors.text
                             )
 
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -364,13 +362,13 @@ private fun LogInAndProveOwnershipCollapsibleCard(
                     Text(
                         text = stringResource(R.string.transactionReview_updateShield_authSigningTitle),
                         style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     Text(
                         text = stringResource(R.string.transactionReview_updateShield_authSigningMessage),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
             }
@@ -387,7 +385,7 @@ private fun LogInAndProveOwnershipCollapsibleCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.gray5),
+                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.backgroundSecondary),
                 ) {
                     Column(
                         modifier = Modifier
@@ -397,7 +395,7 @@ private fun LogInAndProveOwnershipCollapsibleCard(
                         Text(
                             text = stringResource(R.string.transactionReview_updateShield_authSigningThreshold),
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         FactorSourceCardView(
@@ -440,13 +438,13 @@ private fun RecoveryCollapsibleCard(
                     Text(
                         text = stringResource(R.string.transactionReview_updateShield_startConfirmTitle),
                         style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     Text(
                         text = stringResource(R.string.transactionReview_updateShield_startConfirmMessage),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
             }
@@ -462,7 +460,7 @@ private fun RecoveryCollapsibleCard(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
                     text = stringResource(R.string.transactionReview_updateShield_startRecoveryTitle),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
@@ -470,7 +468,7 @@ private fun RecoveryCollapsibleCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.gray5),
+                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.backgroundSecondary),
                 ) {
                     Column(
                         modifier = Modifier
@@ -484,7 +482,7 @@ private fun RecoveryCollapsibleCard(
                                 SpanStyle(fontWeight = FontWeight.Bold)
                             ),
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         recoveryRoleWithFactorSources.overrideFactors.forEachIndexed { index, factorSource ->
@@ -507,7 +505,7 @@ private fun RecoveryCollapsibleCard(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
                     text = stringResource(R.string.transactionReview_updateShield_confirmRecoveryTitle),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
@@ -515,7 +513,7 @@ private fun RecoveryCollapsibleCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.gray5),
+                    colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.backgroundSecondary),
                 ) {
                     Column(
                         modifier = Modifier
@@ -529,7 +527,7 @@ private fun RecoveryCollapsibleCard(
                                 SpanStyle(fontWeight = FontWeight.Bold)
                             ),
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         confirmationRoleWithFactorSources.overrideFactors.forEachIndexed { index, factorSource ->
@@ -570,7 +568,7 @@ private fun LinkedEntitiesView(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = RadixTheme.colors.gray4)
+            .background(color = RadixTheme.colors.backgroundTertiary)
             .padding(top = RadixTheme.dimensions.paddingDefault)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
@@ -602,7 +600,7 @@ private fun SecurityShieldStatusText() {
         Text(
             text = stringResource(R.string.securityShields_applied_accountsAndPersonas),
             style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
     }
 }
@@ -614,7 +612,7 @@ private fun LinkedAccountsView(linkedAccounts: PersistentList<Account>) {
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             text = stringResource(R.string.securityShields_accounts),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -635,7 +633,7 @@ private fun LinkedAccountsView(linkedAccounts: PersistentList<Account>) {
                     .padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.securityShields_noAccounts),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -650,7 +648,7 @@ private fun LinkedPersonasView(linkedPersonas: PersistentList<Persona>) {
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             text = stringResource(R.string.securityShields_personas),
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -668,7 +666,7 @@ private fun LinkedPersonasView(linkedPersonas: PersistentList<Persona>) {
                     .padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.securityShields_noPersonas),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -684,7 +682,7 @@ private fun LinkedHiddenEntitiesText() {
             .padding(RadixTheme.dimensions.paddingDefault),
         text = stringResource(R.string.common_hiddenAccountsOrPersonas),
         style = RadixTheme.typography.body1Header,
-        color = RadixTheme.colors.gray2,
+        color = RadixTheme.colors.textSecondary,
         textAlign = TextAlign.Center
     )
 }

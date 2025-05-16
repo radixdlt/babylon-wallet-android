@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Pink1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -72,7 +73,7 @@ fun TransactionExpirationInfo(
                 ).formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle())
             },
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.pink1,
+            color = Pink1,
         )
     }
 }
@@ -86,7 +87,7 @@ fun PreAuthorizationFeesHint(
     Row(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .clickable {
@@ -105,19 +106,19 @@ fun PreAuthorizationFeesHint(
                     proposingDApp.name.dAppDisplayName()
                 ),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             Text(
                 text = stringResource(R.string.preAuthorizationReview_fees_subtitle),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
 
         Icon(
             painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-            tint = RadixTheme.colors.gray2,
+            tint = RadixTheme.colors.iconSecondary,
             contentDescription = "info"
         )
     }

@@ -76,7 +76,7 @@ private fun SimpleSecurityShieldCardView(
                 modifier = Modifier.weight(1f),
                 text = title,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             Box(

@@ -78,18 +78,18 @@ fun SeedPhraseSingleWord(
         Text(
             text = label,
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
-                .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                .background(RadixTheme.colors.backgroundTertiary, shape = RadixTheme.shapes.roundedRectSmall)
+                .border(1.dp, RadixTheme.colors.backgroundTertiary, shape = RadixTheme.shapes.roundedRectSmall)
                 .padding(RadixTheme.dimensions.paddingMedium),
             text = word,
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
     }
 }

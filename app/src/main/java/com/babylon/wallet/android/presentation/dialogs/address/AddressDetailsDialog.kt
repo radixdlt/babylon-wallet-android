@@ -52,6 +52,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.theme.Green1
+import com.babylon.wallet.android.designsystem.theme.Green3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.address.AddressDetailsDialogViewModel.State.Section
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -141,7 +143,7 @@ private fun AddressDetailsDialogContent(
                         text = state.title,
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
 
@@ -189,7 +191,7 @@ private fun AccountAddressQRCode(
                 .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
             text = stringResource(id = R.string.addressDetails_qrCode),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -218,7 +220,7 @@ private fun FullAddress(
             .fillMaxWidth()
             .padding(RadixTheme.dimensions.paddingDefault)
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(
@@ -231,7 +233,7 @@ private fun FullAddress(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.addressDetails_fullAddress),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -242,14 +244,14 @@ private fun FullAddress(
 
                 boldRanges.forEach { range ->
                     addStyle(
-                        style = SpanStyle(color = RadixTheme.colors.gray1),
+                        style = SpanStyle(color = RadixTheme.colors.text),
                         start = range.start,
                         end = range.endExclusive
                     )
                 }
             },
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray2,
+            color = RadixTheme.colors.textSecondary,
             textAlign = TextAlign.Center
         )
 
@@ -267,12 +269,13 @@ private fun FullAddress(
                         .alpha(0.6f),
                     painter = painterResource(id = R.drawable.ic_copy),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.icon
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 Text(
                     text = stringResource(id = R.string.addressDetails_copy),
-                    style = RadixTheme.typography.body1Header
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.text
                 )
             }
 
@@ -285,12 +288,13 @@ private fun FullAddress(
                         .alpha(0.6f),
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_enlarge),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.icon
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 Text(
                     text = stringResource(id = R.string.addressDetails_enlarge),
-                    style = RadixTheme.typography.body1Header
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.text
                 )
             }
 
@@ -303,12 +307,13 @@ private fun FullAddress(
                         .alpha(0.6f),
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_share),
                     contentDescription = null,
-                    tint = RadixTheme.colors.gray1
+                    tint = RadixTheme.colors.icon
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 Text(
                     text = stringResource(id = R.string.addressDetails_share),
-                    style = RadixTheme.typography.body1Header
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.text
                 )
             }
         }
@@ -330,7 +335,7 @@ private fun VisitDashboard(
                 modifier = Modifier.size(12.dp),
                 painter = painterResource(id = R.drawable.ic_external_link),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
         },
         onClick = onClick
@@ -369,7 +374,11 @@ private fun HandleEvents(
         events.collect { event ->
             when (event) {
                 is AddressDetailsDialogViewModel.Event.CloseEnlarged -> onHideEnlargedAddress()
-                is AddressDetailsDialogViewModel.Event.PerformEnlarge -> onShowEnlargedAddress(event.value, event.numberRanges)
+                is AddressDetailsDialogViewModel.Event.PerformEnlarge -> onShowEnlargedAddress(
+                    event.value,
+                    event.numberRanges
+                )
+
                 is AddressDetailsDialogViewModel.Event.PerformCopy -> {
                     context.getSystemService<ClipboardManager>()?.let { clipboardManager ->
                         val clipData = ClipData.newPlainText(
@@ -381,7 +390,11 @@ private fun HandleEvents(
 
                         // From Android 13, the system handles the copy confirmation
                         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                            Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                R.string.addressAction_copiedToClipboard,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
@@ -391,7 +404,10 @@ private fun HandleEvents(
                     value = event.shareValue
                 )
 
-                is AddressDetailsDialogViewModel.Event.PerformVisitDashBoard -> context.openUrl(event.url)
+                is AddressDetailsDialogViewModel.Event.PerformVisitDashBoard -> context.openUrl(
+                    event.url
+                )
+
                 is AddressDetailsDialogViewModel.Event.ShowLedgerVerificationResult -> if (event.isVerified) {
                     Toast.makeText(
                         context,
@@ -436,13 +452,24 @@ private fun EnlargedAddressView(
                         vertical = RadixTheme.dimensions.paddingDefault
                     )
                     .clickable { onDismiss() }
-                    .background(color = RadixTheme.colors.gray1.copy(alpha = 0.74f), shape = RadixTheme.shapes.roundedRectMedium)
+                    .background(
+                        color = RadixTheme.colors.text.copy(
+                            alpha = if (RadixTheme.config.isDarkTheme) 0.9f else 0.74f
+                        ),
+                        shape = RadixTheme.shapes.roundedRectMedium
+                    )
                     .padding(RadixTheme.dimensions.paddingLarge)
                     .verticalScroll(rememberScrollState()),
                 text = buildAnnotatedString {
                     append(enlargedAddressState.address)
 
-                    val greenSpan = SpanStyle(color = RadixTheme.colors.green3)
+                    val greenSpan = SpanStyle(
+                        color = if (RadixTheme.config.isDarkTheme) {
+                            Green1
+                        } else {
+                            Green3
+                        }
+                    )
                     enlargedAddressState.numberRanges.forEach { range ->
                         addStyle(style = greenSpan, start = range.start, end = range.endExclusive)
                     }
@@ -452,7 +479,7 @@ private fun EnlargedAddressView(
                 lineHeight = 64.sp,
                 letterSpacing = 2.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = RadixTheme.colors.white
+                color = RadixTheme.colors.background
             )
         }
     }

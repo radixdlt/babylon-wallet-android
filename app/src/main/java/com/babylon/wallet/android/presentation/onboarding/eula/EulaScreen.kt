@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.utils.Constants
 import kotlinx.coroutines.launch
 
 @Composable
@@ -88,7 +89,7 @@ private fun EulaContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.onboarding_eula_headerTitle),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -98,11 +99,11 @@ private fun EulaContent(
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.onboarding_eula_headerSubtitle),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         bottomBar = {
@@ -112,14 +113,20 @@ private fun EulaContent(
                 enabled = eulaText != null
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val scope = rememberCoroutineScope()
 
         val context = LocalContext.current
-        LaunchedEffect(Unit) {
+        val isDarkTheme = RadixTheme.config.isDarkTheme
+        LaunchedEffect(isDarkTheme) {
             scope.launch {
-                eulaText = context.assets.open("eula/eula.html").bufferedReader().use { it.readText() }
+                val eulaPath = if (isDarkTheme) {
+                    Constants.EULA_DARK
+                } else {
+                    Constants.EULA_LIGHT
+                }
+                eulaText = context.assets.open(eulaPath).bufferedReader().use { it.readText() }
             }
         }
 

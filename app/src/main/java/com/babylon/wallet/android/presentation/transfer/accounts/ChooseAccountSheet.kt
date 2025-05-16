@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -83,7 +82,7 @@ fun ChooseAccountSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.defaultBackground,
+                        color = RadixTheme.colors.background,
                         shape = RadixTheme.shapes.roundedRectTopDefault
                     ),
                 title = if (state.mode == ChooseAccounts.Mode.Chooser) {
@@ -120,7 +119,7 @@ fun ChooseAccountSheet(
             ChooseAccounts.Mode.Chooser -> {
                 ChooseAccountContent(
                     modifier = Modifier
-                        .background(color = RadixTheme.colors.white),
+                        .background(color = RadixTheme.colors.background),
                     contentPadding = padding,
                     onAddressChanged = onAddressChanged,
                     state = state,
@@ -134,7 +133,7 @@ fun ChooseAccountSheet(
                 if (cameraPermissionState.status.isGranted) {
                     ScanQRContent(
                         modifier = Modifier
-                            .background(color = RadixTheme.colors.white)
+                            .background(color = RadixTheme.colors.background)
                             .padding(padding),
                         onAddressDecoded = onAddressDecoded
                     )
@@ -167,7 +166,7 @@ private fun ChooseAccountContent(
                     .padding(vertical = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_enterManually),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
 
@@ -208,7 +207,6 @@ private fun ChooseAccountContent(
                 onValueChanged = onAddressChanged,
                 value = typedAddress,
                 hint = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_addressFieldPlaceholder),
-                hintColor = RadixTheme.colors.gray2,
                 error = if (!isFocused) {
                     errorResource?.let { stringResource(id = it) }
                 } else {
@@ -228,7 +226,8 @@ private fun ChooseAccountContent(
                             ) {
                                 Icon(
                                     painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                                    contentDescription = "clear"
+                                    contentDescription = "clear",
+                                    tint = RadixTheme.colors.icon
                                 )
                             }
                         }
@@ -242,17 +241,12 @@ private fun ChooseAccountContent(
                                 painter = painterResource(
                                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
                                 ),
-                                contentDescription = ""
+                                contentDescription = "",
+                                tint = RadixTheme.colors.icon
                             )
                         }
                     }
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = RadixTheme.colors.gray1,
-                    unfocusedBorderColor = RadixTheme.colors.gray1,
-                    focusedContainerColor = RadixTheme.colors.gray5,
-                    unfocusedContainerColor = RadixTheme.colors.gray5
-                ),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done,
                     platformImeOptions = PlatformImeOptions()
@@ -268,7 +262,7 @@ private fun ChooseAccountContent(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
                 1.dp,
-                RadixTheme.colors.gray4
+                RadixTheme.colors.divider
             )
         }
 
@@ -279,7 +273,7 @@ private fun ChooseAccountContent(
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
         }
@@ -334,7 +328,7 @@ fun ScanQRContent(
         Text(
             text = stringResource(id = R.string.scanQR_account_instructions),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 

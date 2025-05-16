@@ -195,17 +195,14 @@ private fun RestoreMnemonicsContent(
                                     modifier = Modifier
                                         .padding(vertical = RadixTheme.dimensions.paddingMedium)
                                         .size(20.dp),
-                                    color = RadixTheme.colors.gray1,
+                                    color = RadixTheme.colors.icon,
                                     strokeWidth = 2.dp
                                 )
                             } else {
                                 val buttonModifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingMedium,
-                                        start = RadixTheme.dimensions.paddingLarge,
-                                        end = RadixTheme.dimensions.paddingLarge,
-                                    )
+                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                                    .padding(bottom = RadixTheme.dimensions.paddingSmall)
                                 if (state.isMainBabylonSeedPhrase) {
                                     RadixTextButton(
                                         modifier = buttonModifier,
@@ -231,7 +228,7 @@ private fun RestoreMnemonicsContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         if (state.screenType !is RestoreMnemonicsViewModel.State.ScreenType.Loading) {
             val enterTransition = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it })
@@ -301,7 +298,8 @@ private fun EntitiesView(
                 }
             ),
             textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -317,7 +315,8 @@ private fun EntitiesView(
                 }
             ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             textAlign = TextAlign.Center,
-            style = RadixTheme.typography.body1Regular
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -327,7 +326,7 @@ private fun EntitiesView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge)
-                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
+                        .background(RadixTheme.colors.backgroundSecondary, shape = RadixTheme.shapes.roundedRectMedium)
                 ) {
                     Text(
                         modifier = Modifier
@@ -336,7 +335,7 @@ private fun EntitiesView(
                         text = stringResource(id = R.string.recoverSeedPhrase_hiddenAccountsOnly),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
             } else {
@@ -369,7 +368,8 @@ private fun NoMainSeedPhraseView(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.recoverSeedPhrase_header_titleNoMainSeedPhrase),
             textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -380,7 +380,8 @@ private fun NoMainSeedPhraseView(
             text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleNoMainSeedPhrase)
                 .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             textAlign = TextAlign.Start,
-            style = RadixTheme.typography.body1Regular
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
@@ -411,7 +412,8 @@ private fun SeedPhraseView(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.enterSeedPhrase_header_title),
             textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         SeedPhraseInputForm(

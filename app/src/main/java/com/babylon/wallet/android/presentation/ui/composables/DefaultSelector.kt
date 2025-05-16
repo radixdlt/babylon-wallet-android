@@ -41,8 +41,19 @@ fun <T : SelectorItem<*>> DefaultSelector(
                 .throttleClickable {
                     isMenuExpanded = true
                 }
-                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
-                .border(1.dp, RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectSmall)
+                .background(
+                    color = RadixTheme.colors.textFieldBackground,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
+                .border(
+                    1.dp,
+                    if (isMenuExpanded) {
+                        RadixTheme.colors.textFieldFocusedBorder
+                    } else {
+                        RadixTheme.colors.textFieldBorder
+                    },
+                    RadixTheme.shapes.roundedRectSmall
+                )
                 .padding(RadixTheme.dimensions.paddingDefault),
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
@@ -51,17 +62,17 @@ fun <T : SelectorItem<*>> DefaultSelector(
                 modifier = Modifier.weight(1f),
                 text = selectedItem.label,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_down),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
         }
 
         DropdownMenu(
-            modifier = Modifier.background(RadixTheme.colors.gray5),
+            modifier = Modifier.background(RadixTheme.colors.textFieldBackground),
             expanded = isMenuExpanded,
             onDismissRequest = { isMenuExpanded = false }
         ) {
@@ -74,7 +85,7 @@ fun <T : SelectorItem<*>> DefaultSelector(
                             modifier = Modifier.fillMaxWidth(),
                             text = item.label,
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.defaultText
+                            color = RadixTheme.colors.text
                         )
                     },
                     onClick = {

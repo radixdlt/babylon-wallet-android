@@ -26,6 +26,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorFilter
 import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
@@ -54,7 +55,8 @@ fun LinkedConnectorMessageScreen(
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.icon_desktop_connection_large
             ),
-            contentDescription = null
+            contentDescription = null,
+            colorFilter = themedColorFilter()
         )
 
         Spacer(modifier = Modifier.weight(2f))
@@ -63,7 +65,7 @@ fun LinkedConnectorMessageScreen(
             modifier = Modifier.fillMaxWidth(),
             text = title,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -79,7 +81,7 @@ fun LinkedConnectorMessageScreen(
                 ),
             text = message.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
