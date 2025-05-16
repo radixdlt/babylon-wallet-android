@@ -306,7 +306,11 @@ private fun LinkedEntitiesView(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.backgroundTertiary,
+                color = if (RadixTheme.config.isDarkTheme) {
+                    RadixTheme.colors.background
+                } else {
+                    RadixTheme.colors.backgroundTertiary
+                },
                 shape = RadixTheme.shapes.roundedRectBottomDefault
             )
     ) {
