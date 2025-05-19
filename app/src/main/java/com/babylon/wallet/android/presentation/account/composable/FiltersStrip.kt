@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.account.composable
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,7 +17,6 @@ import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FiltersStrip(
     historyFilters: HistoryFilters?,
@@ -30,7 +28,7 @@ fun FiltersStrip(
 ) {
     LazyRow(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
         contentPadding = PaddingValues(

@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -24,7 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun LinkConnectorScreen(
@@ -45,7 +45,7 @@ fun LinkConnectorScreen(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -59,14 +59,14 @@ fun LinkConnectorScreen(
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_radix_connect),
-                tint = Color.Unspecified,
+                tint = themedColorTint(),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
@@ -74,7 +74,7 @@ fun LinkConnectorScreen(
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_message),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
@@ -90,10 +90,22 @@ fun LinkConnectorScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun LinkConnectorSectionPreview() {
-    RadixWalletTheme {
+fun LinkConnectorSectionPreviewLight() {
+    RadixWalletPreviewTheme {
+        LinkConnectorScreen(
+            modifier = Modifier.fillMaxSize(),
+            onLinkConnectorClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun LinkConnectorSectionPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         LinkConnectorScreen(
             modifier = Modifier.fillMaxSize(),
             onLinkConnectorClick = {},

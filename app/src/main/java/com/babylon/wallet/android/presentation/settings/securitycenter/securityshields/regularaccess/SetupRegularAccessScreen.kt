@@ -147,7 +147,7 @@ private fun SetupRegularAccessContent(
                 enabled = state.isButtonEnabled
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -171,7 +171,7 @@ private fun SetupRegularAccessContent(
                 Text(
                     text = stringResource(id = R.string.shieldWizardRegularAccess_subtitle),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -207,7 +207,7 @@ private fun SetupRegularAccessContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-            HorizontalDivider(color = RadixTheme.colors.gray3)
+            HorizontalDivider(color = RadixTheme.colors.divider)
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
@@ -276,11 +276,11 @@ private fun OverrideFactorsView(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXXSmall),
                         painter = painterResource(id = DSR.ic_add_override),
                         contentDescription = null,
-                        tint = RadixTheme.colors.blue2
+                        tint = RadixTheme.colors.textButton
                     )
                 },
                 isWithoutPadding = true,
-                contentColor = RadixTheme.colors.blue2,
+                contentColor = RadixTheme.colors.textButton,
                 throttleClicks = true,
                 onClick = onAddOverrideClick
             )
@@ -291,14 +291,14 @@ private fun OverrideFactorsView(
                     .align(Alignment.CenterHorizontally),
                 text = stringResource(id = R.string.shieldWizardRegularAccess_combination_label),
                 style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     ),
                 verticalAlignment = Alignment.CenterVertically,
@@ -310,7 +310,7 @@ private fun OverrideFactorsView(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.shieldWizardRegularAccess_override_title),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.white,
+                    color = RadixTheme.colors.background,
                 )
 
                 IconButton(
@@ -319,7 +319,7 @@ private fun OverrideFactorsView(
                     Icon(
                         painter = painterResource(id = DSR.ic_close),
                         contentDescription = null,
-                        tint = RadixTheme.colors.gray2
+                        tint = RadixTheme.colors.iconSecondary
                     )
                 }
             }
@@ -328,7 +328,7 @@ private fun OverrideFactorsView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = RadixTheme.colors.gray5,
+                        color = RadixTheme.colors.backgroundSecondary,
                         shape = RadixTheme.shapes.roundedRectBottomMedium
                     )
                     .padding(
@@ -342,7 +342,7 @@ private fun OverrideFactorsView(
                         bottom = RadixTheme.dimensions.paddingMedium
                     ),
                     text = stringResource(id = R.string.shieldWizardRegularAccess_override_description),
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     style = RadixTheme.typography.body2Regular
                 )
 
@@ -360,7 +360,7 @@ private fun OverrideFactorsView(
                                 .align(Alignment.CenterHorizontally),
                             text = stringResource(id = R.string.shieldWizardRegularAccess_overrideCombination_label),
                             style = RadixTheme.typography.body1Link,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                     }
                 }
@@ -405,7 +405,7 @@ private fun ThresholdFactorsView(
                     append(parts.getOrNull(1).orEmpty())
                 },
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 inlineContent = mapOf(
                     inlineContentKey to InlineTextContent(
                         with(density) {
@@ -454,13 +454,13 @@ private fun NumberOfFactorsView(
                 is Threshold.Specific -> threshold.v1.toString()
             },
             style = RadixTheme.typography.body2Link,
-            color = RadixTheme.colors.blue2
+            color = RadixTheme.colors.textButton
         )
 
         Icon(
             painter = painterResource(id = DSR.ic_chevron_down),
             contentDescription = null,
-            tint = RadixTheme.colors.blue2
+            tint = RadixTheme.colors.textButton
         )
     }
 }
@@ -479,7 +479,7 @@ private fun AuthenticationFactorView(
         Text(
             text = stringResource(id = R.string.shieldWizardRegularAccess_authentication_title),
             style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -530,7 +530,7 @@ private fun SelectNumberOfFactorsSheet(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldWizardRegularAccess_setThreshold_title),
                 style = RadixTheme.typography.header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -682,6 +682,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     supportsBabylon = true,
                     isEnabled = true
                 ),
+                isOverrideSectionVisible = true
             ),
             SetupRegularAccessViewModel.State(
                 selectThreshold = null,

@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -120,7 +119,7 @@ private fun DeviceSeedPhraseContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         bottomBar = {
             if (isSuggestionsVisible) {
                 SeedPhraseSuggestions(
@@ -165,7 +164,7 @@ private fun DeviceSeedPhraseContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.newBiometricFactor_seedPhrase_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -175,7 +174,7 @@ private fun DeviceSeedPhraseContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -187,11 +186,7 @@ private fun DeviceSeedPhraseContent(
                 onWordChanged = onWordChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it },
                 initiallyFocusedIndex = focusedWordIndex,
-                textFieldColors = MnemonicTextFieldColors.default().copy(
-                    disabledTextColor = RadixTheme.colors.gray1,
-                    disabledBorderColor = Color.Transparent,
-                    highlightedBorderColor = Color.Transparent
-                )
+                textFieldColors = MnemonicTextFieldColors.default()
             )
 
             val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {

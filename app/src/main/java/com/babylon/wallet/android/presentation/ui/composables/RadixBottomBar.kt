@@ -27,7 +27,7 @@ fun RadixBottomBar(
     enabled: Boolean = true,
     isLoading: Boolean = false,
     text: String,
-    color: Color = RadixTheme.colors.defaultBackground,
+    color: Color = RadixTheme.colors.background,
     buttonPadding: PaddingValues = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
     insets: WindowInsets = WindowInsets.navigationBars,
     additionalTopContent: (@Composable ColumnScope.() -> Unit)? = null,
@@ -58,8 +58,8 @@ fun RadixBottomBar(
 fun RadixBottomBar(
     button: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = RadixTheme.colors.defaultBackground,
-    dividerColor: Color = RadixTheme.colors.gray5,
+    color: Color = RadixTheme.colors.background,
+    dividerColor: Color = RadixTheme.colors.divider,
     insets: WindowInsets = WindowInsets.navigationBars,
     additionalTopContent: (@Composable ColumnScope.() -> Unit)? = null,
     additionalBottomContent: (@Composable ColumnScope.() -> Unit)? = null

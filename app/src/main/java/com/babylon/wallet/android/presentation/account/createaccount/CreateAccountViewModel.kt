@@ -59,17 +59,13 @@ class CreateAccountViewModel @Inject constructor(
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
     private val args = CreateAccountNavArgs(savedStateHandle)
-    val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
-    val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
 
     override fun initialState(): CreateAccountUiState = CreateAccountUiState(
         isFirstAccount = args.requestSource?.isFirstTime() == true
     )
 
     fun onAccountNameChange(accountName: String) {
-        savedStateHandle[ACCOUNT_NAME] = accountName
-        savedStateHandle[IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX] = accountName.count() > entityNameMaxLength
-        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= entityNameMaxLength
+        _state.update { it.copy(accountName = accountName) }
     }
 
     fun onAccountCreateClick(isWithLedger: Boolean) {
@@ -87,7 +83,7 @@ class CreateAccountViewModel @Inject constructor(
             }
 
             val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
-            val name = DisplayName.init(accountName.value.trim())
+            val name = DisplayName.init(state.value.accountName.trim())
 
             if (args.requestSource?.isFirstTime() == true) {
                 firstAccountCreationStatusManager.onFirstAccountCreationInProgress()
@@ -244,12 +240,16 @@ class CreateAccountViewModel @Inject constructor(
         val isWithLedger: Boolean = false,
         val uiMessage: UiMessage? = null,
         val shouldShowNoMnemonicError: Boolean = false
-    ) : UiState
+    ) : UiState {
 
-    companion object {
-        private const val ACCOUNT_NAME = "account_name"
-        private const val IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX = "is_account_name_length_more_than_the_max"
-        private const val CREATE_ACCOUNT_BUTTON_ENABLED = "create_account_button_enabled"
+        private val accountNameTrimmed: String
+            get() = accountName.trim()
+
+        val isAccountNameErrorVisible: Boolean
+            get() = accountNameTrimmed.isNotEmpty() && accountNameTrimmed.count() > entityNameMaxLength
+
+        val isSubmitEnabled: Boolean
+            get() = accountNameTrimmed.isNotEmpty() && accountNameTrimmed.count() <= entityNameMaxLength
     }
 }
 

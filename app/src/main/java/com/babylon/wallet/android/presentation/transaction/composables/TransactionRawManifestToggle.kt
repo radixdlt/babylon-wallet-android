@@ -25,16 +25,16 @@ fun TransactionRawManifestToggle(
     IconButton(
         modifier = modifier
             .background(
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.backgroundTertiary,
                 shape = RadixTheme.shapes.roundedRectSmall
             )
             .size(width = 50.dp, height = 40.dp),
         onClick = onRawManifestClick,
         colors = IconButtonColors(
-            containerColor = RadixTheme.colors.gray4,
-            contentColor = RadixTheme.colors.gray1,
-            disabledContentColor = RadixTheme.colors.gray1,
-            disabledContainerColor = RadixTheme.colors.gray1
+            containerColor = RadixTheme.colors.backgroundTertiary,
+            contentColor = RadixTheme.colors.icon,
+            disabledContentColor = RadixTheme.colors.icon,
+            disabledContainerColor = RadixTheme.colors.icon
         )
     ) {
         Icon(

@@ -26,8 +26,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun CommonCard(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = RadixTheme.colors.defaultBackground,
-    elevation: Dp = 4.dp,
+    backgroundColor: Color = RadixTheme.colors.card,
+    elevation: Dp = if (RadixTheme.config.isDarkTheme) 0.dp else 4.dp,
     roundTopCorners: Boolean = true,
     roundBottomCorners: Boolean = true,
     removeTopShadow: Boolean = false,
@@ -73,10 +73,9 @@ fun CommonCard(
 @Composable
 fun CommonCard(
     modifier: Modifier = Modifier,
-    itemIndex: Int = 0,
-    allItemsSize: Int = 1,
-    backgroundColor: Color = RadixTheme.colors.defaultBackground,
-    elevation: Dp = 4.dp,
+    itemIndex: Int,
+    allItemsSize: Int,
+    backgroundColor: Color = RadixTheme.colors.card,
     roundTopCorners: Boolean = true,
     roundBottomCorners: Boolean = true,
     cornerSizeRadius: Dp = 12.dp,
@@ -85,7 +84,6 @@ fun CommonCard(
     CommonCard(
         modifier = modifier,
         backgroundColor = backgroundColor,
-        elevation = elevation,
         roundTopCorners = itemIndex == 0 && roundTopCorners,
         roundBottomCorners = itemIndex == allItemsSize - 1 && roundBottomCorners,
         cornerSizeRadius = cornerSizeRadius,
@@ -99,9 +97,8 @@ fun CollapsibleCommonCard(
     modifier: Modifier = Modifier,
     isCollapsed: Boolean,
     collapsedItems: Int,
-    backgroundColor: Color = RadixTheme.colors.defaultBackground,
+    backgroundColor: Color = RadixTheme.colors.card,
     groupInnerPadding: Dp = 8.dp,
-    elevation: Dp = 6.dp,
     cornerSizeRadius: Dp = 12.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -124,7 +121,7 @@ fun CollapsibleCommonCard(
                         .padding(horizontal = groupInnerPadding * collapsedIndex)
                         .align(Alignment.BottomCenter)
                         .shadow(
-                            elevation = elevation - collapsedIndex.dp,
+                            elevation = 4.dp - collapsedIndex.dp,
                             shape = shape
                         )
                         .background(
@@ -140,7 +137,7 @@ fun CollapsibleCommonCard(
                 .fillMaxWidth(),
             backgroundColor = backgroundColor,
             roundBottomCorners = isCollapsed,
-            elevation = elevation,
+            elevation = 4.dp,
             cornerSizeRadius = cornerSizeRadius
         ) {
             content()

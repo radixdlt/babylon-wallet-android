@@ -37,7 +37,7 @@ fun NonFungibleCard(
             .defaultCardShadow(elevation = elevation)
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
-            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium)
             .throttleClickable(enabled = onClick != null) {
                 onClick?.invoke()
             }
@@ -56,7 +56,7 @@ fun NonFungibleCard(
             modifier = Modifier.weight(1f),
             text = nonFungible.name.ifEmpty { stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName) },
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -66,7 +66,7 @@ fun NonFungibleCard(
                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
         }
     }

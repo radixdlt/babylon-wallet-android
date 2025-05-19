@@ -32,6 +32,7 @@ import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorTint
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -80,8 +82,8 @@ fun MnemonicWordTextField(
         modifier = modifier
     ) {
         val selectionColors = TextSelectionColors(
-            handleColor = RadixTheme.colors.gray1,
-            backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
+            handleColor = RadixTheme.colors.text,
+            backgroundColor = RadixTheme.colors.text.copy(alpha = 0.4f)
         )
         val textColor = when {
             error != null -> colors.errorTextColor
@@ -139,7 +141,10 @@ fun MnemonicWordTextField(
                                 color = borderColor,
                                 shape = RadixTheme.shapes.roundedRectSmall
                             )
-                            .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
+                            .background(
+                                color = RadixTheme.colors.textFieldBackground,
+                                shape = RadixTheme.shapes.roundedRectSmall
+                            )
                             .padding(RadixTheme.dimensions.paddingMedium),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -161,7 +166,8 @@ fun MnemonicWordTextField(
                     }
                 },
                 enabled = enabled,
-                visualTransformation = if (masked) MnemonicWordVisualTransformation() else VisualTransformation.None
+                visualTransformation = if (masked) MnemonicWordVisualTransformation() else VisualTransformation.None,
+                cursorBrush = SolidColor(RadixTheme.colors.text)
             )
         }
         if (error != null || errorFixedSize) {
@@ -227,19 +233,19 @@ data class MnemonicTextFieldColors(
         @Composable
         fun default(): MnemonicTextFieldColors {
             return MnemonicTextFieldColors(
-                textColor = RadixTheme.colors.gray1,
-                errorTextColor = RadixTheme.colors.red1,
-                disabledTextColor = RadixTheme.colors.gray2,
-                highlightedTextColor = RadixTheme.colors.gray1,
-                borderColor = RadixTheme.colors.gray4,
-                focusedBorderColor = RadixTheme.colors.gray1,
-                errorBorderColor = RadixTheme.colors.red1,
-                disabledBorderColor = RadixTheme.colors.gray4,
-                highlightedBorderColor = RadixTheme.colors.gray1,
-                hintColor = RadixTheme.colors.gray1,
-                errorHintColor = RadixTheme.colors.gray1,
-                disabledHintColor = RadixTheme.colors.gray1,
-                statusMessageColor = RadixTheme.colors.red1
+                textColor = RadixTheme.colors.text,
+                errorTextColor = RadixTheme.colors.error,
+                disabledTextColor = RadixTheme.colors.text,
+                highlightedTextColor = RadixTheme.colors.text,
+                borderColor = RadixTheme.colors.textFieldBorder,
+                focusedBorderColor = RadixTheme.colors.textFieldFocusedBorder,
+                errorBorderColor = RadixTheme.colors.error,
+                disabledBorderColor = RadixTheme.colors.textFieldBackground,
+                highlightedBorderColor = RadixTheme.colors.textFieldFocusedBorder,
+                hintColor = RadixTheme.colors.text,
+                errorHintColor = RadixTheme.colors.text,
+                disabledHintColor = RadixTheme.colors.text,
+                statusMessageColor = RadixTheme.colors.error
             )
         }
     }
@@ -305,7 +311,7 @@ fun MnemonicWordTextFieldTrailing1Preview() {
                         id = R.drawable.check_circle_outline
                     ),
                     contentDescription = null,
-                    tint = Color.Unspecified
+                    tint = themedColorTint()
                 )
             }
         )

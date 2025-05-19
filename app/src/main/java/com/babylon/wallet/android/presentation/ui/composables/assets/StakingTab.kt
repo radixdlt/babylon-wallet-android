@@ -142,7 +142,7 @@ private fun StakingSummary(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.account_staking_lsuResourceHeader),
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2
             )
         }
@@ -197,7 +197,11 @@ private fun StakingSummary(
             fiatPrice = stakedFiatPrice,
             isLoadingBalance = isLoadingBalance,
             amountStyle = RadixTheme.typography.body2HighImportance.copy(
-                color = if (assetsViewData.stakeSummary?.hasStakedValue == true) RadixTheme.colors.gray1 else RadixTheme.colors.gray2
+                color = if (assetsViewData.stakeSummary?.hasStakedValue == true) {
+                    RadixTheme.colors.text
+                } else {
+                    RadixTheme.colors.textSecondary
+                }
             )
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -225,10 +229,10 @@ private fun StakingSummary(
             amount = stakeSummary?.readyToClaim,
             fiatPrice = readyToClaimFiatPrice,
             isLoadingBalance = isLoadingBalance,
-            labelStyle = if (stakeSummary?.hasReadyToClaimValue == true) {
-                RadixTheme.typography.body2Link.copy(color = RadixTheme.colors.blue2)
+            labelStyle = if (stakeSummary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
+                RadixTheme.typography.body2Link.copy(color = RadixTheme.colors.textButton)
             } else {
-                RadixTheme.typography.body2HighImportance.copy(color = RadixTheme.colors.gray2)
+                RadixTheme.typography.body2HighImportance.copy(color = RadixTheme.colors.textSecondary)
             }
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -243,10 +247,10 @@ private fun StakeAmount(
     amount: Decimal192?,
     fiatPrice: FiatPrice?,
     labelStyle: TextStyle = RadixTheme.typography.body2HighImportance.copy(
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     ),
     amountStyle: TextStyle = RadixTheme.typography.body2HighImportance.copy(
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 ) {
     Row(
@@ -309,10 +313,10 @@ fun ValidatorsSize(
         Icon(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3)
+                .dashedCircleBorder(RadixTheme.colors.iconTertiary)
                 .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(id = DSR.ic_validator),
-            tint = RadixTheme.colors.gray2,
+            tint = RadixTheme.colors.iconSecondary,
             contentDescription = null
         )
 
@@ -320,7 +324,7 @@ fun ValidatorsSize(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.account_staking_stakedValidators, assetsViewData.validatorsWithStakes.size),
             style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
@@ -446,7 +450,7 @@ private fun LiquidStakeUnit(
                 modifier = Modifier.weight(1f),
                 text = validatorWithStakes.liquidStakeUnit?.displayTitle().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
 
             val lsu = validatorWithStakes.liquidStakeUnit
@@ -472,7 +476,7 @@ private fun LiquidStakeUnit(
                 ),
             text = stringResource(id = R.string.account_staking_worth),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         val fiatPrice = remember(validatorWithStakes) {
@@ -518,7 +522,7 @@ private fun StakeClaims(
                 modifier = Modifier.fillMaxWidth(),
                 text = validatorWithStakes.stakeClaimNft?.displayTitle().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         }
 
@@ -549,7 +553,7 @@ private fun StakeClaims(
                     ),
                 text = stringResource(id = R.string.account_staking_unstaking).uppercase(),
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
 
             val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
@@ -584,7 +588,7 @@ private fun StakeClaims(
                     modifier = Modifier.weight(1f),
                     text = stringResource(id = R.string.account_staking_readyToBeClaimed).uppercase(),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
 
                 if (action is AssetsViewAction.Click) {
@@ -594,7 +598,7 @@ private fun StakeClaims(
                         },
                         text = stringResource(id = R.string.account_staking_claim),
                         style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.blue1
+                        color = RadixTheme.colors.textButton
                     )
                 }
             }
@@ -634,7 +638,7 @@ private fun ValidatorHeader(
             Text(
                 text = validatorWithStakes.validator.name,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1
             )
 
@@ -654,7 +658,7 @@ private fun ValidatorHeader(
                     "${stringResource(id = R.string.account_staking_currentStake, it.formatted())} ${XrdResource.SYMBOL}"
                 }.orEmpty(),
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 maxLines = 1
             )
         }
@@ -757,7 +761,7 @@ fun WorthXRD(
                 ),
                 text = XrdResource.SYMBOL,
                 style = symbolStyle,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1
             )
 
@@ -774,7 +778,7 @@ fun WorthXRD(
                     modifier = Modifier.fillMaxWidth(),
                     text = amount?.formatted().orEmpty(),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.End,
                     maxLines = 2
                 )
@@ -804,7 +808,7 @@ fun WorthXRD(
             Text(
                 text = stringResource(id = R.string.interactionReview_unknown_amount),
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
     }

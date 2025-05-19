@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,7 +72,7 @@ fun AccountDepositSettingsTypeContent(
                             DepositRule.DENY_ALL -> R.string.interactionReview_depositSettings_denyAllRule
                             DepositRule.ACCEPT_KNOWN -> R.string.interactionReview_depositSettings_acceptKnownRule
                         }
-                    ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
+                    ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold))
                     val icon = when (newRule) {
                         DepositRule.ACCEPT_ALL -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all
                         DepositRule.DENY_ALL -> com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all
@@ -84,7 +83,7 @@ fun AccountDepositSettingsTypeContent(
 
                     Row(
                         modifier = Modifier
-                            .background(RadixTheme.colors.gray5, shape = ruleBackgroundShape)
+                            .background(RadixTheme.colors.backgroundSecondary, shape = ruleBackgroundShape)
                             .padding(RadixTheme.dimensions.paddingDefault),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -96,7 +95,7 @@ fun AccountDepositSettingsTypeContent(
                         Text(
                             text = ruleText,
                             style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                     }
                 }
@@ -121,14 +120,14 @@ fun AccountDepositSettingsTypeContent(
                             resource = assetChange.resource,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.gray5, shape)
+                                .background(RadixTheme.colors.backgroundSecondary, shape)
                                 .padding(RadixTheme.dimensions.paddingDefault),
                             trailingSection = {
                                 assetChange.change.Layout(Modifier.widthIn(max = 90.dp))
                             }
                         )
                         if (!lastItem) {
-                            HorizontalDivider(color = RadixTheme.colors.gray4)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                     accountWithSettings.depositorChanges.forEachIndexed { index, depositorChange ->
@@ -138,14 +137,14 @@ fun AccountDepositSettingsTypeContent(
                             resource = depositorChange.resource,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(RadixTheme.colors.gray5, shape)
+                                .background(RadixTheme.colors.backgroundSecondary, shape)
                                 .padding(RadixTheme.dimensions.paddingDefault),
                             trailingSection = {
                                 depositorChange.change.Layout(Modifier.widthIn(max = 90.dp))
                             }
                         )
                         if (!lastItem) {
-                            HorizontalDivider(color = RadixTheme.colors.gray4)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                 }
@@ -161,7 +160,7 @@ private fun CardColumn(modifier: Modifier = Modifier, content: @Composable Colum
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
             .background(
-                color = Color.White,
+                color = RadixTheme.colors.background,
                 shape = RadixTheme.shapes.roundedRectDefault
             )
             .padding(RadixTheme.dimensions.paddingMedium)
@@ -180,19 +179,19 @@ private fun SectionHeader(modifier: Modifier = Modifier, text: String) {
         Icon(
             modifier = Modifier
                 .size(24.dp)
-                .dashedCircleBorder(RadixTheme.colors.gray3)
+                .dashedCircleBorder(RadixTheme.colors.iconTertiary)
                 .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(
                 id = DSR.ic_deposit_changes_heading
             ),
             contentDescription = null,
-            tint = Color.Unspecified
+            tint = RadixTheme.colors.iconSecondary
         )
         Text(
             text = text,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
     }
 }
@@ -200,11 +199,15 @@ private fun SectionHeader(modifier: Modifier = Modifier, text: String) {
 @Composable
 private fun PreferenceChange(modifier: Modifier = Modifier, text: String, icon: Int) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(painter = painterResource(id = icon), contentDescription = null, tint = RadixTheme.colors.gray1)
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            tint = RadixTheme.colors.icon
+        )
         Text(
             text = text,
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
     }
@@ -272,7 +275,7 @@ private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modif
             style = RadixTheme.typography.body1Regular,
             maxLines = 1,
             modifier = Modifier.weight(0.7f),
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         Row(modifier = Modifier.weight(0.3f), horizontalArrangement = Arrangement.Center) {
             trailingSection()

@@ -150,12 +150,12 @@ private fun DeletingAccountMoveAssetsContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         val accounts = remember(state) { state.accounts() }
 
         LazyColumn(
-            modifier = Modifier.padding(padding)
+            contentPadding = padding
         ) {
             item {
                 Text(
@@ -166,7 +166,7 @@ private fun DeletingAccountMoveAssetsContent(
                     text = stringResource(id = R.string.accountSettings_moveAssets_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
 
@@ -179,7 +179,7 @@ private fun DeletingAccountMoveAssetsContent(
                     text = stringResource(id = R.string.accountSettings_moveAssets_message),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
 
@@ -192,7 +192,7 @@ private fun DeletingAccountMoveAssetsContent(
                     text = stringResource(id = R.string.accountSettings_moveAssets_note),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             }
 
@@ -219,7 +219,7 @@ private fun DeletingAccountMoveAssetsContent(
                             .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = RadixTheme.colors.gray1)
+                        CircularProgressIndicator(color = RadixTheme.colors.icon)
                     }
                 }
             }
@@ -273,19 +273,19 @@ private fun SkipMoveAssetsDialog(
             Text(
                 text = stringResource(id = R.string.accountSettings_assetsWillBeLostWarning_title),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         message = {
             Text(
                 text = stringResource(id = R.string.accountSettings_assetsWillBeLostWarning_message),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmText = stringResource(id = R.string.common_continue),
         dismissText = stringResource(id = R.string.common_cancel),
-        confirmTextColor = RadixTheme.colors.red1
+        confirmTextColor = RadixTheme.colors.error
     )
 }
 
@@ -305,19 +305,19 @@ private fun CannotDeleteAccountDialog(
             Text(
                 text = stringResource(id = R.string.accountSettings_cannotDeleteAccountWarning_title),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         message = {
             Text(
                 text = stringResource(id = R.string.accountSettings_cannotDeleteAccountWarning_message),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmText = stringResource(id = R.string.common_cancel),
         dismissText = null,
-        confirmTextColor = RadixTheme.colors.red1
+        confirmTextColor = RadixTheme.colors.error
     )
 }
 
@@ -340,19 +340,19 @@ private fun CannotTransferSomeAssetsDialog(
             Text(
                 text = stringResource(id = R.string.accountSettings_nonTransferableAssetsWarning_title),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         message = {
             Text(
                 text = stringResource(id = R.string.accountSettings_nonTransferableAssetsWarning_message),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmText = stringResource(id = R.string.common_continue),
         dismissText = stringResource(id = R.string.common_cancel),
-        confirmTextColor = RadixTheme.colors.red1
+        confirmTextColor = RadixTheme.colors.error
     )
 }
 

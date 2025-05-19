@@ -68,7 +68,7 @@ fun FiltersDialog(
                 title = stringResource(id = R.string.transactionHistory_filters_title),
                 onBackClick = onDismiss,
                 backIconType = BackIconType.Close,
-                containerColor = RadixTheme.colors.defaultBackground,
+                containerColor = RadixTheme.colors.background,
                 actions = {
                     RadixTextButton(text = stringResource(id = R.string.transactionHistory_filters_clearAll), onClick = onClearAllFilters)
                 },
@@ -83,7 +83,7 @@ fun FiltersDialog(
                 insets = WindowInsets(0.dp)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -114,11 +114,17 @@ fun FiltersDialog(
                     }
                 }
             }
-            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                color = RadixTheme.colors.divider,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
+            )
             FilterTypeSection(label = stringResource(id = R.string.transactionHistory_filters_assetTypeLabel)) {
                 ResourcesSection(state, onResourceFilterSelected)
             }
-            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                color = RadixTheme.colors.divider,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
+            )
             FilterTypeSection(label = stringResource(id = R.string.transactionHistory_filters_transactionTypeLabel)) {
                 TagContainer {
                     TransactionClass.entries.forEach { entry ->
@@ -132,7 +138,10 @@ fun FiltersDialog(
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             }
-            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                color = RadixTheme.colors.divider,
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
+            )
         }
     }
 }
@@ -168,7 +177,7 @@ private fun ResourcesSection(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.transactionHistory_filters_tokensLabel),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Start
             )
             TagContainer(
@@ -208,13 +217,13 @@ private fun ResourcesSection(
             }
         }
         if (nonFungibles.isNotEmpty()) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.divider)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.transactionHistory_filters_assetTypeNFTsLabel),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 textAlign = TextAlign.Start
             )
             TagContainer(
@@ -291,7 +300,7 @@ private fun FilterTypeSection(modifier: Modifier = Modifier, label: String, cont
                 modifier = Modifier.weight(1f),
                 text = label,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 overflow = TextOverflow.Ellipsis,
             )
             val iconRes = if (expanded) {
@@ -301,7 +310,7 @@ private fun FilterTypeSection(modifier: Modifier = Modifier, label: String, cont
             }
             Icon(
                 painter = painterResource(id = iconRes),
-                tint = RadixTheme.colors.gray1,
+                tint = RadixTheme.colors.text,
                 contentDescription = "arrow"
             )
         }

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
@@ -30,10 +28,8 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.Constants
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.placeholder
-import com.google.accompanist.placeholder.shimmer
 import com.radixdlt.sargon.extensions.formatted
 
 @Composable
@@ -54,7 +50,7 @@ fun NetworkFeeContent(
                     modifier = Modifier.fillMaxHeight(),
                     text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                     style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 InfoButton(
@@ -62,7 +58,7 @@ fun NetworkFeeContent(
                         .fillMaxHeight()
                         .height(1.dp),
                     text = stringResource(id = R.string.empty),
-                    color = RadixTheme.colors.gray3,
+                    color = RadixTheme.colors.iconTertiary,
                     onClick = {
                         onInfoClick(GlossaryItem.transactionfee)
                     }
@@ -72,22 +68,16 @@ fun NetworkFeeContent(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     modifier = Modifier
-                        .placeholder(
+                        .radixPlaceholder(
                             visible = isNetworkFeeLoading,
-                            color = RadixTheme.colors.defaultText.copy(alpha = 0.2f),
-                            shape = RadixTheme.shapes.roundedRectSmall,
-                            highlight = PlaceholderHighlight.shimmer(
-                                highlightColor = White
-                            ),
-                            placeholderFadeTransitionSpec = { tween() },
-                            contentFadeTransitionSpec = { tween() }
+                            shape = RadixTheme.shapes.roundedRectSmall
                         ),
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
                         fees.transactionFeeToLock.formatted()
                     ),
                     style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
                 fees.transactionFeeTotalUsd?.let { fiatPrice ->
                     FiatBalanceView(
@@ -104,7 +94,7 @@ fun NetworkFeeContent(
                 modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.transactionReview_networkFee_congestedText),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.orange1
+                color = RadixTheme.colors.warning
             )
         }
 
@@ -122,7 +112,7 @@ fun NetworkFeeContent(
                         .fillMaxWidth()
                         .padding(top = RadixTheme.dimensions.paddingSmall),
                     text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
-                    contentColor = RadixTheme.colors.red1,
+                    contentColor = RadixTheme.colors.error,
                     textStyle = RadixTheme.typography.body1Header
                 )
             } else if (properties.isSelectedFeePayerInvolvedInTransaction.not()) {
@@ -140,7 +130,7 @@ fun NetworkFeeContent(
                     )
                     InfoButton(
                         text = stringResource(R.string.empty),
-                        color = RadixTheme.colors.gray3,
+                        color = RadixTheme.colors.iconTertiary,
                         onClick = {
                             onInfoClick(GlossaryItem.payingaccount)
                         }

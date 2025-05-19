@@ -37,15 +37,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -78,6 +79,7 @@ fun FeePayerSelectionSheet(
         },
         sheetState = sheetState,
         enableImePadding = true,
+        containerColor = RadixTheme.colors.backgroundSecondary,
         sheetContent = {
             FeePayerSelectionContent(
                 input = input,
@@ -113,7 +115,7 @@ private fun FeePayerSelectionContent(
                 ) {
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                        tint = RadixTheme.colors.gray1,
+                        tint = RadixTheme.colors.icon,
                         contentDescription = null
                     )
                 }
@@ -127,7 +129,7 @@ private fun FeePayerSelectionContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                         text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
                     )
 
@@ -139,7 +141,7 @@ private fun FeePayerSelectionContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                         text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
                         style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         textAlign = TextAlign.Center
                     )
 
@@ -154,7 +156,7 @@ private fun FeePayerSelectionContent(
                 text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_selectAccountButtonTitle)
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -188,9 +190,9 @@ private fun FeePayerCard(
             )
             .applyIf(candidate.hasEnoughBalance, Modifier.throttleClickable { onPayerSelected(candidate) }),
         shape = RadixTheme.shapes.roundedRectMedium,
-        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
+        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.card),
         elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 6.dp
+            defaultElevation = if (RadixTheme.config.isDarkTheme) 0.dp else 6.dp
         )
     ) {
         Row(
@@ -209,7 +211,7 @@ private fun FeePayerCard(
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.body1Header,
-                color = Color.White
+                color = White
             )
 
             ActionableAddressView(
@@ -217,7 +219,7 @@ private fun FeePayerCard(
                     candidate.account.address.asGeneral()
                 },
                 textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                textColor = White.copy(alpha = 0.8f)
             )
         }
 
@@ -246,7 +248,7 @@ private fun FeePayerCard(
                 modifier = Modifier.weight(1f),
                 text = XrdResource.SYMBOL,
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1
             )
 
@@ -255,7 +257,7 @@ private fun FeePayerCard(
                     candidate.xrdAmount.formatted()
                 },
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2
             )
 
@@ -263,7 +265,7 @@ private fun FeePayerCard(
 
             RadixRadioButton(
                 selected = candidate.account.address == selectedCandidateAddress,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = {
                     onPayerSelected(candidate)
                 },
@@ -283,7 +285,7 @@ private fun FeePayerCard(
                         end = RadixTheme.dimensions.paddingDefault
                     ),
                 text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance)),
-                contentColor = RadixTheme.colors.red1,
+                contentColor = RadixTheme.colors.error,
                 textStyle = RadixTheme.typography.body1Header
             )
 

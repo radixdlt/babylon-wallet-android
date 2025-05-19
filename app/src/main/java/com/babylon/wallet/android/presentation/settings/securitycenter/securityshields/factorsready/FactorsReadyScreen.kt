@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorFilter
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -60,7 +61,7 @@ private fun FactorsReadyContent(
                 text = stringResource(R.string.shieldSetupPrepareFactors_completion_button)
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -70,7 +71,8 @@ private fun FactorsReadyContent(
         ) {
             Image(
                 painter = painterResource(id = DSR.ic_factors_ready),
-                contentDescription = null
+                contentDescription = null,
+                colorFilter = themedColorFilter()
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
@@ -79,7 +81,7 @@ private fun FactorsReadyContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -89,7 +91,7 @@ private fun FactorsReadyContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_subtitleTop),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -99,7 +101,7 @@ private fun FactorsReadyContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.shieldSetupPrepareFactors_completion_subtitleBottom),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         }

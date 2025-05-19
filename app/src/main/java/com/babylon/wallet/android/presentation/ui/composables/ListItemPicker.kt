@@ -68,7 +68,7 @@ fun <T> ListItemPicker(
     label: @Composable (T) -> String,
     modifier: Modifier = Modifier,
     displayMode: ListItemPicker.DisplayMode = ListItemPicker.DisplayMode.Compact,
-    dividersColor: Color = RadixTheme.colors.gray3,
+    dividersColor: Color = RadixTheme.colors.divider,
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     contentAlignment: Alignment = Alignment.Center,
     contentPadding: PaddingValues = PaddingValues(0.dp)

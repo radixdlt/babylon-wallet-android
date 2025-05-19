@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -63,7 +64,7 @@ fun TargetAccountCard(
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.divider,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {
@@ -71,6 +72,7 @@ fun TargetAccountCard(
             is TargetAccount.Skeleton ->
                 Modifier
                     .clip(RadixTheme.shapes.roundedRectTopMedium)
+                    .background(RadixTheme.colors.background)
                     .clickable {
                         onChooseAccountClick()
                     }
@@ -85,7 +87,11 @@ fun TargetAccountCard(
             is TargetAccount.Other ->
                 Modifier
                     .background(
-                        color = RadixTheme.colors.gray2,
+                        color = if (RadixTheme.config.isDarkTheme) {
+                            RadixTheme.colors.backgroundTertiary
+                        } else {
+                            RadixTheme.colors.iconSecondary
+                        },
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
         }
@@ -110,13 +116,13 @@ fun TargetAccountCard(
                         Icon(
                             modifier = Modifier.size(18.dp),
                             painter = painterResource(id = DSR.ic_entity),
-                            tint = RadixTheme.colors.blue2,
+                            tint = RadixTheme.colors.textButton,
                             contentDescription = null
                         )
                         Text(
                             text = stringResource(id = R.string.assetTransfer_receivingAccount_chooseAccountButton),
                             style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.blue2,
+                            color = RadixTheme.colors.textButton,
                         )
                     }
                 }
@@ -126,7 +132,7 @@ fun TargetAccountCard(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = stringResource(id = R.string.assetTransfer_accountList_externalAccountName),
                         style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.white
+                        color = White
                     )
                 }
 
@@ -135,7 +141,7 @@ fun TargetAccountCard(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = targetAccount.account.displayName.value,
                         style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.white
+                        color = White
                     )
                 }
             }
@@ -144,8 +150,8 @@ fun TargetAccountCard(
                 ActionableAddressView(
                     address = Address.Account(it),
                     textStyle = RadixTheme.typography.body2HighImportance,
-                    textColor = RadixTheme.colors.white.copy(alpha = 0.8f),
-                    iconColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                    textColor = White.copy(alpha = 0.8f),
+                    iconColor = White.copy(alpha = 0.8f)
                 )
             }
 
@@ -154,13 +160,13 @@ fun TargetAccountCard(
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear",
-                        tint = if (targetAccount.validatedAddress != null) RadixTheme.colors.white else RadixTheme.colors.gray2,
+                        tint = if (targetAccount.validatedAddress != null) White else RadixTheme.colors.textSecondary,
                     )
                 }
             }
         }
 
-        HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
+        HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.divider)
 
         Column(
             modifier = Modifier
@@ -171,7 +177,7 @@ fun TargetAccountCard(
                 .fillMaxWidth()
                 .heightIn(min = 68.dp)
                 .background(
-                    color = RadixTheme.colors.gray5,
+                    color = RadixTheme.colors.backgroundSecondary,
                     shape = RadixTheme.shapes.roundedRectBottomMedium
                 )
                 .padding(vertical = RadixTheme.dimensions.paddingDefault)
@@ -209,7 +215,7 @@ fun TargetAccountCard(
                                 onRemoveAssetClicked(spendingAsset)
                             },
                         imageVector = Icons.Filled.Clear,
-                        tint = RadixTheme.colors.gray2,
+                        tint = RadixTheme.colors.iconSecondary,
                         contentDescription = "clear"
                     )
                 }
@@ -217,14 +223,14 @@ fun TargetAccountCard(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                     SpendingAssetWarning(
                         text = stringResource(id = R.string.assetTransfer_extraSignature_label),
-                        color = RadixTheme.colors.orange3
+                        color = RadixTheme.colors.warning
                     )
                 }
                 if (!spendingAsset.canDeposit) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                     SpendingAssetWarning(
                         text = stringResource(id = R.string.assetTransfer_depositStatus_denied),
-                        color = RadixTheme.colors.red1
+                        color = RadixTheme.colors.error
                     )
                 }
 
@@ -235,7 +241,7 @@ fun TargetAccountCard(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
                 style = RadixTheme.typography.body1Header,
                 text = " + " + stringResource(id = R.string.assetTransfer_receivingAccount_addAssetsButton),
-                color = RadixTheme.colors.blue2
+                color = RadixTheme.colors.textButton
             )
         }
     }

@@ -19,7 +19,7 @@ fun GrayBackgroundWrapper(
 ) {
     Column(
         modifier
-            .background(RadixTheme.colors.gray5)
+            .background(RadixTheme.colors.backgroundSecondary)
             .padding(contentPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

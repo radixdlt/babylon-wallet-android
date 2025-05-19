@@ -10,10 +10,12 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.deleteCrashlyticsUnsentReports
+import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.enableCrashlytics
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
@@ -39,6 +41,7 @@ class WalletPreferencesViewModel @Inject constructor(
     private fun readSettings() {
         observeDevModeSetting()
         observeAdvancedLockSetting()
+        observeThemeSelectionSetting()
         if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
                 val updateCrashReportingPreference = PreferencesUiItem.Preference(
@@ -92,6 +95,20 @@ class WalletPreferencesViewModel @Inject constructor(
         }
     }
 
+    private fun observeThemeSelectionSetting() {
+        viewModelScope.launch {
+            preferencesManager.themeSelection
+                .distinctUntilChanged()
+                .collect { selection ->
+                    _state.updateSetting<SettingsItem.WalletPreferences.ThemePreference> {
+                        SettingsItem.WalletPreferences.ThemePreference(
+                            selection = selection
+                        )
+                    }
+                }
+        }
+    }
+
     fun onAdvancedLockToggled(enabled: Boolean) = viewModelScope.launch {
         updateAdvancedLockUseCase(enabled)
     }
@@ -137,6 +154,9 @@ data class WalletPreferencesUiState(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AssetsHiding),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AdvancedLock(false)),
+                PreferencesUiItem.Preference(
+                    SettingsItem.WalletPreferences.ThemePreference(ThemeSelection.DEFAULT)
+                ),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))

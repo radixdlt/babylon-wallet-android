@@ -7,8 +7,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 
 @Composable
 fun WarningButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -19,8 +19,8 @@ fun WarningButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         onClick = onClick,
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = ButtonDefaults.buttonColors(
-            contentColor = Color.White,
-            containerColor = RadixTheme.colors.red1
+            contentColor = White,
+            containerColor = RadixTheme.colors.error
         )
     ) {
         Text(

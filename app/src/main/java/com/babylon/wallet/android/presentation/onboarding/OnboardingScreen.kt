@@ -62,7 +62,7 @@ private fun OnboardingScreenContent(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -80,7 +80,7 @@ private fun OnboardingScreenContent(
                         ),
                     text = stringResource(id = R.string.onboarding_step1_title),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -88,7 +88,7 @@ private fun OnboardingScreenContent(
                     modifier = Modifier.widthIn(max = 300.dp),
                     text = stringResource(id = R.string.onboarding_step1_subtitle),
                     style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     textAlign = TextAlign.Center
                 )
             }

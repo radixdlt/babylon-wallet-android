@@ -97,7 +97,7 @@ private fun AddLinkConnectorContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
     ) { padding ->
         val keyboardController = LocalSoftwareKeyboardController.current
         Column(modifier = Modifier.padding(padding)) {
@@ -184,7 +184,7 @@ private fun ScanQrCode(
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.linkedConnectors_newConnection_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -194,7 +194,7 @@ private fun ScanQrCode(
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(id = R.string.scanQR_connectorExtension_instructions),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -220,7 +220,7 @@ private fun ScanQrCode(
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.scanQR_connectorExtension_disclosureTitle),
             style = RadixTheme.typography.body2Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
 
         NumberedValuesList(
@@ -266,7 +266,7 @@ private fun NameNewConnector(
                 ),
             text = stringResource(id = R.string.linkedConnectors_nameNewConnector_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -280,7 +280,7 @@ private fun NameNewConnector(
                 ),
             text = stringResource(id = R.string.linkedConnectors_nameNewConnector_subtitle),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
         RadixTextField(
@@ -324,14 +324,14 @@ private fun ConnectionErrorDialog(
             Text(
                 text = title,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         message = {
             Text(
                 text = message,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmText = stringResource(id = R.string.common_dismiss),

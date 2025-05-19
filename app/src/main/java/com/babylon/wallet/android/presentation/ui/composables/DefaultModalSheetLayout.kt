@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,7 +34,7 @@ fun DefaultModalSheetLayout(
     wrapContent: Boolean = false,
     sheetContent: @Composable () -> Unit,
     showDragHandle: Boolean = true,
-    containerColor: Color = RadixTheme.colors.defaultBackground,
+    containerColor: Color = RadixTheme.colors.background,
     windowInsets: @Composable () -> WindowInsets = {
         // Defaults to insets at the bottom of the screen
         BottomSheetDefaults.windowInsets
@@ -47,7 +47,8 @@ fun DefaultModalSheetLayout(
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
             // The sheet should expand until the status bar and banner
-            modifier = Modifier.padding(WindowInsets.statusBarsAndBanner.asPaddingValues()),
+            modifier = Modifier
+                .statusBarsPadding(),
             sheetState = sheetState,
             containerColor = containerColor,
             scrimColor = Color.Black.copy(alpha = 0.3f),
@@ -89,6 +90,6 @@ fun DefaultModalSheetDragHandle(
         modifier = modifier
             .padding(padding)
             .size(38.dp, 4.dp)
-            .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
+            .background(color = RadixTheme.colors.backgroundTertiary, shape = RadixTheme.shapes.circle)
     )
 }

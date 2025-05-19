@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -267,7 +268,7 @@ private fun TransactionReviewContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         if (state.isLoading) {
             FullscreenCircularProgressContent()
@@ -286,13 +287,20 @@ private fun TransactionReviewContent(
                                 Modifier
                                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
                                     .background(
-                                        brush = Brush.verticalGradient(
-                                            listOf(RadixTheme.colors.gray5, RadixTheme.colors.gray4)
-                                        ),
+                                        brush = if (RadixTheme.config.isDarkTheme) {
+                                            SolidColor(RadixTheme.colors.backgroundSecondary)
+                                        } else {
+                                            Brush.verticalGradient(
+                                                listOf(
+                                                    RadixTheme.colors.backgroundSecondary,
+                                                    RadixTheme.colors.backgroundTertiary
+                                                )
+                                            )
+                                        },
                                         shape = RadixTheme.shapes.roundedRectMedium
                                     )
                             } else {
-                                Modifier.background(color = RadixTheme.colors.gray5)
+                                Modifier.background(color = RadixTheme.colors.backgroundSecondary)
                             }
                         )
                 ) {
@@ -309,7 +317,7 @@ private fun TransactionReviewContent(
                                 )
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                             text = state.rawManifest,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             fontSize = 13.sp,
                             fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
                         )
@@ -386,10 +394,10 @@ private fun TransactionReviewContent(
                                 shape = RadixTheme.shapes.roundedRectSmall,
                                 elevation = null,
                                 colors = ButtonColors(
-                                    containerColor = RadixTheme.colors.gray4,
-                                    contentColor = RadixTheme.colors.gray1,
-                                    disabledContentColor = RadixTheme.colors.gray4,
-                                    disabledContainerColor = RadixTheme.colors.gray1
+                                    containerColor = RadixTheme.colors.backgroundTertiary,
+                                    contentColor = RadixTheme.colors.icon,
+                                    disabledContentColor = RadixTheme.colors.backgroundTertiary,
+                                    disabledContainerColor = RadixTheme.colors.icon
                                 )
                             ) {
                                 Icon(
@@ -414,13 +422,13 @@ private fun TransactionReviewContent(
                     }
 
                     if (state.showReceiptEdges) {
-                        ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+                        ReceiptEdge(color = RadixTheme.colors.background)
                     }
                 }
 
-                Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
+                Column(modifier = Modifier.background(RadixTheme.colors.background)) {
                     if (state.showReceiptEdges) {
-                        ReceiptEdge(color = RadixTheme.colors.gray5)
+                        ReceiptEdge(color = RadixTheme.colors.backgroundSecondary)
                     }
 
                     if (!state.isPreAuthorization) {
@@ -623,13 +631,56 @@ private fun BottomSheetContent(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @UsesSampleValues
 @Composable
-private fun TransactionPreviewContentPreview(
+private fun TransactionPreviewContentPreviewLight(
     @PreviewParameter(TransactionReviewPreviewProvider::class) state: State
 ) {
     RadixWalletPreviewTheme {
+        TransactionReviewContent(
+            state = state,
+            onBackClick = {},
+            onApproveTransaction = {},
+            onRawManifestToggle = {},
+            onMessageShown = {},
+            onGuaranteesApplyClick = {},
+            onCloseBottomSheetClick = {},
+            onEditGuaranteesClick = {},
+            onCustomizeClick = {},
+            onDAppClick = {},
+            onUnknownAddressesClick = {},
+            onTransferableFungibleClick = {},
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> },
+            onGuaranteeValueChanged = { _, _ -> },
+            onGuaranteeValueIncreased = {},
+            onGuaranteeValueDecreased = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
+            onFeePayerChanged = {},
+            onFeePayerSelected = {},
+            onFeePaddingAmountChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {},
+            dismissTransactionErrorDialog = {},
+            onAcknowledgeRawTransactionWarning = {},
+            onFeePayerSelectionDismiss = {},
+            onFailedSigningRestart = {},
+            onFailedSigningCancel = {},
+            onInfoClick = {}
+        )
+    }
+}
+
+@Preview
+@UsesSampleValues
+@Composable
+private fun TransactionPreviewContentPreviewDark(
+    @PreviewParameter(TransactionReviewPreviewProvider::class) state: State
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         TransactionReviewContent(
             state = state,
             onBackClick = {},

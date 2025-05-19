@@ -7,4 +7,8 @@ data class DAppWithResources(
     val dApp: DApp,
     val fungibleResources: List<Resource.FungibleResource> = emptyList(),
     val nonFungibleResources: List<Resource.NonFungibleResource> = emptyList()
-)
+) {
+
+    val hasAnyResources: Boolean =
+        fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
+}

@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -32,6 +31,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -40,10 +41,9 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
@@ -101,10 +101,11 @@ private fun ChooseSeedPhraseContent(
                 onBackClick = {
                     backCallback()
                 },
-                backIconType = BackIconType.Close
+                backIconType = BackIconType.Close,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.backgroundSecondary,
         bottomBar = {
             RadixBottomBar(
                 onClick = onUseFactorSource,
@@ -127,7 +128,7 @@ private fun ChooseSeedPhraseContent(
                     ),
                 text = stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_title),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             Text(
@@ -142,7 +143,7 @@ private fun ChooseSeedPhraseContent(
                     else -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleBabylon)
                 },
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
             LazyColumn(
@@ -157,9 +158,12 @@ private fun ChooseSeedPhraseContent(
                             .throttleClickable {
                                 onSelectionChanged(factorSource.data.deviceFactorSource.value.id.asGeneral())
                             }
-                            .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .defaultCardShadow(elevation = 6.dp)
                             .fillMaxWidth()
-                            .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
+                            .background(
+                                RadixTheme.colors.card,
+                                RadixTheme.shapes.roundedRectMedium
+                            )
                             .padding(RadixTheme.dimensions.paddingDefault),
                         data = factorSource.data,
                         selected = factorSource.selected,
@@ -172,7 +176,8 @@ private fun ChooseSeedPhraseContent(
                     RadixSecondaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = when (recoveryType) {
                             MnemonicType.BabylonMain,
                             MnemonicType.Babylon -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_addButtonBabylon)
@@ -209,13 +214,13 @@ fun SeedPhraseCard(
             Icon(
                 painter = painterResource(id = DSR.ic_seed_phrases),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = data.deviceFactorSource.value.hint.label,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -229,14 +234,14 @@ fun SeedPhraseCard(
                         data.allAccounts.size
                     ),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
             RadixRadioButton(
                 selected = selected,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = onSelectionChanged,
             )
         }

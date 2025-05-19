@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -84,7 +87,7 @@ fun LSUDialogContent(
         ?: lsu?.fungibleResource?.ownedAmount?.let { BoundedAmount.Exact(it) }
     Column(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
+            .background(RadixTheme.colors.background)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(
@@ -105,13 +108,13 @@ fun LSUDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Text(
             text = stringResource(id = R.string.account_poolUnits_details_currentRedeemableValue),
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -150,7 +153,7 @@ fun LSUDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
@@ -192,7 +195,7 @@ fun LSUDialogContent(
                     .radixPlaceholder(visible = lsu == null),
                 text = lsu?.name().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.End
             )
         }
@@ -215,7 +218,7 @@ fun LSUDialogContent(
                     else -> supply.formatted()
                 },
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.End
             )
         }
@@ -234,7 +237,7 @@ fun LSUDialogContent(
                         .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2),
                     text = it.value.toString(),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.End
                 )
             }
@@ -254,6 +257,12 @@ fun LSUDialogContent(
         lsu?.resource?.let { resource ->
             NonStandardMetadataSection(resource = resource)
         }
+
+        Spacer(
+            modifier = Modifier.height(
+                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            )
+        )
     }
 }
 
@@ -309,7 +318,7 @@ private fun LSUResourceValue(
                 modifier = Modifier.weight(1f),
                 text = XrdResource.SYMBOL,
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 2
             )
 

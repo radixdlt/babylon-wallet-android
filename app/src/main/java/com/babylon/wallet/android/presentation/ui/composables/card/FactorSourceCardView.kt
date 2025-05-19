@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -89,12 +90,14 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
+    containerColor: Color = RadixTheme.colors.card,
     onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
         modifier = modifier,
         castsShadow = castsShadow,
+        containerColor = containerColor,
         isOutlined = isOutlined
     ) {
         SimpleFactorCardView(
@@ -155,7 +158,7 @@ fun SimpleFactorCardView(
                     id = iconRes
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
 
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
@@ -164,7 +167,7 @@ fun SimpleFactorCardView(
                 Text(
                     text = title,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
 
                 subtitle?.let {
@@ -173,7 +176,7 @@ fun SimpleFactorCardView(
                     Text(
                         text = it,
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
 
@@ -183,7 +186,7 @@ fun SimpleFactorCardView(
                     Text(
                         text = it,
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
             }
@@ -303,7 +306,11 @@ private fun LinkedEntitiesView(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.gray5,
+                color = if (RadixTheme.config.isDarkTheme) {
+                    RadixTheme.colors.background
+                } else {
+                    RadixTheme.colors.backgroundTertiary
+                },
                 shape = RadixTheme.shapes.roundedRectBottomDefault
             )
     ) {
@@ -322,7 +329,7 @@ private fun LinkedEntitiesView(
                 modifier = Modifier.weight(1f),
                 text = linkedText,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
 
             Icon(
@@ -335,7 +342,7 @@ private fun LinkedEntitiesView(
                     }
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray2
+                tint = RadixTheme.colors.iconSecondary
             )
         }
 
@@ -363,7 +370,7 @@ private fun LinkedEntitiesView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = RadixTheme.colors.white,
+                                color = RadixTheme.colors.card,
                                 shape = RadixTheme.shapes.roundedRectMedium
                             ),
                         persona = it

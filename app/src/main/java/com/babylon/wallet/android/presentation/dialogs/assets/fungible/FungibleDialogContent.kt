@@ -1,12 +1,14 @@
 package com.babylon.wallet.android.presentation.dialogs.assets.fungible
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -78,10 +80,8 @@ fun FungibleDialogContent(
         ?: remember(token) { token?.resource?.ownedAmount?.let { BoundedAmount.Exact(it) } }
     Column(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = RadixTheme.dimensions.paddingSemiLarge),
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
@@ -119,7 +119,7 @@ fun FungibleDialogContent(
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.divider)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             DescriptionSection(
@@ -146,7 +146,7 @@ fun FungibleDialogContent(
                     Text(
                         text = token?.resource?.name.orEmpty(),
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
             }
@@ -170,7 +170,7 @@ fun FungibleDialogContent(
                             else -> supply.formatted()
                         },
                         style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.End
                     )
                 }
@@ -189,7 +189,7 @@ fun FungibleDialogContent(
                                 .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2),
                             text = it.value.toString(),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.text,
                             textAlign = TextAlign.End
                         )
                     }
@@ -228,6 +228,12 @@ fun FungibleDialogContent(
                     )
                 }
             )
+        } else {
+            Spacer(
+                modifier = Modifier.height(
+                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                )
+            )
         }
     }
 }
@@ -265,7 +271,10 @@ private fun FungibleDialogContentPreview() {
                     address = ResourceAddress.xrd(NetworkId.MAINNET),
                     ownedAmount = 666.toDecimal192(),
                     currentSupply = Decimal192.sample.invoke(),
-                    assetBehaviours = setOf(AssetBehaviour.SUPPLY_INCREASABLE, AssetBehaviour.SUPPLY_FLEXIBLE),
+                    assetBehaviours = setOf(
+                        AssetBehaviour.SUPPLY_INCREASABLE,
+                        AssetBehaviour.SUPPLY_FLEXIBLE
+                    ),
                     metadata = listOf(
                         Metadata.Collection(
                             key = ExplicitMetadataKey.TAGS.key,
@@ -287,7 +296,11 @@ private fun FungibleDialogContentPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()))
+                amounts = mapOf(
+                    ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(
+                        Decimal192.sample()
+                    )
+                )
             ),
             isLoadingBalance = false,
             canBeHidden = true,

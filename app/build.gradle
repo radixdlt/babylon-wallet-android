@@ -213,7 +213,6 @@ dependencies {
     implementation libs.accompanistDrawablePainter
     implementation libs.accompanistPermissions
     implementation libs.accompanistPlaceholder
-    implementation libs.accompanistSystemUiController
 
     // Datastore
     implementation libs.datastorePreferences

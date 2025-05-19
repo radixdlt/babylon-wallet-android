@@ -36,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -46,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.theme.Gray3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.displaySubtitle
@@ -85,13 +88,13 @@ fun SpendingAssetItem(
         },
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = CardDefaults.outlinedCardColors(
-            containerColor = RadixTheme.colors.defaultBackground,
-            contentColor = RadixTheme.colors.gray1
+            containerColor = RadixTheme.colors.card,
+            contentColor = RadixTheme.colors.text
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         border = BorderStroke(
             width = if (isEditingState.value) 1.dp else 0.dp,
-            color = if (isEditingState.value) RadixTheme.colors.gray1 else RadixTheme.colors.gray1.copy(alpha = 0.01f)
+            color = if (isEditingState.value) RadixTheme.colors.border else Color.Transparent
         )
     ) {
         when (asset) {
@@ -153,13 +156,13 @@ private fun ColumnScope.FungibleSpendingAsset(
                 },
             text = asset.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 2
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         val selectionColors = TextSelectionColors(
-            handleColor = RadixTheme.colors.gray1,
-            backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
+            handleColor = RadixTheme.colors.text,
+            backgroundColor = RadixTheme.colors.text.copy(alpha = 0.4f)
         )
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
             Box(
@@ -171,7 +174,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                         modifier = Modifier.fillMaxWidth(),
                         text = "0.00",
                         style = RadixTheme.typography.header.copy(
-                            color = RadixTheme.colors.gray3,
+                            color = Gray3,
                             textAlign = TextAlign.End
                         )
                     )
@@ -188,7 +191,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                     onValueChange = onAmountChanged,
                     singleLine = true,
                     textStyle = RadixTheme.typography.header.copy(
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         textAlign = TextAlign.End
                     ),
                     keyboardOptions = KeyboardOptions(
@@ -199,7 +202,8 @@ private fun ColumnScope.FungibleSpendingAsset(
                         onDone = {
                             focusManager.clearFocus()
                         }
-                    )
+                    ),
+                    cursorBrush = SolidColor(RadixTheme.colors.text)
                 )
             }
         }
@@ -217,7 +221,7 @@ private fun ColumnScope.FungibleSpendingAsset(
             text = stringResource(id = R.string.assetTransfer_error_insufficientBalance),
             style = RadixTheme.typography.body2HighImportance.copy(
                 fontSize = 12.sp,
-                color = RadixTheme.colors.red1,
+                color = RadixTheme.colors.error,
                 textAlign = TextAlign.End
             ),
             maxLines = 2,
@@ -242,7 +246,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                     .clickable { onMaxClicked() },
                 text = stringResource(id = R.string.common_max),
                 style = RadixTheme.typography.body1Link.copy(
-                    color = RadixTheme.colors.blue1,
+                    color = RadixTheme.colors.textButton,
                     fontSize = 12.sp
                 ),
                 textDecoration = TextDecoration.Underline
@@ -252,7 +256,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 Text(
                     text = "- Balance: ${amount.formatted()}",
                     style = RadixTheme.typography.body2HighImportance.copy(
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         fontSize = 12.sp
                     )
                 )
@@ -288,13 +292,13 @@ private fun NonFungibleSpendingAsset(
         Column {
             Text(
                 text = asset.displayTitle(),
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1HighImportance
             )
 
             Text(
                 text = asset.displaySubtitle(),
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 style = RadixTheme.typography.body2Regular
             )
 
@@ -308,7 +312,7 @@ private fun NonFungibleSpendingAsset(
                     text = stringResource(id = R.string.assetTransfer_error_resourceAlreadyAdded),
                     style = RadixTheme.typography.body2HighImportance.copy(
                         fontSize = 12.sp,
-                        color = RadixTheme.colors.red1,
+                        color = RadixTheme.colors.error,
                         textAlign = TextAlign.Start
                     ),
                     maxLines = 2,
@@ -325,7 +329,7 @@ fun SpendingAssetItemsPreview() {
     RadixWalletTheme {
         Column(
             modifier = Modifier
-                .background(color = RadixTheme.colors.gray5),
+                .background(color = RadixTheme.colors.backgroundSecondary),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             var firstAmount by remember { mutableStateOf("") }

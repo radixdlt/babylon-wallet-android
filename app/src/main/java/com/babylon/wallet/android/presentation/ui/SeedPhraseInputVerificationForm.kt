@@ -114,9 +114,7 @@ private fun SeedPhraseWordInput(
         masked = !enabled,
         highlightField = true,
         hasInitialFocus = initiallyFocused,
-        colors = MnemonicTextFieldColors.default().copy(
-            disabledHintColor = RadixTheme.colors.gray4
-        )
+        colors = MnemonicTextFieldColors.default()
     )
 }
 

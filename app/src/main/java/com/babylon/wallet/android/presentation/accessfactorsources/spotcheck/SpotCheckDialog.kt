@@ -25,7 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
@@ -33,6 +32,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.composables.A
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessOffDeviceMnemonicFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessPasswordFactorSourceContent
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
@@ -153,7 +153,7 @@ private fun SpotCheckBottomSheetContent(
                         )
                     }
                 },
-                containerColor = RadixTheme.colors.defaultBackground,
+                containerColor = RadixTheme.colors.background,
                 content = { padding ->
                     val contentModifier = Modifier
                         .padding(padding)
@@ -221,10 +221,37 @@ private fun SpotCheckBottomSheetContent(
 @UsesSampleValues
 @Preview
 @Composable
-private fun SpotCheckPreview(
+private fun SpotCheckPreviewLight(
     @PreviewParameter(SpotCheckPreviewParameterProvider::class) param: FactorSource
 ) {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
+        SpotCheckBottomSheetContent(
+            state = SpotCheckViewModel.State(
+                factorSource = param,
+                isSkipAllowed = true,
+                accessState = AccessFactorSourceDelegate.State(
+                    factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                        factorSource = param
+                    )
+                )
+            ),
+            onDismiss = {},
+            onSeedPhraseWordChanged = { _, _ -> },
+            onPasswordTyped = {},
+            onRetryClick = {},
+            onInputConfirmed = {},
+            onIgnoreClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+private fun SpotCheckPreviewDark(
+    @PreviewParameter(SpotCheckPreviewParameterProvider::class) param: FactorSource
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         SpotCheckBottomSheetContent(
             state = SpotCheckViewModel.State(
                 factorSource = param,

@@ -98,7 +98,7 @@ private fun ShieldCreatedContent(
                 }
             )
         },
-        containerColor = RadixTheme.colors.white
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         if (state.isLoading) {
             FullscreenCircularProgressContent()
@@ -120,7 +120,7 @@ private fun ShieldCreatedContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                     text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_title, state.shieldName),
                     style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -130,7 +130,7 @@ private fun ShieldCreatedContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                     text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_subtitle),
                     style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
@@ -141,7 +141,7 @@ private fun ShieldCreatedContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .fillMaxWidth()
                         .background(
-                            color = RadixTheme.colors.gray5,
+                            color = RadixTheme.colors.backgroundSecondary,
                             shape = RadixTheme.shapes.roundedRectMedium
                         )
                         .padding(
@@ -154,13 +154,13 @@ private fun ShieldCreatedContent(
                     Icon(
                         painter = painterResource(id = DSR.ic_info_outline),
                         contentDescription = null,
-                        tint = RadixTheme.colors.gray1
+                        tint = RadixTheme.colors.text
                     )
 
                     Text(
                         text = stringResource(id = R.string.shieldWizardApplyShield_shieldCreated_note),
                         style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.text
                     )
                 }
 

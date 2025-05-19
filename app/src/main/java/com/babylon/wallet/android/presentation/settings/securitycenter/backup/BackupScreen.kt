@@ -46,7 +46,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -80,6 +79,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import rdx.works.core.InstantGenerator
@@ -184,7 +184,7 @@ private fun BackupScreenContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         snackbarHost = {
@@ -193,7 +193,7 @@ private fun BackupScreenContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Column(
             modifier = Modifier
@@ -203,7 +203,7 @@ private fun BackupScreenContent(
         ) {
             Text(
                 text = stringResource(id = R.string.configurationBackup_heading),
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -215,9 +215,9 @@ private fun BackupScreenContent(
             }
             Column(
                 modifier = Modifier
-                    .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                    .defaultCardShadow(elevation = 6.dp)
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
+                    .background(RadixTheme.colors.background, shape = RadixTheme.shapes.roundedRectMedium)
             ) {
                 BackupStatusCard(
                     backupState = state.backupState,
@@ -228,7 +228,7 @@ private fun BackupScreenContent(
                 if (state.backupState.isAuthorized) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        color = RadixTheme.colors.gray4
+                        color = RadixTheme.colors.divider
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     LoggedInStatus(
@@ -240,7 +240,7 @@ private fun BackupScreenContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium)
+                        .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectBottomMedium)
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingLarge,
                             vertical = RadixTheme.dimensions.paddingDefault
@@ -250,12 +250,13 @@ private fun BackupScreenContent(
                 ) {
                     Icon(
                         painter = painterResource(id = DSR.ic_warning_error),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = RadixTheme.colors.icon
                     )
                     Text(
                         modifier = Modifier.weight(1f),
                         text = stringResource(id = R.string.configurationBackup_automated_warning),
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         style = RadixTheme.typography.body1Regular
                     )
                 }
@@ -264,7 +265,7 @@ private fun BackupScreenContent(
             Text(
                 modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = R.string.configurationBackup_manual_heading),
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 style = RadixTheme.typography.body1Header
             )
 
@@ -308,14 +309,14 @@ private fun ManualBackupCard(
 ) {
     Column(
         modifier = modifier
-            .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
+            .defaultCardShadow(elevation = 6.dp)
             .fillMaxWidth()
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.background, shape = RadixTheme.shapes.roundedRectMedium)
     ) {
         Text(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.configurationBackup_manual_text),
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             style = RadixTheme.typography.body1Regular
         )
         RadixPrimaryButton(
@@ -338,14 +339,14 @@ private fun ManualBackupCard(
                     )
                 ),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium)
+                .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectBottomMedium)
                 .padding(
                     RadixTheme.dimensions.paddingDefault
                 ),
@@ -354,12 +355,13 @@ private fun ManualBackupCard(
         ) {
             Icon(
                 painter = painterResource(id = DSR.ic_warning_error),
-                contentDescription = null
+                contentDescription = null,
+                tint = RadixTheme.colors.icon
             )
             Text(
                 modifier = Modifier.weight(1f),
                 text = stringResource(id = R.string.configurationBackup_manual_warning),
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1Regular
             )
         }
@@ -385,7 +387,7 @@ private fun BackupStatusCard(
             icon = {
                 Icon(
                     painter = painterResource(id = DSR.ic_backup),
-                    tint = RadixTheme.colors.gray1,
+                    tint = RadixTheme.colors.icon,
                     contentDescription = null
                 )
             },
@@ -402,16 +404,16 @@ private fun BackupStatusCard(
                     )
                 ),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         HorizontalDivider(
             modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSemiLarge),
-            color = RadixTheme.colors.gray4
+            color = RadixTheme.colors.divider
         )
         Text(
             text = stringResource(id = R.string.configurationBackup_automated_text),
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             style = RadixTheme.typography.body1Regular
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
@@ -453,12 +455,12 @@ private fun LoggedInStatus(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(id = R.string.configurationBackup_automated_loggedInAsAndroid),
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 style = RadixTheme.typography.body2Regular
             )
             Text(
                 text = email,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1Regular,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -482,12 +484,12 @@ private fun BackupWarning(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.warningSecondary, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
+                .background(RadixTheme.colors.warningSecondary, RadixTheme.shapes.roundedRectMedium)
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingMedium
@@ -498,7 +500,7 @@ private fun BackupWarning(
             Icon(
                 painter = painterResource(id = DSR.ic_warning_error),
                 contentDescription = null,
-                tint = RadixTheme.colors.orange3
+                tint = RadixTheme.colors.warning
             )
             val warningText = when (backupWarning) {
                 BackupWarning.CLOUD_BACKUP_SERVICE_ERROR -> stringResource(id = R.string.securityProblems_no5_configurationBackup)
@@ -512,7 +514,7 @@ private fun BackupWarning(
             Text(
                 text = warningText,
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.orange3
+                color = RadixTheme.colors.warning
             )
         }
     }
@@ -534,7 +536,11 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (backupState.isCloudBackupNotUpdated) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+        val statusColor = if (backupState.isCloudBackupNotUpdated) {
+            RadixTheme.colors.warning
+        } else {
+            RadixTheme.colors.ok
+        }
 
         PromptLabel(
             modifier = Modifier.fillMaxWidth(),
@@ -547,7 +553,7 @@ private fun BackupStatusSection(
             endContent = {
                 Icon(
                     painter = painterResource(id = if (expanded) DSR.ic_arrow_up else DSR.ic_arrow_down),
-                    tint = RadixTheme.colors.gray2,
+                    tint = RadixTheme.colors.textSecondary,
                     contentDescription = null
                 )
             }
@@ -556,7 +562,7 @@ private fun BackupStatusSection(
         if (expanded) {
             Text(
                 text = subtitle,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 style = RadixTheme.typography.body2Regular
             )
         }
@@ -574,12 +580,12 @@ private fun ExportWalletBackupFileDialog(
         modifier = modifier,
         onDismissRequest = onDeny,
         shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         title = {
             Text(
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogTitle),
                 style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
         },
         confirmButton = {
@@ -594,7 +600,7 @@ private fun ExportWalletBackupFileDialog(
                             vertical = RadixTheme.dimensions.paddingXXSmall
                         ),
                     text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogConfirm),
-                    color = RadixTheme.colors.red1
+                    color = RadixTheme.colors.error
                 )
 
                 Text(
@@ -605,7 +611,7 @@ private fun ExportWalletBackupFileDialog(
                             vertical = RadixTheme.dimensions.paddingXXSmall
                         ),
                     text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogDeny),
-                    color = RadixTheme.colors.red1
+                    color = RadixTheme.colors.error
                 )
             }
         },
@@ -618,7 +624,7 @@ private fun ExportWalletBackupFileDialog(
                         vertical = RadixTheme.dimensions.paddingXXSmall
                     ),
                 text = stringResource(id = R.string.common_cancel),
-                color = RadixTheme.colors.blue2
+                color = RadixTheme.colors.textButton
             )
         }
     )
@@ -646,7 +652,7 @@ private fun EncryptSheet(
                 enabled = state.isSubmitEnabled
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -660,7 +666,8 @@ private fun EncryptSheet(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupTitle),
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.title
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -670,7 +677,8 @@ private fun EncryptSheet(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupSubtitle),
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.body1Regular
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -681,7 +689,6 @@ private fun EncryptSheet(
                 onValueChanged = onPasswordTyped,
                 value = state.password,
                 hint = stringResource(id = R.string.encryptProfileBackup_enterPasswordField_placeholder),
-                hintColor = RadixTheme.colors.gray2,
                 trailingIcon = {
                     IconButton(onClick = onPasswordRevealToggle) {
                         Icon(
@@ -692,7 +699,8 @@ private fun EncryptSheet(
                                     com.babylon.wallet.android.designsystem.R.drawable.ic_show
                                 }
                             ),
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = RadixTheme.colors.icon
                         )
                     }
                 },
@@ -720,7 +728,6 @@ private fun EncryptSheet(
                 onValueChanged = onPasswordConfirmTyped,
                 value = state.confirm,
                 hint = stringResource(id = R.string.encryptProfileBackup_confirmPasswordField_placeholder),
-                hintColor = RadixTheme.colors.gray2,
                 error = if (!state.passwordsMatch && !isConfirmFocused && state.confirm.isNotBlank()) {
                     stringResource(id = R.string.encryptProfileBackup_confirmPasswordField_error)
                 } else {
@@ -736,7 +743,8 @@ private fun EncryptSheet(
                                     com.babylon.wallet.android.designsystem.R.drawable.ic_show
                                 }
                             ),
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = RadixTheme.colors.icon
                         )
                     }
                 },

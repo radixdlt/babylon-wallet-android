@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -35,7 +34,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
@@ -43,6 +41,8 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
+import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -180,7 +180,7 @@ fun TransferContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
@@ -199,7 +199,7 @@ fun TransferContent(
                             ),
                         text = stringResource(id = R.string.assetTransfer_header_transfer),
                         style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -242,7 +242,7 @@ fun TransferContent(
                             id = R.string.assetTransfer_accountList_fromLabel
                         ).uppercase(),
                         style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         overflow = TextOverflow.Ellipsis,
                     )
 
@@ -273,7 +273,7 @@ fun TransferContent(
                             id = R.string.assetTransfer_accountList_toLabel
                         ).uppercase(),
                         style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         overflow = TextOverflow.Ellipsis,
                     )
                     StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 30.dp)
@@ -365,7 +365,7 @@ fun TransferContent(
                 is State.Sheet.ChooseAccounts -> {
                     ChooseAccountSheet(
                         modifier = Modifier
-                            .background(RadixTheme.colors.gray5)
+                            .background(RadixTheme.colors.backgroundSecondary)
                             .fillMaxHeight(0.9f)
                             .imePadding(),
                         onCloseClick = onSheetClosed,
@@ -382,7 +382,7 @@ fun TransferContent(
                 is State.Sheet.ChooseAssets -> {
                     ChooseAssetsSheet(
                         modifier = Modifier
-                            .background(RadixTheme.colors.defaultBackground)
+                            .background(RadixTheme.colors.background)
                             .fillMaxHeight(0.9f)
                             .imePadding(),
                         state = sheetState,
@@ -408,11 +408,8 @@ fun TransferContent(
 @Preview(showBackground = true)
 @Composable
 fun TransferContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme(backgroundType = PreviewBackgroundType.PRIMARY) {
         TransferContent(
-            modifier = Modifier
-                .padding(10.dp)
-                .background(color = Color.Gray),
             onBackClick = {},
             state = State(fromAccount = Account.sampleMainnet()),
             onMessageStateChanged = {},

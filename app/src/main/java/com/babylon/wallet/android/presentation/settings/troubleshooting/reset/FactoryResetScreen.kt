@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,14 +33,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.common.resetwallet.ResetWalletDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.RecoverableStatusCard
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 
 @Composable
 fun FactoryResetScreen(
@@ -113,19 +114,19 @@ private fun FactoryResetScreenContent(
             )
         },
         contentWindowInsets = WindowInsets.navigationBars,
-        containerColor = RadixTheme.colors.gray4,
+        containerColor = RadixTheme.colors.backgroundSecondary,
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .background(RadixTheme.colors.defaultBackground)
-                    .padding(WindowInsets.navigationBars.asPaddingValues())
-            ) {
-                WarningButton(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(R.string.factoryReset_resetWallet),
-                    onClick = onDeleteWalletClick
-                )
-            }
+            RadixBottomBar(
+                button = {
+                    WarningButton(
+                        modifier = Modifier.padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault
+                        ),
+                        text = stringResource(R.string.factoryReset_resetWallet),
+                        onClick = onDeleteWalletClick
+                    )
+                }
+            )
         }
     ) { padding ->
         Column(
@@ -138,21 +139,21 @@ private fun FactoryResetScreenContent(
             Text(
                 modifier = Modifier,
                 text = stringResource(id = R.string.factoryReset_message),
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Column(
                 modifier = Modifier
-                    .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                    .defaultCardShadow(elevation = 6.dp)
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium),
+                    .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
                     text = stringResource(id = R.string.factoryReset_status),
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     style = RadixTheme.typography.body1Header
                 )
                 if (state.securityProblems?.isEmpty() == true) {
@@ -169,7 +170,7 @@ private fun FactoryResetScreenContent(
                     Text(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.factoryReset_unrecoverable_message),
-                        color = RadixTheme.colors.orange3,
+                        color = RadixTheme.colors.warning,
                         style = RadixTheme.typography.body1Link
                     )
                 }
@@ -177,19 +178,20 @@ private fun FactoryResetScreenContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium)
+                        .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectBottomMedium)
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                 ) {
                     Icon(
                         painter = painterResource(id = DSR.ic_warning_error),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = RadixTheme.colors.icon
                     )
                     Text(
                         modifier = Modifier.weight(1f),
                         text = stringResource(id = R.string.factoryReset_disclosure),
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         style = RadixTheme.typography.body1Regular
                     )
                 }
@@ -203,16 +205,20 @@ fun UnrecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange3, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.warning, RadixTheme.shapes.roundedRectMedium)
             .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
     ) {
-        Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
+        Icon(
+            painter = painterResource(id = DSR.ic_warning_error),
+            contentDescription = null,
+            tint = White
+        )
         Text(
             text = text,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.white
+            color = White
         )
     }
 }

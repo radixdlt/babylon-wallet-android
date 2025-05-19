@@ -67,7 +67,7 @@ private fun DeleteAccountSuccessContent(
                 },
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding)
@@ -76,7 +76,7 @@ private fun DeleteAccountSuccessContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_account_delete),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray2
+                tint = RadixTheme.colors.textSecondary
             )
 
             Text(
@@ -86,6 +86,7 @@ private fun DeleteAccountSuccessContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.accountSettings_accountDeleted_title),
                 style = RadixTheme.typography.title,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -96,6 +97,7 @@ private fun DeleteAccountSuccessContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = stringResource(id = R.string.accountSettings_accountDeleted_message),
                 textAlign = TextAlign.Center,
+                color = RadixTheme.colors.text,
                 style = RadixTheme.typography.body1Regular
             )
         }

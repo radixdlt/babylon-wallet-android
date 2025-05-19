@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.linkedconnector.LinkedConnectorMessageScreen
@@ -54,7 +54,7 @@ private fun RelinkConnectorsContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
     ) { padding ->
         Box(
             modifier = Modifier.padding(padding)
@@ -82,10 +82,24 @@ private fun RelinkConnectorsContent(
 
 @Composable
 @Preview
-private fun RelinkConnectorsPreview(
+private fun RelinkConnectorsPreviewLight(
     @PreviewParameter(RelinkConnectorsPreviewProvider::class) state: RelinkConnectorsViewModel.UiState
 ) {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
+        RelinkConnectorsContent(
+            state = state,
+            onContinueClick = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun RelinkConnectorsPreviewDark(
+    @PreviewParameter(RelinkConnectorsPreviewProvider::class) state: RelinkConnectorsViewModel.UiState
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         RelinkConnectorsContent(
             state = state,
             onContinueClick = {},

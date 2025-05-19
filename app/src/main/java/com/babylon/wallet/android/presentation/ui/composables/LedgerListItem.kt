@@ -15,6 +15,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
+import com.babylon.wallet.android.designsystem.composable.RadixRadioButtonDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.utils.dayMonthDateShort
 import com.radixdlt.sargon.FactorSource
@@ -35,7 +37,7 @@ fun LedgerListItem(
             Text(
                 text = ledgerFactorSource.value.hint.label,
                 style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             val usedText = buildAnnotatedString {
@@ -53,18 +55,18 @@ fun LedgerListItem(
             Text(
                 text = usedText,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
             Text(
                 text = addedText,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.textSecondary
             )
         }
         if (selected != null) {
             RadixRadioButton(
                 selected = selected,
-                colors = RadixRadioButtonDefaults.darkColors(),
+                colors = RadixRadioButtonDefaults.colors(),
                 onClick = {
                     onLedgerSelected?.invoke(ledgerFactorSource)
                 },

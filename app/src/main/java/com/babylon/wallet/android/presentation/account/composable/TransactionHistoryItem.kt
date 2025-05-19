@@ -55,7 +55,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
             }
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.defaultBackground,
+                color = RadixTheme.colors.card,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {
@@ -88,7 +88,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
             ) {
                 val borderModifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
+                    .border(1.dp, RadixTheme.colors.divider, shape = RadixTheme.shapes.roundedRectMedium)
                     .padding(RadixTheme.dimensions.paddingMedium)
                 val isAccountDepositSettingsUpdate = remember(transactionItem.transactionClass) {
                     transactionItem.transactionClass == TransactionClass.AccountDespositSettingsUpdate
@@ -112,7 +112,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                             modifier = borderModifier,
                             text = stringResource(id = R.string.transactionHistory_updatedDepositSettings),
                             style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                     }
                     if (transactionItem.hasNoBalanceChanges && isAccountDepositSettingsUpdate.not()) {
@@ -121,7 +121,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                             modifier = borderModifier,
                             text = stringResource(id = R.string.transactionHistory_noBalanceChanges),
                             style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1
+                            color = RadixTheme.colors.text
                         )
                     } else {
                         if (withdrawn.isNotEmpty()) {
@@ -130,14 +130,14 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                                 iconResource = DSR.ic_tx_withdrawn
                             )
                             Column(
-                                modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                                modifier = Modifier.border(1.dp, RadixTheme.colors.divider, shape = RadixTheme.shapes.roundedRectSmall)
                             ) {
                                 val lastItem = withdrawn.last()
                                 withdrawn.forEach { withdraw ->
                                     val addDivider = lastItem != withdraw
                                     BalanceChangeItem(withdraw)
                                     if (addDivider) {
-                                        HorizontalDivider(color = RadixTheme.colors.gray3)
+                                        HorizontalDivider(color = RadixTheme.colors.divider)
                                     }
                                 }
                             }
@@ -146,17 +146,17 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                             LabelSection(
                                 text = stringResource(id = R.string.transactionHistory_depositedSection),
                                 iconResource = DSR.ic_tx_deposited,
-                                textColor = RadixTheme.colors.green1
+                                textColor = RadixTheme.colors.ok
                             )
                             Column(
-                                modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                                modifier = Modifier.border(1.dp, RadixTheme.colors.divider, shape = RadixTheme.shapes.roundedRectSmall)
                             ) {
                                 val lastItem = deposited.last()
                                 deposited.forEach { deposited ->
                                     val addDivider = lastItem != deposited
                                     BalanceChangeItem(deposited)
                                     if (addDivider) {
-                                        HorizontalDivider(color = RadixTheme.colors.gray3)
+                                        HorizontalDivider(color = RadixTheme.colors.divider)
                                     }
                                 }
                             }
@@ -188,11 +188,11 @@ private fun FailedTransactionWarning(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
-        Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.red1)
+        Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.error)
         Text(
             text = stringResource(id = R.string.transactionHistory_failedTransaction),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.red1
+            color = RadixTheme.colors.error
         )
     }
 }
@@ -202,7 +202,7 @@ private fun LabelSection(
     text: String,
     modifier: Modifier = Modifier,
     iconResource: Int? = null,
-    textColor: Color = RadixTheme.colors.gray1
+    textColor: Color = RadixTheme.colors.text
 ) {
     Row(
         modifier = modifier,
@@ -210,7 +210,11 @@ private fun LabelSection(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
         iconResource?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null, tint = Color.Unspecified)
+            Icon(
+                painter = painterResource(id = it),
+                contentDescription = null,
+                tint = Color.Unspecified
+            )
         }
         Text(
             text = text,
@@ -257,7 +261,7 @@ private fun BalanceChangeItem(balanceChange: BalanceChange) {
                             item = item
                         )
                         if (addDivider) {
-                            HorizontalDivider(color = RadixTheme.colors.gray3)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                 }
@@ -295,14 +299,14 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                         modifier = Modifier.fillMaxWidth(),
                         text = asset.resource.name.ifEmpty { stringResource(id = R.string.account_staking_worth) },
                         style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         text = asset.displaySubtitle(),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -338,7 +342,7 @@ private fun PoolUnitBalanceChange(
                     modifier = Modifier.fillMaxWidth(),
                     text = asset.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -346,7 +350,7 @@ private fun PoolUnitBalanceChange(
                 Text(
                     text = asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
+                    color = RadixTheme.colors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -354,7 +358,7 @@ private fun PoolUnitBalanceChange(
             Text(
                 text = balanceChange.formattedBalanceChange,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.End
@@ -390,14 +394,14 @@ private fun LiquidStakeUnitBalanceChange(
                         modifier = Modifier.fillMaxWidth(),
                         text = asset.displayTitle(),
                         style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray1,
+                        color = RadixTheme.colors.text,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         text = asset.displaySubtitle(),
                         style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -405,7 +409,7 @@ private fun LiquidStakeUnitBalanceChange(
                 Text(
                     text = balanceChange.formattedBalanceChange,
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.text,
                     textAlign = TextAlign.End,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -437,14 +441,14 @@ private fun NftItemBalanceChange(
             Text(
                 text = collection.displayTitle(),
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = item.displaySubtitle(),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -467,7 +471,7 @@ private fun TokenContent(
         Text(
             text = token.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -475,7 +479,7 @@ private fun TokenContent(
             modifier = Modifier.weight(1f),
             text = withdraw.formattedBalanceChange,
             style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.End,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -496,7 +500,7 @@ fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistor
         text = text,
         style = RadixTheme.typography.body2HighImportance,
         maxLines = 1,
-        color = RadixTheme.colors.gray2
+        color = RadixTheme.colors.textSecondary
     )
 }
 

@@ -123,9 +123,9 @@ private fun ChooseFactorSourceContent(
         modifier = modifier,
         addScrim = true,
         sheetBackgroundColor = if (pagerState.currentPage == state.selectTypePagePosition) {
-            RadixTheme.colors.defaultBackground
+            RadixTheme.colors.background
         } else {
-            RadixTheme.colors.gray5
+            RadixTheme.colors.backgroundSecondary
         },
         headerBackIcon = if (pagerState.currentPage == state.selectTypePagePosition) {
             Icons.Filled.Clear
@@ -169,10 +169,31 @@ private fun ChooseFactorSourceContent(
 @Preview
 @Composable
 @UsesSampleValues
-private fun ChooseFactorSourceBottomSheetPreview(
+private fun ChooseFactorSourceBottomSheetPreviewLight(
     @PreviewParameter(ChooseFactorSourcePreviewProvider::class) state: State
 ) {
     RadixWalletPreviewTheme {
+        ChooseFactorSourceContent(
+            modifier = Modifier,
+            state = state,
+            onSecurityFactorTypeClick = {},
+            onFactorSourceSelect = {},
+            onAddFactorSourceClick = {},
+            onInfoClick = {},
+            onContinueClick = {},
+            onSheetBackClick = {},
+            onSheetCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+@UsesSampleValues
+private fun ChooseFactorSourceBottomSheetPreviewDark(
+    @PreviewParameter(ChooseFactorSourcePreviewProvider::class) state: State
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         ChooseFactorSourceContent(
             modifier = Modifier,
             state = state,
@@ -194,6 +215,27 @@ private fun DeviceFactorsBottomSheetPreview(
     @PreviewParameter(ChooseFactorSourcePreviewProvider::class) state: State
 ) {
     RadixWalletPreviewTheme {
+        ChooseFactorSourceContent(
+            modifier = Modifier,
+            state = state,
+            onSecurityFactorTypeClick = {},
+            onFactorSourceSelect = {},
+            onAddFactorSourceClick = {},
+            onInfoClick = {},
+            onContinueClick = {},
+            onSheetBackClick = {},
+            onSheetCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+@UsesSampleValues
+private fun DeviceFactorsBottomSheetPreviewDark(
+    @PreviewParameter(ChooseFactorSourcePreviewProvider::class) state: State
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         ChooseFactorSourceContent(
             modifier = Modifier,
             state = state,

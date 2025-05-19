@@ -102,7 +102,7 @@ private fun RevealSeedPhraseContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding),
@@ -113,7 +113,6 @@ private fun RevealSeedPhraseContent(
                 WarningText(
                     modifier = Modifier.fillMaxWidth(),
                     text = AnnotatedString(stringResource(R.string.revealSeedPhrase_warning)),
-                    contentColor = RadixTheme.colors.orange1
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

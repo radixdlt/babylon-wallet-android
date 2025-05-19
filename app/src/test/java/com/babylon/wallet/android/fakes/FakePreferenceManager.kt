@@ -13,6 +13,7 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.changeGateway
@@ -48,6 +49,8 @@ class FakePreferenceManager : PreferencesManager {
     override val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
         get() = TODO("Not yet implemented")
     override val isEulaAccepted: Flow<Boolean>
+        get() = TODO("Not yet implemented")
+    override val themeSelection: Flow<ThemeSelection>
         get() = TODO("Not yet implemented")
 
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
@@ -139,6 +142,10 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setThemeSelection(themeSelection: ThemeSelection) {
         TODO("Not yet implemented")
     }
 

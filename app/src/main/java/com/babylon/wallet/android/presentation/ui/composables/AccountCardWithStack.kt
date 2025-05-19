@@ -13,13 +13,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
@@ -60,7 +60,7 @@ fun AccountCardWithStack(
                     text = accountName,
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Header,
-                    color = Color.White
+                    color = White
                 )
 
                 val address = remember(accountAddress) {
@@ -70,7 +70,7 @@ fun AccountCardWithStack(
                     ActionableAddressView(
                         address = Address.Account(address),
                         textStyle = RadixTheme.typography.body2HighImportance,
-                        textColor = Color.White.copy(alpha = 0.8f)
+                        textColor = White.copy(alpha = 0.8f)
                     )
                 }
             }

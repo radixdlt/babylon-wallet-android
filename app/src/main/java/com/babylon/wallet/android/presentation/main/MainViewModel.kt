@@ -110,6 +110,14 @@ class MainViewModel @Inject constructor(
 
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
 
+    val themeSelection = preferencesManager
+        .themeSelection
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = null
+        )
+
     init {
         incomingRequestsDelegate(
             scope = viewModelScope,

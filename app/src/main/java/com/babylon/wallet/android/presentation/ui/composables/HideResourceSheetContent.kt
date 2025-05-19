@@ -52,7 +52,7 @@ fun HideResourceSheetContent(
         ) {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                tint = RadixTheme.colors.gray1,
+                tint = RadixTheme.colors.icon,
                 contentDescription = null
             )
         }
@@ -73,7 +73,7 @@ fun HideResourceSheetContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = title,
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -87,7 +87,7 @@ fun HideResourceSheetContent(
                 RadixTheme.typography.body1Header.toSpanStyle()
             ),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 

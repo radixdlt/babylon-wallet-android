@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
@@ -117,7 +118,7 @@ fun TransactionAccountCard(
                         )
 
                         if (!lastNFT || transferable.amount.additional != null) {
-                            HorizontalDivider(color = RadixTheme.colors.gray4)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
 
@@ -169,12 +170,12 @@ fun TransactionAccountCard(
                     )
 
                     transferable.amount.additional?.let { amount ->
-                        HorizontalDivider(color = RadixTheme.colors.gray4)
+                        HorizontalDivider(color = RadixTheme.colors.divider)
 
                         TransferableStakeClaimItemHeader(
                             modifier = Modifier
                                 .background(
-                                    color = RadixTheme.colors.gray5,
+                                    color = RadixTheme.colors.backgroundSecondary,
                                     shape = shape
                                 )
                                 .padding(vertical = RadixTheme.dimensions.paddingMedium)
@@ -188,7 +189,7 @@ fun TransactionAccountCard(
             }
 
             if (lastAsset.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         }
 
@@ -223,7 +224,13 @@ fun AccountCardHeader(
             .fillMaxWidth()
             .background(
                 brush = when (account) {
-                    is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2)
+                    is InvolvedAccount.Other -> SolidColor(
+                        if (RadixTheme.config.isDarkTheme) {
+                            RadixTheme.colors.backgroundTertiary
+                        } else {
+                            RadixTheme.colors.iconSecondary
+                        }
+                    )
                     is InvolvedAccount.Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape
@@ -239,7 +246,7 @@ fun AccountCardHeader(
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             modifier = Modifier.weight(1f, false),
-            color = RadixTheme.colors.white
+            color = White
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -247,8 +254,8 @@ fun AccountCardHeader(
         ActionableAddressView(
             address = Address.Account(account.address),
             textStyle = RadixTheme.typography.body2Regular,
-            textColor = RadixTheme.colors.white,
-            iconColor = RadixTheme.colors.white
+            textColor = White,
+            iconColor = White
         )
     }
 }
@@ -257,7 +264,7 @@ fun AccountCardHeader(
 fun PersonaCardHeader(
     modifier: Modifier = Modifier,
     persona: Persona,
-    containerColor: Color = RadixTheme.colors.gray5
+    containerColor: Color = RadixTheme.colors.backgroundSecondary
 ) {
     Row(
         modifier = modifier
@@ -268,7 +275,7 @@ fun PersonaCardHeader(
             )
             .border(
                 width = 1.dp,
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.divider,
                 shape = RadixTheme.shapes.roundedRectTopMedium
             )
             .padding(
@@ -285,7 +292,7 @@ fun PersonaCardHeader(
 
         Text(
             text = persona.displayName.value,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 1,
             style = RadixTheme.typography.secondaryHeader,
         )
@@ -298,7 +305,7 @@ private fun UnknownDeposits() {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = RadixTheme.shapes.roundedRectBottomMedium
             )
             .padding(RadixTheme.dimensions.paddingMedium),
@@ -318,7 +325,7 @@ private fun UnknownDeposits() {
         WarningText(
             text = AnnotatedString(stringResource(id = R.string.interactionReview_unknown_deposits)),
             textStyle = RadixTheme.typography.body2HighImportance,
-            contentColor = RadixTheme.colors.orange1
+            contentColor = RadixTheme.colors.warning
         )
     }
 }
@@ -331,7 +338,7 @@ private fun HorizontalStrokeLine(
         modifier = modifier,
         text = "----",
         style = RadixTheme.typography.body2HighImportance,
-        color = RadixTheme.colors.gray4
+        color = RadixTheme.colors.divider
     )
 }
 

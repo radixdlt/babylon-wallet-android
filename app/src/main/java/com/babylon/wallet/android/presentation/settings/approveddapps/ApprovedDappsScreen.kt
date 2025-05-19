@@ -90,11 +90,11 @@ private fun ApprovedDAppsContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             Column {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     item {
                         Text(
@@ -104,7 +104,7 @@ private fun ApprovedDAppsContent(
                             ),
                             text = stringResource(R.string.authorizedDapps_subtitle),
                             style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
+                            color = RadixTheme.colors.textSecondary
                         )
                         InfoButton(
                             modifier = Modifier.padding(
@@ -145,7 +145,7 @@ private fun ApprovedDAppsContent(
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.icon
                 )
             }
         }

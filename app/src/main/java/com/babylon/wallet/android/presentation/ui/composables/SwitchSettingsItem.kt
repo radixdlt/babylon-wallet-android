@@ -35,7 +35,7 @@ fun SwitchSettingsItem(
     onCheckedChange: (Boolean) -> Unit,
     icon: @Composable (() -> Unit)? = null,
     @StringRes subtitleRes: Int? = null,
-    subtitleTextColor: Color = RadixTheme.colors.gray1,
+    subtitleTextColor: Color = RadixTheme.colors.text,
     isLoading: Boolean = false
 ) {
     Row(
@@ -55,7 +55,7 @@ fun SwitchSettingsItem(
             Text(
                 text = stringResource(id = titleRes),
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.text
             )
             subtitleRes?.let {
                 Spacer(modifier = Modifier.height(2.dp))
@@ -73,7 +73,7 @@ fun SwitchSettingsItem(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.icon
                 )
             }
         } else {
@@ -105,7 +105,7 @@ fun SwitchSettingsItem(
                 Icon(
                     painter = painterResource(id = iconResource),
                     contentDescription = null,
-                    tint = Color.Unspecified
+                    tint = RadixTheme.colors.icon
                 )
             }
         },
@@ -123,7 +123,6 @@ private fun SwitchSettingsItemPreview() {
             icon = {
                 Icon(
                     painter = painterResource(id = DSR.ic_backup),
-                    tint = RadixTheme.colors.gray1,
                     contentDescription = null
                 )
             },
@@ -142,7 +141,6 @@ private fun SwitchSettingsItemLoadingPreview() {
             icon = {
                 Icon(
                     painter = painterResource(id = DSR.ic_backup),
-                    tint = RadixTheme.colors.gray1,
                     contentDescription = null
                 )
             },

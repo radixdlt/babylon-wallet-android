@@ -18,7 +18,7 @@ fun FactorsContainerView(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                color = RadixTheme.colors.gray5,
+                color = RadixTheme.colors.backgroundSecondary,
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .padding(

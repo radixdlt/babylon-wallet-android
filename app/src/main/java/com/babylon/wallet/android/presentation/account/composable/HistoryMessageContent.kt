@@ -27,11 +27,11 @@ fun HistoryMessageContent(text: String, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(1.dp)
-            .background(RadixTheme.colors.gray4, shape = bubbleShape)
+            .background(RadixTheme.colors.backgroundTertiary, shape = bubbleShape)
             .padding(RadixTheme.dimensions.paddingMedium),
         text = text,
         collapsedLines = 2,
-        style = RadixTheme.typography.body2Regular.copy(color = RadixTheme.colors.gray1),
-        toggleStyle = RadixTheme.typography.body2Header.copy(color = RadixTheme.colors.blue1, fontSize = 14.sp)
+        style = RadixTheme.typography.body2Regular.copy(color = RadixTheme.colors.text),
+        toggleStyle = RadixTheme.typography.body2Header.copy(color = RadixTheme.colors.primaryButton, fontSize = 14.sp)
     )
 }

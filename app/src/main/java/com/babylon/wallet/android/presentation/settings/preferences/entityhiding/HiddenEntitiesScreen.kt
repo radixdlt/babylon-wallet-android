@@ -35,7 +35,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -110,7 +112,7 @@ private fun HiddenEntitiesContent(
                         State.AlertState.None -> stringResource(id = R.string.empty)
                     },
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.text
                 )
             },
             confirmText = stringResource(id = R.string.common_confirm)
@@ -126,27 +128,25 @@ private fun HiddenEntitiesContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
-        }
+        },
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.gray5)
-                .padding(padding),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = RadixTheme.dimensions.paddingDefault,
                 end = RadixTheme.dimensions.paddingDefault,
                 bottom = RadixTheme.dimensions.paddingDefault
-            )
+            ).plus(padding)
         ) {
             item {
                 Text(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(R.string.hiddenEntities_text),
                     style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
+                    color = RadixTheme.colors.textSecondary
                 )
             }
             if (state.hiddenPersonas != null) {
@@ -157,7 +157,7 @@ private fun HiddenEntitiesContent(
                         ),
                         text = stringResource(id = R.string.hiddenEntities_personas),
                         style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
                 if (state.hiddenPersonas.isNotEmpty()) {
@@ -182,7 +182,7 @@ private fun HiddenEntitiesContent(
                         ),
                         text = stringResource(id = R.string.hiddenEntities_accounts),
                         style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray2
+                        color = RadixTheme.colors.textSecondary
                     )
                 }
                 if (state.hiddenAccounts.isNotEmpty()) {
@@ -229,13 +229,13 @@ private fun AccountCard(modifier: Modifier = Modifier, account: Account, onUnhid
                 text = account.displayName.value,
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
-                color = RadixTheme.colors.white,
+                color = White,
                 overflow = TextOverflow.Ellipsis
             )
             ActionableAddressView(
                 address = Address.Account(account.address),
                 textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+                textColor = White.copy(alpha = 0.8f)
             )
         }
         RadixSecondaryButton(
@@ -252,7 +252,7 @@ private fun PersonaCard(modifier: Modifier = Modifier, persona: Persona, onUnhid
             .heightIn(min = 84.dp)
             .defaultCardShadow(elevation = 2.dp)
             .fillMaxWidth()
-            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.card, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault
@@ -268,7 +268,7 @@ private fun PersonaCard(modifier: Modifier = Modifier, persona: Persona, onUnhid
             modifier = Modifier.weight(1f),
             text = persona.displayName.value,
             style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -284,10 +284,13 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     Text(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
+            .background(
+                color = RadixTheme.colors.backgroundTertiary,
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
             .padding(vertical = RadixTheme.dimensions.paddingXXXLarge),
         text = stringResource(id = R.string.common_none),
-        color = RadixTheme.colors.gray2,
+        color = RadixTheme.colors.textSecondary,
         textAlign = TextAlign.Center,
         style = RadixTheme.typography.secondaryHeader
     )

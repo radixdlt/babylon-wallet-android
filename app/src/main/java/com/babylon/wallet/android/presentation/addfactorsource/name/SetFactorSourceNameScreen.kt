@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.themedColorFilter
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -103,7 +104,7 @@ private fun SetFactorSourceNameContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground,
+        containerColor = RadixTheme.colors.background,
         bottomBar = {
             RadixBottomBar(
                 modifier = Modifier.imePadding(),
@@ -146,7 +147,7 @@ private fun SetFactorSourceNameContent(
                     .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = state.factorSourceKind.iconRes()),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = RadixTheme.colors.icon
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -155,7 +156,7 @@ private fun SetFactorSourceNameContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 text = state.factorSourceKind.nameTitle(),
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
+                color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
@@ -169,7 +170,6 @@ private fun SetFactorSourceNameContent(
                 keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                 value = state.name,
                 singleLine = true,
-                hintColor = RadixTheme.colors.gray2,
                 hint = stringResource(id = R.string.newBiometricFactor_name_label),
                 error = stringResource(id = R.string.renameLabel_factorSource_tooLong).takeIf { state.isNameTooLong }
             )
@@ -179,7 +179,7 @@ private fun SetFactorSourceNameContent(
             Text(
                 text = stringResource(id = R.string.newBiometricFactor_name_note),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.textSecondary,
             )
         }
     }
@@ -229,7 +229,7 @@ private fun SuccessSheetContent(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground),
+            .background(color = RadixTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
@@ -242,14 +242,15 @@ private fun SuccessSheetContent(
 
         Image(
             painter = painterResource(DSR.check_circle_outline),
-            contentDescription = null
+            contentDescription = null,
+            colorFilter = themedColorFilter()
         )
 
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.newFactor_success_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 
@@ -257,7 +258,7 @@ private fun SuccessSheetContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.newFactor_success_subtitle),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
+            color = RadixTheme.colors.text,
             textAlign = TextAlign.Center
         )
 

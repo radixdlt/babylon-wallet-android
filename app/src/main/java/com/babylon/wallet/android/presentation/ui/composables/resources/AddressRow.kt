@@ -27,15 +27,15 @@ fun AddressRow(
         Text(
             text = label,
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
+            color = RadixTheme.colors.textSecondary
         )
 
         ActionableAddressView(
             address = address,
             isVisitableInDashboard = !isNewlyCreatedEntity,
             textStyle = RadixTheme.typography.body1HighImportance,
-            textColor = RadixTheme.colors.gray1,
-            iconColor = RadixTheme.colors.gray2
+            textColor = RadixTheme.colors.text,
+            iconColor = RadixTheme.colors.iconSecondary
         )
     }
 }

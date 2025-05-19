@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -93,7 +94,9 @@ private fun RestoreWithoutBackupContent(
     onConfirmRecoverWithMainSeedPhrase: () -> Unit,
     onShowOlympiaPrompt: () -> Unit,
 ) {
-    val pages = Pages.values()
+    val pages = remember {
+        Pages.entries.toTypedArray()
+    }
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
     val backCallback = {
@@ -119,7 +122,7 @@ private fun RestoreWithoutBackupContent(
                 }
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -132,7 +135,8 @@ private fun RestoreWithoutBackupContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 text = stringResource(id = R.string.recoverWalletWithoutProfile_start_headerTitle),
                 textAlign = TextAlign.Center,
-                style = RadixTheme.typography.title
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.text
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             HorizontalPager(
@@ -185,9 +189,10 @@ private fun SelectRecoveryOptionSection(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.recoverWalletWithoutProfile_start_headerSubtitle),
-            style = RadixTheme.typography.body1Regular
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.text
         )
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.divider)
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -200,14 +205,14 @@ private fun SelectRecoveryOptionSection(
             ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
             text = "Recover Control with Main Seed Phrase",
             onClick = onRecoverWithMainSeedPhraseClick
         )
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.divider)
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -220,14 +225,14 @@ private fun SelectRecoveryOptionSection(
             ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.recoverWalletWithoutProfile_start_hardwareSectionButton),
             onClick = onShowLedgerPrompt
         )
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.divider)
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -240,7 +245,7 @@ private fun SelectRecoveryOptionSection(
             ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.text
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
@@ -266,7 +271,8 @@ private fun BDFSRecoveryInfoSection(
             text = stringResource(id = R.string.recoverWalletWithoutProfile_info_headerSubtitle).formattedSpans(
                 RadixTheme.typography.body1Header.toSpanStyle()
             ),
-            style = RadixTheme.typography.body1Regular
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.text
         )
         Spacer(modifier = Modifier.weight(1f))
         RadixBottomBar(onClick = onConfirmRecoverWithMainSeedPhrase, text = stringResource(id = R.string.common_continue))
