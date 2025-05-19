@@ -7,15 +7,21 @@ import com.babylon.wallet.android.R
 import rdx.works.core.domain.DApp
 
 @Composable
-fun DApp?.displayName(): String {
-    return this?.name.dAppDisplayName()
+fun DApp?.displayName(
+    ifEmptyName: @Composable () -> String = {
+        stringResource(id = R.string.dAppRequest_metadata_unknownName)
+    }
+): String {
+    return this?.name.dAppDisplayName(ifEmptyName = ifEmptyName)
 }
 
 @Composable
-fun String?.dAppDisplayName(): String {
-    return this.orEmpty().ifEmpty {
+fun String?.dAppDisplayName(
+    ifEmptyName: @Composable () -> String = {
         stringResource(id = R.string.dAppRequest_metadata_unknownName)
     }
+): String {
+    return this.orEmpty().ifEmpty { ifEmptyName() }
 }
 
 fun String?.dAppDisplayName(context: Context): String {

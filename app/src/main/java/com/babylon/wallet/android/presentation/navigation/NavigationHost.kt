@@ -68,6 +68,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
+import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
@@ -249,7 +250,14 @@ fun NavigationHost(
                 navController.dAppDirectory()
             }
         )
-        dAppDirectory()
+        dAppDirectory(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onDAppClick = {
+                navController.dAppDetailScreen(dappDefinitionAddress = it)
+            }
+        )
         account(
             onAccountPreferenceClick = { address ->
                 navController.accountSettings(address = address)
