@@ -24,7 +24,8 @@ fun MainScreen(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
-    onNavigateToLinkConnector: () -> Unit
+    onNavigateToLinkConnector: () -> Unit,
+    onNavigateToDAppDirectory: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -39,7 +40,8 @@ fun MainScreen(
                 showNPSSurvey = showNPSSurvey,
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
-                onNavigateToLinkConnector = onNavigateToLinkConnector
+                onNavigateToLinkConnector = onNavigateToLinkConnector,
+                onNavigateToDAppDirectory = onNavigateToDAppDirectory
             )
         }
 

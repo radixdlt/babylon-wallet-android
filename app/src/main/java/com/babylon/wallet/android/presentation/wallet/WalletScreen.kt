@@ -85,7 +85,8 @@ fun WalletScreen(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
-    onNavigateToLinkConnector: () -> Unit
+    onNavigateToLinkConnector: () -> Unit,
+    onNavigateToDAppDirectory: () -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -103,7 +104,7 @@ fun WalletScreen(
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onLockerDepositClick = viewModel::onLockerDepositClick,
         onCardClick = viewModel::onCardClick,
-        onCardCloseClick = viewModel::onCardClose
+        onCardCloseClick = viewModel::onCardClose,
     )
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_START) {
@@ -136,6 +137,7 @@ fun WalletScreen(
                 is Event.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
                 Event.NavigateToLinkConnector -> onNavigateToLinkConnector()
                 is Event.OpenUrl -> context.openUrl(it.url)
+                Event.NavigateToDAppDirectory -> onNavigateToDAppDirectory()
             }
         }
     }

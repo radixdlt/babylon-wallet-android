@@ -21,7 +21,8 @@ fun NavGraphBuilder.main(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
-    onNavigateToLinkConnector: () -> Unit
+    onNavigateToLinkConnector: () -> Unit,
+    onNavigateToDAppDirectory: () -> Unit
 ) {
     composable(
         route = MAIN_ROUTE,
@@ -42,7 +43,8 @@ fun NavGraphBuilder.main(
             showNPSSurvey = showNPSSurvey,
             onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
             onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
-            onNavigateToLinkConnector = onNavigateToLinkConnector
+            onNavigateToLinkConnector = onNavigateToLinkConnector,
+            onNavigateToDAppDirectory = onNavigateToDAppDirectory
         )
     }
 }

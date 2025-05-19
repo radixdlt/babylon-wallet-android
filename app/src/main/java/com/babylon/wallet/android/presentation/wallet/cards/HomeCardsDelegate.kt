@@ -28,6 +28,7 @@ class HomeCardsDelegate @Inject constructor(
     fun onCardClick(
         card: HomeCard,
         navigateToLinkConnector: suspend () -> Unit,
+        navigateToDAppDirectory: suspend () -> Unit,
         openUrl: suspend (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -36,7 +37,7 @@ class HomeCardsDelegate @Inject constructor(
 
                 HomeCard.StartRadQuest -> openUrl(RAD_QUEST_URL)
 
-                HomeCard.DiscoverRadixDapps -> openUrl(RADIX_ECOSYSTEM_URL)
+                HomeCard.DiscoverRadixDapps -> navigateToDAppDirectory()
 
                 else -> {}
             }
@@ -66,7 +67,7 @@ class HomeCardsDelegate @Inject constructor(
     }
 }
 
-fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.DiscoverRadixDapps
+fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest
 
 fun HomeCard.allowsDismiss() = when (this) {
     HomeCard.Connector -> true
