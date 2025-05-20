@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -28,10 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -78,7 +74,6 @@ import rdx.works.core.domain.resources.sampleMainnet
 fun WalletScreen(
     modifier: Modifier = Modifier,
     viewModel: WalletViewModel,
-    onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -95,7 +90,6 @@ fun WalletScreen(
     WalletContent(
         modifier = modifier,
         state = walletState,
-        onMenuClick = onMenuClick,
         onShowHideBalanceToggle = viewModel::onShowHideBalanceToggle,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
@@ -172,7 +166,6 @@ fun SyncPopUpScreensState(popUpScreen: WalletViewModel.PopUpScreen?, onDismiss: 
 private fun WalletContent(
     modifier: Modifier = Modifier,
     state: WalletViewModel.State,
-    onMenuClick: () -> Unit,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -204,17 +197,6 @@ private fun WalletContent(
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.text
                     )
-                },
-                actions = {
-                    IconButton(onClick = onMenuClick) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(
-                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings
-                            ),
-                            contentDescription = null,
-                            tint = RadixTheme.colors.icon
-                        )
-                    }
                 },
                 windowInsets = WindowInsets.statusBarsAndBanner.add(
                     WindowInsets(
@@ -356,7 +338,6 @@ private fun WalletContentPreview(
     RadixWalletPreviewTheme {
         WalletContent(
             state = uiState,
-            onMenuClick = {},
             onShowHideBalanceToggle = {},
             onAccountClick = {},
             onAccountCreationClick = { },

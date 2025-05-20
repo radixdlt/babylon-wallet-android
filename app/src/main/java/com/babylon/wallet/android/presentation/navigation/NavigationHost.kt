@@ -68,7 +68,10 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
+import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
+import com.babylon.wallet.android.presentation.settings.debug.debugSettings
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
@@ -79,10 +82,12 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
+import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transaction.transactionReview
@@ -213,9 +218,6 @@ fun NavigationHost(
         )
         main(
             viewModel = viewModel,
-            onMenuClick = {
-                navController.navigate(Screen.SettingsAllDestination.route)
-            },
             onAccountClick = { account ->
                 navController.account(accountAddress = account.address)
             },
@@ -248,6 +250,39 @@ fun NavigationHost(
             },
             onNavigateToDAppDirectory = {
                 navController.dAppDirectory()
+            },
+            onSettingClick = { item ->
+                when (item) {
+                    SettingsItem.TopLevelSettings.ApprovedDapps -> {
+                        navController.approvedDAppsScreen()
+                    }
+
+                    is SettingsItem.TopLevelSettings.Personas -> {
+                        navController.personasScreen()
+                    }
+
+                    is SettingsItem.TopLevelSettings.Preferences -> {
+                        navController.walletPreferencesScreen()
+                    }
+
+                    is SettingsItem.TopLevelSettings.DebugSettings -> {
+                        navController.debugSettings()
+                    }
+
+                    SettingsItem.TopLevelSettings.LinkedConnectors -> {
+                        navController.linkedConnectorsScreen()
+                    }
+
+                    is SettingsItem.TopLevelSettings.SecurityCenter -> {
+                        navController.securityCenter()
+                    }
+                    SettingsItem.TopLevelSettings.Troubleshooting -> {
+                        navController.troubleshootingSettings()
+                    }
+                }
+            },
+            onDAppClick = {
+                navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
             }
         )
         dAppDirectory(

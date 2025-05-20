@@ -60,6 +60,7 @@ import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -129,15 +130,12 @@ private fun DAppDirectoryContent(
         }
     }
 
-    val onBack: () -> Unit = {
-        if (isFiltersVisible) {
+    BackHandler(
+        enabled = isFiltersVisible,
+        onBack = {
             isFiltersVisible = false
-        } else {
-            onBackClick()
         }
-    }
-
-    BackHandler(onBack = onBack)
+    )
 
     val focusManager = LocalFocusManager.current
     Scaffold(
@@ -150,7 +148,8 @@ private fun DAppDirectoryContent(
             ) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.dappDirectory_title),
-                    onBackClick = onBack,
+                    onBackClick = {},
+                    backIconType = BackIconType.None,
                     windowInsets = WindowInsets.statusBarsAndBanner,
                     actions = {
                         AnimatedVisibility(
@@ -295,13 +294,17 @@ private fun DAppDirectoryContent(
         DefaultModalSheetLayout(
             sheetState = sheetState,
             wrapContent = true,
-            onDismissRequest = onBack,
+            onDismissRequest = {
+                isFiltersVisible = false
+            },
             enableImePadding = true,
             sheetContent = {
                 Column {
                     RadixCenteredTopAppBar(
                         title = stringResource(R.string.dappDirectory_filters_title),
-                        onBackClick = onBack
+                        onBackClick = {
+                            isFiltersVisible = false
+                        }
                     )
 
                     FlowRow(
