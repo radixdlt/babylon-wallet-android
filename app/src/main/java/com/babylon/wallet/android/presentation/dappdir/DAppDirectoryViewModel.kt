@@ -63,7 +63,6 @@ class DAppDirectoryViewModel @Inject constructor(
                     .toList()
                     .map { entry ->
                         DirectoryDAppWithDetails(
-                            dAppDefinitionAddress = entry.key.dAppDefinitionAddress,
                             directoryDefinition = entry.key,
                             details = entry.value?.let {
                                 DirectoryDAppWithDetails.Details.Data(it)
@@ -282,7 +281,6 @@ data class DirectoryDefinition(
 )
 
 data class DirectoryDAppWithDetails(
-    val dAppDefinitionAddress: AccountAddress,
     val directoryDefinition: DirectoryDefinition,
     val details: Details
 ) {

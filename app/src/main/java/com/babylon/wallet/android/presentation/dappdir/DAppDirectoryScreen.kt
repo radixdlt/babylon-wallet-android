@@ -8,12 +8,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,7 +24,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -38,6 +43,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,6 +59,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -56,6 +67,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -128,6 +140,7 @@ private fun DAppDirectoryContent(
 
     BackHandler(onBack = onBack)
 
+    val focusManager = LocalFocusManager.current
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -139,6 +152,7 @@ private fun DAppDirectoryContent(
                 RadixCenteredTopAppBar(
                     title = "DApp Directory", // TODO
                     onBackClick = onBack,
+                    windowInsets = WindowInsets.statusBarsAndBanner,
                     actions = {
                         AnimatedVisibility(
                             visible = !state.isLoadingDirectory,
@@ -170,13 +184,26 @@ private fun DAppDirectoryContent(
                     onValueChanged = onSearchTermUpdated,
                     hint = "Search for a dApp...", // TODO
                     trailingIcon = {
-                        Icon(
-                            painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_search),
-                            contentDescription = null,
-                            tint = RadixTheme.colors.icon
-                        )
+                        if (state.filters.searchTerm.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    onSearchTermUpdated("")
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                                    contentDescription = null,
+                                    tint = RadixTheme.colors.icon
+                                )
+                            }
+                        } else {
+                            Icon(
+                                painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_search),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.icon
+                            )
+                        }
                     }
-
                 )
 
                 FilterTags(
@@ -184,6 +211,8 @@ private fun DAppDirectoryContent(
                     modifier = modifier,
                     onFilterTagRemoved = onFilterTagRemoved
                 )
+
+                HorizontalDivider(color = RadixTheme.colors.divider)
             }
         },
         snackbarHost = {
@@ -194,22 +223,45 @@ private fun DAppDirectoryContent(
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        LazyColumn(
-            contentPadding = padding.plus(
-                PaddingValues(RadixTheme.dimensions.paddingDefault)
-            ),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-        ) {
-            items(
-                items = state.directory
-            ) { dApp ->
-                DAppCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    directoryDAppWithDetails = dApp,
-                    onClick = {
-                        onDAppClick(dApp.dAppDefinitionAddress)
+        if (state.isLoadingDirectory) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = RadixTheme.colors.icon)
+            }
+        } else {
+            val nestedScrollConnection = remember {
+                object : NestedScrollConnection {
+                    override fun onPreScroll(
+                        available: Offset,
+                        source: NestedScrollSource
+                    ): Offset {
+                        focusManager.clearFocus()
+                        return super.onPreScroll(available, source)
                     }
-                )
+                }
+            }
+            LazyColumn(
+                modifier = Modifier.nestedScroll(nestedScrollConnection),
+                contentPadding = padding.plus(
+                    PaddingValues(RadixTheme.dimensions.paddingDefault)
+                ),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            ) {
+                items(
+                    items = state.directory
+                ) { dApp ->
+                    DAppCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        directoryDAppWithDetails = dApp,
+                        onClick = {
+                            onDAppClick(dApp.directoryDefinition.dAppDefinitionAddress)
+                        }
+                    )
+                }
             }
         }
     }
@@ -479,7 +531,6 @@ fun DAppDirectoryWithFiltersPreviewDark() {
 val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>
     get() = object : Sample<DirectoryDAppWithDetails> {
         override fun invoke(): DirectoryDAppWithDetails = DirectoryDAppWithDetails(
-            dAppDefinitionAddress = AccountAddress.sampleMainnet(),
             directoryDefinition = DirectoryDefinition(
                 name = "Awesome DApp",
                 dAppDefinitionAddress = AccountAddress.sampleMainnet(),
@@ -505,7 +556,6 @@ val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>
         )
 
         override fun other(): DirectoryDAppWithDetails = DirectoryDAppWithDetails(
-            dAppDefinitionAddress = AccountAddress.sampleMainnet.other(),
             directoryDefinition = DirectoryDefinition(
                 name = "Dashboard",
                 dAppDefinitionAddress = AccountAddress.sampleMainnet.other(),
