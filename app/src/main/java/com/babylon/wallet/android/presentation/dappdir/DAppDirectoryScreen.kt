@@ -150,7 +150,7 @@ private fun DAppDirectoryContent(
                     .background(color = RadixTheme.colors.background)
             ) {
                 RadixCenteredTopAppBar(
-                    title = "DApp Directory", // TODO
+                    title = stringResource(R.string.dappDirectory_title),
                     onBackClick = onBack,
                     windowInsets = WindowInsets.statusBarsAndBanner,
                     actions = {
@@ -182,7 +182,7 @@ private fun DAppDirectoryContent(
                         .fillMaxWidth(),
                     value = state.filters.searchTerm,
                     onValueChanged = onSearchTermUpdated,
-                    hint = "Search for a dApp...", // TODO
+                    hint = stringResource(R.string.dappDirectory_search_placeholder),
                     trailingIcon = {
                         if (state.filters.searchTerm.isNotEmpty()) {
                             IconButton(
@@ -275,7 +275,7 @@ private fun DAppDirectoryContent(
             sheetContent = {
                 Column {
                     RadixCenteredTopAppBar(
-                        title = "Tags", // TODO
+                        title = stringResource(R.string.dappDirectory_filters_title),
                         onBackClick = onBack
                     )
 
