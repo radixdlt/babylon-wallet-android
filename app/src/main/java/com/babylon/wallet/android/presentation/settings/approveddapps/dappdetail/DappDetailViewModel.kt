@@ -62,7 +62,9 @@ class DappDetailViewModel @Inject constructor(
     private lateinit var authorizedDapp: AuthorizedDapp
     private val args = DappDetailScreenArgs(savedStateHandle)
 
-    override fun initialState(): DappDetailUiState = DappDetailUiState()
+    override fun initialState(): DappDetailUiState = DappDetailUiState(
+        isReadOnly = args.isReadOnly
+    )
 
     init {
         viewModelScope.launch {
@@ -269,6 +271,7 @@ data class DappDetailUiState(
     val dAppWithResources: DAppWithResources? = null,
     val isValidatingWebsite: Boolean = false,
     val validatedWebsite: String? = null,
+    val isReadOnly: Boolean = false,
     val authorizedPersonas: ImmutableList<Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null,

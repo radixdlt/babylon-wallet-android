@@ -255,7 +255,7 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onDAppClick = {
-                navController.dAppDetailScreen(dappDefinitionAddress = it)
+                navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
             }
         )
         account(

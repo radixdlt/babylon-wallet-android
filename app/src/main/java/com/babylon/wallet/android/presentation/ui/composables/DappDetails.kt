@@ -193,18 +193,21 @@ fun DappDetails(
                     )
                 }
 
-                item {
-                    GrayBackgroundWrapper(contentPadding = PaddingValues(horizontal = dimensions.paddingLarge)) {
-                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.authorizedDapps_dAppDetails_personasHeading),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.textSecondary
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                if (personaList.isNotEmpty()) {
+                    item {
+                        GrayBackgroundWrapper(contentPadding = PaddingValues(horizontal = dimensions.paddingLarge)) {
+                            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = stringResource(R.string.authorizedDapps_dAppDetails_personasHeading),
+                                style = RadixTheme.typography.body1HighImportance,
+                                color = RadixTheme.colors.textSecondary
+                            )
+                            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                        }
                     }
                 }
+
                 itemsIndexed(personaList) { index, persona ->
                     val spacerHeight = if (personaList.lastIndex == index) {
                         dimensions.paddingXXXLarge

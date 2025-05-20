@@ -20,17 +20,26 @@ import rdx.works.core.domain.resources.Resource
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
+@VisibleForTesting
+internal const val ARG_IS_READ_ONLY = "is_read_only"
 
-const val ROUTE_DAPP_DETAIL = "settings_dapp_detail/{$ARG_DAPP_ADDRESS}"
+const val ROUTE_DAPP_DETAIL = "settings_dapp_detail/{$ARG_DAPP_ADDRESS}/{$ARG_IS_READ_ONLY}"
 
-internal class DappDetailScreenArgs(val dappDefinitionAddress: AccountAddress) {
+internal class DappDetailScreenArgs(
+    val dappDefinitionAddress: AccountAddress,
+    val isReadOnly: Boolean
+) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        AccountAddress.init(checkNotNull(savedStateHandle[ARG_DAPP_ADDRESS]))
+        dappDefinitionAddress = AccountAddress.init(checkNotNull(savedStateHandle[ARG_DAPP_ADDRESS])),
+        isReadOnly = checkNotNull(savedStateHandle[ARG_IS_READ_ONLY]),
     )
 }
 
-fun NavController.dAppDetailScreen(dappDefinitionAddress: AccountAddress) {
-    navigate("settings_dapp_detail/${dappDefinitionAddress.string}")
+fun NavController.dAppDetailScreen(
+    dappDefinitionAddress: AccountAddress,
+    isReadOnly: Boolean = false
+) {
+    navigate("settings_dapp_detail/${dappDefinitionAddress.string}/$isReadOnly")
 }
 
 fun NavGraphBuilder.dAppDetailScreen(
@@ -56,7 +65,11 @@ fun NavGraphBuilder.dAppDetailScreen(
         arguments = listOf(
             navArgument(ARG_DAPP_ADDRESS) {
                 type = NavType.StringType
-            }
+            },
+            navArgument(ARG_IS_READ_ONLY) {
+                type = NavType.BoolType
+                defaultValue = false
+            },
         )
     ) {
         DappDetailScreen(
