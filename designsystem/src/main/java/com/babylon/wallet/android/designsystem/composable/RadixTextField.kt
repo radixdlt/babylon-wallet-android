@@ -56,6 +56,7 @@ fun RadixTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false,
+    enabled: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     val isError = error != null
@@ -91,6 +92,7 @@ fun RadixTextField(
                 isError = error != null || errorHighlight,
                 singleLine = singleLine,
                 textStyle = textStyle,
+                enabled = enabled,
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
 
@@ -147,6 +149,10 @@ object RadixTextFieldDefaults {
         focusedBorderColor: Color = RadixTheme.colors.textFieldFocusedBorder,
         unfocusedBorderColor: Color = RadixTheme.colors.textFieldBorder,
         errorBorderColor: Color = RadixTheme.colors.error,
+        disabledContainerColor: Color = RadixTheme.colors.backgroundTertiary,
+        disabledBorderColor: Color = RadixTheme.colors.backgroundTertiary,
+        disabledPlaceholderColor: Color = Gray3,
+        disabledTextColor: Color = Gray3,
         cursorColor: Color = RadixTheme.colors.text,
         selectionColors: TextSelectionColors = TextSelectionColors(
             RadixTheme.colors.text,
@@ -166,7 +172,11 @@ object RadixTextFieldDefaults {
         unfocusedBorderColor = unfocusedBorderColor,
         errorBorderColor = errorBorderColor,
         cursorColor = cursorColor,
-        selectionColors = selectionColors
+        selectionColors = selectionColors,
+        disabledContainerColor = disabledContainerColor,
+        disabledBorderColor = disabledBorderColor,
+        disabledPlaceholderColor = disabledPlaceholderColor,
+        disabledTextColor = disabledTextColor,
     )
 }
 

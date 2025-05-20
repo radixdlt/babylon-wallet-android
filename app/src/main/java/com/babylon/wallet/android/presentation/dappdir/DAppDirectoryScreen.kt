@@ -8,23 +8,18 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -59,7 +54,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -73,7 +67,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.Sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.launch
@@ -182,6 +175,7 @@ private fun DAppDirectoryContent(
                         .fillMaxWidth(),
                     value = state.filters.searchTerm,
                     onValueChanged = onSearchTermUpdated,
+                    enabled = !state.isLoadingDirectory,
                     hint = stringResource(R.string.dappDirectory_search_placeholder),
                     trailingIcon = {
                         if (state.filters.searchTerm.isNotEmpty()) {
@@ -200,7 +194,11 @@ private fun DAppDirectoryContent(
                             Icon(
                                 painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_search),
                                 contentDescription = null,
-                                tint = RadixTheme.colors.icon
+                                tint = if (state.isLoadingDirectory) {
+                                    RadixTheme.colors.backgroundTertiary
+                                } else {
+                                    RadixTheme.colors.icon
+                                }
                             )
                         }
                     }
@@ -223,45 +221,49 @@ private fun DAppDirectoryContent(
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        if (state.isLoadingDirectory) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = RadixTheme.colors.icon)
+        val directory = remember(state) {
+            if (state.isLoadingDirectory) {
+                List(10) {
+                    null
+                }
+            } else {
+                state.directory
             }
-        } else {
-            val nestedScrollConnection = remember {
-                object : NestedScrollConnection {
-                    override fun onPreScroll(
-                        available: Offset,
-                        source: NestedScrollSource
-                    ): Offset {
-                        focusManager.clearFocus()
-                        return super.onPreScroll(available, source)
-                    }
+        }
+
+        val nestedScrollConnection = remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(
+                    available: Offset,
+                    source: NestedScrollSource
+                ): Offset {
+                    focusManager.clearFocus()
+                    return super.onPreScroll(available, source)
                 }
             }
-            LazyColumn(
-                modifier = Modifier.nestedScroll(nestedScrollConnection),
-                contentPadding = padding.plus(
-                    PaddingValues(RadixTheme.dimensions.paddingDefault)
-                ),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-            ) {
-                items(
-                    items = state.directory
-                ) { dApp ->
-                    DAppCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        directoryDAppWithDetails = dApp,
-                        onClick = {
-                            onDAppClick(dApp.directoryDefinition.dAppDefinitionAddress)
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .nestedScroll(nestedScrollConnection),
+            contentPadding = padding.plus(
+                PaddingValues(RadixTheme.dimensions.paddingDefault)
+            ),
+            userScrollEnabled = !state.isLoadingDirectory,
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            items(
+                items = directory
+            ) { details ->
+                DAppCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    details = details,
+                    onClick = {
+                        if (details != null) {
+                            onDAppClick(details.directoryDefinition.dAppDefinitionAddress)
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }
@@ -335,9 +337,6 @@ private fun FilterTags(
             userScrollEnabled = !state.isLoadingDirectory
         ) {
             items(items = tags) { tag ->
-                val isSelected = remember(state.filters) {
-                    state.filters.isTagSelected(tag)
-                }
                 HistoryFilterTag(
                     selected = true,
                     showCloseIcon = true,
@@ -357,7 +356,7 @@ private fun FilterTags(
 @Composable
 private fun DAppCard(
     modifier: Modifier = Modifier,
-    directoryDAppWithDetails: DirectoryDAppWithDetails,
+    details: DirectoryDAppWithDetails?,
     onClick: () -> Unit
 ) {
     Column(
@@ -380,47 +379,52 @@ private fun DAppCard(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Thumbnail.DApp(
-                modifier = Modifier.size(44.dp),
-                dAppIconUrl = directoryDAppWithDetails.icon,
-                dAppName = directoryDAppWithDetails.directoryDefinition.name,
+                modifier = Modifier
+                    .size(44.dp)
+                    .radixPlaceholder(visible = details == null),
+                dAppIconUrl = details?.dApp?.iconUrl,
+                dAppName = details?.directoryDefinition?.name.orEmpty(),
                 shape = RadixTheme.shapes.roundedRectSmall
             )
 
-            Text(
+            Column(
                 modifier = Modifier.weight(1f),
-                text = directoryDAppWithDetails.dApp.displayName(
-                    ifEmptyName = {
-                        directoryDAppWithDetails.directoryDefinition.name.ifEmpty {
-                            stringResource(R.string.dAppRequest_metadata_unknownName)
-                        }
-                    }
-                ),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.text,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth(
+                            fraction = if (details == null) 0.5f else 1f
+                        )
+                        .radixPlaceholder(visible = details == null),
+                    text = details?.dApp?.name.orEmpty(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.text,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                val description = details?.dApp?.description
+                if (details == null || details.isFetchingDAppDetails || !description.isNullOrBlank()) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .radixPlaceholder(
+                                visible = details == null || details.isFetchingDAppDetails
+                            ),
+                        text = description.orEmpty(),
+                        maxLines = 2,
+                        color = RadixTheme.colors.text
+                    )
+                }
+            }
 
             Icon(
                 painter = painterResource(
                     id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
                 ),
                 contentDescription = null,
-                tint = RadixTheme.colors.icon
-            )
-        }
-
-        val description = directoryDAppWithDetails.description
-        if (directoryDAppWithDetails.isFetchingDetails || !description.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .radixPlaceholder(visible = directoryDAppWithDetails.isFetchingDetails),
-                text = description.orEmpty(),
-                maxLines = 2,
-                color = RadixTheme.colors.text
+                tint = RadixTheme.colors.icon.copy(alpha = if (details != null) 1f else 0f),
             )
         }
     }

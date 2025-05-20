@@ -55,10 +55,37 @@ class DAppDirectoryViewModel @Inject constructor(
                                 .containsAll(filters.selectedTags.map { it.lowercase() })
                         }
                     }
-                    .filter { (definition, _) ->
+                    .filter { (definition, details) ->
                         val term = filters.searchTerm.trim().lowercase()
 
-                        if (term.isBlank()) true else definition.name.lowercase().contains(term)
+                        if (term.isBlank()) {
+                            true
+                        } else {
+                            val (name, description) = when (details) {
+                                is DirectoryDAppWithDetails.Details.Data ->
+                                    (details.dApp.name
+                                        ?: definition.name) to details.dApp.description
+
+                                is DirectoryDAppWithDetails.Details.Error ->
+                                    definition.name to null
+
+                                else -> null to null
+                            }
+
+                            if (name != null && name.lowercase().contains(term)) {
+                                return@filter true
+                            }
+
+                            if (description != null && description.lowercase().contains(term)) {
+                                return@filter true
+                            }
+
+                            if (name == null && description == null) {
+                                return@filter true
+                            }
+
+                            false
+                        }
                     }
                     .toList()
                     .map { entry ->
@@ -70,7 +97,6 @@ class DAppDirectoryViewModel @Inject constructor(
             }.onEach { directory ->
                 _state.update { state ->
                     state.copy(
-                        isLoadingDirectory = false,
                         directory = directory
                     )
                 }
@@ -97,6 +123,10 @@ class DAppDirectoryViewModel @Inject constructor(
                 filters.copy(
                     availableTags = directory.map { it.tags }.flatten().toSet()
                 )
+            }
+
+            _state.update {
+                it.copy(isLoadingDirectory = false)
             }
 
             directoryData.value.filter { it.value !is DirectoryDAppWithDetails.Details.Data }
@@ -302,20 +332,14 @@ data class DirectoryDAppWithDetails(
 ) {
     val dApp: DApp? = (details as? Details.Data)?.dApp
 
-    val isFetchingDetails: Boolean = details is Details.Fetching
-
-    val name: String = dApp?.name ?: directoryDefinition.name
-
-    val icon: Uri? = dApp?.iconUrl
-
-    val description: String? = dApp?.description
+    val isFetchingDAppDetails: Boolean = details is Details.Fetching
 
     val tags: List<String> = directoryDefinition.tags
 
     sealed interface Details {
         data object Fetching : Details
 
-        data object Error: Details
+        data object Error : Details
 
         data class Data(val dApp: DApp) : Details
     }
