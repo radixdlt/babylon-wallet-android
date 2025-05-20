@@ -32,8 +32,8 @@ class DAppDirectoryViewModel @Inject constructor(
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<DAppDirectoryViewModel.State>() {
 
-    private val directoryData: MutableStateFlow<Map<DirectoryDefinition, DApp?>?> =
-        MutableStateFlow(null)
+    private val directoryData: MutableStateFlow<Map<DirectoryDefinition, DirectoryDAppWithDetails.Details>> =
+        MutableStateFlow(emptyMap())
     private val filters: MutableStateFlow<DAppDirectoryFilters> =
         MutableStateFlow(DAppDirectoryFilters())
 
@@ -45,7 +45,7 @@ class DAppDirectoryViewModel @Inject constructor(
                 directoryData,
                 filters.onEach { _state.update { state -> state.copy(filters = it) } }
             ) { data, filters ->
-                val directory = data.orEmpty()
+                data
                     .asSequence()
                     .filter { (definition, _) ->
                         if (filters.selectedTags.isEmpty()) {
@@ -64,17 +64,13 @@ class DAppDirectoryViewModel @Inject constructor(
                     .map { entry ->
                         DirectoryDAppWithDetails(
                             directoryDefinition = entry.key,
-                            details = entry.value?.let {
-                                DirectoryDAppWithDetails.Details.Data(it)
-                            } ?: DirectoryDAppWithDetails.Details.Fetching // TODO
+                            details = entry.value
                         )
                     }
-
-                data to directory
-            }.onEach { (data, directory) ->
+            }.onEach { directory ->
                 _state.update { state ->
                     state.copy(
-                        isLoadingDirectory = data == null,
+                        isLoadingDirectory = false,
                         directory = directory
                     )
                 }
@@ -92,7 +88,9 @@ class DAppDirectoryViewModel @Inject constructor(
             Json.decodeFromString<List<DirectoryDefinition>>(dAppsJson)
         }.map { directory ->
             directoryData.update { data ->
-                directory.associateWith { definition -> data?.get(definition) }
+                directory.associateWith { definition ->
+                    data.getOrDefault(definition, DirectoryDAppWithDetails.Details.Fetching)
+                }
             }
 
             filters.update { filters ->
@@ -101,7 +99,7 @@ class DAppDirectoryViewModel @Inject constructor(
                 )
             }
 
-            directoryData.value.orEmpty().filter { it.value == null }
+            directoryData.value.filter { it.value !is DirectoryDAppWithDetails.Details.Data }
                 .keys
                 .map { it.dAppDefinitionAddress }
                 .toSet()
@@ -111,12 +109,30 @@ class DAppDirectoryViewModel @Inject constructor(
             val dAppDefinitionWithDetails = dApps.associateBy { it.dAppAddress }
 
             directoryData.update { data ->
-                data?.mapValues {
-                    dAppDefinitionWithDetails[it.key.dAppDefinitionAddress]
+                data.mapValues {
+                    val dApp = dAppDefinitionWithDetails[it.key.dAppDefinitionAddress]
+
+                    if (dApp != null) {
+                        DirectoryDAppWithDetails.Details.Data(dApp)
+                    } else {
+                        DirectoryDAppWithDetails.Details.Error
+                    }
                 }
             }
         }.onFailure { error ->
-            _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+            directoryData.update { data ->
+                data.mapValues {
+                    if (it.value is DirectoryDAppWithDetails.Details.Fetching) {
+                        DirectoryDAppWithDetails.Details.Error
+                    } else {
+                        it.value
+                    }
+                }
+            }
+
+            _state.update {
+                it.copy(uiMessage = UiMessage.ErrorMessage(error))
+            }
         }
     }
 
@@ -298,6 +314,8 @@ data class DirectoryDAppWithDetails(
 
     sealed interface Details {
         data object Fetching : Details
+
+        data object Error: Details
 
         data class Data(val dApp: DApp) : Details
     }

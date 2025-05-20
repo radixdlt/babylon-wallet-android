@@ -411,15 +411,14 @@ private fun DAppCard(
         }
 
         val description = directoryDAppWithDetails.description
-
-        if (!description.isNullOrBlank()) {
+        if (directoryDAppWithDetails.isFetchingDetails || !description.isNullOrBlank()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
                     .radixPlaceholder(visible = directoryDAppWithDetails.isFetchingDetails),
-                text = directoryDAppWithDetails.description,
+                text = description.orEmpty(),
                 maxLines = 2,
                 color = RadixTheme.colors.text
             )
