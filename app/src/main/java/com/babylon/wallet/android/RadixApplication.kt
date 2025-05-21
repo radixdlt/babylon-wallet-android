@@ -10,6 +10,8 @@ import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.utils.AppsFlyerIntegrationManager
+import com.babylon.wallet.android.utils.logger.PersistentLogger
+import dagger.Lazy
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -45,6 +47,9 @@ class RadixApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var accountLockersObserver: AccountLockersObserver
 
+    @Inject
+    lateinit var persistentLoggerProvider: Lazy<PersistentLogger>
+
     override val workManagerConfiguration: Configuration =
         Configuration.Builder()
             .setWorkerFactory(EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory())
@@ -55,6 +60,13 @@ class RadixApplication : Application(), Configuration.Provider {
         if (BuildConfig.DEBUG_MODE) {
             Timber.plant(Timber.DebugTree())
         }
+
+        if (BuildConfig.FILE_LOGGER_ENABLED) {
+            val logger = persistentLoggerProvider.get()
+            Timber.plant(logger)
+        }
+
+        Timber.i("Application created.")
 
         appsFlyerIntegrationManager.init()
         bootstrapHomeCards()

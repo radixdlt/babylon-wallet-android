@@ -59,7 +59,7 @@ object NetworkModule {
     @Singleton
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor { message ->
-            Timber.d(message)
+            Timber.tag("http-log").d(message)
         }.apply {
             level = if (BuildConfig.DEBUG_MODE) {
                 HttpLoggingInterceptor.Level.BODY

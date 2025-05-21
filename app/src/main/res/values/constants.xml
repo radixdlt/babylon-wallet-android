@@ -11,6 +11,8 @@
     <string name="settings_debugSettings_inspectCloudBackups" translatable="false">Inspect Cloud Backups</string>
     <string name="settings_debugSettings_securityFactorSamples" translatable="false">Security Factor Samples</string>
     <string name="no_email_client_installed" translatable="false">No email client installed</string>
+    <string name="export_logs_title" translatable="false">Export Logs</string>
+    <string name="export_logs_message" translatable="false">Save Radix Wallet\'s logs to a file.</string>
     <string name="gateway_mainnet_title" translatable="false">Radix Mainnet Gateway</string>
     <string name="gateway_stokenet_title" translatable="false">Stokenet (testnet) Gateway</string>
 </resources>
