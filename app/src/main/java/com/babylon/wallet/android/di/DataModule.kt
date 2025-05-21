@@ -8,6 +8,8 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.NPSSurveyRepository
 import com.babylon.wallet.android.data.repository.NPSSurveyRepositoryImpl
+import com.babylon.wallet.android.data.repository.dapps.DAppDirectoryRepository
+import com.babylon.wallet.android.data.repository.dapps.DAppDirectoryRepositoryImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepositoryImpl
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
@@ -131,4 +133,9 @@ interface DataModule {
     fun bindAppEventBus(
         appEventBus: AppEventBusImpl
     ): AppEventBus
+
+    @Binds
+    fun bindDAppDirectoryRepository(
+        dAppDirectoryRepository: DAppDirectoryRepositoryImpl
+    ): DAppDirectoryRepository
 }

@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -27,6 +28,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +57,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
+import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -60,7 +65,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
@@ -87,6 +91,7 @@ fun DAppDirectoryScreen(
         state = state,
         onBackClick = onBackClick,
         onDAppClick = onDAppClick,
+        onRefresh = viewModel::onRefresh,
         onSearchTermUpdated = viewModel::onSearchTermUpdated,
         onFilterTagAdded = viewModel::onFilterTagAdded,
         onFilterTagRemoved = viewModel::onFilterTagRemoved,
@@ -99,6 +104,7 @@ private fun DAppDirectoryContent(
     modifier: Modifier = Modifier,
     state: DAppDirectoryViewModel.State,
     onBackClick: () -> Unit,
+    onRefresh: () -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
     onSearchTermUpdated: (String) -> Unit,
     onFilterTagAdded: (String) -> Unit,
@@ -221,50 +227,68 @@ private fun DAppDirectoryContent(
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        val directory = remember(state) {
-            if (state.isLoadingDirectory) {
-                List(10) {
-                    null
-                }
-            } else {
-                state.directory
-            }
-        }
-
-        val nestedScrollConnection = remember {
-            object : NestedScrollConnection {
-                override fun onPreScroll(
-                    available: Offset,
-                    source: NestedScrollSource
-                ): Offset {
-                    focusManager.clearFocus()
-                    return super.onPreScroll(available, source)
-                }
-            }
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .nestedScroll(nestedScrollConnection),
-            contentPadding = padding.plus(
-                PaddingValues(RadixTheme.dimensions.paddingDefault)
-            ),
-            userScrollEnabled = !state.isLoadingDirectory,
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-        ) {
-            items(
-                items = directory
-            ) { details ->
-                DAppCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    details = details,
-                    onClick = {
-                        if (details != null) {
-                            onDAppClick(details.directoryDefinition.dAppDefinitionAddress)
-                        }
+        val pullToRefreshState = rememberPullToRefreshState()
+        Box {
+            val directory = remember(state) {
+                if (state.isLoadingDirectory) {
+                    List(10) {
+                        null
                     }
-                )
+                } else {
+                    state.directory
+                }
             }
+
+            val nestedScrollConnection = remember {
+                object : NestedScrollConnection {
+                    override fun onPreScroll(
+                        available: Offset,
+                        source: NestedScrollSource
+                    ): Offset {
+                        focusManager.clearFocus()
+                        return super.onPreScroll(available, source)
+                    }
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .nestedScroll(nestedScrollConnection)
+                    .pullToRefresh(
+                        state = pullToRefreshState,
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = onRefresh
+                    ),
+                contentPadding = padding.plus(
+                    PaddingValues(RadixTheme.dimensions.paddingDefault)
+                ),
+                userScrollEnabled = !state.isLoadingDirectory,
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            ) {
+                items(
+                    items = directory
+                ) { details ->
+                    DAppCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        details = details,
+                        onClick = {
+                            if (details != null) {
+                                onDAppClick(details.directoryDefinition.dAppDefinitionAddress)
+                            }
+                        }
+                    )
+                }
+            }
+
+            PullToRefreshDefaults.Indicator(
+                modifier = Modifier
+                    .padding(padding)
+                    .align(Alignment.TopCenter),
+                state = pullToRefreshState,
+                isRefreshing = state.isRefreshing,
+                color = RadixTheme.colors.icon,
+                containerColor = RadixTheme.colors.backgroundTertiary
+            )
         }
     }
 
@@ -381,7 +405,7 @@ private fun DAppCard(
             Thumbnail.DApp(
                 modifier = Modifier
                     .size(44.dp)
-                    .radixPlaceholder(visible = details == null),
+                    .radixPlaceholder(visible = details?.dApp == null),
                 dAppIconUrl = details?.dApp?.iconUrl,
                 dAppName = details?.directoryDefinition?.name.orEmpty(),
                 shape = RadixTheme.shapes.roundedRectSmall
@@ -394,9 +418,9 @@ private fun DAppCard(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(
-                            fraction = if (details == null) 0.5f else 1f
+                            fraction = if (details?.dApp == null) 0.5f else 1f
                         )
-                        .radixPlaceholder(visible = details == null),
+                        .radixPlaceholder(visible = details?.dApp == null),
                     text = details?.dApp?.name.orEmpty(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.text,
@@ -437,6 +461,7 @@ fun DAppDirectoryPreviewLight() {
         DAppDirectoryContent(
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
+                isRefreshing = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                     DirectoryDAppWithDetails.sample.other()
@@ -446,6 +471,7 @@ fun DAppDirectoryPreviewLight() {
             ),
             onBackClick = {},
             onDAppClick = {},
+            onRefresh = {},
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
@@ -461,6 +487,7 @@ fun DAppDirectoryPreviewDark() {
         DAppDirectoryContent(
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
+                isRefreshing = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                     DirectoryDAppWithDetails.sample.other()
@@ -470,6 +497,7 @@ fun DAppDirectoryPreviewDark() {
             ),
             onBackClick = {},
             onDAppClick = {},
+            onRefresh = {},
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
@@ -485,6 +513,7 @@ fun DAppDirectoryWithFiltersPreviewLight() {
         DAppDirectoryContent(
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
+                isRefreshing = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
@@ -496,6 +525,7 @@ fun DAppDirectoryWithFiltersPreviewLight() {
             ),
             onBackClick = {},
             onDAppClick = {},
+            onRefresh = {},
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
@@ -511,6 +541,7 @@ fun DAppDirectoryWithFiltersPreviewDark() {
         DAppDirectoryContent(
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
+                isRefreshing = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
@@ -522,6 +553,7 @@ fun DAppDirectoryWithFiltersPreviewDark() {
             ),
             onBackClick = {},
             onDAppClick = {},
+            onRefresh = {},
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},

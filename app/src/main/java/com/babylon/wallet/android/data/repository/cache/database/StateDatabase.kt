@@ -23,9 +23,10 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
         PoolDAppJoin::class,
         TokenPriceEntity::class,
         AccountLockerTouchedAtEntity::class,
-        AccountLockerVaultItemEntity::class
+        AccountLockerVaultItemEntity::class,
+        DirectoryDefinitionEntity::class
     ],
-    version = StateDatabase.VERSION_12
+    version = StateDatabase.VERSION_13
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -35,6 +36,8 @@ abstract class StateDatabase : RoomDatabase() {
     abstract fun tokenPriceDao(): TokenPriceDao
 
     abstract fun accountLockerDao(): AccountLockerDao
+
+    abstract fun dAppDirectoryDao(): DAppDirectoryDao
 
     companion object {
         @Deprecated("Initial schema version")
@@ -70,8 +73,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Updated metadata schema: Added Origin MetadataType")
         const val VERSION_11 = 11
 
-        // Added account metadata
+        @Deprecated("Added account metadata")
         const val VERSION_12 = 12
+
+        // Added dApp directory
+        const val VERSION_13 = 13
 
         private const val NAME = "STATE_DATABASE"
 
