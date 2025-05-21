@@ -30,6 +30,5 @@ data class DirectoryDefinitionEntity(
             tags = Json.encodeToString(definition.tags),
             synced = synced
         )
-
     }
 }

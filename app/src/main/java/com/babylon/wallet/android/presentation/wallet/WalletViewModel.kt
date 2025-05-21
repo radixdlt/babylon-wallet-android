@@ -559,7 +559,7 @@ class WalletViewModel @Inject constructor(
 
         data class OpenUrl(val url: String) : Event
 
-        data object NavigateToDAppDirectory: Event
+        data object NavigateToDAppDirectory : Event
     }
 
     companion object {

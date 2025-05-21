@@ -9,5 +9,4 @@ class GetDAppDirectoryUseCase @Inject constructor(
 
     suspend operator fun invoke(isRefreshing: Boolean) =
         repository.getDirectory(isRefreshing = isRefreshing)
-
 }

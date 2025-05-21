@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.wallet.cards
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
-import com.babylon.wallet.android.utils.Constants.RADIX_ECOSYSTEM_URL
 import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.HomeCard
 import kotlinx.collections.immutable.toPersistentList

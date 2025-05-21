@@ -20,7 +20,6 @@ import kotlin.time.toDuration
 interface DAppDirectoryRepository {
 
     suspend fun getDirectory(isRefreshing: Boolean): Result<List<DirectoryDefinition>>
-
 }
 
 class DAppDirectoryRepositoryImpl @Inject constructor(

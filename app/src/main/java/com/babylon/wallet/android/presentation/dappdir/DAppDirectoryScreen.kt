@@ -212,7 +212,6 @@ private fun DAppDirectoryContent(
 
                 FilterTags(
                     state = state,
-                    modifier = modifier,
                     onFilterTagRemoved = onFilterTagRemoved
                 )
 
@@ -341,7 +340,7 @@ private fun DAppDirectoryContent(
 @Composable
 private fun FilterTags(
     state: DAppDirectoryViewModel.State,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onFilterTagRemoved: (String) -> Unit
 ) {
     val tags = remember(state.filters.selectedTags) {
@@ -614,5 +613,4 @@ val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>
                 )
             )
         )
-
     }

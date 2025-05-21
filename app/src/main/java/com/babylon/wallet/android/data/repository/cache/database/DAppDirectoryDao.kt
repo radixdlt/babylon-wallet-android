@@ -13,5 +13,4 @@ interface DAppDirectoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDirectory(directory: List<DirectoryDefinitionEntity>)
-
 }

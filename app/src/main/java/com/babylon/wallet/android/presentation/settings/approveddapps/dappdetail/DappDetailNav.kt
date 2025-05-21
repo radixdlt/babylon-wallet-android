@@ -20,6 +20,7 @@ import rdx.works.core.domain.resources.Resource
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
+
 @VisibleForTesting
 internal const val ARG_IS_READ_ONLY = "is_read_only"
 

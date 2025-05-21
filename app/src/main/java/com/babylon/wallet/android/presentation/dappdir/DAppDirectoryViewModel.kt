@@ -59,8 +59,10 @@ class DAppDirectoryViewModel @Inject constructor(
                         } else {
                             val (name, description) = when (details) {
                                 is DirectoryDAppWithDetails.Details.Data ->
-                                    (details.dApp.name
-                                        ?: definition.name) to details.dApp.description
+                                    (
+                                        details.dApp.name
+                                            ?: definition.name
+                                        ) to details.dApp.description
 
                                 is DirectoryDAppWithDetails.Details.Error ->
                                     definition.name to null
@@ -233,5 +235,4 @@ data class DAppDirectoryFilters(
 ) {
 
     fun isTagSelected(tag: String) = tag in selectedTags
-
 }
