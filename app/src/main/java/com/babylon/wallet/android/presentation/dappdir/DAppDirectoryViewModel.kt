@@ -159,7 +159,11 @@ class DAppDirectoryViewModel @Inject constructor(
             }
 
             _state.update {
-                it.copy(uiMessage = UiMessage.ErrorMessage(error))
+                it.copy(
+                    isRefreshing = false,
+                    isLoadingDirectory = false,
+                    uiMessage = UiMessage.ErrorMessage(error)
+                )
             }
         }
     }
