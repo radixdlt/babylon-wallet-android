@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -83,14 +84,12 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 @Composable
 fun DAppDirectoryScreen(
     viewModel: DAppDirectoryViewModel,
-    onBackClick: () -> Unit,
     onDAppClick: (address: AccountAddress) -> Unit
 ) {
     val state: DAppDirectoryViewModel.State by viewModel.state.collectAsStateWithLifecycle()
 
     DAppDirectoryContent(
         state = state,
-        onBackClick = onBackClick,
         onDAppClick = onDAppClick,
         onRefresh = viewModel::onRefresh,
         onSearchTermUpdated = viewModel::onSearchTermUpdated,
@@ -104,7 +103,6 @@ fun DAppDirectoryScreen(
 private fun DAppDirectoryContent(
     modifier: Modifier = Modifier,
     state: DAppDirectoryViewModel.State,
-    onBackClick: () -> Unit,
     onRefresh: () -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
     onSearchTermUpdated: (String) -> Unit,
@@ -251,6 +249,7 @@ private fun DAppDirectoryContent(
 
             LazyColumn(
                 modifier = Modifier
+                    .fillMaxSize()
                     .nestedScroll(nestedScrollConnection)
                     .pullToRefresh(
                         state = pullToRefreshState,
@@ -276,6 +275,16 @@ private fun DAppDirectoryContent(
                         }
                     )
                 }
+            }
+
+            if (state.errorLoadingDirectory) {
+                Text(
+                    modifier = Modifier
+                        .padding(padding)
+                        .align(Alignment.Center),
+                    text = "Error loading directory. Pull to refresh", // TODO
+                    color = RadixTheme.colors.text
+                )
             }
 
             PullToRefreshDefaults.Indicator(
@@ -465,6 +474,7 @@ fun DAppDirectoryPreviewLight() {
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
                 isRefreshing = false,
+                errorLoadingDirectory = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                     DirectoryDAppWithDetails.sample.other()
@@ -472,7 +482,6 @@ fun DAppDirectoryPreviewLight() {
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
-            onBackClick = {},
             onDAppClick = {},
             onRefresh = {},
             onSearchTermUpdated = {},
@@ -491,6 +500,7 @@ fun DAppDirectoryPreviewDark() {
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
                 isRefreshing = false,
+                errorLoadingDirectory = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                     DirectoryDAppWithDetails.sample.other()
@@ -498,7 +508,6 @@ fun DAppDirectoryPreviewDark() {
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
-            onBackClick = {},
             onDAppClick = {},
             onRefresh = {},
             onSearchTermUpdated = {},
@@ -517,6 +526,7 @@ fun DAppDirectoryWithFiltersPreviewLight() {
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
                 isRefreshing = false,
+                errorLoadingDirectory = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
@@ -526,7 +536,6 @@ fun DAppDirectoryWithFiltersPreviewLight() {
                 ),
                 uiMessage = null
             ),
-            onBackClick = {},
             onDAppClick = {},
             onRefresh = {},
             onSearchTermUpdated = {},
@@ -545,6 +554,7 @@ fun DAppDirectoryWithFiltersPreviewDark() {
             state = DAppDirectoryViewModel.State(
                 isLoadingDirectory = false,
                 isRefreshing = false,
+                errorLoadingDirectory = false,
                 directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
@@ -554,7 +564,6 @@ fun DAppDirectoryWithFiltersPreviewDark() {
                 ),
                 uiMessage = null
             ),
-            onBackClick = {},
             onDAppClick = {},
             onRefresh = {},
             onSearchTermUpdated = {},
@@ -564,6 +573,53 @@ fun DAppDirectoryWithFiltersPreviewDark() {
         )
     }
 }
+
+@Preview
+@Composable
+fun DAppDirectoryErrorPreviewLight() {
+    RadixWalletPreviewTheme {
+        DAppDirectoryContent(
+            state = DAppDirectoryViewModel.State(
+                isLoadingDirectory = false,
+                isRefreshing = false,
+                errorLoadingDirectory = true,
+                directory = listOf(),
+                filters = DAppDirectoryFilters(),
+                uiMessage = null
+            ),
+            onDAppClick = {},
+            onRefresh = {},
+            onSearchTermUpdated = {},
+            onFilterTagAdded = {},
+            onFilterTagRemoved = {},
+            onMessageShown = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun DAppDirectoryErrorPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        DAppDirectoryContent(
+            state = DAppDirectoryViewModel.State(
+                isLoadingDirectory = false,
+                isRefreshing = false,
+                errorLoadingDirectory = true,
+                directory = listOf(),
+                filters = DAppDirectoryFilters(),
+                uiMessage = null
+            ),
+            onDAppClick = {},
+            onRefresh = {},
+            onSearchTermUpdated = {},
+            onFilterTagAdded = {},
+            onFilterTagRemoved = {},
+            onMessageShown = {}
+        )
+    }
+}
+
 
 @UsesSampleValues
 val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>

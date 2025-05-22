@@ -286,9 +286,6 @@ fun NavigationHost(
             }
         )
         dAppDirectory(
-            onBackClick = {
-                navController.popBackStack()
-            },
             onDAppClick = {
                 navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
             }

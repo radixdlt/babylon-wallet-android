@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.none
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.babylon.wallet.android.designsystem.R as DSR
 
 @Composable
 fun MainScreen(
@@ -177,8 +178,8 @@ private fun MainContent(
                                 Icon(
                                     modifier = Modifier.size(24.dp),
                                     painter = painterResource(id = when (tab) {
-                                        MainTab.Wallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_radix
-                                        MainTab.Discover -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
+                                        MainTab.Wallet -> DSR.drawable.ic_radix
+                                        MainTab.Discover -> DSR.drawable.ic_authorized_dapps
                                         MainTab.Settings -> R.drawable.ic_home_settings
                                     }),
                                     contentDescription = tab.name,
@@ -219,7 +220,6 @@ private fun MainContent(
             composable(MainTab.Discover.route) {
                 DAppDirectoryScreen(
                     viewModel = hiltViewModel(),
-                    onBackClick = {},
                     onDAppClick = onDAppClick
                 )
             }

@@ -33,7 +33,11 @@ class DAppDirectoryViewModel @Inject constructor(
     private val filters: MutableStateFlow<DAppDirectoryFilters> =
         MutableStateFlow(DAppDirectoryFilters())
 
-    override fun initialState(): State = State(isLoadingDirectory = true, isRefreshing = false)
+    override fun initialState(): State = State(
+        isLoadingDirectory = true,
+        isRefreshing = false,
+        errorLoadingDirectory = false
+    )
 
     init {
         viewModelScope.launch {
@@ -60,9 +64,9 @@ class DAppDirectoryViewModel @Inject constructor(
                             val (name, description) = when (details) {
                                 is DirectoryDAppWithDetails.Details.Data ->
                                     (
-                                        details.dApp.name
-                                            ?: definition.name
-                                        ) to details.dApp.description
+                                            details.dApp.name
+                                                ?: definition.name
+                                            ) to details.dApp.description
 
                                 is DirectoryDAppWithDetails.Details.Error ->
                                     definition.name to null
@@ -129,6 +133,7 @@ class DAppDirectoryViewModel @Inject constructor(
                 .map { it.dAppDefinitionAddress }
                 .toSet()
         }.then { unknownDefinitions ->
+            _state.update { it.copy(errorLoadingDirectory = false) }
             getDAppsUseCase(
                 definitionAddresses = unknownDefinitions,
                 needMostRecentData = state.value.isRefreshing
@@ -164,7 +169,8 @@ class DAppDirectoryViewModel @Inject constructor(
                 it.copy(
                     isRefreshing = false,
                     isLoadingDirectory = false,
-                    uiMessage = UiMessage.ErrorMessage(error)
+                    errorLoadingDirectory = it.directory.isEmpty(),
+                    uiMessage = if (it.directory.isNotEmpty()) UiMessage.ErrorMessage(error) else null
                 )
             }
         }
@@ -201,6 +207,7 @@ class DAppDirectoryViewModel @Inject constructor(
     data class State(
         val isLoadingDirectory: Boolean,
         val isRefreshing: Boolean,
+        val errorLoadingDirectory: Boolean,
         val directory: List<DirectoryDAppWithDetails> = emptyList(),
         val filters: DAppDirectoryFilters = DAppDirectoryFilters(),
         val uiMessage: UiMessage? = null

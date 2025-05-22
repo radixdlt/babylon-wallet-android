@@ -13,7 +13,6 @@ fun NavController.dAppDirectory() {
 }
 
 fun NavGraphBuilder.dAppDirectory(
-    onBackClick: () -> Unit,
     onDAppClick: (AccountAddress) -> Unit
 ) {
     composable(
@@ -21,7 +20,6 @@ fun NavGraphBuilder.dAppDirectory(
     ) {
         DAppDirectoryScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
             onDAppClick = onDAppClick
         )
     }
