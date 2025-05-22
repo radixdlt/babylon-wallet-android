@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -13,4 +14,7 @@ interface DAppDirectoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDirectory(directory: List<DirectoryDefinitionEntity>)
+
+    @Query("DELETE FROM DirectoryDefinitionEntity")
+    fun resetDirectory()
 }

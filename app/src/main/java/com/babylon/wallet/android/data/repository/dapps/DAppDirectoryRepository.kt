@@ -39,8 +39,9 @@ class DAppDirectoryRepositoryImpl @Inject constructor(
             if (cachedDirectory.isEmpty()) {
                 fetchDirectory()
                     .onSuccess { directory ->
-                        val synced = InstantGenerator()
+                        dAppDirectoryDao.resetDirectory()
 
+                        val synced = InstantGenerator()
                         val dAppEntities = directory.highlighted.orEmpty().map {
                             DirectoryDefinitionEntity.from(
                                 definition = it,
