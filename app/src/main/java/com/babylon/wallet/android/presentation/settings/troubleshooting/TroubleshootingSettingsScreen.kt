@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,10 +42,24 @@ fun TroubleshootingSettingsScreen(
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument(mimeType = "text/plain")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.onExportLogsToFile(file = uri)
+        }
+    }
+
     TroubleshootingSettingsContent(
         modifier = modifier.fillMaxSize(),
         settings = state.settings,
-        onSettingItemClick = onSettingItemClick,
+        onSettingItemClick = { item ->
+            when (item) {
+                Troubleshooting.ExportLogs -> filePickerLauncher.launch("radix-wallet-logs.txt")
+                else -> onSettingItemClick(item)
+            }
+        },
         onBackClick = onBackClick,
     )
 }
@@ -109,6 +125,7 @@ private fun TroubleshootingSettingsContent(
                                     },
                                     trailingIcon = when (item) {
                                         is Troubleshooting.ContactSupport,
+                                        is Troubleshooting.ExportLogs,
                                         Troubleshooting.Discord -> {
                                             {
                                                 Icon(
