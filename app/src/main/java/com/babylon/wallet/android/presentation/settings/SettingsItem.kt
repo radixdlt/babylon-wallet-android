@@ -90,7 +90,7 @@ sealed interface SettingsItem {
         ) : Troubleshooting
 
         data object Discord : Troubleshooting
-        data object ExportLogs: Troubleshooting
+        data object ExportLogs : Troubleshooting
         data object FactoryReset : Troubleshooting
 
         @StringRes

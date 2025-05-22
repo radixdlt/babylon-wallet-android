@@ -21,7 +21,7 @@ class PersistentLogger @Inject constructor(
     @ApplicationScope private val scope: CoroutineScope,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val fileRepository: FileRepository
-): Timber.DebugTree() {
+) : Timber.DebugTree() {
 
     private val db = LoggerDatabase.factory(applicationContext)
 
