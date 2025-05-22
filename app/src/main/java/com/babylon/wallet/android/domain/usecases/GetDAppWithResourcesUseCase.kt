@@ -7,6 +7,7 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.dAppDefinitions
 import javax.inject.Inject
 
@@ -32,7 +33,8 @@ class GetDAppWithResourcesUseCase @Inject constructor(
             withAllMetadata = false
         ).getOrNull().orEmpty()
         val verifiedResources = resources.filter {
-            it.metadata.dAppDefinitions().contains(definitionAddress.string)
+            it.metadata.dAppDefinitions().contains(definitionAddress.string) ||
+                    it.metadata.dAppDefinition() == definitionAddress.string
         }
 
         DAppWithResources(
