@@ -178,7 +178,7 @@ private fun MainContent(
                                     modifier = Modifier.size(24.dp),
                                     painter = painterResource(id = when (tab) {
                                         MainTab.Wallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_radix
-                                        MainTab.Discover -> com.babylon.wallet.android.designsystem.R.drawable.ic_link_out
+                                        MainTab.Discover -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                                         MainTab.Settings -> R.drawable.ic_home_settings
                                     }),
                                     contentDescription = tab.name,
