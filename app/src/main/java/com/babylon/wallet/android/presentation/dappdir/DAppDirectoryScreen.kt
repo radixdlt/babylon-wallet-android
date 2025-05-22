@@ -437,6 +437,7 @@ private fun DAppCard(
                             ),
                         text = description.orEmpty(),
                         maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                         color = RadixTheme.colors.text
                     )
                 }
