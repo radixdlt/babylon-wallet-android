@@ -13,6 +13,7 @@ data class DirectoryDefinitionEntity(
     val address: AccountAddress,
     val name: String,
     val tags: String,
+    val isHighlighted: Boolean,
     val synced: Instant
 ) {
 
@@ -24,10 +25,15 @@ data class DirectoryDefinitionEntity(
 
     companion object {
 
-        fun from(definition: DirectoryDefinition, synced: Instant) = DirectoryDefinitionEntity(
+        fun from(
+            definition: DirectoryDefinition,
+            isHighlighted: Boolean,
+            synced: Instant
+        ) = DirectoryDefinitionEntity(
             address = definition.dAppDefinitionAddress,
             name = definition.name,
             tags = Json.encodeToString(definition.tags),
+            isHighlighted = isHighlighted,
             synced = synced
         )
     }

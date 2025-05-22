@@ -15,3 +15,15 @@ data class DirectoryDefinition(
     @SerialName(value = "tags")
     val tags: List<String>
 )
+
+@Serializable
+data class DAppDirectory(
+    @SerialName(value = "highlighted")
+    val highlighted: List<DirectoryDefinition>? = emptyList(),
+    @SerialName(value = "others")
+    val others: List<DirectoryDefinition>? = emptyList()
+) {
+
+    val all: List<DirectoryDefinition> = highlighted.orEmpty() + others.orEmpty()
+
+}

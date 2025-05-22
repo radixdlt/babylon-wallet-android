@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -225,13 +226,23 @@ private fun DAppDirectoryContent(
     ) { padding ->
         val pullToRefreshState = rememberPullToRefreshState()
         Box {
-            val directory = remember(state) {
+            val highlighted = remember(state) {
                 if (state.isLoadingDirectory) {
-                    List(10) {
+                    List(3) {
                         null
                     }
                 } else {
-                    state.directory
+                    state.highlighted
+                }
+            }
+
+            val other = remember(state) {
+                if (state.isLoadingDirectory) {
+                    List(7) {
+                        null
+                    }
+                } else {
+                    state.other
                 }
             }
 
@@ -262,9 +273,51 @@ private fun DAppDirectoryContent(
                 userScrollEnabled = !state.isLoadingDirectory,
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
-                items(
-                    items = directory
-                ) { details ->
+                if (highlighted.isNotEmpty()) {
+                    item {
+                        Text(
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+                            text = "Highlighted",
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.textSecondary
+                        )
+                    }
+                }
+
+                itemsIndexed(
+                    items = highlighted,
+                    key = { index, dApp ->
+                        dApp?.key ?: "highlighted-placeholder-$index"
+                    }
+                ) { _, details ->
+                    DAppCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        details = details,
+                        onClick = {
+                            if (details != null) {
+                                onDAppClick(details.directoryDefinition.dAppDefinitionAddress)
+                            }
+                        }
+                    )
+                }
+
+                if (other.isNotEmpty()) {
+                    item {
+                        Text(
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+                            text = "Other",
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.textSecondary
+                        )
+                    }
+                }
+
+                itemsIndexed(
+                    items = other,
+                    key = { index, dApp ->
+                        dApp?.key ?: "other-placeholder-$index"
+                    }
+                ) { _, details ->
                     DAppCard(
                         modifier = Modifier.fillMaxWidth(),
                         details = details,
@@ -475,8 +528,10 @@ fun DAppDirectoryPreviewLight() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                directory = listOf(
-                    DirectoryDAppWithDetails.sample(),
+                highlighted = listOf(
+                    DirectoryDAppWithDetails.sample()
+                ),
+                other = listOf(
                     DirectoryDAppWithDetails.sample.other()
                 ),
                 filters = DAppDirectoryFilters(),
@@ -501,8 +556,10 @@ fun DAppDirectoryPreviewDark() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                directory = listOf(
-                    DirectoryDAppWithDetails.sample(),
+                highlighted = listOf(
+                    DirectoryDAppWithDetails.sample()
+                ),
+                other = listOf(
                     DirectoryDAppWithDetails.sample.other()
                 ),
                 filters = DAppDirectoryFilters(),
@@ -527,9 +584,10 @@ fun DAppDirectoryWithFiltersPreviewLight() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                directory = listOf(
+                highlighted = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
+                other = emptyList(),
                 filters = DAppDirectoryFilters(
                     searchTerm = "awe",
                     selectedTags = setOf("DeFi", "Token")
@@ -555,9 +613,10 @@ fun DAppDirectoryWithFiltersPreviewDark() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                directory = listOf(
+                highlighted = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
+                other = emptyList(),
                 filters = DAppDirectoryFilters(
                     searchTerm = "awe",
                     selectedTags = setOf("DeFi", "Token")
@@ -583,7 +642,8 @@ fun DAppDirectoryErrorPreviewLight() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = true,
-                directory = listOf(),
+                highlighted = listOf(),
+                other = emptyList(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
@@ -606,7 +666,8 @@ fun DAppDirectoryErrorPreviewDark() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = true,
-                directory = listOf(),
+                highlighted = listOf(),
+                other = emptyList(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
@@ -630,6 +691,7 @@ val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>
                 dAppDefinitionAddress = AccountAddress.sampleMainnet(),
                 tags = listOf("DeFi", "token")
             ),
+            isHighlighted = true,
             details = DirectoryDAppWithDetails.Details.Data(
                 dApp = DApp(
                     dAppAddress = AccountAddress.sampleMainnet(),
@@ -655,6 +717,7 @@ val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>
                 dAppDefinitionAddress = AccountAddress.sampleMainnet.other(),
                 tags = listOf("explorer")
             ),
+            isHighlighted = false,
             details = DirectoryDAppWithDetails.Details.Data(
                 dApp = DApp(
                     dAppAddress = AccountAddress.sampleMainnet.other(),

@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.domain.model.DAppDirectory
 import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -19,7 +20,7 @@ import kotlin.time.toDuration
 
 interface DAppDirectoryRepository {
 
-    suspend fun getDirectory(isRefreshing: Boolean): Result<List<DirectoryDefinition>>
+    suspend fun getDirectory(isRefreshing: Boolean): Result<DAppDirectory>
 }
 
 class DAppDirectoryRepositoryImpl @Inject constructor(
@@ -29,7 +30,7 @@ class DAppDirectoryRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : DAppDirectoryRepository {
 
-    override suspend fun getDirectory(isRefreshing: Boolean): Result<List<DirectoryDefinition>> =
+    override suspend fun getDirectory(isRefreshing: Boolean): Result<DAppDirectory> =
         withContext(ioDispatcher) {
             val cachedDirectory = dAppDirectoryDao.getDirectory(
                 minValidity = directoryValidity(isRefreshing = isRefreshing)
@@ -39,18 +40,45 @@ class DAppDirectoryRepositoryImpl @Inject constructor(
                 fetchDirectory()
                     .onSuccess { directory ->
                         val synced = InstantGenerator()
-                        dAppDirectoryDao.insertDirectory(
-                            directory = directory.map {
-                                DirectoryDefinitionEntity.from(definition = it, synced = synced)
-                            }
-                        )
+
+                        val dAppEntities = directory.highlighted.orEmpty().map {
+                            DirectoryDefinitionEntity.from(
+                                definition = it,
+                                isHighlighted = true,
+                                synced = synced
+                            )
+                        } + directory.others.orEmpty().map {
+                            DirectoryDefinitionEntity.from(
+                                definition = it,
+                                isHighlighted = false,
+                                synced = synced
+                            )
+                        }
+
+                        dAppDirectoryDao.insertDirectory(directory = dAppEntities)
                     }
             } else {
-                Result.success(cachedDirectory.map { it.toDirectoryDefinition() })
+                val highlightedDApps = mutableListOf<DirectoryDefinition>()
+                val otherDApps = mutableListOf<DirectoryDefinition>()
+
+                cachedDirectory.onEach { dApp ->
+                    if (dApp.isHighlighted) {
+                        highlightedDApps.add(dApp.toDirectoryDefinition())
+                    } else {
+                        otherDApps.add(dApp.toDirectoryDefinition())
+                    }
+                }
+
+                Result.success(
+                    DAppDirectory(
+                        highlighted = highlightedDApps,
+                        others = otherDApps
+                    )
+                )
             }
         }
 
-    private suspend fun fetchDirectory(): Result<List<DirectoryDefinition>> =
+    private suspend fun fetchDirectory(): Result<DAppDirectory> =
         buildApi<DAppDirectoryApi>(
             baseUrl = BASE_URL,
             okHttpClient = okHttpClient,
