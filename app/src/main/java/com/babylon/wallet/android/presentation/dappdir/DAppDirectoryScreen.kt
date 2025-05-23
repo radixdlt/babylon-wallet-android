@@ -295,12 +295,12 @@ private fun DAppDirectoryContent(
                     )
 
                     Text(
-                        text = "Failed to load dApps.", // TODO
+                        text = stringResource(R.string.dappDirectory_error_heading),
                         color = RadixTheme.colors.text
                     )
 
                     Text(
-                        text = "Pull to refresh", // TODO
+                        text = stringResource(R.string.dappDirectory_error_message),
                         color = RadixTheme.colors.textSecondary
                     )
                 }
