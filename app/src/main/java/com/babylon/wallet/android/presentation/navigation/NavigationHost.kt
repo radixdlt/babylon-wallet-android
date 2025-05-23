@@ -34,7 +34,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthoriz
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
-import com.babylon.wallet.android.presentation.dappdir.dAppDirectory
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.assets.assetDialog
 import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
@@ -248,9 +247,6 @@ fun NavigationHost(
             onNavigateToLinkConnector = {
                 navController.linkedConnectorsScreen(shouldShowAddLinkConnectorScreen = true)
             },
-            onNavigateToDAppDirectory = {
-                navController.dAppDirectory()
-            },
             onSettingClick = { item ->
                 when (item) {
                     SettingsItem.TopLevelSettings.ApprovedDapps -> {
@@ -281,11 +277,6 @@ fun NavigationHost(
                     }
                 }
             },
-            onDAppClick = {
-                navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
-            }
-        )
-        dAppDirectory(
             onDAppClick = {
                 navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
             }

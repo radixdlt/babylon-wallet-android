@@ -81,7 +81,6 @@ fun WalletScreen(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
-    onNavigateToDAppDirectory: () -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -131,7 +130,6 @@ fun WalletScreen(
                 is Event.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
                 Event.NavigateToLinkConnector -> onNavigateToLinkConnector()
                 is Event.OpenUrl -> context.openUrl(it.url)
-                Event.NavigateToDAppDirectory -> onNavigateToDAppDirectory()
             }
         }
     }

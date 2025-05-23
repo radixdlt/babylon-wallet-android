@@ -23,7 +23,6 @@ fun NavGraphBuilder.main(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
-    onNavigateToDAppDirectory: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onDAppClick: (AccountAddress) -> Unit
 ) {
@@ -46,7 +45,6 @@ fun NavGraphBuilder.main(
             onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
             onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
             onNavigateToLinkConnector = onNavigateToLinkConnector,
-            onNavigateToDAppDirectory = onNavigateToDAppDirectory,
             onSettingClick = onSettingClick,
             onDAppClick = onDAppClick
         )

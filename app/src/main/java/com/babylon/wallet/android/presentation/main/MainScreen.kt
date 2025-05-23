@@ -54,7 +54,6 @@ fun MainScreen(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
-    onNavigateToDAppDirectory: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onDAppClick: (AccountAddress) -> Unit
 ) {
@@ -70,7 +69,6 @@ fun MainScreen(
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                 onNavigateToLinkConnector = onNavigateToLinkConnector,
-                onNavigateToDAppDirectory = onNavigateToDAppDirectory,
                 onSettingClick = onSettingClick,
                 onDAppClick = onDAppClick
             )
@@ -110,7 +108,6 @@ private fun MainContent(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
-    onNavigateToDAppDirectory: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onDAppClick: (AccountAddress) -> Unit
 ) {
@@ -214,7 +211,6 @@ private fun MainContent(
                     onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                     onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                     onNavigateToLinkConnector = onNavigateToLinkConnector,
-                    onNavigateToDAppDirectory = onNavigateToDAppDirectory
                 )
             }
             composable(MainTab.Discover.route) {

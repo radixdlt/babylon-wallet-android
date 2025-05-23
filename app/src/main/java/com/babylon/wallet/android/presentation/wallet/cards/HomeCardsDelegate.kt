@@ -27,7 +27,6 @@ class HomeCardsDelegate @Inject constructor(
     fun onCardClick(
         card: HomeCard,
         navigateToLinkConnector: suspend () -> Unit,
-        navigateToDAppDirectory: suspend () -> Unit,
         openUrl: suspend (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -35,8 +34,6 @@ class HomeCardsDelegate @Inject constructor(
                 HomeCard.Connector -> navigateToLinkConnector()
 
                 HomeCard.StartRadQuest -> openUrl(RAD_QUEST_URL)
-
-                HomeCard.DiscoverRadixDapps -> navigateToDAppDirectory()
 
                 else -> {}
             }

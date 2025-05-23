@@ -312,7 +312,6 @@ class WalletViewModel @Inject constructor(
         homeCards.onCardClick(
             card = card,
             navigateToLinkConnector = { sendEvent(Event.NavigateToLinkConnector) },
-            navigateToDAppDirectory = { sendEvent(Event.NavigateToDAppDirectory) },
             openUrl = { url -> sendEvent(Event.OpenUrl(url)) }
         )
     }
@@ -558,8 +557,6 @@ class WalletViewModel @Inject constructor(
         data object NavigateToLinkConnector : Event
 
         data class OpenUrl(val url: String) : Event
-
-        data object NavigateToDAppDirectory : Event
     }
 
     companion object {
