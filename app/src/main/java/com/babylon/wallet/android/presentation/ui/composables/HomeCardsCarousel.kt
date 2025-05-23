@@ -40,7 +40,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.presentation.wallet.cards.allowsDismiss
 import com.babylon.wallet.android.presentation.wallet.cards.opensExternalLink
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.extensions.toUrl
@@ -218,21 +217,19 @@ private fun CardView(
                 }
             )
 
-            if (card.allowsDismiss()) {
-                Icon(
-                    modifier = Modifier
-                        .throttleClickable(onClick = onCloseClick)
-                        .padding(RadixTheme.dimensions.paddingSmall)
-                        .size(16.dp)
-                        .constrainAs(closeIconView) {
-                            top.linkTo(parent.top)
-                            end.linkTo(parent.end)
-                        },
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.iconSecondary
-                )
-            }
+            Icon(
+                modifier = Modifier
+                    .throttleClickable(onClick = onCloseClick)
+                    .padding(RadixTheme.dimensions.paddingSmall)
+                    .size(16.dp)
+                    .constrainAs(closeIconView) {
+                        top.linkTo(parent.top)
+                        end.linkTo(parent.end)
+                    },
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                contentDescription = null,
+                tint = RadixTheme.colors.iconSecondary
+            )
         }
     }
 }
@@ -244,7 +241,6 @@ private fun HomeCard.title() = buildAnnotatedString {
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
         is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
-        HomeCard.DiscoverRadixDapps -> stringResource(id = R.string.homePageCarousel_discoverRadixDapps_title)
     }
     append(title)
 
@@ -260,7 +256,6 @@ private fun HomeCard.description() = when (this) {
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
     is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
-    HomeCard.DiscoverRadixDapps -> stringResource(id = R.string.homePageCarousel_discoverRadixDapps_text)
 }
 
 @Composable
@@ -281,8 +276,7 @@ private fun HomeCard.EndIcon(
 
     HomeCard.StartRadQuest,
     HomeCard.Connector,
-    HomeCard.ContinueRadQuest,
-    HomeCard.DiscoverRadixDapps -> {
+    HomeCard.ContinueRadQuest -> {
     }
 }
 
@@ -292,7 +286,6 @@ private fun HomeCard.EndGraphicRes() = when (this) {
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
     is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
-    HomeCard.DiscoverRadixDapps -> painterResource(id = R.drawable.ic_homecarousel_discover_dapps)
 }
 
 private const val INLINE_LINK_ICON = "link_icon"
@@ -307,7 +300,6 @@ fun HomeCardsCarouselContinueRadQuestPreviewLight() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -329,7 +321,6 @@ fun HomeCardsCarouselContinueRadQuestPreviewDark() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -351,7 +342,6 @@ fun HomeCardsCarouselStartRadQuestPreviewLight() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -374,7 +364,6 @@ fun HomeCardsCarouselStartRadQuestPreviewDark() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -397,7 +386,6 @@ fun HomeCardsCarouselDAppPreviewLight() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -420,7 +408,6 @@ fun HomeCardsCarouselDAppPreviewDark() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -443,7 +430,6 @@ fun HomeCardsCarouselConnectorPreviewLight() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -466,7 +452,6 @@ fun HomeCardsCarouselConnectorPreviewDark() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -489,7 +474,6 @@ fun HomeCardsCarouselScaledFontPreviewLight() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -512,7 +496,6 @@ fun HomeCardsCarouselScaledFontPreviewDark() {
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector,
-                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(

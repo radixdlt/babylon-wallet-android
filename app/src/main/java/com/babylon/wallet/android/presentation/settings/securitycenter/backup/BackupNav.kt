@@ -45,7 +45,6 @@ fun NavController.backupScreen() {
 }
 
 fun NavGraphBuilder.backupScreen(
-    onProfileDeleted: () -> Unit,
     onClose: () -> Unit
 ) {
     composable(
@@ -65,7 +64,6 @@ fun NavGraphBuilder.backupScreen(
     ) {
         BackupScreen(
             viewModel = hiltViewModel(),
-            onProfileDeleted = onProfileDeleted,
             onClose = onClose
         )
     }

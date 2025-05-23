@@ -219,7 +219,6 @@ class BackupViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data object Dismiss : Event
-        data object ProfileDeleted : Event
         data class ChooseExportFile(val fileName: String) : Event
         data class DeleteFile(val file: Uri) : Event
         data object SignInToGoogle : Event
