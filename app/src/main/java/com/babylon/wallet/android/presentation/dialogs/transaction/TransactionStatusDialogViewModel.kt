@@ -41,7 +41,10 @@ class TransactionStatusDialogViewModel @Inject constructor(
     OneOffEventHandler<TransactionStatusDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State {
-        return State(status = TransactionStatus.from(args.event), isDismissible = !args.event.blockUntilComplete)
+        return State(
+            status = TransactionStatus.from(args.event),
+            blockUntilComplete = args.event.blockUntilComplete
+        )
     }
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
@@ -121,7 +124,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     )
                 }
                 transactionStatusClient.statusHandled(status.transactionId)
-                _state.update { it.copy(isDismissible = true) }
             }
         }
     }
@@ -163,9 +165,23 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
     data class State(
         val status: TransactionStatus,
-        val isDismissible: Boolean,
+        private val blockUntilComplete: Boolean,
         val dismissInfo: DismissInfo? = null
     ) : UiState {
+
+        val statusEnum: StatusEnum
+            get() = when (status) {
+                is TransactionStatus.Completing -> StatusEnum.COMPLETING
+                is TransactionStatus.Failed -> StatusEnum.FAIL
+                is TransactionStatus.Success -> StatusEnum.SUCCESS
+            }
+
+        val isDismissible: Boolean
+            get() = when (status) {
+                is TransactionStatus.Completing -> !blockUntilComplete
+                is TransactionStatus.Failed -> true
+                is TransactionStatus.Success -> true
+            }
 
         val isCompleting: Boolean
             get() = status is TransactionStatus.Completing
@@ -188,6 +204,12 @@ class TransactionStatusDialogViewModel @Inject constructor(
         enum class DismissInfo {
             STOP_WAITING,
             REQUIRE_COMPLETION
+        }
+
+        enum class StatusEnum {
+            COMPLETING,
+            SUCCESS,
+            FAIL
         }
     }
 

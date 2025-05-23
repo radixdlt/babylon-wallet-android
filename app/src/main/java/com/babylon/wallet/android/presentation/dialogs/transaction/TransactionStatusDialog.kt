@@ -1,23 +1,33 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.dialogs.transaction
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.transaction.TransactionStatusDialogViewModel.State.DismissInfo.REQUIRE_COMPLETION
 import com.babylon.wallet.android.presentation.dialogs.transaction.TransactionStatusDialogViewModel.State.DismissInfo.STOP_WAITING
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 
 @Composable
@@ -27,88 +37,109 @@ fun TransactionStatusDialog(
     onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val dismissHandler = {
-        viewModel.onDismiss()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { sheetState ->
+            state.isDismissible
+        }
+    )
+
+    LaunchedEffect(state.statusEnum) {
+        sheetState.show()
     }
-    BackHandler {
-        dismissHandler()
-    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                TransactionStatusDialogViewModel.Event.DismissDialog -> onClose()
+                TransactionStatusDialogViewModel.Event.DismissDialog -> {
+                    sheetState.hide()
+                    onClose()
+                }
             }
         }
     }
 
-    BottomSheetDialogWrapper(
+    DefaultModalSheetLayout(
         modifier = modifier,
-        onDismiss = dismissHandler,
-        dragToDismissEnabled = state.isDismissible,
+        sheetState = sheetState,
         showDragHandle = state.isDismissible,
-        isDismissible = false,
-        content = {
-            Box {
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = state.isCompleting,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    CompletingContent(transactionId = state.transactionId)
-                }
+        onDismissRequest = viewModel::onDismiss,
+        wrapContent = true,
+        windowInsets = {
+            WindowInsets.none
+        },
+        sheetContent = {
+            Column {
+                RadixCenteredTopAppBar(
+                    title = "",
+                    backIconType = BackIconType.Close,
+                    onBackClick = viewModel::onDismiss
+                )
+                Box {
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isCompleting,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        CompletingContent(transactionId = state.transactionId)
+                    }
 
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = state.isFailed,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    val title = when (state.walletErrorType) {
-                        DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS -> {
-                            stringResource(id = R.string.transactionStatus_failed_title)
-                        }
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isFailed,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        val title = when (state.walletErrorType) {
+                            DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS -> {
+                                stringResource(id = R.string.transactionStatus_failed_title)
+                            }
 
-                        DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS -> {
-                            stringResource(id = R.string.transactionStatus_rejected_title)
-                        }
+                            DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS -> {
+                                stringResource(id = R.string.transactionStatus_rejected_title)
+                            }
 
 //                        DappWalletInteractionErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
 //                            stringResource(id = R.string.transactionStatus_error_title)
 //                        } // TODO verify if we want to add that error to sargon
 
-                        else -> {
-                            stringResource(id = R.string.common_somethingWentWrong)
+                            else -> {
+                                stringResource(id = R.string.common_somethingWentWrong)
+                            }
                         }
+                        FailureDialogContent(
+                            title = title,
+                            subtitle = state.failureError,
+                            transactionId = state.transactionId,
+                            isMobileConnect = state.status.isMobileConnect
+                        )
                     }
-                    FailureDialogContent(
-                        title = title,
-                        subtitle = state.failureError,
-                        transactionId = state.transactionId,
-                        isMobileConnect = state.status.isMobileConnect
-                    )
-                }
 
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = state.isSuccess,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    // Need to send the correct transaction id
-                    SuccessContent(
-                        transactionId = state.transactionId,
-                        isMobileConnect = state.status.isMobileConnect,
-                        dAppName = state.status.dAppName,
-                        isInternal = state.status.isInternal
-                    )
-                }
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isSuccess,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        // Need to send the correct transaction id
+                        SuccessContent(
+                            transactionId = state.transactionId,
+                            isMobileConnect = state.status.isMobileConnect,
+                            dAppName = state.status.dAppName,
+                            isInternal = state.status.isInternal
+                        )
+                    }
 
-                state.dismissInfo?.let {
-                    InfoDialog(
-                        type = it,
-                        onClose = viewModel::onInfoClose
-                    )
+                    state.dismissInfo?.let {
+                        InfoDialog(
+                            type = it,
+                            onClose = viewModel::onInfoClose
+                        )
+                    }
                 }
             }
-        }
+        },
+        properties = ModalBottomSheetProperties(
+            shouldDismissOnBackPress = state.isDismissible
+        )
     )
 }
 
@@ -131,6 +162,10 @@ private fun InfoDialog(
             )
         },
         confirmText = stringResource(id = R.string.common_ok),
-        dismissText = null
+        dismissText = null,
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
     )
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -59,9 +60,19 @@ internal fun SuccessContent(
     title: String,
     subtitle: String
 ) {
-    Column {
+    Column(
+        modifier = modifier
+            .background(
+                color = if (isMobileConnect) {
+                    RadixTheme.colors.backgroundSecondary
+                } else {
+                    RadixTheme.colors.background
+                }
+            )
+            .navigationBarsPadding()
+    ) {
         Column(
-            modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(color = RadixTheme.colors.background)
                 .padding(RadixTheme.dimensions.paddingLarge),

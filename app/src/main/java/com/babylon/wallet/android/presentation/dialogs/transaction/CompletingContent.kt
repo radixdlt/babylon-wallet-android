@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +35,8 @@ internal fun CompletingContent(
         modifier
             .fillMaxWidth()
             .background(color = RadixTheme.colors.background)
-            .padding(RadixTheme.dimensions.paddingLarge),
+            .padding(RadixTheme.dimensions.paddingLarge)
+            .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
