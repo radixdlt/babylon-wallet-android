@@ -91,7 +91,7 @@ private val LightColorPalette = RadixColors(
     warningSecondary = LightOrange,
     card = White,
     selectedSegmentedControl = White,
-    chipBackground = Blue1
+    chipBackground = Gray1
 )
 
 private val DarkColorPalette = RadixColors(

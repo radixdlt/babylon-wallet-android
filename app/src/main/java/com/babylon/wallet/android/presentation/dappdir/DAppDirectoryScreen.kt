@@ -81,6 +81,7 @@ import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
+import com.babylon.wallet.android.designsystem.R as DSR
 
 @Composable
 fun DAppDirectoryScreen(
@@ -163,7 +164,7 @@ private fun DAppDirectoryContent(
                             ) {
                                 Icon(
                                     painterResource(
-                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_filter_list
+                                        id = DSR.drawable.ic_filter_list
                                     ),
                                     tint = RadixTheme.colors.icon,
                                     contentDescription = null
@@ -189,14 +190,14 @@ private fun DAppDirectoryContent(
                                 }
                             ) {
                                 Icon(
-                                    painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                                    painter = painterResource(DSR.drawable.ic_close),
                                     contentDescription = null,
                                     tint = RadixTheme.colors.icon
                                 )
                             }
                         } else {
                             Icon(
-                                painter = painterResource(com.babylon.wallet.android.designsystem.R.drawable.ic_search),
+                                painter = painterResource(DSR.drawable.ic_search),
                                 contentDescription = null,
                                 tint = if (state.isLoadingDirectory) {
                                     RadixTheme.colors.backgroundTertiary
@@ -279,13 +280,31 @@ private fun DAppDirectoryContent(
             }
 
             if (state.errorLoadingDirectory) {
-                Text(
+                Column(
                     modifier = Modifier
                         .padding(padding)
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                         .align(Alignment.Center),
-                    text = "Error loading directory. Pull to refresh", // TODO
-                    color = RadixTheme.colors.text
-                )
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                ) {
+                    Icon(
+                        modifier = Modifier.size(44.dp),
+                        painter = painterResource(DSR.drawable.ic_factory_reset),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.icon
+                    )
+
+                    Text(
+                        text = "Failed to load dApps.", // TODO
+                        color = RadixTheme.colors.text
+                    )
+
+                    Text(
+                        text = "Pull to refresh", // TODO
+                        color = RadixTheme.colors.textSecondary
+                    )
+                }
             }
 
             PullToRefreshDefaults.Indicator(
@@ -458,7 +477,7 @@ private fun DAppCard(
 
             Icon(
                 painter = painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
+                    id = DSR.drawable.ic_chevron_right
                 ),
                 contentDescription = null,
                 tint = RadixTheme.colors.icon.copy(alpha = if (details != null) 1f else 0f),
