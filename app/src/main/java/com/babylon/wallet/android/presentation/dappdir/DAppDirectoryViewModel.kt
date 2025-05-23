@@ -134,7 +134,9 @@ class DAppDirectoryViewModel @Inject constructor(
             directoryState.update {
                 directory.copy(
                     // Shuffle order of highlighted dApps
-                    highlighted = directory.highlighted?.shuffled()
+                    highlighted = directory.highlighted?.shuffled(),
+                    // Shuffle order of other dApps
+                    others = directory.others?.shuffled()
                 )
             }
 
