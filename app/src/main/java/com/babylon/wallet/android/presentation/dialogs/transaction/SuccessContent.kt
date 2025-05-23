@@ -62,11 +62,13 @@ internal fun SuccessContent(
 ) {
     Column(
         modifier = modifier
-            .background(color = if (isMobileConnect) {
-                RadixTheme.colors.backgroundSecondary
-            } else {
-                RadixTheme.colors.background
-            })
+            .background(
+                color = if (isMobileConnect) {
+                    RadixTheme.colors.backgroundSecondary
+                } else {
+                    RadixTheme.colors.background
+                }
+            )
             .navigationBarsPadding()
     ) {
         Column(
