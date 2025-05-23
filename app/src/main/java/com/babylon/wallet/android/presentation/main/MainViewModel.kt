@@ -40,6 +40,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.hasNetworks
 import rdx.works.core.sargon.isAdvancedLockEnabled
+import rdx.works.core.sargon.isCurrentNetworkMainnet
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
@@ -153,6 +154,16 @@ class MainViewModel @Inject constructor(
                 false
             }
 
+            val tabs = if (profileState is ProfileState.Loaded) {
+                if (profileState.v1.isCurrentNetworkMainnet) {
+                    MainTab.mainnet
+                } else {
+                    MainTab.testnet
+                }
+            } else {
+                MainTab.mainnet
+            }
+
             _state.update {
                 State(
                     initialAppState = AppState.from(
@@ -163,6 +174,7 @@ class MainViewModel @Inject constructor(
                     showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
                     claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
                     isAdvancedLockEnabled = isAdvancedLockEnabled,
+                    tabs = tabs,
                     isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
                 )
             }
@@ -273,6 +285,7 @@ class MainViewModel @Inject constructor(
         val showMobileConnectWarning: Boolean = false,
         val isAdvancedLockEnabled: Boolean = false,
         val isAppLocked: Boolean = false,
+        val tabs: Set<MainTab> = MainTab.mainnet,
         val isDeviceSecure: Boolean
     ) : UiState {
         val showDeviceNotSecureDialog: Boolean
@@ -316,5 +329,24 @@ sealed interface AppState {
                 }
             }
         }
+    }
+}
+
+enum class MainTab(val route: String) {
+    Wallet("tab_wallet"),
+    Discover("tab_discover"),
+    Settings("tab_settings");
+
+    companion object {
+        val mainnet: Set<MainTab> = setOf(
+            Wallet,
+            Discover,
+            Settings
+        )
+
+        val testnet: Set<MainTab> = setOf(
+            Wallet,
+            Settings
+        )
     }
 }

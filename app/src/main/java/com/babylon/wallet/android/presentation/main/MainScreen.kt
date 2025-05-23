@@ -62,6 +62,7 @@ fun MainScreen(
         is AppState.Wallet -> {
             MainContent(
                 modifier = modifier,
+                state = state,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToSecurityCenter = onNavigateToSecurityCenter,
@@ -101,6 +102,7 @@ fun MainScreen(
 @Composable
 private fun MainContent(
     modifier: Modifier = Modifier,
+    state: MainViewModel.State,
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -137,7 +139,7 @@ private fun MainContent(
                     containerColor = RadixTheme.colors.background,
                     windowInsets = WindowInsets.navigationBars
                 ) {
-                    MainTab.entries.forEach { tab ->
+                    state.tabs.forEach { tab ->
                         NavigationBarItem(
                             selected = tab == selectedTab,
                             colors = NavigationBarItemColors(
@@ -227,10 +229,4 @@ private fun MainContent(
             }
         }
     }
-}
-
-private enum class MainTab(val route: String) {
-    Wallet("tab_wallet"),
-    Discover("tab_discover"),
-    Settings("tab_settings")
 }
