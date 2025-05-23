@@ -119,10 +119,7 @@ class DAppDirectoryViewModel @Inject constructor(
                     }.toList()
             }.onEach { directory ->
                 _state.update { state ->
-                    state.copy(
-                        highlighted = directory.filter { it.isHighlighted },
-                        other = directory.filterNot { it.isHighlighted }
-                    )
+                    state.copy(directory = directory)
                 }
             }.flowOn(dispatcher).launchIn(viewModelScope)
         }
@@ -134,7 +131,12 @@ class DAppDirectoryViewModel @Inject constructor(
 
     private suspend fun fetchDAppsDirectory() {
         getDAppDirectoryUseCase(isRefreshing = state.value.isRefreshing).map { directory ->
-            directoryState.update { directory }
+            directoryState.update {
+                directory.copy(
+                    // Shuffle order of highlighted dApps
+                    highlighted = directory.highlighted?.shuffled()
+                )
+            }
 
             dAppDataState.update {
                 directory.all.associate {
@@ -231,13 +233,12 @@ class DAppDirectoryViewModel @Inject constructor(
         val isLoadingDirectory: Boolean,
         val isRefreshing: Boolean,
         val errorLoadingDirectory: Boolean,
-        val highlighted: List<DirectoryDAppWithDetails> = emptyList(),
-        val other: List<DirectoryDAppWithDetails> = emptyList(),
+        val directory: List<DirectoryDAppWithDetails> = emptyList(),
         val filters: DAppDirectoryFilters = DAppDirectoryFilters(),
         val uiMessage: UiMessage? = null
     ) : UiState {
 
-        val isDirectoryEmpty: Boolean = highlighted.isEmpty() || other.isEmpty()
+        val isDirectoryEmpty: Boolean = directory.isEmpty()
 
     }
 }

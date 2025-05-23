@@ -226,23 +226,13 @@ private fun DAppDirectoryContent(
     ) { padding ->
         val pullToRefreshState = rememberPullToRefreshState()
         Box {
-            val highlighted = remember(state) {
+            val directory = remember(state) {
                 if (state.isLoadingDirectory) {
-                    List(3) {
+                    List(10) {
                         null
                     }
                 } else {
-                    state.highlighted
-                }
-            }
-
-            val other = remember(state) {
-                if (state.isLoadingDirectory) {
-                    List(7) {
-                        null
-                    }
-                } else {
-                    state.other
+                    state.directory
                 }
             }
 
@@ -273,51 +263,9 @@ private fun DAppDirectoryContent(
                 userScrollEnabled = !state.isLoadingDirectory,
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
-                if (highlighted.isNotEmpty()) {
-                    item {
-                        Text(
-                            modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-                            text = "Highlighted",
-                            style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.textSecondary
-                        )
-                    }
-                }
-
-                itemsIndexed(
-                    items = highlighted,
-                    key = { index, dApp ->
-                        dApp?.key ?: "highlighted-placeholder-$index"
-                    }
-                ) { _, details ->
-                    DAppCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        details = details,
-                        onClick = {
-                            if (details != null) {
-                                onDAppClick(details.directoryDefinition.dAppDefinitionAddress)
-                            }
-                        }
-                    )
-                }
-
-                if (other.isNotEmpty()) {
-                    item {
-                        Text(
-                            modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-                            text = "Other",
-                            style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.textSecondary
-                        )
-                    }
-                }
-
-                itemsIndexed(
-                    items = other,
-                    key = { index, dApp ->
-                        dApp?.key ?: "other-placeholder-$index"
-                    }
-                ) { _, details ->
+                items(
+                    items = directory,
+                ) { details ->
                     DAppCard(
                         modifier = Modifier.fillMaxWidth(),
                         details = details,
@@ -488,7 +436,7 @@ private fun DAppCard(
                     text = details?.dApp?.name.orEmpty(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.text,
-                    maxLines = 2,
+                    maxLines = if (details?.dApp == null) 1 else 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
@@ -528,10 +476,8 @@ fun DAppDirectoryPreviewLight() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                highlighted = listOf(
-                    DirectoryDAppWithDetails.sample()
-                ),
-                other = listOf(
+                directory = listOf(
+                    DirectoryDAppWithDetails.sample(),
                     DirectoryDAppWithDetails.sample.other()
                 ),
                 filters = DAppDirectoryFilters(),
@@ -556,10 +502,8 @@ fun DAppDirectoryPreviewDark() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                highlighted = listOf(
-                    DirectoryDAppWithDetails.sample()
-                ),
-                other = listOf(
+                directory = listOf(
+                    DirectoryDAppWithDetails.sample(),
                     DirectoryDAppWithDetails.sample.other()
                 ),
                 filters = DAppDirectoryFilters(),
@@ -584,10 +528,9 @@ fun DAppDirectoryWithFiltersPreviewLight() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                highlighted = listOf(
+                directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
-                other = emptyList(),
                 filters = DAppDirectoryFilters(
                     searchTerm = "awe",
                     selectedTags = setOf("DeFi", "Token")
@@ -613,10 +556,9 @@ fun DAppDirectoryWithFiltersPreviewDark() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = false,
-                highlighted = listOf(
+                directory = listOf(
                     DirectoryDAppWithDetails.sample(),
                 ),
-                other = emptyList(),
                 filters = DAppDirectoryFilters(
                     searchTerm = "awe",
                     selectedTags = setOf("DeFi", "Token")
@@ -642,8 +584,7 @@ fun DAppDirectoryErrorPreviewLight() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = true,
-                highlighted = listOf(),
-                other = emptyList(),
+                directory = listOf(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
@@ -666,8 +607,7 @@ fun DAppDirectoryErrorPreviewDark() {
                 isLoadingDirectory = false,
                 isRefreshing = false,
                 errorLoadingDirectory = true,
-                highlighted = listOf(),
-                other = emptyList(),
+                directory = listOf(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
