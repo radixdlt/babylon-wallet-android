@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -161,9 +162,9 @@ private fun MainContent(
                             label = {
                                 Text(
                                     text = when (tab) {
-                                        MainTab.Wallet -> "Wallet"
-                                        MainTab.Discover -> "Discover"
-                                        MainTab.Settings -> "Settings"
+                                        MainTab.Wallet -> stringResource(R.string.homePage_tab_wallet)
+                                        MainTab.Discover -> stringResource(R.string.homePage_tab_dapps)
+                                        MainTab.Settings -> stringResource(R.string.homePage_tab_settings)
                                     }
                                 )
                             },
