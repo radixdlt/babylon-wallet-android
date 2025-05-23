@@ -42,11 +42,7 @@ fun AssetsTabs(
                     .fillMaxHeight()
                     .zIndex(-1f)
                     .background(
-                        color = if (RadixTheme.config.isDarkTheme) {
-                            RadixTheme.colors.backgroundTertiary
-                        } else {
-                            RadixTheme.colors.icon
-                        },
+                        color = RadixTheme.colors.chipBackground,
                         shape = RadixTheme.shapes.circle
                     )
             )

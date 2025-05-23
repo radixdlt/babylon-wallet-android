@@ -60,7 +60,8 @@ data class RadixColors(
     val warning: Color,
     val warningSecondary: Color,
     val card: Color,
-    val selectedSegmentedControl: Color
+    val selectedSegmentedControl: Color,
+    val chipBackground: Color
 )
 
 private val LightColorPalette = RadixColors(
@@ -89,7 +90,8 @@ private val LightColorPalette = RadixColors(
     warning = Orange3,
     warningSecondary = LightOrange,
     card = White,
-    selectedSegmentedControl = White
+    selectedSegmentedControl = White,
+    chipBackground = Blue1
 )
 
 private val DarkColorPalette = RadixColors(
@@ -118,7 +120,8 @@ private val DarkColorPalette = RadixColors(
     warning = Color(0xFFC47F00),
     warningSecondary = Color(0xFFE6DCCB),
     card = Color(0xFF28292A),
-    selectedSegmentedControl = Color(0xFF646469)
+    selectedSegmentedControl = Color(0xFF646469),
+    chipBackground = Color(0xFF404243)
 )
 
 internal val LocalRadixColors = staticCompositionLocalOf<RadixColors> {

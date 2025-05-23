@@ -165,7 +165,7 @@ class MainViewModel @Inject constructor(
             }
 
             _state.update {
-                State(
+                it.copy(
                     initialAppState = AppState.from(
                         sargonOsState = osState,
                         profileState = profileState,
@@ -175,6 +175,7 @@ class MainViewModel @Inject constructor(
                     claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
                     isAdvancedLockEnabled = isAdvancedLockEnabled,
                     tabs = tabs,
+                    selectedTab = if (profileState !is ProfileState.Loaded) MainTab.Wallet else it.selectedTab,
                     isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
                 )
             }
@@ -271,6 +272,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onTabClick(tab: MainTab) {
+        if (tab != state.value.selectedTab) {
+            _state.update { it.copy(selectedTab = tab) }
+        }
+    }
+
     private fun runForegroundChecks() {
         viewModelScope.launch {
             checkKeystoreIntegrityUseCase()
@@ -286,6 +293,7 @@ class MainViewModel @Inject constructor(
         val isAdvancedLockEnabled: Boolean = false,
         val isAppLocked: Boolean = false,
         val tabs: Set<MainTab> = MainTab.mainnet,
+        val selectedTab: MainTab = MainTab.Wallet,
         val isDeviceSecure: Boolean
     ) : UiState {
         val showDeviceNotSecureDialog: Boolean

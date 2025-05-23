@@ -15,9 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -63,6 +60,7 @@ fun MainScreen(
             MainContent(
                 modifier = modifier,
                 state = state,
+                onTabClick = viewModel::onTabClick,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToSecurityCenter = onNavigateToSecurityCenter,
@@ -103,6 +101,7 @@ fun MainScreen(
 private fun MainContent(
     modifier: Modifier = Modifier,
     state: MainViewModel.State,
+    onTabClick: (MainTab) -> Unit,
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -114,20 +113,28 @@ private fun MainContent(
     onDAppClick: (AccountAddress) -> Unit
 ) {
     val bottomNavController = rememberNavController()
-    var selectedTab by remember {
-        mutableStateOf(MainTab.Wallet)
+
+    LaunchedEffect(state.selectedTab) {
+        if (bottomNavController.currentBackStackEntry?.destination?.route != state.selectedTab.route) {
+            bottomNavController.navigate(state.selectedTab.route) {
+                popUpTo(bottomNavController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
         bottomNavController.currentBackStackEntryFlow.collect { entry ->
             when (entry.destination.route) {
-                MainTab.Wallet.route -> selectedTab = MainTab.Wallet
-                MainTab.Discover.route -> selectedTab = MainTab.Discover
-                MainTab.Settings.route -> selectedTab = MainTab.Settings
+                MainTab.Wallet.route -> onTabClick(MainTab.Wallet)
+                MainTab.Discover.route -> onTabClick(MainTab.Discover)
+                MainTab.Settings.route -> onTabClick(MainTab.Settings)
             }
         }
     }
-
 
     Scaffold(
         modifier = modifier,
@@ -141,7 +148,7 @@ private fun MainContent(
                 ) {
                     state.tabs.forEach { tab ->
                         NavigationBarItem(
-                            selected = tab == selectedTab,
+                            selected = tab == state.selectedTab,
                             colors = NavigationBarItemColors(
                                 selectedIconColor = White,
                                 selectedTextColor = RadixTheme.colors.text,
@@ -149,11 +156,7 @@ private fun MainContent(
                                 unselectedTextColor = RadixTheme.colors.text,
                                 disabledIconColor = RadixTheme.colors.backgroundTertiary,
                                 disabledTextColor = RadixTheme.colors.backgroundTertiary,
-                                selectedIndicatorColor = if (RadixTheme.config.isDarkTheme) {
-                                    RadixTheme.colors.backgroundTertiary
-                                } else {
-                                    RadixTheme.colors.icon
-                                }
+                                selectedIndicatorColor = RadixTheme.colors.chipBackground
                             ),
                             label = {
                                 Text(
@@ -165,13 +168,7 @@ private fun MainContent(
                                 )
                             },
                             onClick = {
-                                bottomNavController.navigate(tab.route) {
-                                    popUpTo(bottomNavController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                onTabClick(tab)
                             },
                             icon = {
                                 Icon(
@@ -182,7 +179,7 @@ private fun MainContent(
                                         MainTab.Settings -> R.drawable.ic_home_settings
                                     }),
                                     contentDescription = tab.name,
-                                    tint = if (tab == selectedTab) {
+                                    tint = if (tab == state.selectedTab) {
                                         White
                                     } else {
                                         RadixTheme.colors.icon
