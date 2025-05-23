@@ -35,11 +35,7 @@ fun HistoryFilterTag(
         .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
     val tagSelectedModifier = Modifier
         .background(
-            color = if (RadixTheme.config.isDarkTheme) {
-                RadixTheme.colors.backgroundTertiary
-            } else {
-                RadixTheme.colors.icon
-            },
+            color = RadixTheme.colors.chipBackground,
             shape = RadixTheme.shapes.circle
         )
         .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)

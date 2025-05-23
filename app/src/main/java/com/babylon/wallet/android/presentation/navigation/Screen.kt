@@ -14,8 +14,6 @@ interface Destination {
 sealed class Screen(override val route: String, override val args: String = "") : Destination {
 
     object OnboardingDestination : Screen("onboarding_route")
-    object SettingsDestination : Screen("settings_route")
-    object SettingsAllDestination : Screen("settings_all_route")
     object SettingsEditGatewayApiDestination : Screen("settings_edit_gateway_api_route")
 
     companion object {

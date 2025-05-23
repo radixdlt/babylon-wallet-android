@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
@@ -84,12 +83,10 @@ fun NavGraphBuilder.securityCenterNavGraph(
             )
         }
         backupScreen(
-            onProfileDeleted = {
-                navController.popBackStack(MAIN_ROUTE, false)
+            onClose = {
+                navController.popBackStack()
             }
-        ) {
-            navController.popBackStack()
-        }
+        )
         securityFactorTypes(
             onBackClick = {
                 navController.popBackStack()

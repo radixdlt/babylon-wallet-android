@@ -91,7 +91,6 @@ import rdx.works.core.domain.cloudbackup.BackupWarning
 fun BackupScreen(
     viewModel: BackupViewModel,
     modifier: Modifier = Modifier,
-    onProfileDeleted: () -> Unit,
     onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -131,7 +130,6 @@ fun BackupScreen(
             when (event) {
                 is BackupViewModel.Event.Dismiss -> onClose()
                 is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(event.fileName)
-                is BackupViewModel.Event.ProfileDeleted -> onProfileDeleted()
                 is BackupViewModel.Event.DeleteFile -> {
                     DocumentsContract.deleteDocument(context.contentResolver, event.file)
                 }

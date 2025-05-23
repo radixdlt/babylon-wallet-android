@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.wallet.cards
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
-import com.babylon.wallet.android.utils.Constants.RADIX_ECOSYSTEM_URL
 import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.HomeCard
 import kotlinx.collections.immutable.toPersistentList
@@ -36,15 +35,10 @@ class HomeCardsDelegate @Inject constructor(
 
                 HomeCard.StartRadQuest -> openUrl(RAD_QUEST_URL)
 
-                HomeCard.DiscoverRadixDapps -> openUrl(RADIX_ECOSYSTEM_URL)
-
                 else -> {}
             }
 
-            // Currently all the cards should be dismissed on tap
-            if (card.allowsDismiss()) {
-                dismissCard(card)
-            }
+            dismissCard(card)
         }
     }
 
@@ -66,12 +60,4 @@ class HomeCardsDelegate @Inject constructor(
     }
 }
 
-fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.DiscoverRadixDapps
-
-fun HomeCard.allowsDismiss() = when (this) {
-    HomeCard.Connector -> true
-    HomeCard.ContinueRadQuest -> true
-    is HomeCard.Dapp -> true
-    HomeCard.DiscoverRadixDapps -> false
-    HomeCard.StartRadQuest -> true
-}
+fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest

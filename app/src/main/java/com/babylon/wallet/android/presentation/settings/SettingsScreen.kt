@@ -33,6 +33,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -45,14 +46,12 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsContent(
         modifier = modifier,
         state = state,
         onSettingClick = onSettingClick,
-        onBackClick = onBackClick
     )
 }
 
@@ -61,89 +60,88 @@ private fun SettingsContent(
     modifier: Modifier = Modifier,
     state: SettingsUiState,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    onBackClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.walletSettings_title),
-                onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.text,
-                windowInsets = WindowInsets.statusBarsAndBanner,
-                containerColor = RadixTheme.colors.background
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.walletSettings_title),
+                    onBackClick = {},
+                    backIconType = BackIconType.None,
+                    contentColor = RadixTheme.colors.text,
+                    windowInsets = WindowInsets.statusBarsAndBanner,
+                    containerColor = RadixTheme.colors.background
+                )
+
+                HorizontalDivider(color = RadixTheme.colors.divider)
+            }
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        Column(
-            modifier = Modifier.padding(padding),
-            horizontalAlignment = Alignment.Start
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = padding
         ) {
-            HorizontalDivider(color = RadixTheme.colors.divider)
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                state.settings.forEach { settingsItem ->
-                    when (settingsItem) {
-                        SettingsUiItem.Spacer -> {
-                            item {
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                            }
+            state.settings.forEach { settingsItem ->
+                when (settingsItem) {
+                    SettingsUiItem.Spacer -> {
+                        item {
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                         }
+                    }
 
-                        is SettingsUiItem.Settings -> {
-                            item {
-                                DefaultSettingsItem(
-                                    onClick = {
-                                        onSettingClick(settingsItem.item)
-                                    },
-                                    subtitle = stringResource(id = settingsItem.item.subtitleRes()),
-                                    leadingIconRes = settingsItem.item.getIcon(),
-                                    title = stringResource(id = settingsItem.item.titleRes()),
-                                    warnings = when (val item = settingsItem.item) {
-                                        is SettingsItem.TopLevelSettings.SecurityCenter -> {
-                                            if (item.securityProblems.isNotEmpty()) {
-                                                item.securityProblems.map { it.toProblemHeading() }.toPersistentList()
-                                            } else {
-                                                null
-                                            }
+                    is SettingsUiItem.Settings -> {
+                        item {
+                            DefaultSettingsItem(
+                                onClick = {
+                                    onSettingClick(settingsItem.item)
+                                },
+                                subtitle = stringResource(id = settingsItem.item.subtitleRes()),
+                                leadingIconRes = settingsItem.item.getIcon(),
+                                title = stringResource(id = settingsItem.item.titleRes()),
+                                warnings = when (val item = settingsItem.item) {
+                                    is SettingsItem.TopLevelSettings.SecurityCenter -> {
+                                        if (item.securityProblems.isNotEmpty()) {
+                                            item.securityProblems.map { it.toProblemHeading() }.toPersistentList()
+                                        } else {
+                                            null
                                         }
-
-                                        is SettingsItem.TopLevelSettings.Personas -> {
-                                            personaWarnings(item)
-                                        }
-
-                                        else -> null
                                     }
-                                )
-                            }
-                            item {
-                                HorizontalDivider(color = RadixTheme.colors.divider)
-                            }
+
+                                    is SettingsItem.TopLevelSettings.Personas -> {
+                                        personaWarnings(item)
+                                    }
+
+                                    else -> null
+                                }
+                            )
+                        }
+                        item {
+                            HorizontalDivider(color = RadixTheme.colors.divider)
                         }
                     }
                 }
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    Text(
-                        text = stringResource(
-                            R.string.settings_appVersion,
-                            BuildConfig.VERSION_NAME,
-                            BuildConfig.VERSION_CODE.toString()
-                        ),
-                        style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.textSecondary,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Text(
+                    text = stringResource(
+                        R.string.settings_appVersion,
+                        BuildConfig.VERSION_NAME,
+                        BuildConfig.VERSION_CODE.toString()
+                    ),
+                    style = RadixTheme.typography.body2Link,
+                    color = RadixTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
 
-                state.debugBuildInformation?.let { buildInfo ->
-                    item {
-                        DebugBuildInformation(buildInfo = buildInfo)
-                    }
+            state.debugBuildInformation?.let { buildInfo ->
+                item {
+                    DebugBuildInformation(buildInfo = buildInfo)
                 }
             }
         }
@@ -246,7 +244,6 @@ fun SettingsWithoutActiveConnectionPreview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -274,7 +271,6 @@ fun SettingsWithSecurityProblem5Preview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -313,7 +309,6 @@ fun SettingsWithSecurityProblems3And6Preview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -347,7 +342,6 @@ fun SettingsWithSecurityProblems7And9Preview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -381,7 +375,6 @@ fun SettingsWithSecurityProblems3And9Preview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -418,7 +411,6 @@ fun SettingsWithSecurityProblems3And5And9Preview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -455,7 +447,6 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenPersonasPreview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -489,7 +480,6 @@ fun SettingsWithSecurityProblems7And9AndOnlyHiddenPersonasPreview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }
@@ -526,7 +516,6 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenEntitiesPreview() {
                 ).map { SettingsUiItem.Settings(it) }.toPersistentList()
             ),
             onSettingClick = {},
-            onBackClick = {}
         )
     }
 }

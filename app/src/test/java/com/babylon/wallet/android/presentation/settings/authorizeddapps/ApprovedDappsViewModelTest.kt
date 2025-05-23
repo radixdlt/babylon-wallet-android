@@ -11,6 +11,7 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ARG_DAPP_ADDRESS
+import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ARG_IS_READ_ONLY
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailEvent
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailViewModel
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.SelectedSheetState
@@ -110,6 +111,7 @@ internal class ApprovedDappsViewModelTest : StateViewModelTest<DappDetailViewMod
         super.setUp()
         val dApp = DApp.sampleMainnet()
         every { savedStateHandle.get<String>(ARG_DAPP_ADDRESS) } returns dApp.dAppAddress.string
+        every { savedStateHandle.get<Boolean>(ARG_IS_READ_ONLY) } returns false
         every { getProfileUseCase.flow } returns flowOf(profile)
         coEvery { getProfileUseCase() } returns profile
         coEvery { getDAppWithAssociatedResourcesUseCase(dApp.dAppAddress, false) } returns

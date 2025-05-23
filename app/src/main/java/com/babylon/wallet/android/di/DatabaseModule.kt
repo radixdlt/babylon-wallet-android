@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.di
 
 import android.content.Context
+import com.babylon.wallet.android.data.repository.cache.database.DAppDirectoryDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
@@ -43,5 +44,12 @@ object DatabaseModule {
         stateDatabase: StateDatabase
     ): AccountLockerDao {
         return stateDatabase.accountLockerDao()
+    }
+
+    @Provides
+    fun provideDAppDirectoryDao(
+        stateDatabase: StateDatabase
+    ): DAppDirectoryDao {
+        return stateDatabase.dAppDirectoryDao()
     }
 }

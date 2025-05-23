@@ -4,14 +4,15 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
 
 const val MAIN_ROUTE = "main"
 
 @Suppress("LongParameterList")
 fun NavGraphBuilder.main(
     viewModel: MainViewModel,
-    onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit,
     onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -21,7 +22,9 @@ fun NavGraphBuilder.main(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
-    onNavigateToLinkConnector: () -> Unit
+    onNavigateToLinkConnector: () -> Unit,
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
+    onDAppClick: (AccountAddress) -> Unit
 ) {
     composable(
         route = MAIN_ROUTE,
@@ -32,7 +35,6 @@ fun NavGraphBuilder.main(
     ) {
         MainScreen(
             viewModel = viewModel,
-            onMenuClick = onMenuClick,
             onAccountClick = onAccountClick,
             onAccountCreationClick = onAccountCreationClick,
             onNavigateToOnBoarding = onNavigateToOnBoarding,
@@ -42,7 +44,9 @@ fun NavGraphBuilder.main(
             showNPSSurvey = showNPSSurvey,
             onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
             onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
-            onNavigateToLinkConnector = onNavigateToLinkConnector
+            onNavigateToLinkConnector = onNavigateToLinkConnector,
+            onSettingClick = onSettingClick,
+            onDAppClick = onDAppClick
         )
     }
 }
