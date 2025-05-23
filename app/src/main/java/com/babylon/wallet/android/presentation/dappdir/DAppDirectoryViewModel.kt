@@ -94,7 +94,7 @@ class DAppDirectoryViewModel @Inject constructor(
                             val (name, description) = when (val details = directoryDApp.details) {
                                 is DirectoryDAppWithDetails.Details.Data ->
                                     (details.dApp.name ?: directoryDApp.directoryDefinition.name) to
-                                            details.dApp.description
+                                        details.dApp.description
 
                                 is DirectoryDAppWithDetails.Details.Error ->
                                     directoryDApp.directoryDefinition.name to null
@@ -129,6 +129,7 @@ class DAppDirectoryViewModel @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun fetchDAppsDirectory() {
         getDAppDirectoryUseCase(isRefreshing = state.value.isRefreshing).map { directory ->
             directoryState.update {
@@ -141,8 +142,8 @@ class DAppDirectoryViewModel @Inject constructor(
             }
 
             dAppDataState.update {
-                directory.all.associate {
-                    it.dAppDefinitionAddress to DirectoryDAppWithDetails.Details.Fetching
+                directory.all.associate { dApp ->
+                    dApp.dAppDefinitionAddress to DirectoryDAppWithDetails.Details.Fetching
                 }
             }
 
@@ -241,7 +242,6 @@ class DAppDirectoryViewModel @Inject constructor(
     ) : UiState {
 
         val isDirectoryEmpty: Boolean = directory.isEmpty()
-
     }
 }
 

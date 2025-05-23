@@ -173,11 +173,13 @@ private fun MainContent(
                             icon = {
                                 Icon(
                                     modifier = Modifier.size(24.dp),
-                                    painter = painterResource(id = when (tab) {
-                                        MainTab.Wallet -> DSR.drawable.ic_radix
-                                        MainTab.Discover -> DSR.drawable.ic_authorized_dapps
-                                        MainTab.Settings -> R.drawable.ic_home_settings
-                                    }),
+                                    painter = painterResource(
+                                        id = when (tab) {
+                                            MainTab.Wallet -> DSR.drawable.ic_radix
+                                            MainTab.Discover -> DSR.drawable.ic_authorized_dapps
+                                            MainTab.Settings -> R.drawable.ic_home_settings
+                                        }
+                                    ),
                                     contentDescription = tab.name,
                                     tint = if (tab == state.selectedTab) {
                                         White
@@ -190,7 +192,6 @@ private fun MainContent(
                     }
                 }
             }
-
         },
         contentWindowInsets = WindowInsets.none
     ) { padding ->
@@ -201,7 +202,6 @@ private fun MainContent(
         ) {
             composable(MainTab.Wallet.route) {
                 WalletScreen(
-                    modifier = modifier,
                     viewModel = hiltViewModel(),
                     onAccountClick = onAccountClick,
                     onAccountCreationClick = onAccountCreationClick,

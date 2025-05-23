@@ -25,5 +25,4 @@ data class DAppDirectory(
 ) {
 
     val all: List<DirectoryDefinition> = highlighted.orEmpty() + others.orEmpty()
-
 }

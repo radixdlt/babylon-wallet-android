@@ -34,7 +34,7 @@ class GetDAppWithResourcesUseCase @Inject constructor(
         ).getOrNull().orEmpty()
         val verifiedResources = resources.filter {
             it.metadata.dAppDefinitions().contains(definitionAddress.string) ||
-                    it.metadata.dAppDefinition() == definitionAddress.string
+                it.metadata.dAppDefinition() == definitionAddress.string
         }
 
         DAppWithResources(
