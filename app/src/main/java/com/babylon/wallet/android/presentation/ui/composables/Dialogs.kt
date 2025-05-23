@@ -444,13 +444,20 @@ fun FailureDialogContent(
     transactionId: TransactionIntentHash?,
     isMobileConnect: Boolean
 ) {
-    Column {
+    Column(
+        modifier = modifier
+            .background(color = if (isMobileConnect) {
+                RadixTheme.colors.backgroundSecondary
+            } else {
+                RadixTheme.colors.background
+            })
+            .navigationBarsPadding()
+    ) {
         Column(
-            modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(color = RadixTheme.colors.background)
-                .padding(RadixTheme.dimensions.paddingLarge)
-                .navigationBarsPadding(),
+                .padding(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
