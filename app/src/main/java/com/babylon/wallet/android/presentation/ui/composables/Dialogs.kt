@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -53,6 +54,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -269,7 +271,8 @@ fun BasicPromptAlertDialog(
     message: (@Composable () -> Unit)? = null,
     confirmText: String = stringResource(id = R.string.common_confirm),
     dismissText: String? = stringResource(id = R.string.common_cancel),
-    confirmTextColor: Color = RadixTheme.colors.primaryButton
+    confirmTextColor: Color = RadixTheme.colors.primaryButton,
+    properties: DialogProperties = DialogProperties()
 ) {
     AlertDialog(
         modifier = modifier,
@@ -294,7 +297,8 @@ fun BasicPromptAlertDialog(
         title = title,
         text = message,
         shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.background,
+        properties = properties
     )
 }
 
@@ -445,7 +449,8 @@ fun FailureDialogContent(
             modifier
                 .fillMaxWidth()
                 .background(color = RadixTheme.colors.background)
-                .padding(RadixTheme.dimensions.paddingLarge),
+                .padding(RadixTheme.dimensions.paddingLarge)
+                .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
