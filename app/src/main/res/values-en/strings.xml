@@ -1636,7 +1636,9 @@ Code: %s</string>
   <string name="newFactor_error_notCreated">Factor not created</string>
   <string name="newFactor_success_title">Success</string>
   <string name="newFactor_success_subtitle">Security factor added successfully</string>
-  <string name="dappDirectory_title">DApp Directory</string>
+  <string name="dappDirectory_title">dApp Directory</string>
   <string name="dappDirectory_search_placeholder">Search for a dApp...</string>
   <string name="dappDirectory_filters_title">Tags</string>
+  <string name="dappDirectory_error_heading">Failed to load dApps.</string>
+  <string name="dappDirectory_error_message">Pull to refresh</string>
 </resources>
