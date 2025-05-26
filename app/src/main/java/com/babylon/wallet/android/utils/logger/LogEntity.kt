@@ -41,6 +41,6 @@ data class LogEntity(
 
     companion object {
         @SuppressLint("SimpleDateFormat")
-        private val dateFormat = SimpleDateFormat("YYYY-mm-dd hh:mm:ss.SSS")
+        private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     }
 }
