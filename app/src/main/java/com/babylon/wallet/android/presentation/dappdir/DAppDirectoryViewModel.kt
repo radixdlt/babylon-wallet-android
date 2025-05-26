@@ -228,6 +228,12 @@ class DAppDirectoryViewModel @Inject constructor(
         }
     }
 
+    fun onAllFilterTagsRemoved() {
+        filtersState.update {
+            it.copy(selectedTags = emptySet())
+        }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
