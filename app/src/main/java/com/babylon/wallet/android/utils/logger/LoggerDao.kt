@@ -22,6 +22,8 @@ interface LoggerDao {
     ): List<LogEntity>
 
     companion object {
-        private fun oneDayBefore(): Long = Date().time - (86400 * 1000)
+        private const val ONE_DAY_MILLIS = 86400 * 1000
+
+        private fun oneDayBefore(): Long = Date().time - ONE_DAY_MILLIS
     }
 }
