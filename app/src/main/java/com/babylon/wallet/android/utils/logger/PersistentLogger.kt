@@ -53,7 +53,7 @@ class PersistentLogger @Inject constructor(
     }
 
     suspend fun exportToFile(file: Uri) = withContext(dispatcher) {
-        val logs = db.logger().getLastDaysLogs()
+        val logs = db.logger().getLogs()
 
         val builder = StringBuilder()
 
