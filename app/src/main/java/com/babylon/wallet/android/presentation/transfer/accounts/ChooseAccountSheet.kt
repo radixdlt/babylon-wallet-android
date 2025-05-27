@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -110,7 +114,8 @@ fun ChooseAccountSheet(
                     onClick = onChooseAccountSubmitted,
                     text = stringResource(id = R.string.common_choose),
                     enabled = state.isChooseButtonEnabled,
-                    isLoading = state.isLoadingAssetsForAccount
+                    isLoading = state.isLoadingAssetsForAccount,
+                    insets = WindowInsets.navigationBars.union(WindowInsets.ime)
                 )
             }
         }
