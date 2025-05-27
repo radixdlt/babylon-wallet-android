@@ -366,8 +366,7 @@ fun TransferContent(
                     ChooseAccountSheet(
                         modifier = Modifier
                             .background(RadixTheme.colors.backgroundSecondary)
-                            .fillMaxHeight(0.9f)
-                            .imePadding(),
+                            .fillMaxHeight(0.9f),
                         onCloseClick = onSheetClosed,
                         state = sheetState,
                         onOwnedAccountSelected = onOwnedAccountSelected,
