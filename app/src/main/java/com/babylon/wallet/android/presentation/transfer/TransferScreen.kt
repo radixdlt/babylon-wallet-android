@@ -79,7 +79,8 @@ fun TransferScreen(
         state = state,
         onMessageStateChanged = viewModel::onMessageStateChanged,
         onMessageChanged = viewModel::onMessageChanged,
-        onAddressTyped = viewModel::onAddressTyped,
+        onReceiverChanged = viewModel::onReceiverChanged,
+        onErrorMessageShown = viewModel::onErrorMessageShown,
         onOwnedAccountSelected = viewModel::onOwnedAccountSelected,
         onChooseAccountForSkeleton = viewModel::onChooseAccountForSkeleton,
         onChooseAccountSubmitted = viewModel::onChooseAccountSubmitted,
@@ -115,7 +116,8 @@ fun TransferContent(
     state: State,
     onMessageStateChanged: (Boolean) -> Unit,
     onMessageChanged: (String) -> Unit,
-    onAddressTyped: (String) -> Unit,
+    onReceiverChanged: (String) -> Unit,
+    onErrorMessageShown: () -> Unit,
     onOwnedAccountSelected: (Account) -> Unit,
     onChooseAccountForSkeleton: (TargetAccount) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
@@ -374,7 +376,8 @@ fun TransferContent(
                         onAddressDecoded = onAddressDecoded,
                         onQrCodeIconClick = onQrCodeIconClick,
                         cancelQrScan = cancelQrScan,
-                        onAddressChanged = onAddressTyped
+                        onReceiverChanged = onReceiverChanged,
+                        onErrorMessageShown = onErrorMessageShown
                     )
                 }
 
@@ -413,7 +416,8 @@ fun TransferContentPreview() {
             state = State(fromAccount = Account.sampleMainnet()),
             onMessageStateChanged = {},
             onMessageChanged = {},
-            onAddressTyped = {},
+            onReceiverChanged = {},
+            onErrorMessageShown = {},
             onOwnedAccountSelected = {},
             onChooseAccountForSkeleton = {},
             onChooseAccountSubmitted = {},

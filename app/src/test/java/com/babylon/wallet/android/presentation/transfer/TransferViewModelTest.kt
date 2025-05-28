@@ -23,6 +23,7 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -47,7 +48,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
-class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
+class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
@@ -193,7 +194,7 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
             TransferViewModel.State.Sheet.ChooseAccounts(
                 selectedAccount = skeleton,
                 ownedAccounts = persistentListOf(),
-                isLoadingAssetsForAccount = false
+                isResolving = false
             ),
             awaitItem().sheet
         )
@@ -206,7 +207,7 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
                 TransferViewModel.State.Sheet.ChooseAccounts(
                     selectedAccount = skeleton,
                     ownedAccounts = remainingAccounts.toPersistentList(),
-                    isLoadingAssetsForAccount = false
+                    isResolving = false
                 ),
                 awaitItem().sheet
             )
@@ -246,15 +247,16 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private suspend fun ReceiveTurbine<TransferViewModel.State>.assertOtherAccountSubmitted(viewModel: TransferViewModel, address: String) {
         val skeletonAccount = viewModel.state.value.targetAccounts[0]
-        viewModel.onAddressTyped(address)
+        viewModel.onReceiverChanged(address)
 
         val sheetState = awaitItem().sheet as TransferViewModel.State.Sheet.ChooseAccounts
         // Check that the address is passed as valid
         assertEquals(
             sheetState.selectedAccount,
             TargetAccount.Other(
-                typedAddress = address,
-                validity = TargetAccount.Other.AddressValidity.VALID,
+                typed = address,
+                validity = TargetAccount.Other.InputValidity.VALID,
+                resolvedInput = null,
                 id = skeletonAccount.id
             )
         )
@@ -268,8 +270,11 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
                 fromAccount = fromAccount,
                 targetAccounts = persistentListOf(
                     TargetAccount.Other(
-                        typedAddress = address,
-                        validity = TargetAccount.Other.AddressValidity.VALID,
+                        typed = address,
+                        validity = TargetAccount.Other.InputValidity.VALID,
+                        resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
+                            accountAddress = AccountAddress.init(address)
+                        ),
                         id = skeletonAccount.id
                     )
                 ),

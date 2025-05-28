@@ -63,6 +63,7 @@ firebaseCrashlyticsPlugin = "3.0.3"
 hiltPlugin = "2.51.1"
 sonarqubePlugin = "5.0.0.4638"
 markdown = "0.25.0"
+palette = "1.0.0"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -149,6 +150,7 @@ androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "android
 androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
 lifeCycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidxLifecycle" }
 markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }
+palette = { module = "androidx.palette:palette", version.ref = "palette" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
