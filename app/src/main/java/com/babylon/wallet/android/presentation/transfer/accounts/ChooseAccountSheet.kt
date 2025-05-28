@@ -55,7 +55,9 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSe
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -69,15 +71,23 @@ fun ChooseAccountSheet(
     modifier: Modifier = Modifier,
     state: ChooseAccounts,
     onCloseClick: () -> Unit,
-    onAddressChanged: (String) -> Unit,
+    onReceiverChanged: (String) -> Unit,
     onOwnedAccountSelected: (Account) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     onQrCodeIconClick: () -> Unit,
     onAddressDecoded: (String) -> Unit,
-    cancelQrScan: () -> Unit
+    cancelQrScan: () -> Unit,
+    onErrorMessageShown: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val focusManager = LocalFocusManager.current
+
+    if (state.uiMessage != null) {
+        ErrorAlertDialog(
+            cancel = onErrorMessageShown,
+            errorMessage = state.uiMessage
+        )
+    }
 
     Scaffold(
         modifier = modifier,
@@ -114,7 +124,7 @@ fun ChooseAccountSheet(
                     onClick = onChooseAccountSubmitted,
                     text = stringResource(id = R.string.common_choose),
                     enabled = state.isChooseButtonEnabled,
-                    isLoading = state.isLoadingAssetsForAccount,
+                    isLoading = state.isResolving,
                     insets = WindowInsets.navigationBars.union(WindowInsets.ime)
                 )
             }
@@ -126,7 +136,7 @@ fun ChooseAccountSheet(
                     modifier = Modifier
                         .background(color = RadixTheme.colors.background),
                     contentPadding = padding,
-                    onAddressChanged = onAddressChanged,
+                    onReceiverChanged = onReceiverChanged,
                     state = state,
                     cameraPermissionState = cameraPermissionState,
                     onQrCodeIconClick = onQrCodeIconClick,
@@ -156,7 +166,7 @@ private fun ChooseAccountContent(
     focusManager: FocusManager,
     cameraPermissionState: PermissionState,
     state: ChooseAccounts,
-    onAddressChanged: (String) -> Unit,
+    onReceiverChanged: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
     onOwnedAccountSelected: (Account) -> Unit
 ) {
@@ -178,7 +188,7 @@ private fun ChooseAccountContent(
         item {
             val (typedAddress, errorResource) = remember(state.selectedAccount) {
                 if (state.selectedAccount is TargetAccount.Other) {
-                    val address = state.selectedAccount.typedAddress
+                    val address = state.selectedAccount.typed
 
                     // Do not show the error when the field has an empty value
                     if (address.isBlank()) {
@@ -186,10 +196,10 @@ private fun ChooseAccountContent(
                     }
 
                     val errorResource = when (state.selectedAccount.validity) {
-                        TargetAccount.Other.AddressValidity.VALID -> null
-                        TargetAccount.Other.AddressValidity.INVALID ->
+                        TargetAccount.Other.InputValidity.VALID -> null
+                        TargetAccount.Other.InputValidity.INVALID ->
                             R.string.assetTransfer_chooseReceivingAccount_invalidAddressError
-                        TargetAccount.Other.AddressValidity.USED ->
+                        TargetAccount.Other.InputValidity.ADDRESS_USED ->
                             R.string.assetTransfer_chooseReceivingAccount_alreadyAddedError
                     }
 
@@ -209,7 +219,7 @@ private fun ChooseAccountContent(
                         isFocused = it.isFocused
                     }
                     .padding(RadixTheme.dimensions.paddingDefault),
-                onValueChanged = onAddressChanged,
+                onValueChanged = onReceiverChanged,
                 value = typedAddress,
                 hint = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_addressFieldPlaceholder),
                 error = if (!isFocused) {
@@ -225,7 +235,7 @@ private fun ChooseAccountContent(
                         if (typedAddress.isNotEmpty()) {
                             IconButton(
                                 onClick = {
-                                    onAddressChanged("")
+                                    onReceiverChanged("")
                                     focusManager.clearFocus()
                                 }
                             ) {
@@ -311,7 +321,7 @@ private fun ChooseAccountContent(
                         focusManager.clearFocus(true)
                     }
                 },
-                isEnabledForSelection = state.isLoadingAssetsForAccount.not()
+                isEnabledForSelection = state.isResolving.not()
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }

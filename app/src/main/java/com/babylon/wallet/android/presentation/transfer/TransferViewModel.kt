@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
+import com.babylon.wallet.android.presentation.transfer.accounts.Domain
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
@@ -25,7 +26,6 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formattedTextField
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
@@ -212,7 +212,9 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    fun onAddressTyped(address: String) = accountsChooserDelegate.addressTyped(address = address)
+    fun onReceiverChanged(receiver: String) = accountsChooserDelegate.onReceiverChanged(receiver = receiver)
+
+    fun onErrorMessageShown() = accountsChooserDelegate.onErrorMessageShown()
 
     fun onOwnedAccountSelected(account: Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
 
@@ -239,7 +241,7 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    fun onQRAddressDecoded(address: String) = accountsChooserDelegate.onQRAddressDecoded(address = address)
+    fun onQRAddressDecoded(address: String) = accountsChooserDelegate.onQRDecoded(receiver = address)
 
     fun onQrCodeIconClick() = accountsChooserDelegate.onQRModeStarted()
 
@@ -446,20 +448,27 @@ class TransferViewModel @Inject constructor(
                 val selectedAccount: TargetAccount,
                 val ownedAccounts: PersistentList<Account>,
                 val mode: Mode = Mode.Chooser,
-                val isLoadingAssetsForAccount: Boolean
+                val uiMessage: UiMessage.ErrorMessage? = null,
+                val isResolving: Boolean
             ) : Sheet {
 
                 val isOwnedAccountsEnabled: Boolean
                     get() = when (selectedAccount) {
-                        is TargetAccount.Other -> selectedAccount.address == null
+                        is TargetAccount.Other -> selectedAccount.address != null
                         is TargetAccount.Owned -> true
                         is TargetAccount.Skeleton -> true
                     }
 
                 val isChooseButtonEnabled: Boolean
-                    get() = selectedAccount.validatedAddress != null
+                    get() = when (selectedAccount) {
+                        is TargetAccount.Other -> selectedAccount.validity ==
+                                TargetAccount.Other.InputValidity.VALID
+                        is TargetAccount.Owned -> true
+                        is TargetAccount.Skeleton -> false
+                    }
 
-                fun isOwnedAccountSelected(account: Account) = (selectedAccount as? TargetAccount.Owned)?.account == account
+                fun isOwnedAccountSelected(account: Account) =
+                    (selectedAccount as? TargetAccount.Owned)?.account == account
 
                 enum class Mode {
                     Chooser,
@@ -572,7 +581,7 @@ sealed class TargetAccount {
     val validatedAddress: AccountAddress?
         get() = when (this) {
             is Owned -> address
-            is Other -> if (validity == Other.AddressValidity.VALID) address else null
+            is Other -> if (validity == Other.InputValidity.VALID) address else null
             is Skeleton -> null
         }
 
@@ -642,19 +651,31 @@ sealed class TargetAccount {
     }
 
     data class Other(
-        val typedAddress: String = "",
-        val validity: AddressValidity,
+        val typed: String = "",
+        val resolvedInput: ResolvedInput?,
+        val validity: InputValidity,
         override val id: String,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
-        override val address: AccountAddress? = runCatching { AccountAddress.init(typedAddress) }.getOrNull()
+        override val address: AccountAddress? = resolvedInput?.let { input ->
+            when (input) {
+                is ResolvedInput.AccountInput -> input.accountAddress
+                is ResolvedInput.DomainInput -> input.domain.accountAddress
+            }
+        }
 
         override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
 
-        enum class AddressValidity {
+        enum class InputValidity {
             VALID,
             INVALID,
-            USED
+            ADDRESS_USED
+        }
+
+        sealed interface ResolvedInput {
+            data class AccountInput(val accountAddress: AccountAddress): ResolvedInput
+
+            data class DomainInput(val domain: Domain): ResolvedInput
         }
     }
 

@@ -2,16 +2,20 @@ package com.babylon.wallet.android.presentation.transfer.accounts
 
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.NetworkContent
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
@@ -34,7 +38,7 @@ class AccountsChooserDelegate @Inject constructor(
                 sheet = ChooseAccounts(
                     selectedAccount = slotAccount,
                     ownedAccounts = persistentListOf(),
-                    isLoadingAssetsForAccount = false
+                    isResolving = false
                 )
             )
         }
@@ -46,30 +50,43 @@ class AccountsChooserDelegate @Inject constructor(
         updateSheetState { it.copy(ownedAccounts = accounts.toPersistentList()) }
     }
 
-    fun addressTyped(address: String) {
+    fun onReceiverChanged(receiver: String) {
         val currentNetworkId = _state.value.fromAccount?.networkId ?: return
         updateSheetState { sheetState ->
-            val validity = if (AccountAddress.validatedOnNetworkOrNull(address, currentNetworkId) == null) {
-                TargetAccount.Other.AddressValidity.INVALID
-            } else {
+            val maybeAccountAddress =
+                AccountAddress.validatedOnNetworkOrNull(receiver, currentNetworkId)
+
+            val inputValidity = if (maybeAccountAddress != null) {
                 val fromAccountAddressString = _state.value.fromAccount?.address?.string.orEmpty()
-                val selectedAccountAddressesString = _state.value.targetAccounts.map { it.address?.string.orEmpty() }
-                if (address in selectedAccountAddressesString || address == fromAccountAddressString) {
-                    TargetAccount.Other.AddressValidity.USED
+                val selectedAccountAddressesString =
+                    _state.value.targetAccounts.map { it.address?.string.orEmpty() }
+                if (receiver in selectedAccountAddressesString || receiver == fromAccountAddressString) {
+                    TargetAccount.Other.InputValidity.ADDRESS_USED
                 } else {
-                    TargetAccount.Other.AddressValidity.VALID
+                    TargetAccount.Other.InputValidity.VALID
                 }
+            } else if (isDomainValid(receiver)) {
+                TargetAccount.Other.InputValidity.VALID
+            } else {
+                TargetAccount.Other.InputValidity.INVALID
             }
+
+
             sheetState.copy(
                 selectedAccount = TargetAccount.Other(
-                    typedAddress = address,
-                    validity = validity,
+                    typed = receiver,
+                    resolvedInput = null,
+                    validity = inputValidity,
                     id = sheetState.selectedAccount.id,
                     spendingAssets = sheetState.selectedAccount.spendingAssets
                 ),
                 mode = ChooseAccounts.Mode.Chooser
             )
         }
+    }
+
+    fun onErrorMessageShown() {
+        updateSheetState { it.copy(uiMessage = null) }
     }
 
     fun onQRModeStarted() {
@@ -80,7 +97,7 @@ class AccountsChooserDelegate @Inject constructor(
         updateSheetState { it.copy(mode = ChooseAccounts.Mode.Chooser) }
     }
 
-    fun onQRAddressDecoded(address: String) = addressTyped(address = address)
+    fun onQRDecoded(receiver: String) = onReceiverChanged(receiver = receiver)
 
     fun onOwnedAccountSelected(account: Account) {
         updateSheetState {
@@ -96,20 +113,62 @@ class AccountsChooserDelegate @Inject constructor(
 
     suspend fun chooseAccountSubmitted() {
         val sheetState = _state.value.sheet as? ChooseAccounts ?: return
+        val networkId = _state.value.fromAccount?.networkId ?: return
 
         if (!sheetState.isChooseButtonEnabled) return
 
         _state.update {
             it.copy(
                 sheet = sheetState.copy(
-                    isLoadingAssetsForAccount = true
+                    isResolving = true
                 )
             )
         }
 
+        // Resolve selected account
+        val selectedAccountWithResolvedInput = when (val selectedAccount = sheetState.selectedAccount) {
+            is TargetAccount.Other -> {
+                val accountAddress = AccountAddress.validatedOnNetworkOrNull(
+                    validating = selectedAccount.typed,
+                    networkId = networkId
+                )
+
+                if (accountAddress != null) {
+                    selectedAccount.copy(
+                        resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
+                            accountAddress
+                        )
+                    )
+                } else {
+                    val domain = resolveDomain(selectedAccount.typed)
+                        .onFailure { error ->
+                            _state.update {
+                                it.copy(
+                                    sheet = sheetState.copy(
+                                        isResolving = false,
+                                        uiMessage = UiMessage.ErrorMessage(error)
+                                    )
+                                )
+                            }
+                        }
+                        .getOrNull() ?: return
+
+                    selectedAccount.copy(
+                        resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
+                            domain
+                        )
+                    )
+                }
+            }
+
+            is TargetAccount.Owned -> sheetState.selectedAccount
+            is TargetAccount.Skeleton -> return
+        }
+
         _state.update { state ->
-            val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
-            val selectedAccount = if (ownedAccount != null) {
+            val ownedAccount =
+                sheetState.ownedAccounts.find { it.address == selectedAccountWithResolvedInput.address }
+            val resolvedAccount = if (ownedAccount != null) {
                 // if the target owned account has accept known rule then we need to fetch its known resources
                 // in order to later check if a an extra signature is required
                 val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule
@@ -123,23 +182,21 @@ class AccountsChooserDelegate @Inject constructor(
                     } else {
                         emptyList()
                     },
-                    id = sheetState.selectedAccount.id,
-                    spendingAssets = sheetState.selectedAccount.spendingAssets
+                    id = selectedAccountWithResolvedInput.id,
+                    spendingAssets = selectedAccountWithResolvedInput.spendingAssets
                 )
             } else {
-                sheetState.selectedAccount
-            }
-
-            val targetAccounts = state.targetAccounts.map { targetAccount ->
-                if (targetAccount.id == selectedAccount.id) {
-                    selectedAccount
-                } else {
-                    targetAccount
-                }
+                selectedAccountWithResolvedInput
             }
 
             state.copy(
-                targetAccounts = targetAccounts.toPersistentList(),
+                targetAccounts = state.targetAccounts.map { targetAccount ->
+                    if (targetAccount.id == resolvedAccount.id) {
+                        resolvedAccount
+                    } else {
+                        targetAccount
+                    }
+                }.toPersistentList(),
                 sheet = TransferViewModel.State.Sheet.None,
                 accountDepositResourceRulesSet = NetworkContent.None
             )
@@ -171,4 +228,50 @@ class AccountsChooserDelegate @Inject constructor(
             }
         }
     }
+
+    // TODO
+    private fun isDomainValid(receiver: String): Boolean {
+        return receiver.endsWith(".xrd")
+    }
+
+    private suspend fun resolveDomain(receiver: String): Result<Domain> {
+        val knownDomains = listOf(Domain.settlement1, Domain.settlement2, Domain.settlement4)
+
+        delay(500)
+        val domain = knownDomains.find { it.name == receiver }
+
+        return if (domain != null) {
+            Result.success(domain)
+        } else {
+            Result.failure(CommonException.UnknownAccount())
+        }
+    }
+}
+
+data class Domain(
+    val accountAddress: AccountAddress,
+    val imageUrl: String,
+    val name: String
+) {
+
+    companion object {
+        val settlement1 = Domain(
+            accountAddress = AccountAddress.init("account_tdx_2_129v4x3e4u5rgyz6239k92suwx70rarx33hwfl3prm54hv2ca9lp2kl"),
+            imageUrl = "https://qr.rns.foundation/settlement1.xrd",
+            name = "settlement1.xrd"
+        )
+
+        val settlement2 = Domain(
+            accountAddress = AccountAddress.init("account_tdx_2_129v4x3e4u5rgyz6239k92suwx70rarx33hwfl3prm54hv2ca9lp2kl"),
+            imageUrl = "https://qr.rns.foundation/settlement2.xrd",
+            name = "settlement2.xrd"
+        )
+
+        val settlement4 = Domain(
+            accountAddress = AccountAddress.init("account_tdx_2_129v4x3e4u5rgyz6239k92suwx70rarx33hwfl3prm54hv2ca9lp2kl"),
+            imageUrl = "https://qr.rns.foundation/settlement4.xrd",
+            name = "settlement4.xrd"
+        )
+    }
+
 }
