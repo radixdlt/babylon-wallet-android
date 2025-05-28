@@ -12,7 +12,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
-import com.babylon.wallet.android.presentation.transfer.accounts.Domain
+import com.babylon.wallet.android.presentation.transfer.accounts.RnsDomain
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
@@ -675,7 +675,7 @@ sealed class TargetAccount {
         sealed interface ResolvedInput {
             data class AccountInput(val accountAddress: AccountAddress): ResolvedInput
 
-            data class DomainInput(val domain: Domain): ResolvedInput
+            data class DomainInput(val domain: RnsDomain): ResolvedInput
         }
     }
 

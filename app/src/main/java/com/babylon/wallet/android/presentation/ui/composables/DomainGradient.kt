@@ -17,12 +17,12 @@ import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transfer.accounts.Domain
+import com.babylon.wallet.android.presentation.transfer.accounts.RnsDomain
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 
 @Composable
 fun Modifier.rnsGradient(
-    domain: Domain,
+    domain: RnsDomain,
     defaultColor: Color,
     shape: Shape
 ): Modifier {

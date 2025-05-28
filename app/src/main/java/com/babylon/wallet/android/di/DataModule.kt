@@ -20,6 +20,8 @@ import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoReposit
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepositoryImpl
+import com.babylon.wallet.android.data.repository.rns.RNSRepository
+import com.babylon.wallet.android.data.repository.rns.RNSRepositoryImpl
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.state.StateRepositoryImpl
 import com.babylon.wallet.android.data.repository.stream.StreamRepository
@@ -138,4 +140,9 @@ interface DataModule {
     fun bindDAppDirectoryRepository(
         dAppDirectoryRepository: DAppDirectoryRepositoryImpl
     ): DAppDirectoryRepository
+
+    @Binds
+    fun bindRNSRepository(
+        rnsRepository: RNSRepositoryImpl
+    ): RNSRepository
 }

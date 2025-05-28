@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.accounts
 
+import com.babylon.wallet.android.domain.usecases.IsValidRadixDomainUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveRadixDomainUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -9,13 +11,10 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
@@ -25,7 +24,9 @@ import javax.inject.Inject
 
 class AccountsChooserDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getWalletAssetsUseCase: GetWalletAssetsUseCase
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val resolveRadixDomainUseCase: ResolveRadixDomainUseCase,
+    private val isValidRadixDomainUseCase: IsValidRadixDomainUseCase
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onChooseAccount(
@@ -65,7 +66,7 @@ class AccountsChooserDelegate @Inject constructor(
                 } else {
                     TargetAccount.Other.InputValidity.VALID
                 }
-            } else if (isDomainValid(receiver)) {
+            } else if (isValidRadixDomainUseCase(receiver)) {
                 TargetAccount.Other.InputValidity.VALID
             } else {
                 TargetAccount.Other.InputValidity.INVALID
@@ -140,7 +141,7 @@ class AccountsChooserDelegate @Inject constructor(
                         )
                     )
                 } else {
-                    val domain = resolveDomain(selectedAccount.typed)
+                    val domain = resolveRadixDomainUseCase(selectedAccount.typed)
                         .onFailure { error ->
                             _state.update {
                                 it.copy(
@@ -229,49 +230,5 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
-    // TODO
-    private fun isDomainValid(receiver: String): Boolean {
-        return receiver.endsWith(".xrd")
-    }
-
-    private suspend fun resolveDomain(receiver: String): Result<Domain> {
-        val knownDomains = listOf(Domain.settlement1, Domain.settlement2, Domain.settlement4)
-
-        delay(500)
-        val domain = knownDomains.find { it.name == receiver }
-
-        return if (domain != null) {
-            Result.success(domain)
-        } else {
-            Result.failure(CommonException.UnknownAccount())
-        }
-    }
 }
 
-data class Domain(
-    val accountAddress: AccountAddress,
-    val imageUrl: String,
-    val name: String
-) {
-
-    companion object {
-        val settlement1 = Domain(
-            accountAddress = AccountAddress.init("account_tdx_2_129v4x3e4u5rgyz6239k92suwx70rarx33hwfl3prm54hv2ca9lp2kl"),
-            imageUrl = "https://qr.rns.foundation/settlement1.xrd",
-            name = "settlement1.xrd"
-        )
-
-        val settlement2 = Domain(
-            accountAddress = AccountAddress.init("account_tdx_2_129v4x3e4u5rgyz6239k92suwx70rarx33hwfl3prm54hv2ca9lp2kl"),
-            imageUrl = "https://qr.rns.foundation/settlement2.xrd",
-            name = "settlement2.xrd"
-        )
-
-        val settlement4 = Domain(
-            accountAddress = AccountAddress.init("account_tdx_2_129v4x3e4u5rgyz6239k92suwx70rarx33hwfl3prm54hv2ca9lp2kl"),
-            imageUrl = "https://qr.rns.foundation/settlement4.xrd",
-            name = "settlement4.xrd"
-        )
-    }
-
-}
