@@ -98,7 +98,10 @@ class AccountsChooserDelegate @Inject constructor(
         updateSheetState { it.copy(mode = ChooseAccounts.Mode.Chooser) }
     }
 
-    fun onQRDecoded(receiver: String) = onReceiverChanged(receiver = receiver)
+    fun onQRDecoded(code: String) {
+        val domain = code.replaceFirst(RNS_HRP, "")
+        onReceiverChanged(receiver = domain)
+    }
 
     fun onOwnedAccountSelected(account: Account) {
         updateSheetState {
@@ -230,5 +233,8 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
+    companion object {
+        private const val RNS_HRP = "rns:"
+    }
 }
 
