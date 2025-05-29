@@ -461,7 +461,8 @@ class TransferViewModel @Inject constructor(
 
                 val isChooseButtonEnabled: Boolean
                     get() = when (selectedAccount) {
-                        is TargetAccount.Other -> selectedAccount.validity ==
+                        is TargetAccount.Other ->
+                            selectedAccount.validity ==
                                 TargetAccount.Other.InputValidity.VALID
                         is TargetAccount.Owned -> true
                         is TargetAccount.Skeleton -> false
@@ -673,9 +674,9 @@ sealed class TargetAccount {
         }
 
         sealed interface ResolvedInput {
-            data class AccountInput(val accountAddress: AccountAddress): ResolvedInput
+            data class AccountInput(val accountAddress: AccountAddress) : ResolvedInput
 
-            data class DomainInput(val receiver: ResolvedReceiver): ResolvedInput
+            data class DomainInput(val receiver: ResolvedReceiver) : ResolvedInput
         }
     }
 

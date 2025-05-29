@@ -31,7 +31,7 @@ class RNSRepositoryImpl @Inject constructor(
     profileRepository: ProfileRepository,
     @ApplicationScope applicationScope: CoroutineScope,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-): RNSRepository {
+) : RNSRepository {
 
     private val networkingDriver: AndroidNetworkingDriver = AndroidNetworkingDriver(client = httpClient)
     private val nameServiceState: MutableStateFlow<RadixNameService?> = MutableStateFlow(null)
@@ -53,7 +53,7 @@ class RNSRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun resolveReceiver(domain: String): Result<ResolvedReceiver> = withContext(ioDispatcher){
+    override suspend fun resolveReceiver(domain: String): Result<ResolvedReceiver> = withContext(ioDispatcher) {
         val nameService = nameServiceState
             .filterNotNull()
             .first()

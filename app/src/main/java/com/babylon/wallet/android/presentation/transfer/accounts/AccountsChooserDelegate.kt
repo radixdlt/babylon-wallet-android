@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
@@ -72,7 +73,6 @@ class AccountsChooserDelegate @Inject constructor(
                 TargetAccount.Other.InputValidity.INVALID
             }
 
-
             sheetState.copy(
                 selectedAccount = TargetAccount.Other(
                     typed = receiver,
@@ -130,44 +130,10 @@ class AccountsChooserDelegate @Inject constructor(
         }
 
         // Resolve selected account
-        val selectedAccountWithResolvedInput = when (val selectedAccount = sheetState.selectedAccount) {
-            is TargetAccount.Other -> {
-                val accountAddress = AccountAddress.validatedOnNetworkOrNull(
-                    validating = selectedAccount.typed,
-                    networkId = networkId
-                )
-
-                if (accountAddress != null) {
-                    selectedAccount.copy(
-                        resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
-                            accountAddress
-                        )
-                    )
-                } else {
-                    val domain = resolveRadixDomainUseCase(selectedAccount.typed)
-                        .onFailure { error ->
-                            _state.update {
-                                it.copy(
-                                    sheet = sheetState.copy(
-                                        isResolving = false,
-                                        uiMessage = UiMessage.ErrorMessage(error)
-                                    )
-                                )
-                            }
-                        }
-                        .getOrNull() ?: return
-
-                    selectedAccount.copy(
-                        resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
-                            domain
-                        )
-                    )
-                }
-            }
-
-            is TargetAccount.Owned -> sheetState.selectedAccount
-            is TargetAccount.Skeleton -> return
-        }
+        val selectedAccountWithResolvedInput = resolveTargetAccount(
+            sheetState = sheetState,
+            networkId = networkId
+        ) ?: return
 
         _state.update { state ->
             val ownedAccount =
@@ -207,6 +173,51 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
+    private suspend fun resolveTargetAccount(
+        sheetState: ChooseAccounts,
+        networkId: NetworkId
+    ): TargetAccount? = when (val selectedAccount = sheetState.selectedAccount) {
+        is TargetAccount.Other -> {
+            val accountAddress = AccountAddress.validatedOnNetworkOrNull(
+                validating = selectedAccount.typed,
+                networkId = networkId
+            )
+
+            if (accountAddress != null) {
+                selectedAccount.copy(
+                    resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
+                        accountAddress
+                    )
+                )
+            } else {
+                resolveRadixDomainUseCase(selectedAccount.typed)
+                    .fold(
+                        onSuccess = { receiver ->
+                            selectedAccount.copy(
+                                resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
+                                    receiver = receiver
+                                )
+                            )
+                        },
+                        onFailure = { error ->
+                            _state.update {
+                                it.copy(
+                                    sheet = sheetState.copy(
+                                        isResolving = false,
+                                        uiMessage = UiMessage.ErrorMessage(error)
+                                    )
+                                )
+                            }
+                            null
+                        }
+                    )
+            }
+        }
+
+        is TargetAccount.Owned -> sheetState.selectedAccount
+        is TargetAccount.Skeleton -> null
+    }
+
     private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Account): List<ResourceAddress> {
         return getWalletAssetsUseCase.collect(
             account = ownedAccount,
@@ -237,4 +248,3 @@ class AccountsChooserDelegate @Inject constructor(
         private const val RNS_HRP = "rns:"
     }
 }
-
