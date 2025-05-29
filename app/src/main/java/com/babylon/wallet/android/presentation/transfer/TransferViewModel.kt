@@ -241,7 +241,7 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    fun onQRAddressDecoded(address: String) = accountsChooserDelegate.onQRDecoded(receiver = address)
+    fun onQRAddressDecoded(code: String) = accountsChooserDelegate.onQRDecoded(code = code)
 
     fun onQrCodeIconClick() = accountsChooserDelegate.onQRModeStarted()
 

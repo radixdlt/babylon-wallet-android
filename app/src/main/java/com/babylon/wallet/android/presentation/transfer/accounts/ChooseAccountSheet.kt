@@ -55,7 +55,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSe
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -75,7 +74,7 @@ fun ChooseAccountSheet(
     onOwnedAccountSelected: (Account) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     onQrCodeIconClick: () -> Unit,
-    onAddressDecoded: (String) -> Unit,
+    onQRDecoded: (String) -> Unit,
     cancelQrScan: () -> Unit,
     onErrorMessageShown: () -> Unit
 ) {
@@ -150,7 +149,7 @@ fun ChooseAccountSheet(
                         modifier = Modifier
                             .background(color = RadixTheme.colors.background)
                             .padding(padding),
-                        onAddressDecoded = onAddressDecoded
+                        onQRDecoded = onQRDecoded
                     )
                 }
             }
@@ -331,7 +330,7 @@ private fun ChooseAccountContent(
 @Composable
 fun ScanQRContent(
     modifier: Modifier = Modifier,
-    onAddressDecoded: (String) -> Unit
+    onQRDecoded: (String) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -354,7 +353,7 @@ fun ScanQRContent(
                 .clip(RadixTheme.shapes.roundedRectMedium),
             disableBackHandler = false
         ) {
-            onAddressDecoded(it)
+            onQRDecoded(it)
         }
     }
 }
