@@ -55,6 +55,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
@@ -96,6 +97,7 @@ fun DAppDirectoryScreen(
         onSearchTermUpdated = viewModel::onSearchTermUpdated,
         onFilterTagAdded = viewModel::onFilterTagAdded,
         onFilterTagRemoved = viewModel::onFilterTagRemoved,
+        onAllFilterTagsRemoved = viewModel::onAllFilterTagsRemoved,
         onMessageShown = viewModel::onMessageShown
     )
 }
@@ -109,6 +111,7 @@ private fun DAppDirectoryContent(
     onSearchTermUpdated: (String) -> Unit,
     onFilterTagAdded: (String) -> Unit,
     onFilterTagRemoved: (String) -> Unit,
+    onAllFilterTagsRemoved: () -> Unit,
     onMessageShown: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
@@ -332,6 +335,13 @@ private fun DAppDirectoryContent(
                         title = stringResource(R.string.dappDirectory_filters_title),
                         onBackClick = {
                             isFiltersVisible = false
+                        },
+                        backIconType = BackIconType.Close,
+                        actions = {
+                            RadixTextButton(
+                                text = stringResource(R.string.transactionHistory_filters_clearAll),
+                                onClick = onAllFilterTagsRemoved
+                            )
                         }
                     )
 
@@ -506,6 +516,7 @@ fun DAppDirectoryPreviewLight() {
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
+            onAllFilterTagsRemoved = {},
             onMessageShown = {}
         )
     }
@@ -532,6 +543,7 @@ fun DAppDirectoryPreviewDark() {
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
+            onAllFilterTagsRemoved = {},
             onMessageShown = {}
         )
     }
@@ -560,6 +572,7 @@ fun DAppDirectoryWithFiltersPreviewLight() {
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
+            onAllFilterTagsRemoved = {},
             onMessageShown = {}
         )
     }
@@ -588,6 +601,7 @@ fun DAppDirectoryWithFiltersPreviewDark() {
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
+            onAllFilterTagsRemoved = {},
             onMessageShown = {}
         )
     }
@@ -611,6 +625,7 @@ fun DAppDirectoryErrorPreviewLight() {
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
+            onAllFilterTagsRemoved = {},
             onMessageShown = {}
         )
     }
@@ -634,6 +649,7 @@ fun DAppDirectoryErrorPreviewDark() {
             onSearchTermUpdated = {},
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
+            onAllFilterTagsRemoved = {},
             onMessageShown = {}
         )
     }
