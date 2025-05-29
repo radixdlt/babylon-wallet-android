@@ -387,7 +387,7 @@ fun TargetAccountCardPreview() {
                             domain = DomainDetails(
                                 domain = "bob.xrd",
                                 owner = Account.sampleMainnet.bob.address,
-                                gradientColorStart = "#FF1744",
+                                gradientColorStart = "#009688",
                                 gradientColorEnd = "#8BC34A",
                             ),
                             account = Account.sampleMainnet.bob.address
