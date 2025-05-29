@@ -34,13 +34,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.presentation.transfer.accounts.RnsDomain
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.rnsGradient
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.DomainDetails
+import com.radixdlt.sargon.ResolvedReceiver
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -112,7 +113,7 @@ fun TargetAccountCard(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = when (val input = targetAccount.resolvedInput) {
                             is TargetAccount.Other.ResolvedInput.AccountInput -> stringResource(id = R.string.assetTransfer_accountList_externalAccountName)
-                            is TargetAccount.Other.ResolvedInput.DomainInput -> input.domain.name
+                            is TargetAccount.Other.ResolvedInput.DomainInput -> input.receiver.domain.domain
                             null -> ""
                         },
                         style = RadixTheme.typography.body1Header,
@@ -255,12 +256,7 @@ fun Modifier.header(
         when (targetAccount.resolvedInput) {
             is TargetAccount.Other.ResolvedInput.DomainInput -> this
                 .rnsGradient(
-                    domain = targetAccount.resolvedInput.domain,
-                    defaultColor = if (RadixTheme.config.isDarkTheme) {
-                        RadixTheme.colors.backgroundTertiary
-                    } else {
-                        RadixTheme.colors.iconSecondary
-                    },
+                    receiver = targetAccount.resolvedInput.receiver,
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
             else -> this
@@ -381,10 +377,14 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Other(
                     typed = "bob.xrd",
                     resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
-                        domain = RnsDomain(
-                            accountAddress = Account.sampleMainnet.bob.address,
-                            imageUrl = "",
-                            name = "bob.xrd"
+                        receiver = ResolvedReceiver(
+                            domain = DomainDetails(
+                                domain = "bob.xrd",
+                                owner = Account.sampleMainnet.bob.address,
+                                gradientColorStart = "#FF1744",
+                                gradientColorEnd = "#8BC34A",
+                            ),
+                            account = Account.sampleMainnet.bob.address
                         )
                     ),
                     validity = TargetAccount.Other.InputValidity.VALID,
