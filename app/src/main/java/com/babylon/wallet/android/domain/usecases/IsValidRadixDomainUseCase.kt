@@ -8,5 +8,4 @@ class IsValidRadixDomainUseCase @Inject constructor() {
     operator fun invoke(domain: String) = runCatching {
         rnsDomainValidated(domain = domain)
     }.map { true }.getOrNull() ?: false
-
 }

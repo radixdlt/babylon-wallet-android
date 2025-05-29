@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -112,7 +113,9 @@ fun TargetAccountCard(
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = when (val input = targetAccount.resolvedInput) {
-                            is TargetAccount.Other.ResolvedInput.AccountInput -> stringResource(id = R.string.assetTransfer_accountList_externalAccountName)
+                            is TargetAccount.Other.ResolvedInput.AccountInput -> stringResource(
+                                id = R.string.assetTransfer_accountList_externalAccountName
+                            )
                             is TargetAccount.Other.ResolvedInput.DomainInput -> input.receiver.domain.domain
                             null -> ""
                         },
@@ -232,42 +235,45 @@ fun TargetAccountCard(
     }
 }
 
-@Composable
 fun Modifier.header(
     targetAccount: TargetAccount,
     onChooseAccountClick: () -> Unit
-): Modifier = when (targetAccount) {
-    is TargetAccount.Skeleton ->
-        this
-            .clip(RadixTheme.shapes.roundedRectTopMedium)
-            .background(RadixTheme.colors.background)
-            .clickable {
-                onChooseAccountClick()
-            }
+) = composed {
+    when (targetAccount) {
+        is TargetAccount.Skeleton ->
+            this
+                .clip(RadixTheme.shapes.roundedRectTopMedium)
+                .background(RadixTheme.colors.background)
+                .clickable {
+                    onChooseAccountClick()
+                }
 
-    is TargetAccount.Owned ->
-        this
-            .background(
-                brush = targetAccount.account.appearanceId.gradient(),
-                shape = RadixTheme.shapes.roundedRectTopMedium
-            )
-
-    is TargetAccount.Other -> {
-        when (targetAccount.resolvedInput) {
-            is TargetAccount.Other.ResolvedInput.DomainInput -> this
-                .rnsGradient(
-                    receiver = targetAccount.resolvedInput.receiver,
-                    shape = RadixTheme.shapes.roundedRectTopMedium
-                )
-            else -> this
+        is TargetAccount.Owned ->
+            this
                 .background(
-                    color = if (RadixTheme.config.isDarkTheme) {
-                        RadixTheme.colors.backgroundTertiary
-                    } else {
-                        RadixTheme.colors.iconSecondary
-                    },
+                    brush = targetAccount.account.appearanceId.gradient(),
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
+
+        is TargetAccount.Other -> {
+            when (targetAccount.resolvedInput) {
+                is TargetAccount.Other.ResolvedInput.DomainInput ->
+                    this
+                        .rnsGradient(
+                            receiver = targetAccount.resolvedInput.receiver,
+                            shape = RadixTheme.shapes.roundedRectTopMedium
+                        )
+                else ->
+                    this
+                        .background(
+                            color = if (RadixTheme.config.isDarkTheme) {
+                                RadixTheme.colors.backgroundTertiary
+                            } else {
+                                RadixTheme.colors.iconSecondary
+                            },
+                            shape = RadixTheme.shapes.roundedRectTopMedium
+                        )
+            }
         }
     }
 }
