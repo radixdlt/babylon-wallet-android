@@ -6,7 +6,7 @@ import javax.inject.Inject
 class IsValidRadixDomainUseCase @Inject constructor() {
 
     operator fun invoke(domain: String) = runCatching {
-        rnsDomainValidated(raw = domain)
+        rnsDomainValidated(domain = domain)
     }.map { true }.getOrNull() ?: false
 
 }

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.repository.rns
 
-import com.babylon.wallet.android.presentation.transfer.accounts.RnsDomain
 import com.radixdlt.sargon.RadixNameService
+import com.radixdlt.sargon.ResolvedReceiver
 import com.radixdlt.sargon.os.driver.AndroidNetworkingDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +23,7 @@ import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 interface RNSRepository {
-    suspend fun resolveReceiver(domain: String): Result<RnsDomain>
+    suspend fun resolveReceiver(domain: String): Result<ResolvedReceiver>
 }
 
 class RNSRepositoryImpl @Inject constructor(
@@ -53,19 +53,13 @@ class RNSRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun resolveReceiver(domain: String): Result<RnsDomain> = withContext(ioDispatcher){
+    override suspend fun resolveReceiver(domain: String): Result<ResolvedReceiver> = withContext(ioDispatcher){
         val nameService = nameServiceState
             .filterNotNull()
             .first()
 
         runCatching {
             nameService.resolveReceiverAccountForDomain(domain)
-        }.map {
-            RnsDomain(
-                accountAddress = it.account,
-                name = it.domain,
-                imageUrl = "https://qr.rns.foundation/${it.domain}"
-            )
         }
     }
 }

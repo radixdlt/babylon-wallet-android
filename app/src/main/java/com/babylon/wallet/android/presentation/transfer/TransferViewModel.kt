@@ -12,7 +12,6 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
-import com.babylon.wallet.android.presentation.transfer.accounts.RnsDomain
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
@@ -21,6 +20,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.ResolvedReceiver
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.clamped
@@ -660,7 +660,7 @@ sealed class TargetAccount {
         override val address: AccountAddress? = resolvedInput?.let { input ->
             when (input) {
                 is ResolvedInput.AccountInput -> input.accountAddress
-                is ResolvedInput.DomainInput -> input.domain.accountAddress
+                is ResolvedInput.DomainInput -> input.receiver.account
             }
         }
 
@@ -675,7 +675,7 @@ sealed class TargetAccount {
         sealed interface ResolvedInput {
             data class AccountInput(val accountAddress: AccountAddress): ResolvedInput
 
-            data class DomainInput(val domain: RnsDomain): ResolvedInput
+            data class DomainInput(val receiver: ResolvedReceiver): ResolvedInput
         }
     }
 
