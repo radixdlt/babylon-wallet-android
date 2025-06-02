@@ -9,10 +9,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.core.graphics.toColorInt
 import androidx.palette.graphics.Palette
-import com.radixdlt.sargon.ResolvedReceiver
+import com.radixdlt.sargon.RnsDomainConfiguredReceiver
 
 fun Modifier.rnsGradient(
-    receiver: ResolvedReceiver,
+    receiver: RnsDomainConfiguredReceiver,
     shape: Shape
 ) = composed {
     val brush = remember(receiver.domain) {

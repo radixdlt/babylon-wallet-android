@@ -20,8 +20,8 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.ResolvedReceiver
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.RnsDomainConfiguredReceiver
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
@@ -661,7 +661,7 @@ sealed class TargetAccount {
         override val address: AccountAddress? = resolvedInput?.let { input ->
             when (input) {
                 is ResolvedInput.AccountInput -> input.accountAddress
-                is ResolvedInput.DomainInput -> input.receiver.account
+                is ResolvedInput.DomainInput -> input.receiver.receiver
             }
         }
 
@@ -676,7 +676,7 @@ sealed class TargetAccount {
         sealed interface ResolvedInput {
             data class AccountInput(val accountAddress: AccountAddress) : ResolvedInput
 
-            data class DomainInput(val receiver: ResolvedReceiver) : ResolvedInput
+            data class DomainInput(val receiver: RnsDomainConfiguredReceiver) : ResolvedInput
         }
     }
 

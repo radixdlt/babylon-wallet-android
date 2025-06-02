@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.repository.rns
 
 import com.radixdlt.sargon.RadixNameService
-import com.radixdlt.sargon.ResolvedReceiver
+import com.radixdlt.sargon.RnsDomainConfiguredReceiver
 import com.radixdlt.sargon.os.driver.AndroidNetworkingDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +23,7 @@ import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 interface RNSRepository {
-    suspend fun resolveReceiver(domain: String): Result<ResolvedReceiver>
+    suspend fun resolveReceiver(domain: String): Result<RnsDomainConfiguredReceiver>
 }
 
 class RNSRepositoryImpl @Inject constructor(
@@ -53,7 +53,7 @@ class RNSRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun resolveReceiver(domain: String): Result<ResolvedReceiver> = withContext(ioDispatcher) {
+    override suspend fun resolveReceiver(domain: String): Result<RnsDomainConfiguredReceiver> = withContext(ioDispatcher) {
         val nameService = nameServiceState
             .filterNotNull()
             .first()

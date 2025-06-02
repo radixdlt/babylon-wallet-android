@@ -41,8 +41,8 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.rnsGradient
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.DomainDetails
-import com.radixdlt.sargon.ResolvedReceiver
+import com.radixdlt.sargon.RnsDomainConfiguredReceiver
+import com.radixdlt.sargon.RnsDomainDetails
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -383,14 +383,14 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Other(
                     typed = "bob.xrd",
                     resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
-                        receiver = ResolvedReceiver(
-                            domain = DomainDetails(
+                        receiver = RnsDomainConfiguredReceiver(
+                            domain = RnsDomainDetails(
                                 domain = "bob.xrd",
                                 owner = Account.sampleMainnet.bob.address,
                                 gradientColorStart = "#009688",
                                 gradientColorEnd = "#8BC34A",
                             ),
-                            account = Account.sampleMainnet.bob.address
+                            receiver = Account.sampleMainnet.bob.address
                         )
                     ),
                     validity = TargetAccount.Other.InputValidity.VALID,
