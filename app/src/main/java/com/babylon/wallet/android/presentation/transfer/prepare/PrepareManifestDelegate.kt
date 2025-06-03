@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.sargon.AccountForDisplay
-import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
@@ -19,6 +18,7 @@ import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.TransferRecipient
 import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
@@ -117,9 +117,20 @@ class PrepareManifestDelegate @Inject constructor(
         }
     }
 
-    private fun TargetAccount.toAssetTransfersRecipient(): AccountOrAddressOf = when (this) {
-        is TargetAccount.Other -> AccountOrAddressOf.AddressOfExternalAccount(value = requireNotNull(address))
-        is TargetAccount.Owned -> AccountOrAddressOf.ProfileAccount(value = AccountForDisplay.from(account))
+    private fun TargetAccount.toAssetTransfersRecipient(): TransferRecipient = when (this) {
+        is TargetAccount.Other -> {
+            when (val input = requireNotNull(resolvedInput)) {
+                is TargetAccount.Other.ResolvedInput.AccountInput -> {
+                    TransferRecipient.AddressOfExternalAccount(value = input.accountAddress)
+                }
+                is TargetAccount.Other.ResolvedInput.DomainInput -> {
+                    TransferRecipient.RnsDomain(value = input.receiver)
+                }
+            }
+        }
+        is TargetAccount.Owned -> TransferRecipient.ProfileAccount(
+            value = AccountForDisplay.from(account)
+        )
         is TargetAccount.Skeleton -> error("Not a valid recipient")
     }
 
