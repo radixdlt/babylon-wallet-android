@@ -115,6 +115,7 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
+    @Suppress("ReturnCount")
     suspend fun chooseAccountSubmitted() {
         val sheetState = _state.value.sheet as? ChooseAccounts ?: return
         val networkId = _state.value.fromAccount?.networkId ?: return
