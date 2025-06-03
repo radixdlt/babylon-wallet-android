@@ -454,7 +454,8 @@ class TransferViewModel @Inject constructor(
 
                 val isOwnedAccountsEnabled: Boolean
                     get() = when (selectedAccount) {
-                        is TargetAccount.Other -> selectedAccount.address != null
+                        is TargetAccount.Other -> selectedAccount.address != null &&
+                                selectedAccount.validity != TargetAccount.Other.InputValidity.VALID
                         is TargetAccount.Owned -> true
                         is TargetAccount.Skeleton -> true
                     }

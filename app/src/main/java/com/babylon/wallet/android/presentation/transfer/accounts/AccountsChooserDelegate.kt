@@ -121,19 +121,26 @@ class AccountsChooserDelegate @Inject constructor(
 
         if (!sheetState.isChooseButtonEnabled) return
 
-        _state.update {
-            it.copy(
-                sheet = sheetState.copy(
-                    isResolving = true
-                )
-            )
-        }
+        updateSheetState { it.copy(isResolving = true) }
 
         // Resolve selected account
         val selectedAccountWithResolvedInput = resolveTargetAccount(
             sheetState = sheetState,
             networkId = networkId
         ) ?: return
+
+        if (selectedAccountWithResolvedInput is TargetAccount.Other &&
+            selectedAccountWithResolvedInput.validity != TargetAccount.Other.InputValidity.VALID
+        ) {
+            updateSheetState {
+                it.copy(
+                    isResolving = false,
+                    selectedAccount = selectedAccountWithResolvedInput
+                )
+            }
+
+            return
+        }
 
         _state.update { state ->
             val ownedAccount =
@@ -183,11 +190,27 @@ class AccountsChooserDelegate @Inject constructor(
                 networkId = networkId
             )
 
+            // Checks if input AccountAddress is not used
+            val accountAddressValidity: (AccountAddress) -> TargetAccount.Other.InputValidity =
+                { address ->
+                    val usedAccountAddresses = with(_state.value) {
+                        targetAccounts.mapNotNull { it.address } + listOfNotNull(fromAccount?.address)
+                    }
+
+                    if (address in usedAccountAddresses) {
+                        TargetAccount.Other.InputValidity.ADDRESS_USED
+                    } else {
+                        TargetAccount.Other.InputValidity.VALID
+                    }
+                }
+
             if (accountAddress != null) {
                 selectedAccount.copy(
                     resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
                         accountAddress
-                    )
+                    ),
+                    // Check if typed account address validity
+                    validity = accountAddressValidity(accountAddress)
                 )
             } else {
                 resolveRadixDomainUseCase(selectedAccount.typed)
@@ -196,7 +219,9 @@ class AccountsChooserDelegate @Inject constructor(
                             selectedAccount.copy(
                                 resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
                                     receiver = receiver
-                                )
+                                ),
+                                // Check resolved account address validity
+                                validity = accountAddressValidity(receiver.receiver)
                             )
                         },
                         onFailure = { error ->

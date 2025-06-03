@@ -120,7 +120,10 @@ fun ChooseAccountSheet(
         bottomBar = {
             if (state.mode == ChooseAccounts.Mode.Chooser) {
                 RadixBottomBar(
-                    onClick = onChooseAccountSubmitted,
+                    onClick = {
+                        focusManager.clearFocus()
+                        onChooseAccountSubmitted()
+                    },
                     text = stringResource(id = R.string.common_choose),
                     enabled = state.isChooseButtonEnabled,
                     isLoading = state.isResolving,
