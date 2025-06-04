@@ -208,6 +208,7 @@ dependencies {
     implementation libs.composeMaterial3
     implementation libs.material3WindowSizeClass
     implementation libs.splash
+    implementation libs.palette
 
     implementation libs.immutableCollections
 

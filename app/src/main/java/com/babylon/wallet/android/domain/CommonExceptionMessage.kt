@@ -56,5 +56,13 @@ private fun CommonException.publicMessage(context: Context) = when (this) {
         "There was an issue trying to access you Seed Phrase from secure storage. ${this.errorMessage}"
 
     is CommonException.SecureStorageReadException -> context.getString(R.string.homePage_secureFolder_warning)
+    is CommonException.MissingNftDataField,
+    is CommonException.UnexpectedNftDataFormat,
+    is CommonException.RnsInvalidDomain,
+    is CommonException.RnsUnauthenticDomain,
+    is CommonException.RnsInvalidDomainConfiguration,
+    is CommonException.RnsInvalidRecordContext,
+    is CommonException.GwMissingResponseItem -> context.getString(R.string.error_rns_unknownDomain)
+    is CommonException.RnsUnsupportedNetwork -> context.getString(R.string.error_transactionFailure_network)
     else -> context.getString(R.string.common_somethingWentWrong)
 }

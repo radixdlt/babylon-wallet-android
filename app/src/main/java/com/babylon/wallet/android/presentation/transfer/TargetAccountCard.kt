@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -37,9 +38,13 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.rnsGradient
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.RnsDomainConfiguredReceiver
+import com.radixdlt.sargon.RnsDomainDetails
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
@@ -68,35 +73,12 @@ fun TargetAccountCard(
                 shape = RadixTheme.shapes.roundedRectMedium
             )
     ) {
-        val cardModifier = when (targetAccount) {
-            is TargetAccount.Skeleton ->
-                Modifier
-                    .clip(RadixTheme.shapes.roundedRectTopMedium)
-                    .background(RadixTheme.colors.background)
-                    .clickable {
-                        onChooseAccountClick()
-                    }
-
-            is TargetAccount.Owned ->
-                Modifier
-                    .background(
-                        brush = targetAccount.account.appearanceId.gradient(),
-                        shape = RadixTheme.shapes.roundedRectTopMedium
-                    )
-
-            is TargetAccount.Other ->
-                Modifier
-                    .background(
-                        color = if (RadixTheme.config.isDarkTheme) {
-                            RadixTheme.colors.backgroundTertiary
-                        } else {
-                            RadixTheme.colors.iconSecondary
-                        },
-                        shape = RadixTheme.shapes.roundedRectTopMedium
-                    )
-        }
         Row(
-            modifier = cardModifier
+            modifier = Modifier
+                .header(
+                    targetAccount = targetAccount,
+                    onChooseAccountClick = onChooseAccountClick
+                )
                 .padding(
                     start = RadixTheme.dimensions.paddingMedium,
                     end = RadixTheme.dimensions.paddingXXSmall,
@@ -130,7 +112,13 @@ fun TargetAccountCard(
                 is TargetAccount.Other -> {
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                        text = stringResource(id = R.string.assetTransfer_accountList_externalAccountName),
+                        text = when (val input = targetAccount.resolvedInput) {
+                            is TargetAccount.Other.ResolvedInput.AccountInput -> stringResource(
+                                id = R.string.assetTransfer_accountList_externalAccountName
+                            )
+                            is TargetAccount.Other.ResolvedInput.DomainInput -> input.receiver.domain.domain
+                            null -> ""
+                        },
                         style = RadixTheme.typography.body1Header,
                         color = White
                     )
@@ -247,6 +235,49 @@ fun TargetAccountCard(
     }
 }
 
+fun Modifier.header(
+    targetAccount: TargetAccount,
+    onChooseAccountClick: () -> Unit
+) = composed {
+    when (targetAccount) {
+        is TargetAccount.Skeleton ->
+            this
+                .clip(RadixTheme.shapes.roundedRectTopMedium)
+                .background(RadixTheme.colors.background)
+                .clickable {
+                    onChooseAccountClick()
+                }
+
+        is TargetAccount.Owned ->
+            this
+                .background(
+                    brush = targetAccount.account.appearanceId.gradient(),
+                    shape = RadixTheme.shapes.roundedRectTopMedium
+                )
+
+        is TargetAccount.Other -> {
+            when (targetAccount.resolvedInput) {
+                is TargetAccount.Other.ResolvedInput.DomainInput ->
+                    this
+                        .rnsGradient(
+                            receiver = targetAccount.resolvedInput.receiver,
+                            shape = RadixTheme.shapes.roundedRectTopMedium
+                        )
+                else ->
+                    this
+                        .background(
+                            color = if (RadixTheme.config.isDarkTheme) {
+                                RadixTheme.colors.backgroundTertiary
+                            } else {
+                                RadixTheme.colors.iconSecondary
+                            },
+                            shape = RadixTheme.shapes.roundedRectTopMedium
+                        )
+            }
+        }
+    }
+}
+
 @Composable
 fun ColumnScope.SpendingAssetWarning(modifier: Modifier = Modifier, text: String, color: Color) {
     Row(
@@ -317,6 +348,54 @@ fun TargetAccountCardPreview() {
                             )
                         }
                     )
+                )
+            )
+
+            TargetAccountCard(
+                onChooseAccountClick = {},
+                onAddAssetsClick = {},
+                onRemoveAssetClicked = {},
+                onAmountTyped = { _, _ -> },
+                onAssetClick = {},
+                onMaxAmountClicked = {},
+                onDeleteClick = {},
+                targetAccount = with(Account.sampleMainnet.alice) {
+                    TargetAccount.Other(
+                        typed = address.string,
+                        resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
+                            accountAddress = address
+                        ),
+                        validity = TargetAccount.Other.InputValidity.VALID,
+                        id = UUIDGenerator.uuid().toString(),
+                        spendingAssets = persistentSetOf()
+                    )
+                }
+            )
+
+            TargetAccountCard(
+                onChooseAccountClick = {},
+                onAddAssetsClick = {},
+                onRemoveAssetClicked = {},
+                onAmountTyped = { _, _ -> },
+                onAssetClick = {},
+                onMaxAmountClicked = {},
+                onDeleteClick = {},
+                targetAccount = TargetAccount.Other(
+                    typed = "bob.xrd",
+                    resolvedInput = TargetAccount.Other.ResolvedInput.DomainInput(
+                        receiver = RnsDomainConfiguredReceiver(
+                            domain = RnsDomainDetails(
+                                domain = "bob.xrd",
+                                owner = Account.sampleMainnet.bob.address,
+                                gradientColorStart = "#009688",
+                                gradientColorEnd = "#8BC34A",
+                            ),
+                            receiver = Account.sampleMainnet.bob.address
+                        )
+                    ),
+                    validity = TargetAccount.Other.InputValidity.VALID,
+                    id = UUIDGenerator.uuid().toString(),
+                    spendingAssets = persistentSetOf()
                 )
             )
         }

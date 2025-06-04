@@ -45,7 +45,8 @@ private val urlNFDataKeys = listOf(
 )
 
 fun StateNonFungibleDetailsResponseItem.toMetadata(): List<Metadata> {
-    val fields = (data?.programmaticJson as? ProgrammaticScryptoSborValueTuple)?.fields ?: return emptyList()
+    val fields =
+        (data?.programmaticJson as? ProgrammaticScryptoSborValueTuple)?.fields ?: return emptyList()
     return fields.mapNotNull { it.toMetadata() }
 }
 
@@ -62,8 +63,17 @@ private fun ProgrammaticScryptoSborValueReference.isValidAddress(): Boolean = va
 private fun ProgrammaticScryptoSborValueOwn.isValidAddress(): Boolean = value.isValidAddress()
 
 @Suppress("CyclomaticComplexMethod", "LongMethod")
-private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = false): Metadata? = fieldName?.let { key ->
-    when (val sborValue = this) {
+private fun ProgrammaticScryptoSborValue.toMetadata(
+    isCollection: Boolean = false,
+    parentFieldName: String? = null
+): Metadata? {
+    val key = parentFieldName ?: fieldName
+
+    if (key == null) {
+        return null
+    }
+
+    return when (val sborValue = this) {
         is ProgrammaticScryptoSborValueString -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
@@ -131,14 +141,20 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
                 Metadata.Primitive(
                     key = key,
                     value = sborValue.value,
-                    valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.LONG)
+                    valueType = MetadataType.Integer(
+                        signed = true,
+                        size = MetadataType.Integer.Size.LONG
+                    )
                 )
             }
 
         is ProgrammaticScryptoSborValueI128 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
-            valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.BIG_INT)
+            valueType = MetadataType.Integer(
+                signed = true,
+                size = MetadataType.Integer.Size.BIG_INT
+            )
         )
 
         is ProgrammaticScryptoSborValueU8 -> Metadata.Primitive(
@@ -168,14 +184,26 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
         is ProgrammaticScryptoSborValueU128 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
-            valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.BIG_INT)
+            valueType = MetadataType.Integer(
+                signed = false,
+                size = MetadataType.Integer.Size.BIG_INT
+            )
         )
 
-        is ProgrammaticScryptoSborValueEnum -> Metadata.Primitive(
-            key = key,
-            value = sborValue.variantName.orEmpty(),
-            valueType = MetadataType.Enum
-        )
+        is ProgrammaticScryptoSborValueEnum -> {
+            val optionValue =
+                if (sborValue.typeName == "Option" && sborValue.variantName == "Some") {
+                    sborValue.fields.firstOrNull()
+                } else {
+                    null
+                }
+
+            optionValue?.toMetadata(parentFieldName = key) ?: Metadata.Primitive(
+                key = key,
+                value = sborValue.variantName.orEmpty(),
+                valueType = MetadataType.Enum
+            )
+        }
 
         is ProgrammaticScryptoSborValueBytes -> Metadata.Primitive(
             key = key,
@@ -185,21 +213,31 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
 
         is ProgrammaticScryptoSborValueArray -> Metadata.Collection(
             key = key,
-            values = sborValue.elements.mapNotNull { it.toMetadata(isCollection = true) }
+            values = sborValue.elements.mapNotNull {
+                it.toMetadata(isCollection = true, parentFieldName = key)
+            }
         )
 
         is ProgrammaticScryptoSborValueMap -> Metadata.Map(
             key = key,
             values = sborValue.propertyEntries.mapNotNull { entry ->
-                val entryKey = entry.key.toMetadata(isCollection = true) ?: return@mapNotNull null
-                val entryValue = entry.value.toMetadata(isCollection = true) ?: return@mapNotNull null
+                val entryKey = entry.key.toMetadata(
+                    isCollection = true,
+                    parentFieldName = key
+                ) ?: return@mapNotNull null
+                val entryValue = entry.value.toMetadata(
+                    isCollection = true,
+                    parentFieldName = key
+                ) ?: return@mapNotNull null
                 entryKey to entryValue
             }.toMap()
         )
 
         is ProgrammaticScryptoSborValueTuple -> Metadata.Collection(
             key = key,
-            values = sborValue.fields.mapNotNull { it.toMetadata(isCollection = true) }
+            values = sborValue.fields.mapNotNull {
+                it.toMetadata(isCollection = true, parentFieldName = key)
+            }
         )
 
         is ProgrammaticScryptoSborValueReference -> if (sborValue.isValidAddress()) {
