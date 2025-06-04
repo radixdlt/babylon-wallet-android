@@ -703,7 +703,7 @@ Code: %s</string>
   <string name="assetTransfer_header_addMessageButton">Add message</string>
   <string name="assetTransfer_chooseReceivingAccount_invalidAddressError">Invalid address</string>
   <string name="assetTransfer_chooseReceivingAccount_alreadyAddedError">Account already added</string>
-  <string name="assetTransfer_chooseReceivingAccount_navigationTitle">Choose Receiving Account</string>
+  <string name="assetTransfer_chooseReceivingAccount_navigationTitle">Choose Transfer Recipient</string>
   <string name="assetTransfer_chooseReceivingAccount_enterManually">Enter or scan an Account address or XRD domain</string>
   <string name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">Or: Choose one of your own Accounts</string>
   <string name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">Scan QR Code</string>
@@ -714,7 +714,7 @@ Code: %s</string>
   <string name="assetTransfer_addAssets_buttonAssets">Choose %d Assets</string>
   <string name="assetTransfer_fungibleResource_totalExceedsBalance">Total exceeds your current balance</string>
   <string name="assetTransfer_fungibleResource_balance">Balance: %s</string>
-  <string name="assetTransfer_receivingAccount_chooseAccountButton">Choose Account</string>
+  <string name="assetTransfer_receivingAccount_chooseAccountButton">Choose Recipient</string>
   <string name="assetTransfer_receivingAccount_addAssetsButton">Add assets</string>
   <string name="assetTransfer_error_wrongNetwork">Address is not valid on current network</string>
   <string name="assetTransfer_error_resourceAlreadyAdded">Resource already added</string>
