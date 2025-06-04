@@ -8,6 +8,8 @@ import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.IsValidRadixDomainUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveRadixDomainUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -59,6 +61,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val getAccountDepositResourceRulesUseCase = mockk<GetAccountDepositResourceRulesUseCase>()
+    private val resolveRadixDomainUseCase = mockk<ResolveRadixDomainUseCase>()
+    private val isValidRadixDomainUseCase = mockk<IsValidRadixDomainUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
@@ -76,7 +80,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             getProfileUseCase = getProfileUseCase,
             accountsChooserDelegate = AccountsChooserDelegate(
                 getProfileUseCase = getProfileUseCase,
-                getWalletAssetsUseCase = getWalletAssetsUseCase
+                getWalletAssetsUseCase = getWalletAssetsUseCase,
+                resolveRadixDomainUseCase = resolveRadixDomainUseCase,
+                isValidRadixDomainUseCase = isValidRadixDomainUseCase
             ),
             assetsChooserDelegate = AssetsChooserDelegate(
                 getWalletAssetsUseCase = getWalletAssetsUseCase,
