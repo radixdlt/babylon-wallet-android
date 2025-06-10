@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,18 +52,23 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.domain.toMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
+import com.babylon.wallet.android.utils.Constants
+import com.babylon.wallet.android.utils.openUrl
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.CommonException
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -80,12 +86,33 @@ fun ChooseAccountSheet(
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     if (state.uiMessage != null) {
-        ErrorAlertDialog(
-            cancel = onErrorMessageShown,
-            errorMessage = state.uiMessage
-        )
+        when (state.uiMessage.error) {
+            is CommonException.GwMissingResponseItem -> BasicPromptAlertDialog(
+                titleText = stringResource(R.string.common_errorAlertTitle),
+                messageText = state.uiMessage.error.toMessage(
+                    context = context,
+                    includeSupportMessage = false
+                ),
+                confirmText = stringResource(R.string.common_ok),
+                dismissText = stringResource(R.string.error_rns_unknownDomainButtonTitle),
+                finish = { accepted ->
+                    if (accepted) {
+                        onErrorMessageShown()
+                    } else {
+                        context.openUrl(Constants.RADIX_DOMAINS_URL)
+                        onErrorMessageShown()
+                    }
+                }
+            )
+
+            else -> ErrorAlertDialog(
+                cancel = onErrorMessageShown,
+                errorMessage = state.uiMessage
+            )
+        }
     }
 
     Scaffold(
