@@ -146,6 +146,7 @@ fun ChooseAccountSheet(
                     focusManager = focusManager
                 )
             }
+
             ChooseAccounts.Mode.QRScanner -> {
                 if (cameraPermissionState.status.isGranted) {
                     ScanQRContent(
@@ -201,6 +202,7 @@ private fun ChooseAccountContent(
                         TargetAccount.Other.InputValidity.VALID -> null
                         TargetAccount.Other.InputValidity.INVALID ->
                             R.string.assetTransfer_chooseReceivingAccount_invalidAddressError
+
                         TargetAccount.Other.InputValidity.ADDRESS_USED ->
                             R.string.assetTransfer_chooseReceivingAccount_alreadyAddedError
                     }
@@ -231,9 +233,7 @@ private fun ChooseAccountContent(
                 },
                 singleLine = true,
                 trailingIcon = {
-                    Row(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                    ) {
+                    Row {
                         if (typedAddress.isNotEmpty()) {
                             IconButton(
                                 onClick = {
