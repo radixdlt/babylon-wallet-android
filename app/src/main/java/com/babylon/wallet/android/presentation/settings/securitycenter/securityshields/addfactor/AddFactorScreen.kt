@@ -182,7 +182,9 @@ private fun AddFactorContent(
                 item {
                     InfoButton(
                         text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
-                        onClick = { onInfoClick(GlossaryItem.nohardwaredevice) },
+                        onClick = {
+                            //TODO handle info button click
+                        }
                     )
                 }
             }

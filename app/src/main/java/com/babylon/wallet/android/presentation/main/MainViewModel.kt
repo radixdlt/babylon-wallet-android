@@ -342,12 +342,14 @@ sealed interface AppState {
 
 enum class MainTab(val route: String) {
     Wallet("tab_wallet"),
+    DApps("tab_dapps"),
     Discover("tab_discover"),
     Settings("tab_settings");
 
     companion object {
         val mainnet: Set<MainTab> = setOf(
             Wallet,
+            DApps,
             Discover,
             Settings
         )

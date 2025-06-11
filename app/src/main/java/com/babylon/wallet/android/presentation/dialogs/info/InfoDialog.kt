@@ -286,11 +286,10 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
     GlossaryItem.mnemonics -> stringResource(id = R.string.infoLink_glossary_passphrases)
     GlossaryItem.emergencyfallback -> stringResource(id = R.string.infoLink_glossary_emergencyfallback)
-    GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 
 @Composable
-private fun GlossaryItem.resolveIconFromGlossaryItem() = when (this) {
+fun GlossaryItem.resolveIconFromGlossaryItem() = when (this) {
     GlossaryItem.xrd -> DSR.ic_xrd_token
     GlossaryItem.nfts -> DSR.ic_nfts
     GlossaryItem.networkstaking -> DSR.ic_lsu

@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.discover.common.models.SocialLinkType
 import com.babylon.wallet.android.presentation.settings.SettingsItem.Troubleshooting
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
@@ -117,7 +118,7 @@ private fun TroubleshootingSettingsContent(
                                             is Troubleshooting.ContactSupport -> {
                                                 context.openEmail(item.supportAddress, item.subject, item.body)
                                             }
-                                            Troubleshooting.Discord -> context.openUrl("https://go.radixdlt.com/Discord")
+                                            Troubleshooting.Discord -> context.openUrl(SocialLinkType.Discord.url)
                                             else -> {
                                                 onSettingItemClick(item)
                                             }

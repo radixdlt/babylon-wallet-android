@@ -40,6 +40,19 @@ enum class GlossaryItem {
     arculus,
     ledgernano,
     passwords,
-    mnemonics,
-    nohardwaredevice, // TODO pending the right glossary item
+    mnemonics;
+
+    companion object {
+
+        val mfaRelated = listOf(
+            securityshields,
+            buildingshield,
+            emergencyfallback,
+            biometricspin,
+            arculus,
+            ledgernano,
+            passwords,
+            mnemonics
+        )
+    }
 }

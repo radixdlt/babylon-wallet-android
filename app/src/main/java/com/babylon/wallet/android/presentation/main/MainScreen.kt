@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -30,6 +30,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryScreen
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.discover.DiscoverScreen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsScreen
 import com.babylon.wallet.android.presentation.ui.none
@@ -53,7 +55,9 @@ fun MainScreen(
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    onDAppClick: (AccountAddress) -> Unit
+    onDAppClick: (AccountAddress) -> Unit,
+    onInfoLinkClick: (GlossaryItem) -> Unit,
+    onMoreInfoClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -70,7 +74,9 @@ fun MainScreen(
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                 onNavigateToLinkConnector = onNavigateToLinkConnector,
                 onSettingClick = onSettingClick,
-                onDAppClick = onDAppClick
+                onDAppClick = onDAppClick,
+                onInfoLinkClick = onInfoLinkClick,
+                onMoreInfoClick = onMoreInfoClick
             )
         }
 
@@ -111,7 +117,9 @@ private fun MainContent(
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    onDAppClick: (AccountAddress) -> Unit
+    onDAppClick: (AccountAddress) -> Unit,
+    onInfoLinkClick: (GlossaryItem) -> Unit,
+    onMoreInfoClick: () -> Unit,
 ) {
     val bottomNavController = rememberNavController()
 
@@ -131,6 +139,7 @@ private fun MainContent(
         bottomNavController.currentBackStackEntryFlow.collect { entry ->
             when (entry.destination.route) {
                 MainTab.Wallet.route -> onTabClick(MainTab.Wallet)
+                MainTab.DApps.route -> onTabClick(MainTab.DApps)
                 MainTab.Discover.route -> onTabClick(MainTab.Discover)
                 MainTab.Settings.route -> onTabClick(MainTab.Settings)
             }
@@ -163,7 +172,8 @@ private fun MainContent(
                                 Text(
                                     text = when (tab) {
                                         MainTab.Wallet -> stringResource(R.string.homePage_tab_wallet)
-                                        MainTab.Discover -> stringResource(R.string.homePage_tab_dapps)
+                                        MainTab.DApps -> stringResource(R.string.homePage_tab_dapps)
+                                        MainTab.Discover -> stringResource(R.string.homePage_tab_discover)
                                         MainTab.Settings -> stringResource(R.string.homePage_tab_settings)
                                     }
                                 )
@@ -177,7 +187,8 @@ private fun MainContent(
                                     painter = painterResource(
                                         id = when (tab) {
                                             MainTab.Wallet -> DSR.drawable.ic_radix
-                                            MainTab.Discover -> DSR.drawable.ic_authorized_dapps
+                                            MainTab.DApps -> DSR.drawable.ic_authorized_dapps
+                                            MainTab.Discover -> DSR.drawable.ic_authorized_dapps //TODO sergiu replace
                                             MainTab.Settings -> R.drawable.ic_home_settings
                                         }
                                     ),
@@ -213,10 +224,17 @@ private fun MainContent(
                     onNavigateToLinkConnector = onNavigateToLinkConnector,
                 )
             }
-            composable(MainTab.Discover.route) {
+            composable(MainTab.DApps.route) {
                 DAppDirectoryScreen(
                     viewModel = hiltViewModel(),
                     onDAppClick = onDAppClick
+                )
+            }
+            composable(MainTab.Discover.route) {
+                DiscoverScreen(
+                    viewModel = hiltViewModel(),
+                    onInfoClick = onInfoLinkClick,
+                    onMoreInfoClick = onMoreInfoClick
                 )
             }
             composable(MainTab.Settings.route) {
