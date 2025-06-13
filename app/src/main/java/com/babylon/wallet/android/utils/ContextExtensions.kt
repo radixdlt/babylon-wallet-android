@@ -13,6 +13,8 @@ import android.net.Uri
 import android.os.Build
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.browser.customtabs.CustomTabColorSchemeParams
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
@@ -129,6 +131,28 @@ fun Context.openUrl(uri: Uri, browser: Browser? = null) {
             Toast.LENGTH_SHORT
         ).show()
     }
+}
+
+fun Context.openInAppUrl(
+    url: String,
+    toolbarColor: Int? = null
+) {
+    val intent = CustomTabsIntent.Builder()
+        .setShowTitle(true)
+        .setUrlBarHidingEnabled(true)
+        .setStartAnimations(this, R.anim.slide_in_bottom, 0)
+        .setExitAnimations(this, 0, R.anim.slide_out_bottom)
+        .apply {
+            if (toolbarColor != null) {
+                setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(toolbarColor)
+                        .build()
+                )
+            }
+        }
+        .build()
+    intent.launchUrl(this, url.toUri())
 }
 
 @Suppress("SwallowedException")

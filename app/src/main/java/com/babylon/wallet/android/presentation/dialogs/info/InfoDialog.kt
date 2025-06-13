@@ -257,6 +257,7 @@ internal fun List<ASTNode>.innerList(): List<ASTNode> {
 private fun GlossaryItem.resolveTextFromGlossaryItem() =
     stringResource(resolveTextResFromGlossaryItem())
 
+@Suppress("CyclomaticComplexMethod")
 fun GlossaryItem.resolveTextResFromGlossaryItem() = when (this) {
     GlossaryItem.web3 -> R.string.infoLink_glossary_web3
     GlossaryItem.radixnetwork -> R.string.infoLink_glossary_radixnetwork

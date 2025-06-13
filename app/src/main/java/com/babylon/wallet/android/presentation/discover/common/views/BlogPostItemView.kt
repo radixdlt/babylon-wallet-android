@@ -26,10 +26,11 @@ import com.radixdlt.sargon.BlogPost
 @Composable
 fun BlogPostItemView(
     item: BlogPost,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(241.dp),
         shape = RadixTheme.shapes.roundedRectMedium,

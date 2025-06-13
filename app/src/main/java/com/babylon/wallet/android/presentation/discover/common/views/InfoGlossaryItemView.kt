@@ -50,6 +50,7 @@ private fun GlossaryItem.resolveTitleFromGlossaryItem() =
 private fun GlossaryItem.resolveDescriptionFromGlossaryItem() =
     stringResource(resolveDescriptionResFromGlossaryItem())
 
+@Suppress("CyclomaticComplexMethod")
 fun GlossaryItem.resolveTitleResFromGlossaryItem() = when (this) {
     GlossaryItem.radixnetwork -> R.string.infoLink_discoverTitle_radixnetwork
     GlossaryItem.nfts -> R.string.infoLink_discoverTitle_nfts
@@ -91,6 +92,7 @@ fun GlossaryItem.resolveTitleResFromGlossaryItem() = when (this) {
     GlossaryItem.mnemonics -> R.string.infoLink_discoverTitle_passphrases
 }
 
+@Suppress("CyclomaticComplexMethod")
 fun GlossaryItem.resolveDescriptionResFromGlossaryItem() = when (this) {
     GlossaryItem.radixnetwork -> R.string.infoLink_discoverDescription_radixnetwork
     GlossaryItem.nfts -> R.string.infoLink_discoverDescription_nfts

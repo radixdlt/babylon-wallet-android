@@ -64,6 +64,7 @@ hiltPlugin = "2.51.1"
 sonarqubePlugin = "5.0.0.4638"
 markdown = "0.25.0"
 palette = "1.0.0"
+browser = "1.8.0"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -146,11 +147,12 @@ playServicesAuth = { module = "com.google.android.gms:play-services-auth", versi
 googleApiClient = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
 googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
 workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManagerRuntimeKtx" }
-androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
-androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
+androidXHiltWorker = { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
+androidXHiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
 lifeCycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidxLifecycle" }
 markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }
 palette = { module = "androidx.palette:palette", version.ref = "palette" }
+browser = { module = "androidx.browser:browser", version.ref = "browser" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }

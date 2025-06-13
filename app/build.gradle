@@ -209,6 +209,7 @@ dependencies {
     implementation libs.material3WindowSizeClass
     implementation libs.splash
     implementation libs.palette
+    implementation libs.browser
 
     implementation libs.immutableCollections
 

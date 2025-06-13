@@ -9,9 +9,14 @@ import com.babylon.wallet.android.presentation.discover.common.models.SocialLink
 import com.radixdlt.sargon.BlogPost
 import com.radixdlt.sargon.BlogPostsClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val MAX_NUMBER_OF_BLOG_POSTS = 3
 
 @HiltViewModel
 class DiscoverViewModel @Inject constructor() : StateViewModel<DiscoverViewModel.State>() {
@@ -21,7 +26,11 @@ class DiscoverViewModel @Inject constructor() : StateViewModel<DiscoverViewModel
             runCatching {
                 BlogPostsClient().getBlogPosts()
             }.onSuccess { posts ->
-                _state.update { it.copy(blogPosts = posts) }
+                _state.update {
+                    it.copy(
+                        blogPosts = posts.take(MAX_NUMBER_OF_BLOG_POSTS).toPersistentList()
+                    )
+                }
             }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
@@ -37,12 +46,12 @@ class DiscoverViewModel @Inject constructor() : StateViewModel<DiscoverViewModel
     data class State(
         val isRefreshing: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val glossaryItems: List<GlossaryItem> = listOf(
+        val glossaryItems: ImmutableList<GlossaryItem> = persistentListOf(
             GlossaryItem.radixnetwork,
             GlossaryItem.guarantees,
             GlossaryItem.nfts
         ),
-        val socialLinks: List<SocialLinkType> = SocialLinkType.entries,
-        val blogPosts: List<BlogPost> = emptyList()
+        val socialLinks: ImmutableList<SocialLinkType> = SocialLinkType.entries.toPersistentList(),
+        val blogPosts: ImmutableList<BlogPost> = persistentListOf()
     ) : UiState
 }

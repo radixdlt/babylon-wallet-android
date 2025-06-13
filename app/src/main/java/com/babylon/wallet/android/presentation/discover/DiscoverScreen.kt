@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,9 +54,12 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.utils.openInAppUrl
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.BlogPost
 import com.radixdlt.sargon.extensions.toUrl
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun DiscoverScreen(
@@ -65,6 +69,7 @@ fun DiscoverScreen(
 ) {
     val state: DiscoverViewModel.State by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val toolbarColor = RadixTheme.colors.background.toArgb()
 
     DiscoverContent(
         state = state,
@@ -72,7 +77,12 @@ fun DiscoverScreen(
         onInfoClick = onInfoClick,
         onMoreInfoClick = onMoreInfoClick,
         onSocialLinkClick = { context.openUrl(it.url) },
-        onBlogPostClick = {}, // TODO
+        onBlogPostClick = {
+            context.openInAppUrl(
+                url = it.url.toString(),
+                toolbarColor = toolbarColor
+            )
+        },
         onMoreBlogPostsClick = {} // TODO
     )
 }
@@ -202,21 +212,26 @@ private fun DiscoverContent(
 private fun SectionView(
     title: String,
     hasMore: Boolean,
+    modifier: Modifier = Modifier,
     onMoreClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    CategoryHeader(
-        title = title,
-        hasMore = hasMore,
-        onMoreClick = onMoreClick
-    )
-
-    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
     Column(
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        modifier = modifier
     ) {
-        content()
+        CategoryHeader(
+            title = title,
+            hasMore = hasMore,
+            onMoreClick = onMoreClick
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            content()
+        }
     }
 }
 
@@ -255,7 +270,7 @@ private fun CategoryHeader(
 
 @Composable
 private fun BlogPostsView(
-    items: List<BlogPost>,
+    items: ImmutableList<BlogPost>,
     onClick: (BlogPost) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -300,7 +315,7 @@ private fun DiscoverPreview() {
     RadixWalletPreviewTheme {
         DiscoverContent(
             state = DiscoverViewModel.State(
-                blogPosts = listOf(
+                blogPosts = persistentListOf(
                     BlogPost(
                         name = "MVP Booster Grant Winners: RPFS, XRDegen, Liquify",
                         image = "https://google.com".toUrl(),
