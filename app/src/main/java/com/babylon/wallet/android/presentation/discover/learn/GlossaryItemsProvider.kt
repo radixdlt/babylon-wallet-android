@@ -46,9 +46,10 @@ class GlossaryItemsProvider @Inject constructor(
             .map { it.first }
     }
 
-    private fun List<String>.partiallyMatches(otherParts: List<String>): Boolean = any { part ->
-        otherParts.any { otherPart -> part.contains(otherPart) }
-    }
+    private fun List<String>.partiallyMatches(otherParts: List<String>): Boolean =
+        otherParts.all { otherPart ->
+            any { part -> part.contains(otherPart) }
+        }
 
     private data class SearchableContent(
         val title: String,
@@ -84,7 +85,8 @@ class GlossaryItemsProvider @Inject constructor(
 
     companion object {
 
-        val searchableGlossaryItems = GlossaryItem.entries.filterNot { it in GlossaryItem.mfaRelated }
+        val searchableGlossaryItems =
+            GlossaryItem.entries.filterNot { it in GlossaryItem.mfaRelated }
     }
 }
 
