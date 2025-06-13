@@ -23,8 +23,9 @@ class DiscoverRepositoryImpl @Inject constructor(
 
     override suspend fun fetchBlogPosts(): Result<List<BlogPost>> = withContext(ioDispatcher) {
         runCatching { client.getBlogPosts() }
+            .map { it.posts }
             .onSuccess { blogPosts ->
-                cachedBlogPosts = blogPosts
+                cachedBlogPosts
             }
     }
 
