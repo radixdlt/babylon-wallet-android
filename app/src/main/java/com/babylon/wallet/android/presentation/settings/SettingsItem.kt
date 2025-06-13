@@ -89,7 +89,6 @@ sealed interface SettingsItem {
             val subject: String = RADIX_SUPPORT_EMAIL_SUBJECT
         ) : Troubleshooting
 
-        data object Discord : Troubleshooting
         data object ExportLogs : Troubleshooting
         data object FactoryReset : Troubleshooting
 
@@ -99,7 +98,6 @@ sealed interface SettingsItem {
                 ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_title
                 AccountRecovery -> R.string.troubleshooting_accountScan_title
                 is ContactSupport -> R.string.troubleshooting_contactSupport_title
-                Discord -> R.string.troubleshooting_discord_title
                 ExportLogs -> R.string.export_logs_title
                 FactoryReset -> R.string.troubleshooting_factoryReset_title
             }
@@ -111,7 +109,6 @@ sealed interface SettingsItem {
                 ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_subtitle
                 AccountRecovery -> R.string.troubleshooting_accountScan_subtitle
                 is ContactSupport -> R.string.troubleshooting_contactSupport_subtitle
-                Discord -> R.string.troubleshooting_discord_subtitle
                 ExportLogs -> R.string.export_logs_message
                 FactoryReset -> R.string.troubleshooting_factoryReset_subtitle
             }
@@ -123,7 +120,6 @@ sealed interface SettingsItem {
                 ImportFromLegacyWallet -> DSR.ic_recovery
                 AccountRecovery -> DSR.ic_recovery
                 is ContactSupport -> DSR.ic_email
-                Discord -> DSR.ic_discord
                 ExportLogs -> DSR.ic_app_settings
                 FactoryReset -> DSR.ic_factory_reset
             }

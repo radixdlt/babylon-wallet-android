@@ -38,7 +38,6 @@ class TroubleshootingSettingsViewModel @Inject constructor(
                         body = deviceCapabilityHelper.supportEmailTemplate
                     )
                 ),
-                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.Discord),
                 if (BuildConfig.FILE_LOGGER_ENABLED) {
                     TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ExportLogs)
                 } else {
