@@ -12,6 +12,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.DSR
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.dialogs.info.applyIconTint
 import com.babylon.wallet.android.presentation.dialogs.info.resolveIconFromGlossaryItem
 
 @Composable
@@ -28,7 +29,7 @@ fun InfoGlossaryItemView(
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(itemIcon ?: DSR.ic_info_outline),
                 contentDescription = null,
-                colorFilter = if (itemIcon == null) {
+                colorFilter = if (item.applyIconTint) {
                     ColorFilter.tint(RadixTheme.colors.icon)
                 } else {
                     null

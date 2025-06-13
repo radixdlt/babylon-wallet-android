@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -98,6 +101,7 @@ fun InfoDialog(
                 scrollState = rememberScrollState(),
                 markdownContent = glossaryItem?.resolveTextFromGlossaryItem(),
                 drawableRes = glossaryItem?.resolveIconFromGlossaryItem(),
+                applyIconTint = glossaryItem?.applyIconTint,
                 onGlossaryItemClick = viewModel::onGlossaryItemClick,
                 onDismiss = onDismissRequest
             )
@@ -111,6 +115,7 @@ private fun InfoDialogContent(
     scrollState: ScrollState,
     markdownContent: String?,
     @DrawableRes drawableRes: Int?,
+    applyIconTint: Boolean?,
     onGlossaryItemClick: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -186,8 +191,11 @@ private fun InfoDialogContent(
         ) {
             drawableRes?.let {
                 Icon(
-                    painterResource(id = drawableRes),
-                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .width(128.dp)
+                        .height(80.dp),
+                    painter = painterResource(id = drawableRes),
+                    tint = if (applyIconTint == true) RadixTheme.colors.icon else Color.Unspecified,
                     contentDescription = null
                 )
             }
@@ -214,7 +222,6 @@ private fun InfoDialogContent(
                     typography = markdownTypography(
                         h2 = RadixTheme.typography.title,
                         paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.text),
-
                     ),
                     padding = markdownPadding(
                         block = RadixTheme.dimensions.paddingSmall,
@@ -300,8 +307,70 @@ fun GlossaryItem.resolveIconFromGlossaryItem() = when (this) {
     GlossaryItem.liquidstakeunits -> DSR.icon_liquid_stake_units
     GlossaryItem.tokens -> DSR.icon_tokens
     GlossaryItem.badges -> DSR.ic_badge
+    GlossaryItem.radixwallet -> DSR.ic_wallet_app
+    GlossaryItem.connectbutton,
+    GlossaryItem.radixconnector,
+    GlossaryItem.radixconnect -> DSR.icon_desktop_connection_large
+
+    GlossaryItem.biometricspin -> DSR.ic_device_biometric_pin
+    GlossaryItem.mnemonics -> DSR.ic_passphrase
+    GlossaryItem.guarantees -> DSR.ic_filter_list
+    GlossaryItem.validators -> DSR.ic_validator
+    GlossaryItem.personas -> DSR.ic_personas
+    GlossaryItem.transfers -> DSR.ic_transfer
+    GlossaryItem.ledgernano -> DSR.ic_ledger_nano
+    GlossaryItem.gateways -> DSR.ic_gateways
+    GlossaryItem.dapps,
+    GlossaryItem.possibledappcalls,
+    GlossaryItem.dashboard -> DSR.ic_authorized_dapps
+
     else -> null
 }
+
+val GlossaryItem.applyIconTint
+    get() = when (this) {
+        GlossaryItem.xrd,
+        GlossaryItem.nfts,
+        GlossaryItem.networkstaking,
+        GlossaryItem.poolunits,
+        GlossaryItem.liquidstakeunits,
+        GlossaryItem.tokens,
+        GlossaryItem.badges,
+        GlossaryItem.radixwallet,
+        GlossaryItem.connectbutton,
+        GlossaryItem.radixconnector,
+        GlossaryItem.radixconnect -> false
+
+        GlossaryItem.web3,
+        GlossaryItem.radixnetwork,
+        GlossaryItem.radixconnect,
+        GlossaryItem.radixconnector,
+        GlossaryItem.dashboard,
+        GlossaryItem.dapps,
+        GlossaryItem.dex,
+        GlossaryItem.accounts,
+        GlossaryItem.personas,
+        GlossaryItem.claimnfts,
+        GlossaryItem.behaviors,
+        GlossaryItem.transfers,
+        GlossaryItem.transactions,
+        GlossaryItem.transactionfee,
+        GlossaryItem.guarantees,
+        GlossaryItem.payingaccount,
+        GlossaryItem.validators,
+        GlossaryItem.bridging,
+        GlossaryItem.gateways,
+        GlossaryItem.preauthorizations,
+        GlossaryItem.possibledappcalls,
+        GlossaryItem.securityshields,
+        GlossaryItem.buildingshield,
+        GlossaryItem.emergencyfallback,
+        GlossaryItem.biometricspin,
+        GlossaryItem.arculus,
+        GlossaryItem.ledgernano,
+        GlossaryItem.passwords,
+        GlossaryItem.mnemonics -> true
+    }
 
 @Preview(showBackground = false)
 @Composable
@@ -312,6 +381,7 @@ private fun InfoTokensPreview() {
             scrollState = rememberScrollState(),
             markdownContent = stringResource(R.string.infoLink_glossary_tokens),
             drawableRes = DSR.icon_tokens,
+            applyIconTint = false,
             onGlossaryItemClick = {},
             onDismiss = {}
         )
@@ -327,6 +397,7 @@ private fun InfoNFTsPreview() {
             scrollState = rememberScrollState(),
             markdownContent = stringResource(R.string.infoLink_glossary_nfts),
             drawableRes = DSR.ic_nfts,
+            applyIconTint = false,
             onGlossaryItemClick = {},
             onDismiss = {}
         )

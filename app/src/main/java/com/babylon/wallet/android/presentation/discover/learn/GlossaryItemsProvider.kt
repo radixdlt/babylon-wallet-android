@@ -18,6 +18,7 @@ class GlossaryItemsProvider @Inject constructor(
         item to SearchableContent.from(context, item)
     }
 
+    @Suppress("MagicNumber")
     fun search(query: String): List<GlossaryItem> {
         val normalizedQuery = query.trim().lowercase()
 

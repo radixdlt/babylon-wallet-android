@@ -303,13 +303,13 @@ private fun DiscoverPreview() {
                 blogPosts = listOf(
                     BlogPost(
                         name = "MVP Booster Grant Winners: RPFS, XRDegen, Liquify",
-                        image = "https://cdn.prod.website-files.com/60540b6d30224a7cb015203a/68398c8b811376d5d1790651_blog%20rakoon%20oasis%20defiplaza.png".toUrl(),
-                        url = "https://www.radixdlt.com/blog/mvp-booster-grant-winners-rakoon-fun-defiplaza-oasis".toUrl()
+                        image = "https://google.com".toUrl(),
+                        url = "https://google.com".toUrl()
                     ),
                     BlogPost(
                         name = "MVP Booster Grant Winners: RPFS, XRDegen, Liquify",
-                        image = "https://cdn.prod.website-files.com/60540b6d30224a7cb015203a/68398c8b811376d5d1790651_blog%20rakoon%20oasis%20defiplaza.png".toUrl(),
-                        url = "https://www.radixdlt.com/blog/mvp-booster-grant-winners-rakoon-fun-defiplaza-oasis".toUrl()
+                        image = "https://google.com".toUrl(),
+                        url = "https://google.com".toUrl()
                     )
                 )
             ),
