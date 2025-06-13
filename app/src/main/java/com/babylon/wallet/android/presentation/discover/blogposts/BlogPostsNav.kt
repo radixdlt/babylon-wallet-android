@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.discover.learn
+package com.babylon.wallet.android.presentation.discover.blogposts
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -7,20 +7,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
-const val ROUTE_LEARN = "route_learn"
+const val ROUTE_BLOG_POSTS = "route_blog_posts"
 
-fun NavController.learnScreen() {
-    navigate(route = ROUTE_LEARN)
+fun NavController.blogPostsScreen() {
+    navigate(route = ROUTE_BLOG_POSTS)
 }
 
-fun NavGraphBuilder.learnScreen(
-    onBackClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+fun NavGraphBuilder.blogPostsScreen(
+    onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_LEARN,
+        route = ROUTE_BLOG_POSTS,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -34,10 +32,9 @@ fun NavGraphBuilder.learnScreen(
             EnterTransition.None
         }
     ) {
-        LearnScreen(
+        BlogPostsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
-            onInfoClick = onInfoClick
+            onBackClick = onBackClick
         )
     }
 }

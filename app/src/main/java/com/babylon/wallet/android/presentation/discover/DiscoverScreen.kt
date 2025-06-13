@@ -65,7 +65,8 @@ import kotlinx.collections.immutable.persistentListOf
 fun DiscoverScreen(
     viewModel: DiscoverViewModel,
     onInfoClick: (GlossaryItem) -> Unit,
-    onMoreInfoClick: () -> Unit,
+    onMoreLearnClick: () -> Unit,
+    onMoreBlogPostsClick: () -> Unit
 ) {
     val state: DiscoverViewModel.State by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -75,7 +76,7 @@ fun DiscoverScreen(
         state = state,
         onMessageShown = viewModel::onMessageShown,
         onInfoClick = onInfoClick,
-        onMoreInfoClick = onMoreInfoClick,
+        onMoreLearnClick = onMoreLearnClick,
         onSocialLinkClick = { context.openUrl(it.url) },
         onBlogPostClick = {
             context.openInAppUrl(
@@ -83,7 +84,7 @@ fun DiscoverScreen(
                 toolbarColor = toolbarColor
             )
         },
-        onMoreBlogPostsClick = {} // TODO
+        onMoreBlogPostsClick = onMoreBlogPostsClick
     )
 }
 
@@ -94,7 +95,7 @@ private fun DiscoverContent(
     state: DiscoverViewModel.State,
     onMessageShown: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onMoreInfoClick: () -> Unit,
+    onMoreLearnClick: () -> Unit,
     onSocialLinkClick: (SocialLinkType) -> Unit,
     onBlogPostClick: (BlogPost) -> Unit,
     onMoreBlogPostsClick: () -> Unit
@@ -190,7 +191,7 @@ private fun DiscoverContent(
             SectionView(
                 title = stringResource(R.string.discover_categoryLearn_title),
                 hasMore = true,
-                onMoreClick = onMoreInfoClick
+                onMoreClick = onMoreLearnClick
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -330,7 +331,7 @@ private fun DiscoverPreview() {
             ),
             onMessageShown = {},
             onInfoClick = {},
-            onMoreInfoClick = {},
+            onMoreLearnClick = {},
             onSocialLinkClick = {},
             onBlogPostClick = {},
             onMoreBlogPostsClick = {}

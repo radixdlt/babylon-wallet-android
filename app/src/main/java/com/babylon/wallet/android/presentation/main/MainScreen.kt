@@ -58,6 +58,7 @@ fun MainScreen(
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
     onMoreInfoClick: () -> Unit,
+    onMoreBlogPostsClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -76,7 +77,8 @@ fun MainScreen(
                 onSettingClick = onSettingClick,
                 onDAppClick = onDAppClick,
                 onInfoLinkClick = onInfoLinkClick,
-                onMoreInfoClick = onMoreInfoClick
+                onMoreInfoClick = onMoreInfoClick,
+                onMoreBlogPostsClick = onMoreBlogPostsClick
             )
         }
 
@@ -120,6 +122,7 @@ private fun MainContent(
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
     onMoreInfoClick: () -> Unit,
+    onMoreBlogPostsClick: () -> Unit
 ) {
     val bottomNavController = rememberNavController()
 
@@ -234,7 +237,8 @@ private fun MainContent(
                 DiscoverScreen(
                     viewModel = hiltViewModel(),
                     onInfoClick = onInfoLinkClick,
-                    onMoreInfoClick = onMoreInfoClick
+                    onMoreLearnClick = onMoreInfoClick,
+                    onMoreBlogPostsClick = onMoreBlogPostsClick
                 )
             }
             composable(MainTab.Settings.route) {

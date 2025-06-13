@@ -28,6 +28,7 @@ fun NavGraphBuilder.main(
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
     onMoreInfoClick: () -> Unit,
+    onMoreBlogPostsClick: () -> Unit
 ) {
     composable(
         route = MAIN_ROUTE,
@@ -52,6 +53,7 @@ fun NavGraphBuilder.main(
             onDAppClick = onDAppClick,
             onInfoLinkClick = onInfoLinkClick,
             onMoreInfoClick = onMoreInfoClick,
+            onMoreBlogPostsClick = onMoreBlogPostsClick
         )
     }
 }

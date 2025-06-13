@@ -1732,4 +1732,5 @@ Code: %s</string>
     <string name="infoLink_discoverTitle_securityshields">Security Shields</string>
     <string name="infoLink_discoverTitle_biometricsPin">Biometrics/PIN</string>
     <string name="infoLink_discoverTitle_ledgernano">Ledger Nano</string>
+    <string name="blogPosts_title">Blog Posts</string>
 </resources>
