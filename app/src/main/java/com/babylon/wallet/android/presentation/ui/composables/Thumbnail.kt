@@ -60,7 +60,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.radixdlt.sargon.BlogPost
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceAddress

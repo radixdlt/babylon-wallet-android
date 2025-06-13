@@ -48,9 +48,7 @@ enum class GlossaryItem {
             securityshields,
             buildingshield,
             emergencyfallback,
-            biometricspin,
             arculus,
-            ledgernano,
             passwords,
             mnemonics
         )

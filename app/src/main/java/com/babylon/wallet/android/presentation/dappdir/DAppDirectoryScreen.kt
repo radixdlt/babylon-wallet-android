@@ -43,11 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,6 +65,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.clearFocusNestedScrollConnection
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -139,7 +136,6 @@ private fun DAppDirectoryContent(
         }
     )
 
-    val focusManager = LocalFocusManager.current
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -239,22 +235,10 @@ private fun DAppDirectoryContent(
                 }
             }
 
-            val nestedScrollConnection = remember {
-                object : NestedScrollConnection {
-                    override fun onPreScroll(
-                        available: Offset,
-                        source: NestedScrollSource
-                    ): Offset {
-                        focusManager.clearFocus()
-                        return super.onPreScroll(available, source)
-                    }
-                }
-            }
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection)
+                    .nestedScroll(clearFocusNestedScrollConnection())
                     .pullToRefresh(
                         state = pullToRefreshState,
                         isRefreshing = state.isRefreshing,

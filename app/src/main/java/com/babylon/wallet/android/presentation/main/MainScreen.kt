@@ -188,7 +188,7 @@ private fun MainContent(
                                         id = when (tab) {
                                             MainTab.Wallet -> DSR.drawable.ic_radix
                                             MainTab.DApps -> DSR.drawable.ic_authorized_dapps
-                                            MainTab.Discover -> DSR.drawable.ic_authorized_dapps //TODO sergiu replace
+                                            MainTab.Discover -> DSR.drawable.ic_discover
                                             MainTab.Settings -> R.drawable.ic_home_settings
                                         }
                                     ),

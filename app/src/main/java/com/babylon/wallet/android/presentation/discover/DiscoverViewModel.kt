@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.discover
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage

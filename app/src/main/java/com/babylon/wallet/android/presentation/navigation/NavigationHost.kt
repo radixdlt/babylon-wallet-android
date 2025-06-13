@@ -43,7 +43,7 @@ import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialo
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.dialogs.preauthorization.preAuthorizationStatusDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
-import com.babylon.wallet.android.presentation.discover.info.infoListScreen
+import com.babylon.wallet.android.presentation.discover.learn.learnScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -289,7 +289,7 @@ fun NavigationHost(
                 navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
             },
             onInfoLinkClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            onMoreInfoClick = { navController.infoListScreen() }
+            onMoreInfoClick = { navController.learnScreen() }
         )
         account(
             onAccountPreferenceClick = { address ->
@@ -714,7 +714,7 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        infoListScreen(
+        learnScreen(
             onBackClick = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) }
         )

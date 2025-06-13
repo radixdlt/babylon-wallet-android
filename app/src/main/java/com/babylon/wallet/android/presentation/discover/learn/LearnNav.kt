@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.discover.info
+package com.babylon.wallet.android.presentation.discover.learn
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -11,11 +11,11 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 const val ROUTE_INFO_LIST = "route_info_list"
 
-fun NavController.infoListScreen() {
+fun NavController.learnScreen() {
     navigate(route = ROUTE_INFO_LIST)
 }
 
-fun NavGraphBuilder.infoListScreen(
+fun NavGraphBuilder.learnScreen(
     onBackClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -34,7 +34,7 @@ fun NavGraphBuilder.infoListScreen(
             EnterTransition.None
         }
     ) {
-        InfoListScreen(
+        LearnScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onInfoClick = onInfoClick

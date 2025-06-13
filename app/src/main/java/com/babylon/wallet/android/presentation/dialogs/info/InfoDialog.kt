@@ -247,45 +247,48 @@ internal fun List<ASTNode>.innerList(): List<ASTNode> {
 }
 
 @Composable
-private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
-    GlossaryItem.web3 -> stringResource(R.string.infoLink_glossary_web3)
-    GlossaryItem.radixnetwork -> stringResource(R.string.infoLink_glossary_radixnetwork)
-    GlossaryItem.radixwallet -> stringResource(R.string.infoLink_glossary_radixwallet)
-    GlossaryItem.radixconnect -> stringResource(R.string.infoLink_glossary_radixconnect)
-    GlossaryItem.radixconnector -> stringResource(R.string.infoLink_glossary_radixconnector)
-    GlossaryItem.xrd -> stringResource(R.string.infoLink_glossary_xrd)
-    GlossaryItem.dashboard -> stringResource(R.string.infoLink_glossary_dashboard)
-    GlossaryItem.dapps -> stringResource(R.string.infoLink_glossary_dapps)
-    GlossaryItem.connectbutton -> stringResource(R.string.infoLink_glossary_connectbutton)
-    GlossaryItem.dex -> stringResource(R.string.infoLink_glossary_dex)
-    GlossaryItem.accounts -> stringResource(R.string.infoLink_glossary_accounts)
-    GlossaryItem.personas -> stringResource(R.string.infoLink_glossary_personas)
-    GlossaryItem.tokens -> stringResource(R.string.infoLink_glossary_tokens)
-    GlossaryItem.nfts -> stringResource(R.string.infoLink_glossary_nfts)
-    GlossaryItem.claimnfts -> stringResource(R.string.infoLink_glossary_claimnfts)
-    GlossaryItem.networkstaking -> stringResource(R.string.infoLink_glossary_networkstaking)
-    GlossaryItem.poolunits -> stringResource(R.string.infoLink_glossary_poolunits)
-    GlossaryItem.liquidstakeunits -> stringResource(R.string.infoLink_glossary_liquidstakeunits)
-    GlossaryItem.badges -> stringResource(R.string.infoLink_glossary_badges)
-    GlossaryItem.behaviors -> stringResource(R.string.infoLink_glossary_behaviors)
-    GlossaryItem.transfers -> stringResource(R.string.infoLink_glossary_transfers)
-    GlossaryItem.transactions -> stringResource(R.string.infoLink_glossary_transactions)
-    GlossaryItem.transactionfee -> stringResource(R.string.infoLink_glossary_transactionfee)
-    GlossaryItem.guarantees -> stringResource(R.string.infoLink_glossary_guarantees)
-    GlossaryItem.payingaccount -> stringResource(R.string.infoLink_glossary_payingaccount)
-    GlossaryItem.validators -> stringResource(R.string.infoLink_glossary_validators)
-    GlossaryItem.bridging -> stringResource(R.string.infoLink_glossary_bridging)
-    GlossaryItem.gateways -> stringResource(R.string.infoLink_glossary_gateways)
-    GlossaryItem.preauthorizations -> stringResource(id = R.string.infoLink_glossary_preauthorizations)
-    GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
-    GlossaryItem.securityshields -> stringResource(id = R.string.infoLink_glossary_securityshields)
-    GlossaryItem.buildingshield -> stringResource(id = R.string.infoLink_glossary_buildingshield)
-    GlossaryItem.biometricspin -> stringResource(id = R.string.infoLink_glossary_biometricspin)
-    GlossaryItem.arculus -> stringResource(id = R.string.infoLink_glossary_arculus)
-    GlossaryItem.ledgernano -> stringResource(id = R.string.infoLink_glossary_ledgernano)
-    GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
-    GlossaryItem.mnemonics -> stringResource(id = R.string.infoLink_glossary_passphrases)
-    GlossaryItem.emergencyfallback -> stringResource(id = R.string.infoLink_glossary_emergencyfallback)
+private fun GlossaryItem.resolveTextFromGlossaryItem() =
+    stringResource(resolveTextResFromGlossaryItem())
+
+fun GlossaryItem.resolveTextResFromGlossaryItem() = when (this) {
+    GlossaryItem.web3 -> R.string.infoLink_glossary_web3
+    GlossaryItem.radixnetwork -> R.string.infoLink_glossary_radixnetwork
+    GlossaryItem.radixwallet -> R.string.infoLink_glossary_radixwallet
+    GlossaryItem.radixconnect -> R.string.infoLink_glossary_radixconnect
+    GlossaryItem.radixconnector -> R.string.infoLink_glossary_radixconnector
+    GlossaryItem.xrd -> R.string.infoLink_glossary_xrd
+    GlossaryItem.dashboard -> R.string.infoLink_glossary_dashboard
+    GlossaryItem.dapps -> R.string.infoLink_glossary_dapps
+    GlossaryItem.connectbutton -> R.string.infoLink_glossary_connectbutton
+    GlossaryItem.dex -> R.string.infoLink_glossary_dex
+    GlossaryItem.accounts -> R.string.infoLink_glossary_accounts
+    GlossaryItem.personas -> R.string.infoLink_glossary_personas
+    GlossaryItem.tokens -> R.string.infoLink_glossary_tokens
+    GlossaryItem.nfts -> R.string.infoLink_glossary_nfts
+    GlossaryItem.claimnfts -> R.string.infoLink_glossary_claimnfts
+    GlossaryItem.networkstaking -> R.string.infoLink_glossary_networkstaking
+    GlossaryItem.poolunits -> R.string.infoLink_glossary_poolunits
+    GlossaryItem.liquidstakeunits -> R.string.infoLink_glossary_liquidstakeunits
+    GlossaryItem.badges -> R.string.infoLink_glossary_badges
+    GlossaryItem.behaviors -> R.string.infoLink_glossary_behaviors
+    GlossaryItem.transfers -> R.string.infoLink_glossary_transfers
+    GlossaryItem.transactions -> R.string.infoLink_glossary_transactions
+    GlossaryItem.transactionfee -> R.string.infoLink_glossary_transactionfee
+    GlossaryItem.guarantees -> R.string.infoLink_glossary_guarantees
+    GlossaryItem.payingaccount -> R.string.infoLink_glossary_payingaccount
+    GlossaryItem.validators -> R.string.infoLink_glossary_validators
+    GlossaryItem.bridging -> R.string.infoLink_glossary_bridging
+    GlossaryItem.gateways -> R.string.infoLink_glossary_gateways
+    GlossaryItem.preauthorizations -> R.string.infoLink_glossary_preauthorizations
+    GlossaryItem.possibledappcalls -> R.string.infoLink_glossary_possibledappcalls
+    GlossaryItem.securityshields -> R.string.infoLink_glossary_securityshields
+    GlossaryItem.buildingshield -> R.string.infoLink_glossary_buildingshield
+    GlossaryItem.biometricspin -> R.string.infoLink_glossary_biometricspin
+    GlossaryItem.arculus -> R.string.infoLink_glossary_arculus
+    GlossaryItem.ledgernano -> R.string.infoLink_glossary_ledgernano
+    GlossaryItem.passwords -> R.string.infoLink_glossary_passwords
+    GlossaryItem.mnemonics -> R.string.infoLink_glossary_passphrases
+    GlossaryItem.emergencyfallback -> R.string.infoLink_glossary_emergencyfallback
 }
 
 @Composable

@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,8 +19,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,17 +30,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -61,8 +53,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.BlogPost
 import com.radixdlt.sargon.extensions.toUrl
@@ -82,8 +72,8 @@ fun DiscoverScreen(
         onInfoClick = onInfoClick,
         onMoreInfoClick = onMoreInfoClick,
         onSocialLinkClick = { context.openUrl(it.url) },
-        onBlogPostClick = {}, //TODO
-        onMoreBlogPostsClick = {} //TODO
+        onBlogPostClick = {}, // TODO
+        onMoreBlogPostsClick = {} // TODO
     )
 }
 
@@ -141,7 +131,7 @@ private fun DiscoverContent(
         ) {
             if (state.blogPosts.isNotEmpty()) {
                 SectionView(
-                    title = stringResource(R.string.discover_categoryAnnouncements_title),
+                    title = stringResource(R.string.discover_categoryBlogPosts_title),
                     hasMore = true,
                     onMoreClick = onMoreBlogPostsClick
                 ) {
