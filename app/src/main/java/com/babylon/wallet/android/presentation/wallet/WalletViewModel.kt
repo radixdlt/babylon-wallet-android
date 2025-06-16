@@ -89,7 +89,7 @@ class WalletViewModel @Inject constructor(
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
-    private val accountLockersDelegate: WalletAccountLockersDelegate
+    private val accountLockersDelegate: WalletAccountLockersDelegate,
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null

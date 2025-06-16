@@ -12,6 +12,8 @@ interface DiscoverRepository {
     suspend fun fetchBlogPosts(): Result<List<BlogPost>>
 
     fun getCachedBlogPosts(): List<BlogPost>
+
+    suspend fun getNewBlogPost(): Result<BlogPost?>
 }
 
 class DiscoverRepositoryImpl @Inject constructor(
@@ -24,10 +26,14 @@ class DiscoverRepositoryImpl @Inject constructor(
     override suspend fun fetchBlogPosts(): Result<List<BlogPost>> = withContext(ioDispatcher) {
         runCatching { client.getBlogPosts() }
             .map { it.posts }
-            .onSuccess { blogPosts ->
-                cachedBlogPosts
-            }
+            .onSuccess { cachedBlogPosts = it }
     }
 
     override fun getCachedBlogPosts(): List<BlogPost> = cachedBlogPosts
+
+    override suspend fun getNewBlogPost(): Result<BlogPost?> = withContext(ioDispatcher) {
+        runCatching { client.getBlogPosts() }
+            .onSuccess { cachedBlogPosts = it.posts }
+            .map { it.newBlogPost }
+    }
 }
