@@ -143,25 +143,27 @@ private fun DiscoverContent(
                 .padding(padding)
                 .padding(vertical = RadixTheme.dimensions.paddingDefault)
         ) {
-            SectionView(
-                title = stringResource(R.string.discover_categoryBlogPosts_title),
-                hasMore = true,
-                onMoreClick = onMoreBlogPostsClick
-            ) {
-                val listItems = remember(state) {
-                    if (state.isBlogPostsLoading) {
-                        List(3) {
-                            null
-                        }.toPersistentList()
-                    } else {
-                        state.blogPosts
-                    }
+            val blogPostItems = remember(state) {
+                if (state.isBlogPostsLoading) {
+                    List(3) {
+                        null
+                    }.toPersistentList()
+                } else {
+                    state.blogPosts
                 }
+            }
 
-                BlogPostsView(
-                    items = listItems,
-                    onClick = onBlogPostClick
-                )
+            if (blogPostItems.isNotEmpty()) {
+                SectionView(
+                    title = stringResource(R.string.discover_categoryBlogPosts_title),
+                    hasMore = true,
+                    onMoreClick = onMoreBlogPostsClick
+                ) {
+                    BlogPostsView(
+                        items = blogPostItems,
+                        onClick = onBlogPostClick
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

@@ -1,23 +1,32 @@
 package com.babylon.wallet.android.presentation.discover.common.views
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -71,23 +80,38 @@ fun BlogPostItemView(
                 contentScale = ContentScale.Crop,
             )
 
-            Text(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth(
                         fraction = if (item == null) 0.7f else 1f
                     )
                     .padding(
                         start = RadixTheme.dimensions.paddingMedium,
-                        end = RadixTheme.dimensions.paddingSmall,
-                        top = RadixTheme.dimensions.paddingDefault
+                        end = RadixTheme.dimensions.paddingDefault,
+                        top = RadixTheme.dimensions.paddingMedium
                     )
                     .radixPlaceholder(visible = item == null),
-                text = item?.name.orEmpty(),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.text,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = item?.name.orEmpty(),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.text,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+
+                Icon(
+                    modifier = Modifier.size(16.dp),
+                    painter = painterResource(id = R.drawable.ic_external_link),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.icon
+                )
+            }
         }
     }
 }
