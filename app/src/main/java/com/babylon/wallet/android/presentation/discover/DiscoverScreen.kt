@@ -35,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -60,6 +62,7 @@ import com.radixdlt.sargon.BlogPost
 import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun DiscoverScreen(
@@ -140,17 +143,25 @@ private fun DiscoverContent(
                 .padding(padding)
                 .padding(vertical = RadixTheme.dimensions.paddingDefault)
         ) {
-            if (state.blogPosts.isNotEmpty()) {
-                SectionView(
-                    title = stringResource(R.string.discover_categoryBlogPosts_title),
-                    hasMore = true,
-                    onMoreClick = onMoreBlogPostsClick
-                ) {
-                    BlogPostsView(
-                        items = state.blogPosts,
-                        onClick = onBlogPostClick
-                    )
+            SectionView(
+                title = stringResource(R.string.discover_categoryBlogPosts_title),
+                hasMore = true,
+                onMoreClick = onMoreBlogPostsClick
+            ) {
+                val listItems = remember(state) {
+                    if (state.isBlogPostsLoading) {
+                        List(3) {
+                            null
+                        }.toPersistentList()
+                    } else {
+                        state.blogPosts
+                    }
                 }
+
+                BlogPostsView(
+                    items = listItems,
+                    onClick = onBlogPostClick
+                )
             }
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -271,7 +282,7 @@ private fun CategoryHeader(
 
 @Composable
 private fun BlogPostsView(
-    items: ImmutableList<BlogPost>,
+    items: ImmutableList<BlogPost?>,
     onClick: (BlogPost) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -291,7 +302,7 @@ private fun BlogPostsView(
 
             BlogPostItemView(
                 item = item,
-                onClick = { onClick(item) }
+                onClick = { item?.let { onClick(it) } }
             )
         }
 
@@ -312,10 +323,28 @@ private fun BlogPostsView(
 
 @Composable
 @Preview
-private fun DiscoverPreview() {
+private fun DiscoverPreview(
+    @PreviewParameter(DiscoverPreviewProvider::class) state: DiscoverViewModel.State
+) {
     RadixWalletPreviewTheme {
         DiscoverContent(
-            state = DiscoverViewModel.State(
+            state = state,
+            onMessageShown = {},
+            onInfoClick = {},
+            onMoreLearnClick = {},
+            onSocialLinkClick = {},
+            onBlogPostClick = {},
+            onMoreBlogPostsClick = {}
+        )
+    }
+}
+
+class DiscoverPreviewProvider : PreviewParameterProvider<DiscoverViewModel.State> {
+
+    override val values: Sequence<DiscoverViewModel.State>
+        get() = sequenceOf(
+            DiscoverViewModel.State(
+                isBlogPostsLoading = false,
                 blogPosts = persistentListOf(
                     BlogPost(
                         name = "MVP Booster Grant Winners: RPFS, XRDegen, Liquify",
@@ -329,12 +358,8 @@ private fun DiscoverPreview() {
                     )
                 )
             ),
-            onMessageShown = {},
-            onInfoClick = {},
-            onMoreLearnClick = {},
-            onSocialLinkClick = {},
-            onBlogPostClick = {},
-            onMoreBlogPostsClick = {}
+            DiscoverViewModel.State(
+                isBlogPostsLoading = true
+            )
         )
-    }
 }

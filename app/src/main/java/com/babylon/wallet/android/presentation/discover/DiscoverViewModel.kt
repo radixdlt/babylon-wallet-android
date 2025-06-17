@@ -24,28 +24,38 @@ class DiscoverViewModel @Inject constructor(
 ) : StateViewModel<DiscoverViewModel.State>() {
 
     init {
-        viewModelScope.launch {
-            discoverRepository.fetchBlogPosts()
-                .onSuccess { posts ->
-                    _state.update {
-                        it.copy(
-                            blogPosts = posts.take(MAX_NUMBER_OF_BLOG_POSTS).toPersistentList()
-                        )
-                    }
-                }.onFailure { error ->
-                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
-                }
-        }
+        initBlogPosts()
     }
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(isBlogPostsLoading = true)
 
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
 
+    private fun initBlogPosts() {
+        viewModelScope.launch {
+            discoverRepository.getBlogPosts()
+                .onSuccess { posts ->
+                    _state.update {
+                        it.copy(
+                            blogPosts = posts.take(MAX_NUMBER_OF_BLOG_POSTS).toPersistentList(),
+                            isBlogPostsLoading = false
+                        )
+                    }
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            uiMessage = UiMessage.ErrorMessage(error),
+                            isBlogPostsLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
     data class State(
-        val isRefreshing: Boolean = false,
+        val isBlogPostsLoading: Boolean,
         val uiMessage: UiMessage? = null,
         val glossaryItems: ImmutableList<GlossaryItem> = persistentListOf(
             GlossaryItem.radixnetwork,

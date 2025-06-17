@@ -25,7 +25,7 @@ import com.radixdlt.sargon.BlogPost
 
 @Composable
 fun BlogPostItemView(
-    item: BlogPost,
+    item: BlogPost?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -52,9 +52,13 @@ fun BlogPostItemView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(164.dp)
-                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium)
+                    .radixPlaceholder(
+                        visible = item == null,
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    ),
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(item.image)
+                    .data(item?.image)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
@@ -68,12 +72,17 @@ fun BlogPostItemView(
             )
 
             Text(
-                modifier = Modifier.padding(
-                    start = RadixTheme.dimensions.paddingMedium,
-                    end = RadixTheme.dimensions.paddingSmall,
-                    top = RadixTheme.dimensions.paddingDefault
-                ),
-                text = item.name,
+                modifier = Modifier
+                    .fillMaxWidth(
+                        fraction = if (item == null) 0.7f else 1f
+                    )
+                    .padding(
+                        start = RadixTheme.dimensions.paddingMedium,
+                        end = RadixTheme.dimensions.paddingSmall,
+                        top = RadixTheme.dimensions.paddingDefault
+                    )
+                    .radixPlaceholder(visible = item == null),
+                text = item?.name.orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.text,
                 maxLines = 2,

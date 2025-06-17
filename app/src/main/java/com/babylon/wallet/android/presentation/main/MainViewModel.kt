@@ -289,15 +289,16 @@ class MainViewModel @Inject constructor(
     }
 
     private fun checkNewBlogPost() {
-        viewModelScope.launch {
-            val newBlogPost = discoverRepository.getNewBlogPost().getOrNull() ?: return@launch
-
-            alertHandler.show(
-                AlertHandler.State.NewBlogPost(
-                    post = newBlogPost
-                )
-            )
-        }
+        // TODO re-enable when needed
+//        viewModelScope.launch {
+//            val newBlogPost = discoverRepository.getNewBlogPost().getOrNull() ?: return@launch
+//
+//            alertHandler.show(
+//                AlertHandler.State.NewBlogPost(
+//                    post = newBlogPost
+//                )
+//            )
+//        }
     }
 
     data class State(

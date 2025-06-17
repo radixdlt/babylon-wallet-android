@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWra
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.interactor.WalletInteractor
-import com.radixdlt.sargon.BlogPostsClient
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.NetworkId
@@ -105,8 +104,4 @@ object ApplicationModule {
     fun provideHostInteractor(
         accessFactorSourcesProxy: AccessFactorSourcesProxy
     ): HostInteractor = WalletInteractor(accessFactorSourcesProxy)
-
-    @Provides
-    @Singleton
-    fun provideBlogPostsClient(): BlogPostsClient = BlogPostsClient()
 }
