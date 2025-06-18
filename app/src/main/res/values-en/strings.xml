@@ -1733,4 +1733,13 @@ Code: %s</string>
     <string name="infoLink_discoverTitle_biometricsPin">Biometrics/PIN</string>
     <string name="infoLink_discoverTitle_ledgernano">Ledger Nano</string>
     <string name="blogPosts_title">Blog Posts</string>
+    <string name="discover_blogPosts_failure_title">Failed to load Blog Posts.</string>
+    <string name="dsicover_blogPosts_failure_cta">Pull to refresh</string>
+    <string name="discover_blogPosts_failure_cta_button">Tap to refresh</string>
+    <string name="discover_socialLinks_twitter_title">Radix X Official</string>
+    <string name="discover_socialLinks_twitter_subtitle">Follow the official Radix X for news, updates, and insights.</string>
+    <string name="discover_socialLinks_telegram_title">Radix Telegram Official</string>
+    <string name="discover_socialLinks_telegram_subtitle">Join the Radix Telegram to chat, ask questions, and get updates.</string>
+    <string name="discover_socialLinks_discord_title">Radix Discord Official</string>
+    <string name="discover_socialLinks_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help</string>
 </resources>

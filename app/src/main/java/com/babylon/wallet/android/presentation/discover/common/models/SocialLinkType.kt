@@ -19,13 +19,21 @@ fun SocialLinkType.icon(isDarkTheme: Boolean): Int {
         } else {
             R.drawable.ic_x_logo
         }
+
         SocialLinkType.Discord -> R.drawable.ic_discord_logo
     }
 }
 
-val SocialLinkType.title: String
+val SocialLinkType.titleRes: Int
     get() = when (this) {
-        SocialLinkType.Telegram -> "RadixDLT Official"
-        SocialLinkType.X -> "RadixDLT X Official"
-        SocialLinkType.Discord -> "RadixDLT Discord Official"
+        SocialLinkType.Telegram -> R.string.discover_socialLinks_telegram_title
+        SocialLinkType.X -> R.string.discover_socialLinks_twitter_title
+        SocialLinkType.Discord -> R.string.discover_socialLinks_discord_title
+    }
+
+val SocialLinkType.descriptionRes: Int
+    get() = when (this) {
+        SocialLinkType.Telegram -> R.string.discover_socialLinks_telegram_subtitle
+        SocialLinkType.X -> R.string.discover_socialLinks_twitter_subtitle
+        SocialLinkType.Discord -> R.string.discover_socialLinks_discord_subtitle
     }

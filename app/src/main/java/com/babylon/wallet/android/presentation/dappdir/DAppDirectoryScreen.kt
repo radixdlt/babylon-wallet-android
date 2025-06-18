@@ -57,6 +57,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
+import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -266,31 +267,14 @@ private fun DAppDirectoryContent(
             }
 
             if (state.errorLoadingDirectory) {
-                Column(
+                LoadingErrorView(
                     modifier = Modifier
                         .padding(padding)
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                         .align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                ) {
-                    Icon(
-                        modifier = Modifier.size(44.dp),
-                        painter = painterResource(DSR.drawable.ic_factory_reset),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.icon
-                    )
-
-                    Text(
-                        text = stringResource(R.string.dappDirectory_error_heading),
-                        color = RadixTheme.colors.text
-                    )
-
-                    Text(
-                        text = stringResource(R.string.dappDirectory_error_message),
-                        color = RadixTheme.colors.textSecondary
-                    )
-                }
+                    title = stringResource(R.string.dappDirectory_error_heading),
+                    subtitle = stringResource(R.string.dappDirectory_error_message)
+                )
             }
 
             PullToRefreshDefaults.Indicator(

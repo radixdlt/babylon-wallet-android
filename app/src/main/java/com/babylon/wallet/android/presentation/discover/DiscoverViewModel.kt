@@ -33,20 +33,33 @@ class DiscoverViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    fun onRefreshBlogPostsClick() {
+        _state.update {
+            it.copy(
+                isBlogPostsLoading = true,
+                errorLoadingBlogPosts = false
+            )
+        }
+
+        initBlogPosts()
+    }
+
     private fun initBlogPosts() {
         viewModelScope.launch {
             discoverRepository.getBlogPosts()
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            uiMessage = UiMessage.ErrorMessage(error),
+                            isBlogPostsLoading = false,
+                            errorLoadingBlogPosts = true
+                        )
+                    }
+                }
                 .onSuccess { posts ->
                     _state.update {
                         it.copy(
                             blogPosts = posts.take(MAX_NUMBER_OF_BLOG_POSTS).toPersistentList(),
-                            isBlogPostsLoading = false
-                        )
-                    }
-                }.onFailure { error ->
-                    _state.update {
-                        it.copy(
-                            uiMessage = UiMessage.ErrorMessage(error),
                             isBlogPostsLoading = false
                         )
                     }
@@ -63,6 +76,10 @@ class DiscoverViewModel @Inject constructor(
             GlossaryItem.nfts
         ),
         val socialLinks: ImmutableList<SocialLinkType> = SocialLinkType.entries.toPersistentList(),
-        val blogPosts: ImmutableList<BlogPost> = persistentListOf()
-    ) : UiState
+        val blogPosts: ImmutableList<BlogPost> = persistentListOf(),
+        val errorLoadingBlogPosts: Boolean = false
+    ) : UiState {
+
+        val canSeeMoreBlogPosts = blogPosts.isNotEmpty() && !isBlogPostsLoading && !errorLoadingBlogPosts
+    }
 }

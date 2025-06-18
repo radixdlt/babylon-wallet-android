@@ -1,17 +1,23 @@
 package com.babylon.wallet.android.presentation.discover.blogposts
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.discover.common.views.BlogPostItemView
+import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -56,17 +63,20 @@ fun BlogPostsScreen(
                 url = it.url.toString(),
                 toolbarColor = toolbarColor
             )
-        }
+        },
+        onRefresh = viewModel::onRefresh
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BlogPostsContent(
     modifier: Modifier = Modifier,
     state: BlogPostsViewModel.State,
     onBackClick: () -> Unit,
     onMessageShown: () -> Unit,
-    onBlogPostClick: (BlogPost) -> Unit
+    onBlogPostClick: (BlogPost) -> Unit,
+    onRefresh: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -93,32 +103,62 @@ private fun BlogPostsContent(
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        val listItems = remember(state) {
-            if (state.isLoading) {
-                List(5) {
-                    null
-                }
-            } else {
-                state.blogPosts
-            }
-        }
+        val pullToRefreshState = rememberPullToRefreshState()
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .nestedScroll(clearFocusNestedScrollConnection()),
-            contentPadding = PaddingValues(
-                RadixTheme.dimensions.paddingDefault
-            ),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-        ) {
-            items(listItems) { item ->
-                BlogPostItemView(
-                    item = item,
-                    onClick = { item?.let { onBlogPostClick(it) } }
+        Box {
+            val listItems = remember(state) {
+                if (state.isLoading) {
+                    List(5) {
+                        null
+                    }
+                } else {
+                    state.blogPosts
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .nestedScroll(clearFocusNestedScrollConnection())
+                    .pullToRefresh(
+                        state = pullToRefreshState,
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = onRefresh
+                    ),
+                contentPadding = PaddingValues(
+                    RadixTheme.dimensions.paddingDefault
+                ),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            ) {
+                items(listItems) { item ->
+                    BlogPostItemView(
+                        item = item,
+                        onClick = { item?.let { onBlogPostClick(it) } }
+                    )
+                }
+            }
+
+            if (state.errorLoadingBlogPosts) {
+                LoadingErrorView(
+                    modifier = Modifier
+                        .padding(padding)
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .align(Alignment.Center),
+                    title = stringResource(R.string.discover_blogPosts_failure_title),
+                    subtitle = stringResource(R.string.dsicover_blogPosts_failure_cta)
                 )
             }
+
+            PullToRefreshDefaults.Indicator(
+                modifier = Modifier
+                    .padding(padding)
+                    .align(Alignment.TopCenter),
+                state = pullToRefreshState,
+                isRefreshing = state.isRefreshing,
+                color = RadixTheme.colors.icon,
+                containerColor = RadixTheme.colors.backgroundTertiary
+            )
         }
     }
 }
@@ -133,7 +173,8 @@ private fun BlogPostsPreview(
             state = state,
             onBackClick = {},
             onMessageShown = {},
-            onBlogPostClick = {}
+            onBlogPostClick = {},
+            onRefresh = {}
         )
     }
 }

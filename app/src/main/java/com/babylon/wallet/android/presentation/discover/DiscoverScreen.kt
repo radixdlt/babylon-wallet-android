@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,14 +42,17 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.discover.common.models.SocialLinkType
+import com.babylon.wallet.android.presentation.discover.common.models.descriptionRes
 import com.babylon.wallet.android.presentation.discover.common.models.icon
-import com.babylon.wallet.android.presentation.discover.common.models.title
+import com.babylon.wallet.android.presentation.discover.common.models.titleRes
 import com.babylon.wallet.android.presentation.discover.common.views.BlogPostItemView
 import com.babylon.wallet.android.presentation.discover.common.views.InfoGlossaryItemView
+import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
 import com.babylon.wallet.android.presentation.discover.common.views.SimpleListItemView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -87,7 +92,8 @@ fun DiscoverScreen(
                 toolbarColor = toolbarColor
             )
         },
-        onMoreBlogPostsClick = onMoreBlogPostsClick
+        onMoreBlogPostsClick = onMoreBlogPostsClick,
+        onRefreshBlogPostsClick = viewModel::onRefreshBlogPostsClick
     )
 }
 
@@ -101,7 +107,8 @@ private fun DiscoverContent(
     onMoreLearnClick: () -> Unit,
     onSocialLinkClick: (SocialLinkType) -> Unit,
     onBlogPostClick: (BlogPost) -> Unit,
-    onMoreBlogPostsClick: () -> Unit
+    onMoreBlogPostsClick: () -> Unit,
+    onRefreshBlogPostsClick: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -153,10 +160,35 @@ private fun DiscoverContent(
                 }
             }
 
-            if (blogPostItems.isNotEmpty()) {
+            if (state.errorLoadingBlogPosts) {
                 SectionView(
                     title = stringResource(R.string.discover_categoryBlogPosts_title),
-                    hasMore = true,
+                    hasMore = false
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        LoadingErrorView(
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                                .align(Alignment.Center),
+                            title = stringResource(R.string.discover_blogPosts_failure_title),
+                            subtitle = {
+                                RadixSecondaryButton(
+                                    modifier = Modifier
+                                        .padding(top = RadixTheme.dimensions.paddingXSmall)
+                                        .height(40.dp),
+                                    text = stringResource(R.string.discover_blogPosts_failure_cta_button),
+                                    onClick = onRefreshBlogPostsClick
+                                )
+                            }
+                        )
+                    }
+                }
+            } else if (blogPostItems.isNotEmpty()) {
+                SectionView(
+                    title = stringResource(R.string.discover_categoryBlogPosts_title),
+                    hasMore = state.canSeeMoreBlogPosts,
                     onMoreClick = onMoreBlogPostsClick
                 ) {
                     BlogPostsView(
@@ -178,7 +210,8 @@ private fun DiscoverContent(
                     state.socialLinks.forEach { item ->
                         SimpleListItemView(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            title = item.title,
+                            title = stringResource(item.titleRes),
+                            description = stringResource(item.descriptionRes),
                             leadingIcon = {
                                 Image(
                                     modifier = Modifier.size(44.dp),
@@ -190,7 +223,7 @@ private fun DiscoverContent(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_external_link),
                                     contentDescription = null,
-                                    tint = RadixTheme.colors.iconTertiary
+                                    tint = RadixTheme.colors.icon
                                 )
                             },
                             onClick = { onSocialLinkClick(item) }
@@ -258,6 +291,7 @@ private fun CategoryHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = 44.dp)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -336,7 +370,8 @@ private fun DiscoverPreview(
             onMoreLearnClick = {},
             onSocialLinkClick = {},
             onBlogPostClick = {},
-            onMoreBlogPostsClick = {}
+            onMoreBlogPostsClick = {},
+            onRefreshBlogPostsClick = {}
         )
     }
 }
@@ -359,6 +394,10 @@ class DiscoverPreviewProvider : PreviewParameterProvider<DiscoverViewModel.State
                         url = "https://google.com".toUrl()
                     )
                 )
+            ),
+            DiscoverViewModel.State(
+                isBlogPostsLoading = false,
+                errorLoadingBlogPosts = true
             ),
             DiscoverViewModel.State(
                 isBlogPostsLoading = true

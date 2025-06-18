@@ -29,6 +29,11 @@ class BlogPostsViewModel @Inject constructor(
         _state.update { state -> state.copy(uiMessage = null) }
     }
 
+    fun onRefresh() {
+        _state.update { it.copy(isRefreshing = true) }
+        initBlogPosts()
+    }
+
     private fun initBlogPosts() {
         viewModelScope.launch {
             discoverRepository.getBlogPosts()
@@ -36,7 +41,9 @@ class BlogPostsViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             uiMessage = UiMessage.ErrorMessage(it),
-                            isLoading = false
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorLoadingBlogPosts = false
                         )
                     }
                 }
@@ -44,7 +51,9 @@ class BlogPostsViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             blogPosts = it.toPersistentList(),
-                            isLoading = false
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorLoadingBlogPosts = false
                         )
                     }
                 }
@@ -54,6 +63,8 @@ class BlogPostsViewModel @Inject constructor(
     data class State(
         val isLoading: Boolean,
         val blogPosts: ImmutableList<BlogPost> = persistentListOf(),
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val errorLoadingBlogPosts: Boolean = false,
+        val isRefreshing: Boolean = false
     ) : UiState
 }

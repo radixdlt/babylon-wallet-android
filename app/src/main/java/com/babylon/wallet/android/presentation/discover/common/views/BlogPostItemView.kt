@@ -23,14 +23,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.BlogPost
+import com.radixdlt.sargon.extensions.toUrl
 
 @Composable
 fun BlogPostItemView(
@@ -80,37 +83,45 @@ fun BlogPostItemView(
                 contentScale = ContentScale.Crop,
             )
 
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth(
-                        fraction = if (item == null) 0.7f else 1f
-                    )
+                    .fillMaxWidth()
+                    .height(80.dp)
                     .padding(
                         start = RadixTheme.dimensions.paddingMedium,
-                        end = RadixTheme.dimensions.paddingDefault,
-                        top = RadixTheme.dimensions.paddingMedium
-                    )
-                    .radixPlaceholder(visible = item == null),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                        end = RadixTheme.dimensions.paddingMedium,
+                        top = RadixTheme.dimensions.paddingXXSmall,
+                        bottom = RadixTheme.dimensions.paddingXXSmall
+                    ),
+                contentAlignment = Alignment.CenterStart
             ) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = item?.name.orEmpty(),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.text,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(
+                            fraction = if (item == null) 0.7f else 1f
+                        )
+                        .radixPlaceholder(visible = item == null),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = item?.name.orEmpty(),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.text,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-                Icon(
-                    modifier = Modifier.size(16.dp),
-                    painter = painterResource(id = R.drawable.ic_external_link),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.icon
-                )
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        painter = painterResource(id = R.drawable.ic_external_link),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.icon
+                    )
+                }
             }
         }
     }
@@ -129,4 +140,19 @@ private fun ImagePlaceholderView(
                 shape = RadixTheme.shapes.roundedRectTopMedium
             )
     )
+}
+
+@Composable
+@Preview
+private fun BlogPostItemPreview() {
+    RadixWalletPreviewTheme {
+        BlogPostItemView(
+            BlogPost(
+                name = "MVP Booster Grant Winners: RPFS, XRDegen, Liquify MVP Booster Grant Winners: RPFS, XRDegen, Liquify",
+                image = "https://google.com".toUrl(),
+                url = "https://google.com".toUrl()
+            ),
+            onClick = {}
+        )
+    }
 }
