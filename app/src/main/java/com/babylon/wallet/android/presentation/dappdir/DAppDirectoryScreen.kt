@@ -48,6 +48,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -57,6 +59,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
+import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppDirectoryFilters
+import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.Category
+import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppCategoryType
+import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppWithDetails
 import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -152,7 +158,7 @@ private fun DAppDirectoryContent(
                     windowInsets = WindowInsets.statusBarsAndBanner,
                     actions = {
                         AnimatedVisibility(
-                            visible = !state.isLoadingDirectory,
+                            visible = !state.isLoading,
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
@@ -179,7 +185,7 @@ private fun DAppDirectoryContent(
                         .fillMaxWidth(),
                     value = state.filters.searchTerm,
                     onValueChanged = onSearchTermUpdated,
-                    enabled = !state.isLoadingDirectory,
+                    enabled = !state.isLoading,
                     hint = stringResource(R.string.dappDirectory_search_placeholder),
                     trailingIcon = {
                         if (state.filters.searchTerm.isNotEmpty()) {
@@ -198,7 +204,7 @@ private fun DAppDirectoryContent(
                             Icon(
                                 painter = painterResource(DSR.drawable.ic_search),
                                 contentDescription = null,
-                                tint = if (state.isLoadingDirectory) {
+                                tint = if (state.isLoading) {
                                     RadixTheme.colors.backgroundTertiary
                                 } else {
                                     RadixTheme.colors.icon
@@ -227,12 +233,12 @@ private fun DAppDirectoryContent(
         val pullToRefreshState = rememberPullToRefreshState()
         Box {
             val directory = remember(state) {
-                if (state.isLoadingDirectory) {
+                if (state.isLoading) {
                     List(10) {
                         null
                     }
                 } else {
-                    state.directory
+                    state.items
                 }
             }
 
@@ -248,25 +254,35 @@ private fun DAppDirectoryContent(
                 contentPadding = padding.plus(
                     PaddingValues(RadixTheme.dimensions.paddingDefault)
                 ),
-                userScrollEnabled = !state.isLoadingDirectory,
+                userScrollEnabled = !state.isLoading,
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
                 items(
                     items = directory,
-                ) { details ->
-                    DAppCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        details = details,
-                        onClick = {
-                            if (details != null) {
-                                onDAppClick(details.directoryDefinition.dAppDefinitionAddress)
+                ) { item ->
+                    when (item) {
+                        is Category -> Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = item.type.title(),
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.textSecondary,
+                            maxLines = 1
+                        )
+
+                        is DAppWithDetails, null -> DAppCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            details = item,
+                            onClick = {
+                                if (item != null) {
+                                    onDAppClick(item.dAppDefinitionAddress)
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
 
-            if (state.errorLoadingDirectory) {
+            if (state.errorLoading) {
                 LoadingErrorView(
                     modifier = Modifier
                         .padding(padding)
@@ -366,7 +382,7 @@ private fun FilterTags(
                 end = RadixTheme.dimensions.paddingMedium,
                 bottom = RadixTheme.dimensions.paddingMedium
             ),
-            userScrollEnabled = !state.isLoadingDirectory
+            userScrollEnabled = !state.isLoading
         ) {
             items(items = tags) { tag ->
                 HistoryFilterTag(
@@ -388,7 +404,7 @@ private fun FilterTags(
 @Composable
 private fun DAppCard(
     modifier: Modifier = Modifier,
-    details: DirectoryDAppWithDetails?,
+    details: DAppWithDetails?,
     onClick: () -> Unit
 ) {
     Column(
@@ -413,9 +429,9 @@ private fun DAppCard(
             Thumbnail.DApp(
                 modifier = Modifier
                     .size(44.dp)
-                    .radixPlaceholder(visible = details?.dApp == null),
-                dAppIconUrl = details?.dApp?.iconUrl,
-                dAppName = details?.directoryDefinition?.name.orEmpty(),
+                    .radixPlaceholder(visible = details?.data == null),
+                dAppIconUrl = details?.data?.iconUri,
+                dAppName = details?.data?.name.orEmpty(),
                 shape = RadixTheme.shapes.roundedRectSmall
             )
 
@@ -426,17 +442,17 @@ private fun DAppCard(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(
-                            fraction = if (details?.dApp == null) 0.5f else 1f
+                            fraction = if (details?.data == null) 0.5f else 1f
                         )
-                        .radixPlaceholder(visible = details?.dApp == null),
-                    text = details?.dApp?.name.orEmpty(),
+                        .radixPlaceholder(visible = details?.data == null),
+                    text = details?.data?.name.orEmpty(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.text,
-                    maxLines = if (details?.dApp == null) 1 else 2,
+                    maxLines = if (details?.data == null) 1 else 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                val description = details?.dApp?.description
+                val description = details?.data?.description
                 if (details == null || details.isFetchingDAppDetails || !description.isNullOrBlank()) {
                     Text(
                         modifier = Modifier
@@ -463,22 +479,19 @@ private fun DAppCard(
     }
 }
 
+@Composable
+private fun DAppCategoryType.title() = when (this) {
+    DAppCategoryType.Unknown -> "Others" //TODO sergiu localize
+}
+
 @Preview
 @Composable
-fun DAppDirectoryPreviewLight() {
+fun DAppDirectoryPreviewLight(
+    @PreviewParameter(DAppDirectoryPreviewProvider::class) state: DAppDirectoryViewModel.State
+) {
     RadixWalletPreviewTheme {
         DAppDirectoryContent(
-            state = DAppDirectoryViewModel.State(
-                isLoadingDirectory = false,
-                isRefreshing = false,
-                errorLoadingDirectory = false,
-                directory = listOf(
-                    DirectoryDAppWithDetails.sample(),
-                    DirectoryDAppWithDetails.sample.other()
-                ),
-                filters = DAppDirectoryFilters(),
-                uiMessage = null
-            ),
+            state = state,
             onDAppClick = {},
             onRefresh = {},
             onSearchTermUpdated = {},
@@ -492,20 +505,12 @@ fun DAppDirectoryPreviewLight() {
 
 @Preview
 @Composable
-fun DAppDirectoryPreviewDark() {
+fun DAppDirectoryPreviewDark(
+    @PreviewParameter(DAppDirectoryPreviewProvider::class) state: DAppDirectoryViewModel.State
+) {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
         DAppDirectoryContent(
-            state = DAppDirectoryViewModel.State(
-                isLoadingDirectory = false,
-                isRefreshing = false,
-                errorLoadingDirectory = false,
-                directory = listOf(
-                    DirectoryDAppWithDetails.sample(),
-                    DirectoryDAppWithDetails.sample.other()
-                ),
-                filters = DAppDirectoryFilters(),
-                uiMessage = null
-            ),
+            state = state,
             onDAppClick = {},
             onRefresh = {},
             onSearchTermUpdated = {},
@@ -517,17 +522,30 @@ fun DAppDirectoryPreviewDark() {
     }
 }
 
-@Preview
-@Composable
-fun DAppDirectoryWithFiltersPreviewLight() {
-    RadixWalletPreviewTheme {
-        DAppDirectoryContent(
-            state = DAppDirectoryViewModel.State(
-                isLoadingDirectory = false,
+class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewModel.State> {
+
+    override val values: Sequence<DAppDirectoryViewModel.State>
+        get() = sequenceOf(
+            DAppDirectoryViewModel.State(
+                isLoading = false,
                 isRefreshing = false,
-                errorLoadingDirectory = false,
-                directory = listOf(
-                    DirectoryDAppWithDetails.sample(),
+                errorLoading = false,
+                items = listOf(
+                    DAppWithDetails.sample(),
+                    Category(
+                        type = DAppCategoryType.Unknown
+                    ),
+                    DAppWithDetails.sample.other()
+                ),
+                filters = DAppDirectoryFilters(),
+                uiMessage = null
+            ),
+            DAppDirectoryViewModel.State(
+                isLoading = false,
+                isRefreshing = false,
+                errorLoading = false,
+                items = listOf(
+                    DAppWithDetails.sample(),
                 ),
                 filters = DAppDirectoryFilters(
                     searchTerm = "awe",
@@ -535,28 +553,12 @@ fun DAppDirectoryWithFiltersPreviewLight() {
                 ),
                 uiMessage = null
             ),
-            onDAppClick = {},
-            onRefresh = {},
-            onSearchTermUpdated = {},
-            onFilterTagAdded = {},
-            onFilterTagRemoved = {},
-            onAllFilterTagsRemoved = {},
-            onMessageShown = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun DAppDirectoryWithFiltersPreviewDark() {
-    RadixWalletPreviewTheme(enableDarkTheme = true) {
-        DAppDirectoryContent(
-            state = DAppDirectoryViewModel.State(
-                isLoadingDirectory = false,
+            DAppDirectoryViewModel.State(
+                isLoading = false,
                 isRefreshing = false,
-                errorLoadingDirectory = false,
-                directory = listOf(
-                    DirectoryDAppWithDetails.sample(),
+                errorLoading = false,
+                items = listOf(
+                    DAppWithDetails.sample(),
                 ),
                 filters = DAppDirectoryFilters(
                     searchTerm = "awe",
@@ -564,117 +566,44 @@ fun DAppDirectoryWithFiltersPreviewDark() {
                 ),
                 uiMessage = null
             ),
-            onDAppClick = {},
-            onRefresh = {},
-            onSearchTermUpdated = {},
-            onFilterTagAdded = {},
-            onFilterTagRemoved = {},
-            onAllFilterTagsRemoved = {},
-            onMessageShown = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun DAppDirectoryErrorPreviewLight() {
-    RadixWalletPreviewTheme {
-        DAppDirectoryContent(
-            state = DAppDirectoryViewModel.State(
-                isLoadingDirectory = false,
+            DAppDirectoryViewModel.State(
+                isLoading = false,
                 isRefreshing = false,
-                errorLoadingDirectory = true,
-                directory = listOf(),
+                errorLoading = true,
+                items = emptyList(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
             ),
-            onDAppClick = {},
-            onRefresh = {},
-            onSearchTermUpdated = {},
-            onFilterTagAdded = {},
-            onFilterTagRemoved = {},
-            onAllFilterTagsRemoved = {},
-            onMessageShown = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun DAppDirectoryErrorPreviewDark() {
-    RadixWalletPreviewTheme(enableDarkTheme = true) {
-        DAppDirectoryContent(
-            state = DAppDirectoryViewModel.State(
-                isLoadingDirectory = false,
+            DAppDirectoryViewModel.State(
+                isLoading = false,
                 isRefreshing = false,
-                errorLoadingDirectory = true,
-                directory = listOf(),
+                errorLoading = true,
+                items = emptyList(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null
-            ),
-            onDAppClick = {},
-            onRefresh = {},
-            onSearchTermUpdated = {},
-            onFilterTagAdded = {},
-            onFilterTagRemoved = {},
-            onAllFilterTagsRemoved = {},
-            onMessageShown = {}
+            )
         )
-    }
 }
 
 @UsesSampleValues
-val DirectoryDAppWithDetails.Companion.sample: Sample<DirectoryDAppWithDetails>
-    get() = object : Sample<DirectoryDAppWithDetails> {
-        override fun invoke(): DirectoryDAppWithDetails = DirectoryDAppWithDetails(
-            directoryDefinition = DirectoryDefinition(
+val DAppWithDetails.Companion.sample: Sample<DAppWithDetails>
+    get() = object : Sample<DAppWithDetails> {
+
+        override fun invoke(): DAppWithDetails = DAppWithDetails(
+            dAppDefinitionAddress = AccountAddress.sampleMainnet(),
+            details = DAppWithDetails.Details.Data(
                 name = "Awesome DApp",
-                dAppDefinitionAddress = AccountAddress.sampleMainnet(),
-                tags = listOf("DeFi", "token")
-            ),
-            isHighlighted = true,
-            details = DirectoryDAppWithDetails.Details.Data(
-                dApp = DApp(
-                    dAppAddress = AccountAddress.sampleMainnet(),
-                    metadata = listOf(
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.NAME.key,
-                            value = "Awesome DApp",
-                            valueType = MetadataType.String
-                        ),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.DESCRIPTION.key,
-                            value = "Awesome DApp is an awesome dApp for trading on Radix.",
-                            valueType = MetadataType.String
-                        )
-                    )
-                )
+                description = "Awesome DApp is an awesome dApp for trading on Radix.",
+                iconUri = null
             )
         )
 
-        override fun other(): DirectoryDAppWithDetails = DirectoryDAppWithDetails(
-            directoryDefinition = DirectoryDefinition(
+        override fun other(): DAppWithDetails = DAppWithDetails(
+            dAppDefinitionAddress = AccountAddress.sampleMainnet.other(),
+            details = DAppWithDetails.Details.Data(
                 name = "Dashboard",
-                dAppDefinitionAddress = AccountAddress.sampleMainnet.other(),
-                tags = listOf("explorer")
-            ),
-            isHighlighted = false,
-            details = DirectoryDAppWithDetails.Details.Data(
-                dApp = DApp(
-                    dAppAddress = AccountAddress.sampleMainnet.other(),
-                    metadata = listOf(
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.NAME.key,
-                            value = "Dashboard",
-                            valueType = MetadataType.String
-                        ),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.DESCRIPTION.key,
-                            value = "Explore assets and transactions on Radix",
-                            valueType = MetadataType.String
-                        )
-                    )
-                )
+                description = "Explore assets and transactions on Radix",
+                iconUri = null
             )
         )
     }

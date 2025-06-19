@@ -1,16 +1,15 @@
 package com.babylon.wallet.android.presentation.dappdir
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DAppDirectory
-import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import com.babylon.wallet.android.domain.usecases.GetDAppDirectoryUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -21,83 +20,86 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import javax.inject.Inject
 
 @HiltViewModel
 class DAppDirectoryViewModel @Inject constructor(
-    val getDAppDirectoryUseCase: GetDAppDirectoryUseCase,
-    val getDAppsUseCase: GetDAppsUseCase,
+    private val getDAppDirectoryUseCase: GetDAppDirectoryUseCase,
+    private val getDAppsUseCase: GetDAppsUseCase,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<DAppDirectoryViewModel.State>() {
 
     private val directoryState: MutableStateFlow<DAppDirectory?> = MutableStateFlow(null)
-    private val dAppDataState: MutableStateFlow<Map<AccountAddress, DirectoryDAppWithDetails.Details>> =
+    private val dAppDataState: MutableStateFlow<Map<AccountAddress, DAppWithDetails.Details>> =
         MutableStateFlow(emptyMap())
     private val filtersState: MutableStateFlow<DAppDirectoryFilters> =
         MutableStateFlow(DAppDirectoryFilters())
 
-    private val directoryDAppsWithDetails: Flow<List<DirectoryDAppWithDetails>> = combine(
+    private val directoryDAppsWithDetails: Flow<List<DAppWithDetails>> = combine(
         directoryState,
         dAppDataState,
     ) { directory, dAppData ->
         directory?.highlighted.orEmpty().map {
-            DirectoryDAppWithDetails(
-                directoryDefinition = it,
-                isHighlighted = true,
+            DAppWithDetails(
+                dAppDefinitionAddress = it.dAppDefinitionAddress,
                 details = dAppData.getOrDefault(
                     it.dAppDefinitionAddress,
-                    DirectoryDAppWithDetails.Details.Fetching
+                    DAppWithDetails.Details.Fetching
                 )
             )
         } + directory?.others.orEmpty().map {
-            DirectoryDAppWithDetails(
-                directoryDefinition = it,
-                isHighlighted = false,
+            DAppWithDetails(
+                dAppDefinitionAddress = it.dAppDefinitionAddress,
                 details = dAppData.getOrDefault(
                     it.dAppDefinitionAddress,
-                    DirectoryDAppWithDetails.Details.Fetching
+                    DAppWithDetails.Details.Fetching
                 )
             )
         }
     }
 
     override fun initialState(): State = State(
-        isLoadingDirectory = true,
+        isLoading = true,
         isRefreshing = false,
-        errorLoadingDirectory = false
+        errorLoading = false
     )
 
     init {
         viewModelScope.launch {
             combine(
+                directoryState,
                 directoryDAppsWithDetails,
                 filtersState.onEach { _state.update { state -> state.copy(filters = it) } }
-            ) { dApps, filters ->
-                dApps
-                    .asSequence()
-                    .filter { directoryDApp ->
-                        if (filters.selectedTags.isEmpty()) {
+            ) { directories, dAppsWithDetails, filters ->
+                val items = dAppsWithDetails.asSequence()
+                    .filter { dAppWithDetails ->
+                        val directoryDefinition = directories?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
+
+                        if (filters.selectedTags.isEmpty() || directoryDefinition == null) {
                             true
                         } else {
-                            directoryDApp.tags.map { it.lowercase() }
+                            directoryDefinition.tags.map { it.lowercase() }
                                 .containsAll(filters.selectedTags.map { it.lowercase() })
                         }
                     }
-                    .filter { directoryDApp ->
+                    .filter { dAppWithDetails ->
                         val term = filters.searchTerm.trim().lowercase()
 
                         if (term.isBlank()) {
                             true
                         } else {
-                            val (name, description) = when (val details = directoryDApp.details) {
-                                is DirectoryDAppWithDetails.Details.Data ->
-                                    (details.dApp.name ?: directoryDApp.directoryDefinition.name) to
-                                        details.dApp.description
+                            val directoryDefinition = directories?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
 
-                                is DirectoryDAppWithDetails.Details.Error ->
-                                    directoryDApp.directoryDefinition.name to null
+                            val (name, description) = when (val details = dAppWithDetails.details) {
+                                is DAppWithDetails.Details.Data -> {
+                                    (details.name.takeIf { it.isNotEmpty() }
+                                        ?: directoryDefinition?.name) to details.description
+                                }
+
+                                is DAppWithDetails.Details.Error -> {
+                                    directoryDefinition?.name to null
+                                }
 
                                 else -> null to null
                             }
@@ -117,9 +119,31 @@ class DAppDirectoryViewModel @Inject constructor(
                             false
                         }
                     }.toList()
-            }.onEach { directory ->
+
+                items to directories
+            }.onEach { itemsAndDirectories ->
+                val itemsByCategory = itemsAndDirectories.first.groupBy { item ->
+                    val directoryDefinition = itemsAndDirectories.second?.findByAddress(item.dAppDefinitionAddress)
+                    DAppCategoryType.from(directoryDefinition?.category)
+                }
+
                 _state.update { state ->
-                    state.copy(directory = directory)
+                    state.copy(
+                        items = if (itemsByCategory.size == 1) {
+                            // If all items are in the same category, we don't need to show the category header
+                            itemsAndDirectories.first
+                        } else {
+                            itemsByCategory.map { entry ->
+                                listOfNotNull(
+                                    Category(
+                                        type = entry.key
+                                    ).takeIf {
+                                        entry.value.isNotEmpty()
+                                    }
+                                ) + entry.value
+                            }.flatten()
+                        }
+                    )
                 }
             }.flowOn(dispatcher).launchIn(viewModelScope)
         }
@@ -143,7 +167,7 @@ class DAppDirectoryViewModel @Inject constructor(
 
             dAppDataState.update {
                 directory.all.associate { dApp ->
-                    dApp.dAppDefinitionAddress to DirectoryDAppWithDetails.Details.Fetching
+                    dApp.dAppDefinitionAddress to DAppWithDetails.Details.Fetching
                 }
             }
 
@@ -154,14 +178,14 @@ class DAppDirectoryViewModel @Inject constructor(
             }
 
             _state.update {
-                it.copy(isLoadingDirectory = false)
+                it.copy(isLoading = false)
             }
 
-            dAppDataState.value.filter { it.value !is DirectoryDAppWithDetails.Details.Data }
+            dAppDataState.value.filter { it.value !is DAppWithDetails.Details.Data }
                 .keys
                 .toSet()
         }.then { unknownDefinitions ->
-            _state.update { it.copy(errorLoadingDirectory = false) }
+            _state.update { it.copy(errorLoading = false) }
             getDAppsUseCase(
                 definitionAddresses = unknownDefinitions,
                 needMostRecentData = state.value.isRefreshing
@@ -176,17 +200,21 @@ class DAppDirectoryViewModel @Inject constructor(
                     val dApp = dAppDefinitionWithDetails[it.key]
 
                     if (dApp != null) {
-                        DirectoryDAppWithDetails.Details.Data(dApp)
+                        DAppWithDetails.Details.Data(
+                            name = dApp.name.orEmpty(),
+                            iconUri = dApp.iconUrl,
+                            description = dApp.description
+                        )
                     } else {
-                        DirectoryDAppWithDetails.Details.Error
+                        DAppWithDetails.Details.Error
                     }
                 }
             }
         }.onFailure { error ->
             dAppDataState.update { data ->
                 data.mapValues {
-                    if (it.value is DirectoryDAppWithDetails.Details.Fetching) {
-                        DirectoryDAppWithDetails.Details.Error
+                    if (it.value is DAppWithDetails.Details.Fetching) {
+                        DAppWithDetails.Details.Error
                     } else {
                         it.value
                     }
@@ -196,9 +224,9 @@ class DAppDirectoryViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isRefreshing = false,
-                    isLoadingDirectory = false,
-                    errorLoadingDirectory = it.isDirectoryEmpty,
-                    uiMessage = if (!it.isDirectoryEmpty) UiMessage.ErrorMessage(error) else null
+                    isLoading = false,
+                    errorLoading = it.itemsEmpty,
+                    uiMessage = if (!it.itemsEmpty) UiMessage.ErrorMessage(error) else null
                 )
             }
         }
@@ -239,48 +267,66 @@ class DAppDirectoryViewModel @Inject constructor(
     }
 
     data class State(
-        val isLoadingDirectory: Boolean,
+        val isLoading: Boolean,
         val isRefreshing: Boolean,
-        val errorLoadingDirectory: Boolean,
-        val directory: List<DirectoryDAppWithDetails> = emptyList(),
+        val errorLoading: Boolean,
+        val items: List<Item> = emptyList(),
         val filters: DAppDirectoryFilters = DAppDirectoryFilters(),
         val uiMessage: UiMessage? = null
     ) : UiState {
 
-        val isDirectoryEmpty: Boolean = directory.isEmpty()
-    }
-}
-
-data class DirectoryDAppWithDetails(
-    val directoryDefinition: DirectoryDefinition,
-    val isHighlighted: Boolean,
-    val details: Details
-) {
-
-    val key: String = directoryDefinition.dAppDefinitionAddress.string
-
-    val dApp: DApp? = (details as? Details.Data)?.dApp
-
-    val isFetchingDAppDetails: Boolean = details is Details.Fetching
-
-    val tags: List<String> = directoryDefinition.tags
-
-    sealed interface Details {
-        data object Fetching : Details
-
-        data object Error : Details
-
-        data class Data(val dApp: DApp) : Details
+        val itemsEmpty: Boolean = items.isEmpty()
     }
 
-    companion object
-}
+    sealed interface Item
 
-data class DAppDirectoryFilters(
-    val searchTerm: String = "",
-    val selectedTags: Set<String> = emptySet(),
-    val availableTags: Set<String> = emptySet()
-) {
+    data class Category(
+        val type: DAppCategoryType
+    ) : Item
 
-    fun isTagSelected(tag: String) = tag in selectedTags
+    data class DAppWithDetails(
+        val dAppDefinitionAddress: AccountAddress,
+        val details: Details
+    ) : Item {
+
+        val isFetchingDAppDetails: Boolean = details is Details.Fetching
+        val data: Details.Data? = details as? Details.Data
+
+        sealed interface Details {
+
+            data object Fetching : Details
+
+            data object Error : Details
+
+            data class Data(
+                val name: String,
+                val iconUri: Uri?,
+                val description: String?
+            ) : Details
+        }
+
+        companion object
+    }
+
+    data class DAppDirectoryFilters(
+        val searchTerm: String = "",
+        val selectedTags: Set<String> = emptySet(),
+        val availableTags: Set<String> = emptySet()
+    ) {
+
+        fun isTagSelected(tag: String) = tag in selectedTags
+    }
+
+    enum class DAppCategoryType {
+
+        Unknown;
+
+        companion object {
+
+            fun from(value: String?): DAppCategoryType = when (value?.lowercase()) {
+                //TODO sergiu map categories to enum values
+                else -> Unknown
+            }
+        }
+    }
 }

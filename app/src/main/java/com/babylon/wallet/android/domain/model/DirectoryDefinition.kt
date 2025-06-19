@@ -13,7 +13,9 @@ data class DirectoryDefinition(
     @SerialName(value = "address")
     val dAppDefinitionAddress: AccountAddress,
     @SerialName(value = "tags")
-    val tags: List<String>
+    val tags: List<String>,
+    @SerialName(value = "category")
+    val category: String?
 )
 
 @Serializable
@@ -25,4 +27,8 @@ data class DAppDirectory(
 ) {
 
     val all: List<DirectoryDefinition> = highlighted.orEmpty() + others.orEmpty()
+
+    fun findByAddress(address: AccountAddress): DirectoryDefinition? {
+        return all.firstOrNull { it.dAppDefinitionAddress == address }
+    }
 }
