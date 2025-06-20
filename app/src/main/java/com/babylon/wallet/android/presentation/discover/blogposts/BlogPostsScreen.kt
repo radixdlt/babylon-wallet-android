@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -22,12 +25,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.discover.common.views.BlogPostItemView
 import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
@@ -38,7 +44,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.clearFocusNestedScrollConnection
+import com.babylon.wallet.android.utils.Constants.RADIX_BLOG_POSTS_URL
 import com.babylon.wallet.android.utils.openInAppUrl
+import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.BlogPost
 import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.persistentListOf
@@ -64,7 +72,8 @@ fun BlogPostsScreen(
                 toolbarColor = toolbarColor
             )
         },
-        onRefresh = viewModel::onRefresh
+        onRefresh = viewModel::onRefresh,
+        onAllBlogPostsClick = { context.openUrl(RADIX_BLOG_POSTS_URL) }
     )
 }
 
@@ -75,8 +84,9 @@ private fun BlogPostsContent(
     state: BlogPostsViewModel.State,
     onBackClick: () -> Unit,
     onMessageShown: () -> Unit,
+    onRefresh: () -> Unit,
     onBlogPostClick: (BlogPost) -> Unit,
-    onRefresh: () -> Unit
+    onAllBlogPostsClick: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -137,6 +147,26 @@ private fun BlogPostsContent(
                         onClick = { item?.let { onBlogPostClick(it) } }
                     )
                 }
+
+                item {
+                    RadixTextButton(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.discover_blogPosts_see_all_blog_posts),
+                        trailingIcon = {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(start = RadixTheme.dimensions.paddingSmall)
+                                    .size(12.dp),
+                                painter = painterResource(id = R.drawable.ic_external_link),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.icon
+                            )
+                        },
+                        onClick = onAllBlogPostsClick
+                    )
+                }
             }
 
             if (state.errorLoadingBlogPosts) {
@@ -173,8 +203,9 @@ private fun BlogPostsPreview(
             state = state,
             onBackClick = {},
             onMessageShown = {},
+            onRefresh = {},
             onBlogPostClick = {},
-            onRefresh = {}
+            onAllBlogPostsClick = {}
         )
     }
 }
