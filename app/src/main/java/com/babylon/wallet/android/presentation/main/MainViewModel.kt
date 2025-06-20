@@ -256,7 +256,7 @@ class MainViewModel @Inject constructor(
             runForegroundChecks()
         }
 
-        checkNewBlogPost()
+//        checkNewBlogPost() TODO re-enable when needed
     }
 
     fun onBeforeBiometricsRequest() {
@@ -288,17 +288,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    @Suppress("unused")
     private fun checkNewBlogPost() {
-        // TODO re-enable when needed
-//        viewModelScope.launch {
-//            val newBlogPost = discoverRepository.getNewBlogPost().getOrNull() ?: return@launch
-//
-//            alertHandler.show(
-//                AlertHandler.State.NewBlogPost(
-//                    post = newBlogPost
-//                )
-//            )
-//        }
+        viewModelScope.launch {
+            val newBlogPost = discoverRepository.getNewBlogPost().getOrNull() ?: return@launch
+
+            alertHandler.show(
+                AlertHandler.State.NewBlogPost(
+                    post = newBlogPost
+                )
+            )
+        }
     }
 
     data class State(
@@ -373,6 +373,7 @@ enum class MainTab(val route: String) {
 
         val testnet: Set<MainTab> = setOf(
             Wallet,
+            Discover,
             Settings
         )
     }

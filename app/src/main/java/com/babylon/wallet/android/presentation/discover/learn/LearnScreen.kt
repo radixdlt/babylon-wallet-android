@@ -82,7 +82,7 @@ private fun LearnContent(
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     value = state.searchQuery,
                     onValueChanged = onSearchQueryChange,
-                    hint = stringResource(R.string.learn_searchHint),
+                    hint = "Search...", // TODO sergiu localize
                     trailingIcon = {
                         if (state.isSearchQueryEmpty) {
                             Icon(

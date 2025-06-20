@@ -97,7 +97,7 @@ private fun TroubleshootingSettingsContent(
                             }
 
                             TroubleshootingUiItem.SupportSection -> {
-                                SectionHeader(title = stringResource(id = R.string.troubleshooting_supportAndCommunity))
+                                SectionHeader(title = stringResource(id = R.string.troubleshooting_support))
                             }
 
                             TroubleshootingUiItem.ResetSection -> {

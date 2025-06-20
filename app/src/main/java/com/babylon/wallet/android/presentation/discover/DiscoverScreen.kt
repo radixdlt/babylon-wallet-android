@@ -201,7 +201,7 @@ private fun DiscoverContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             SectionView(
-                title = stringResource(R.string.discover_categorySocials_title),
+                title = stringResource(R.string.discover_categoryCommunity_title),
                 hasMore = false
             ) {
                 Column(
