@@ -82,7 +82,7 @@ fun GlossaryItem.resolveTitleResFromGlossaryItem() = when (this) {
     GlossaryItem.gateways -> R.string.infoLink_discoverTitle_gateways
     GlossaryItem.preauthorizations -> R.string.infoLink_discoverTitle_preauthorizations
     GlossaryItem.possibledappcalls -> R.string.infoLink_discoverTitle_possibledappcalls
-    GlossaryItem.biometricspin -> R.string.infoLink_discoverTitle_biometricsPin
+    GlossaryItem.biometricspin -> R.string.infoLink_discoverTitle_biometricspin
     GlossaryItem.ledgernano -> R.string.infoLink_discoverTitle_ledgernano
     GlossaryItem.securityshields -> R.string.infoLink_discoverTitle_securityshields
     GlossaryItem.buildingshield -> R.string.infoLink_discoverTitle_buildingshield
