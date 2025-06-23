@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -98,6 +101,7 @@ fun InfoDialog(
                 scrollState = rememberScrollState(),
                 markdownContent = glossaryItem?.resolveTextFromGlossaryItem(),
                 drawableRes = glossaryItem?.resolveIconFromGlossaryItem(),
+                applyIconTint = glossaryItem?.applyIconTint,
                 onGlossaryItemClick = viewModel::onGlossaryItemClick,
                 onDismiss = onDismissRequest
             )
@@ -111,6 +115,7 @@ private fun InfoDialogContent(
     scrollState: ScrollState,
     markdownContent: String?,
     @DrawableRes drawableRes: Int?,
+    applyIconTint: Boolean?,
     onGlossaryItemClick: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -186,8 +191,11 @@ private fun InfoDialogContent(
         ) {
             drawableRes?.let {
                 Icon(
-                    painterResource(id = drawableRes),
-                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .width(128.dp)
+                        .height(80.dp),
+                    painter = painterResource(id = drawableRes),
+                    tint = if (applyIconTint == true) RadixTheme.colors.icon else Color.Unspecified,
                     contentDescription = null
                 )
             }
@@ -214,7 +222,6 @@ private fun InfoDialogContent(
                     typography = markdownTypography(
                         h2 = RadixTheme.typography.title,
                         paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.text),
-
                     ),
                     padding = markdownPadding(
                         block = RadixTheme.dimensions.paddingSmall,
@@ -247,50 +254,53 @@ internal fun List<ASTNode>.innerList(): List<ASTNode> {
 }
 
 @Composable
-private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
-    GlossaryItem.web3 -> stringResource(R.string.infoLink_glossary_web3)
-    GlossaryItem.radixnetwork -> stringResource(R.string.infoLink_glossary_radixnetwork)
-    GlossaryItem.radixwallet -> stringResource(R.string.infoLink_glossary_radixwallet)
-    GlossaryItem.radixconnect -> stringResource(R.string.infoLink_glossary_radixconnect)
-    GlossaryItem.radixconnector -> stringResource(R.string.infoLink_glossary_radixconnector)
-    GlossaryItem.xrd -> stringResource(R.string.infoLink_glossary_xrd)
-    GlossaryItem.dashboard -> stringResource(R.string.infoLink_glossary_dashboard)
-    GlossaryItem.dapps -> stringResource(R.string.infoLink_glossary_dapps)
-    GlossaryItem.connectbutton -> stringResource(R.string.infoLink_glossary_connectbutton)
-    GlossaryItem.dex -> stringResource(R.string.infoLink_glossary_dex)
-    GlossaryItem.accounts -> stringResource(R.string.infoLink_glossary_accounts)
-    GlossaryItem.personas -> stringResource(R.string.infoLink_glossary_personas)
-    GlossaryItem.tokens -> stringResource(R.string.infoLink_glossary_tokens)
-    GlossaryItem.nfts -> stringResource(R.string.infoLink_glossary_nfts)
-    GlossaryItem.claimnfts -> stringResource(R.string.infoLink_glossary_claimnfts)
-    GlossaryItem.networkstaking -> stringResource(R.string.infoLink_glossary_networkstaking)
-    GlossaryItem.poolunits -> stringResource(R.string.infoLink_glossary_poolunits)
-    GlossaryItem.liquidstakeunits -> stringResource(R.string.infoLink_glossary_liquidstakeunits)
-    GlossaryItem.badges -> stringResource(R.string.infoLink_glossary_badges)
-    GlossaryItem.behaviors -> stringResource(R.string.infoLink_glossary_behaviors)
-    GlossaryItem.transfers -> stringResource(R.string.infoLink_glossary_transfers)
-    GlossaryItem.transactions -> stringResource(R.string.infoLink_glossary_transactions)
-    GlossaryItem.transactionfee -> stringResource(R.string.infoLink_glossary_transactionfee)
-    GlossaryItem.guarantees -> stringResource(R.string.infoLink_glossary_guarantees)
-    GlossaryItem.payingaccount -> stringResource(R.string.infoLink_glossary_payingaccount)
-    GlossaryItem.validators -> stringResource(R.string.infoLink_glossary_validators)
-    GlossaryItem.bridging -> stringResource(R.string.infoLink_glossary_bridging)
-    GlossaryItem.gateways -> stringResource(R.string.infoLink_glossary_gateways)
-    GlossaryItem.preauthorizations -> stringResource(id = R.string.infoLink_glossary_preauthorizations)
-    GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
-    GlossaryItem.securityshields -> stringResource(id = R.string.infoLink_glossary_securityshields)
-    GlossaryItem.buildingshield -> stringResource(id = R.string.infoLink_glossary_buildingshield)
-    GlossaryItem.biometricspin -> stringResource(id = R.string.infoLink_glossary_biometricspin)
-    GlossaryItem.arculus -> stringResource(id = R.string.infoLink_glossary_arculus)
-    GlossaryItem.ledgernano -> stringResource(id = R.string.infoLink_glossary_ledgernano)
-    GlossaryItem.passwords -> stringResource(id = R.string.infoLink_glossary_passwords)
-    GlossaryItem.mnemonics -> stringResource(id = R.string.infoLink_glossary_passphrases)
-    GlossaryItem.emergencyfallback -> stringResource(id = R.string.infoLink_glossary_emergencyfallback)
-    GlossaryItem.nohardwaredevice -> "" // TODO crowdin
+private fun GlossaryItem.resolveTextFromGlossaryItem() =
+    stringResource(resolveTextResFromGlossaryItem())
+
+@Suppress("CyclomaticComplexMethod")
+fun GlossaryItem.resolveTextResFromGlossaryItem() = when (this) {
+    GlossaryItem.web3 -> R.string.infoLink_glossary_web3
+    GlossaryItem.radixnetwork -> R.string.infoLink_glossary_radixnetwork
+    GlossaryItem.radixwallet -> R.string.infoLink_glossary_radixwallet
+    GlossaryItem.radixconnect -> R.string.infoLink_glossary_radixconnect
+    GlossaryItem.radixconnector -> R.string.infoLink_glossary_radixconnector
+    GlossaryItem.xrd -> R.string.infoLink_glossary_xrd
+    GlossaryItem.dashboard -> R.string.infoLink_glossary_dashboard
+    GlossaryItem.dapps -> R.string.infoLink_glossary_dapps
+    GlossaryItem.connectbutton -> R.string.infoLink_glossary_connectbutton
+    GlossaryItem.dex -> R.string.infoLink_glossary_dex
+    GlossaryItem.accounts -> R.string.infoLink_glossary_accounts
+    GlossaryItem.personas -> R.string.infoLink_glossary_personas
+    GlossaryItem.tokens -> R.string.infoLink_glossary_tokens
+    GlossaryItem.nfts -> R.string.infoLink_glossary_nfts
+    GlossaryItem.claimnfts -> R.string.infoLink_glossary_claimnfts
+    GlossaryItem.networkstaking -> R.string.infoLink_glossary_networkstaking
+    GlossaryItem.poolunits -> R.string.infoLink_glossary_poolunits
+    GlossaryItem.liquidstakeunits -> R.string.infoLink_glossary_liquidstakeunits
+    GlossaryItem.badges -> R.string.infoLink_glossary_badges
+    GlossaryItem.behaviors -> R.string.infoLink_glossary_behaviors
+    GlossaryItem.transfers -> R.string.infoLink_glossary_transfers
+    GlossaryItem.transactions -> R.string.infoLink_glossary_transactions
+    GlossaryItem.transactionfee -> R.string.infoLink_glossary_transactionfee
+    GlossaryItem.guarantees -> R.string.infoLink_glossary_guarantees
+    GlossaryItem.payingaccount -> R.string.infoLink_glossary_payingaccount
+    GlossaryItem.validators -> R.string.infoLink_glossary_validators
+    GlossaryItem.bridging -> R.string.infoLink_glossary_bridging
+    GlossaryItem.gateways -> R.string.infoLink_glossary_gateways
+    GlossaryItem.preauthorizations -> R.string.infoLink_glossary_preauthorizations
+    GlossaryItem.possibledappcalls -> R.string.infoLink_glossary_possibledappcalls
+    GlossaryItem.securityshields -> R.string.infoLink_glossary_securityshields
+    GlossaryItem.buildingshield -> R.string.infoLink_glossary_buildingshield
+    GlossaryItem.biometricspin -> R.string.infoLink_glossary_biometricspin
+    GlossaryItem.arculus -> R.string.infoLink_glossary_arculus
+    GlossaryItem.ledgernano -> R.string.infoLink_glossary_ledgernano
+    GlossaryItem.passwords -> R.string.infoLink_glossary_passwords
+    GlossaryItem.mnemonics -> R.string.infoLink_glossary_passphrases
+    GlossaryItem.emergencyfallback -> R.string.infoLink_glossary_emergencyfallback
 }
 
 @Composable
-private fun GlossaryItem.resolveIconFromGlossaryItem() = when (this) {
+fun GlossaryItem.resolveIconFromGlossaryItem() = when (this) {
     GlossaryItem.xrd -> DSR.ic_xrd_token
     GlossaryItem.nfts -> DSR.ic_nfts
     GlossaryItem.networkstaking -> DSR.ic_lsu
@@ -298,8 +308,70 @@ private fun GlossaryItem.resolveIconFromGlossaryItem() = when (this) {
     GlossaryItem.liquidstakeunits -> DSR.icon_liquid_stake_units
     GlossaryItem.tokens -> DSR.icon_tokens
     GlossaryItem.badges -> DSR.ic_badge
+    GlossaryItem.radixwallet -> DSR.ic_wallet_app
+    GlossaryItem.connectbutton,
+    GlossaryItem.radixconnector,
+    GlossaryItem.radixconnect -> DSR.icon_desktop_connection_large
+
+    GlossaryItem.biometricspin -> DSR.ic_device_biometric_pin
+    GlossaryItem.mnemonics -> DSR.ic_passphrase
+    GlossaryItem.guarantees -> DSR.ic_filter_list
+    GlossaryItem.validators -> DSR.ic_validator
+    GlossaryItem.personas -> DSR.ic_personas
+    GlossaryItem.transfers -> DSR.ic_transfer
+    GlossaryItem.ledgernano -> DSR.ic_ledger_nano
+    GlossaryItem.gateways -> DSR.ic_gateways
+    GlossaryItem.dapps,
+    GlossaryItem.possibledappcalls,
+    GlossaryItem.dashboard -> DSR.ic_authorized_dapps
+
     else -> null
 }
+
+val GlossaryItem.applyIconTint
+    get() = when (this) {
+        GlossaryItem.xrd,
+        GlossaryItem.nfts,
+        GlossaryItem.networkstaking,
+        GlossaryItem.poolunits,
+        GlossaryItem.liquidstakeunits,
+        GlossaryItem.tokens,
+        GlossaryItem.badges,
+        GlossaryItem.radixwallet,
+        GlossaryItem.connectbutton,
+        GlossaryItem.radixconnector,
+        GlossaryItem.radixconnect -> false
+
+        GlossaryItem.web3,
+        GlossaryItem.radixnetwork,
+        GlossaryItem.radixconnect,
+        GlossaryItem.radixconnector,
+        GlossaryItem.dashboard,
+        GlossaryItem.dapps,
+        GlossaryItem.dex,
+        GlossaryItem.accounts,
+        GlossaryItem.personas,
+        GlossaryItem.claimnfts,
+        GlossaryItem.behaviors,
+        GlossaryItem.transfers,
+        GlossaryItem.transactions,
+        GlossaryItem.transactionfee,
+        GlossaryItem.guarantees,
+        GlossaryItem.payingaccount,
+        GlossaryItem.validators,
+        GlossaryItem.bridging,
+        GlossaryItem.gateways,
+        GlossaryItem.preauthorizations,
+        GlossaryItem.possibledappcalls,
+        GlossaryItem.securityshields,
+        GlossaryItem.buildingshield,
+        GlossaryItem.emergencyfallback,
+        GlossaryItem.biometricspin,
+        GlossaryItem.arculus,
+        GlossaryItem.ledgernano,
+        GlossaryItem.passwords,
+        GlossaryItem.mnemonics -> true
+    }
 
 @Preview(showBackground = false)
 @Composable
@@ -310,6 +382,7 @@ private fun InfoTokensPreview() {
             scrollState = rememberScrollState(),
             markdownContent = stringResource(R.string.infoLink_glossary_tokens),
             drawableRes = DSR.icon_tokens,
+            applyIconTint = false,
             onGlossaryItemClick = {},
             onDismiss = {}
         )
@@ -325,6 +398,7 @@ private fun InfoNFTsPreview() {
             scrollState = rememberScrollState(),
             markdownContent = stringResource(R.string.infoLink_glossary_nfts),
             drawableRes = DSR.ic_nfts,
+            applyIconTint = false,
             onGlossaryItemClick = {},
             onDismiss = {}
         )

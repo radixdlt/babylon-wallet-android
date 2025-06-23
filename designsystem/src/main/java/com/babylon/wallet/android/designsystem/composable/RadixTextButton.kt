@@ -30,6 +30,7 @@ fun RadixTextButton(
     isWithoutPadding: Boolean = false,
     fontSize: TextUnit? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
     throttleClicks: Boolean = false,
     textAlign: TextAlign? = null
 ) {
@@ -63,6 +64,7 @@ fun RadixTextButton(
             fontSize = fontSize ?: textStyle.fontSize,
             textAlign = textAlign
         )
+        trailingIcon?.invoke()
     }
 }
 

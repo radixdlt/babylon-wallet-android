@@ -30,7 +30,6 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsIte
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.openEmail
-import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 
@@ -98,7 +97,7 @@ private fun TroubleshootingSettingsContent(
                             }
 
                             TroubleshootingUiItem.SupportSection -> {
-                                SectionHeader(title = stringResource(id = R.string.troubleshooting_supportAndCommunity))
+                                SectionHeader(title = stringResource(id = R.string.troubleshooting_support))
                             }
 
                             TroubleshootingUiItem.ResetSection -> {
@@ -117,7 +116,6 @@ private fun TroubleshootingSettingsContent(
                                             is Troubleshooting.ContactSupport -> {
                                                 context.openEmail(item.supportAddress, item.subject, item.body)
                                             }
-                                            Troubleshooting.Discord -> context.openUrl("https://go.radixdlt.com/Discord")
                                             else -> {
                                                 onSettingItemClick(item)
                                             }
@@ -125,8 +123,7 @@ private fun TroubleshootingSettingsContent(
                                     },
                                     trailingIcon = when (item) {
                                         is Troubleshooting.ContactSupport,
-                                        is Troubleshooting.ExportLogs,
-                                        Troubleshooting.Discord -> {
+                                        is Troubleshooting.ExportLogs -> {
                                             {
                                                 Icon(
                                                     painter = painterResource(id = DSR.ic_link_out),

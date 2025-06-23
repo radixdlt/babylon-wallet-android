@@ -5,10 +5,12 @@ import android.os.Build
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.repository.discover.DiscoverRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
+import com.babylon.wallet.android.presentation.alerts.AlertHandler
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -26,8 +28,6 @@ import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.SargonOsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.WhileSubscribed
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
@@ -64,7 +64,9 @@ class MainViewModel @Inject constructor(
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
     private val appLockStateProvider: AppLockStateProvider,
     private val incomingRequestsDelegate: IncomingRequestsDelegate,
-    private val sargonOsManager: SargonOsManager
+    private val sargonOsManager: SargonOsManager,
+    private val discoverRepository: DiscoverRepository,
+    private val alertHandler: AlertHandler
 ) : StateViewModel<MainViewModel.State>(),
     OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -253,6 +255,8 @@ class MainViewModel @Inject constructor(
         if (!_state.value.isAppLocked) {
             runForegroundChecks()
         }
+
+//        checkNewBlogPost() TODO re-enable when needed
     }
 
     fun onBeforeBiometricsRequest() {
@@ -281,6 +285,19 @@ class MainViewModel @Inject constructor(
     private fun runForegroundChecks() {
         viewModelScope.launch {
             checkKeystoreIntegrityUseCase()
+        }
+    }
+
+    @Suppress("unused")
+    private fun checkNewBlogPost() {
+        viewModelScope.launch {
+            val newBlogPost = discoverRepository.getNewBlogPost().getOrNull() ?: return@launch
+
+            alertHandler.show(
+                AlertHandler.State.NewBlogPost(
+                    post = newBlogPost
+                )
+            )
         }
     }
 
@@ -342,18 +359,21 @@ sealed interface AppState {
 
 enum class MainTab(val route: String) {
     Wallet("tab_wallet"),
+    DApps("tab_dapps"),
     Discover("tab_discover"),
     Settings("tab_settings");
 
     companion object {
         val mainnet: Set<MainTab> = setOf(
             Wallet,
+            DApps,
             Discover,
             Settings
         )
 
         val testnet: Set<MainTab> = setOf(
             Wallet,
+            Discover,
             Settings
         )
     }

@@ -554,6 +554,7 @@
   <string name="common_close">Close</string>
   <string name="common_hiddenAccountsOrPersonas">Hidden Accounts or Personas</string>
   <string name="common_all">All</string>
+  <string name="common_searchHint">Search...</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
@@ -1244,11 +1245,9 @@ Code: %s</string>
   <string name="troubleshooting_accountScan_subtitle">Recover Accounts with a seed phrase or Ledger device</string>
   <string name="troubleshooting_legacyImport_title">Import from a Legacy Wallet</string>
   <string name="troubleshooting_legacyImport_subtitle">Import Accounts from an Olympia wallet</string>
-  <string name="troubleshooting_supportAndCommunity">Support and Community</string>
+  <string name="troubleshooting_support">Support</string>
   <string name="troubleshooting_contactSupport_title">Contact Support</string>
   <string name="troubleshooting_contactSupport_subtitle">Connect directly with the Radix support team</string>
-  <string name="troubleshooting_discord_title">Discord</string>
-  <string name="troubleshooting_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
   <string name="troubleshooting_resetAccount">Reset Account</string>
   <string name="troubleshooting_factoryReset_title">Factory Reset</string>
   <string name="troubleshooting_factoryReset_subtitle">Restore your Radix wallet to its original state</string>
@@ -1367,11 +1366,11 @@ Code: %s</string>
 • Do transactions involving multiple people.
 • Mint a badge or NFT and directly deposit it to your account.\n\nIn all of these cases, the dApp still needs you to approve and sign any interactions with your accounts and assets - the Radix Network guarantees it.\n\nBecause the pre-authorization is provided back to the dApp, there is a time limit how long it lasts. Once this time limit is up, the pre-authorization expires and can\'t be used. A dApp will need to make a request for another one. You can see how long you have until your pre-authoirzation expires in the pre-authorization summary.</string>
   <string name="infoLink_glossary_possibledappcalls">## Possible dApp Calls\n\nWhen a dApp requests a [pre-authorization](?glossaryAnchor=preauthorizations), you may see in the summary \"possible dApp calls\". This simply indicates that the dApp may add additional actions to your pre-authorization before submitting the transaction to the Radix Network.\n\nNot to worry - you are only approving and signing what you can see in your wallet. Nothing added by the dApp can do anything with your accounts and assets without your knowledge.</string>
-  <string name="infoLink_glossary_biometricspin">## Biometrics/PIN\n\nA biometrics/PIN factor is a 24-word seed phrase protected and accessed via your phone\'s biometrics or PIN security feature. Unlike most crypto wallets, there isn\'t a single seed phrase controlling all of your stuff – it\'s just 1 type of factor you can use to protect [Accounts](?glossaryAnchor=accounts) and [Personas](?glossaryAnchor=personas) or use as part of multi-factor [Security Shields](?glossaryAnchor=securityshields).\n\nBecause this is the only kind of factor held on your phone, it won\'t automatically transfer if you move to a different phone with your [Radix Wallet](?glossaryAnchor=radixwallet). Using a Security Shield for your Accounts and Personas enables easy transfer of wallet control without having to write down and enter a seed phrase. If you create Accounts or Personas with a biometrics/PIN factor, and you don\'t apply a Security Shield, you\'ll need to enter the seed phrase to recover access on a different phone.</string>
+  <string name="infoLink_glossary_biometricspin">## Biometrics/PIN\n\nA biometrics/PIN factor is a 24-word seed phrase protected and accessed via your phone\'s biometrics or PIN security feature.\n\nBecause this is the only kind of factor held on your phone, it won\'t automatically transfer if you move to a different phone with your [Radix Wallet](?glossaryAnchor=radixwallet). If you create Accounts or Personas with a biometrics/PIN factor you\'ll need to enter the seed phrase to recover access on a different phone.</string>
   <string name="infoLink_glossary_passphrases">## Passphrases\n\nA passphrase is a 24-word BIP39 seed phrase. Unlike with most crypto wallets though, it\'s a specific type of seed phrase that isn\'t held on your phone so it can\'t be accessed with the help of your phone\'s biometrics or PIN features. It must be typed in word by word every time you use it to sign [transactions](?glossaryAnchor=transactions). This means it must be written down and should be stored (ideally not electronically) in a secret location. For this reason, this factor source is best left to experienced users.\n\nIf you prefer to use a seed phrase held on this device for easy usage, like a typical crypto wallet, please see the [biometrics/PIN](?glossaryAnchor=biometricspin) factor type.</string>
   <string name="infoLink_glossary_passwords">## Passwords\n\nPassword can be used as a type of security factor in the [Radix Wallet](?glossaryAnchor=radixwallet). A password can be useful to add additional security to your [Security Shields](?glossaryAnchor=securityshields) in combination with other factors. To be secure, your password must be at least 16-characters long and it should be impossible for someone else to guess. If you write it down, make sure you don\'t do this electronically and keep it stored in a safe place.\n\nPasswords on Radix are different from normal passwords because they\'re decentralized. They\'re not held in a central server or even in your Radix Wallet app. Through some cryptographic magic, the [Radix Network](?glossaryAnchor=radixnetwork) itself can check if your password is correct without storing it. It\'s provides the security of [web3](?glossaryAnchor=web3) with the easy functionality of web2.</string>
   <string name="infoLink_glossary_arculus">## Arculus Card\n\nArculus Cards are secure third-party \"hardware wallet\" cryptographic signing devices in a convenient credit card form factor. To use it, you only need to tap it to the NFC reader on your phone.\n\nUsing a hardware signing device like an Arculus Card provides strong security because it requires physical access to the card to use it. If you use it in a [Security Shields](?glossaryAnchor=securityshields), you can combine it with other factors you have so that even if the card is lost or stolen, your funds are safe and you can reconfigure the Shield to remove the lost Arculus Card, and carry on as before. No seed phrase backup needed.</string>
-  <string name="infoLink_glossary_ledgernano">## Ledger Nano\n\nA Ledger Nano is a secure third-party \"hardware wallet\" cryptographic signing device popular with many crypto users. To use it, you need to connect it via USB to a computer with a linked [Radix Connector](?glossaryAnchor=radixconnector) browser extension. From here, you can approve signatures by following the Nano\'s on-screen instructions.\n\nUsing a hardware signing device like a Ledger Nano provides strong security because it requires physical access to the device to use it. If you use it in a [Security Shields](?glossaryAnchor=securityshields), you can combine it with other factors you have so that even if the device is lost or stolen, your funds are safe and you can reconfigure the Shield to remove the lost device from it. No seed phrase backup needed.</string>
+  <string name="infoLink_glossary_ledgernano">## Ledger Nano\n\nA Ledger Nano is a secure third-party \"hardware wallet\" cryptographic signing device popular with many crypto users. To use it, you need to connect it via USB to a computer with a linked [Radix Connector](?glossaryAnchor=radixconnector) browser extension. From here, you can approve signatures by following the Nano\'s on-screen instructions.\n\nUsing a hardware signing device like a Ledger Nano provides strong security because it requires physical access to the device to use it. No seed phrase backup needed.</string>
   <string name="infoLink_glossary_buildingshield">## How your Security Shield is Built\n\nA good [Security Shield](?glossaryAnchor=securityshields) combines safety and reliability. No one else should be able to access it and even if you lose your phone you should always be able to recover access to your [Accounts](?glossaryAnchor=accounts) and [Personas](?glossaryAnchor=personas).\n\nYour [Radix Wallet](?glossaryAnchor=radixwallet) will help you by suggesting a good Shield configuration once you’ve added the required security factors. Once this is done, you can edit it to suit your requirements and the Radix Wallet has 3 rules in place to ensure those edits don\'t make your Shield unsafe or innaccessible.\n\n1. [Password](?glossaryAnchor=passwords) cannot be used alone. They are useful factors but aren\'t secure enough to be used by themselves.
 2. To make sure you won\'t lose access if you lose 1 of your factors, you must always have at least 2 factors options to start a Shield recovery.
 3. To make sure nobody can take away your Shield by stealing just 1 factor, if you are only using 1 factor for regular access, you cannot use that factor again for recovery. And you also cannot use the same factor to both start and confirm a recovery.\n\nOnce you\'ve finalized the setup of factors for a Shield, you’ll be ready to apply it to your chosen Accounts and Personas on the [Radix Network](?glossaryAnchor=radixnetwork) with 1 or more [transactions](?glossaryAnchor=transactions).</string>
@@ -1397,6 +1396,82 @@ Code: %s</string>
   <string name="infoLink_title_buildingshield">How your Security Shield is built</string>
   <string name="infoLink_title_securityshields">Learn about Security Shields</string>
   <string name="infoLink_title_nohardwaredevice">I don’t have a hardware device</string>
+  <string name="infoLink_discoverTitle_tokens">Token</string>
+  <string name="infoLink_discoverTitle_nfts">Non-Fungible Token</string>
+  <string name="infoLink_discoverTitle_networkstaking">Network Staking</string>
+  <string name="infoLink_discoverTitle_personas">Personas</string>
+  <string name="infoLink_discoverTitle_dapps">dApps</string>
+  <string name="infoLink_discoverTitle_guarantees">Deposit Guarantees</string>
+  <string name="infoLink_discoverTitle_badges">Badges</string>
+  <string name="infoLink_discoverTitle_poolunits">Pool Units</string>
+  <string name="infoLink_discoverTitle_gateways">Gateways</string>
+  <string name="infoLink_discoverTitle_radixconnect">Radix Connect</string>
+  <string name="infoLink_discoverTitle_transactionfee">Transaction Fees</string>
+  <string name="infoLink_discoverTitle_behaviors">Asset Behaviors</string>
+  <string name="infoLink_discoverTitle_claimnfts">Stake Claim NFTs</string>
+  <string name="infoLink_discoverTitle_liquidstakeunits">Liquid Stake Unit</string>
+  <string name="infoLink_discoverTitle_radixnetwork">Radix Network</string>
+  <string name="infoLink_discoverTitle_accounts">Accounts</string>
+  <string name="infoLink_discoverTitle_radixwallet">Radix Wallet</string>
+  <string name="infoLink_discoverTitle_transactions">Transactions</string>
+  <string name="infoLink_discoverTitle_dex">Decentralized Exchange (DEX)</string>
+  <string name="infoLink_discoverTitle_validators">Radix Network Validators</string>
+  <string name="infoLink_discoverTitle_radixconnector">Radix Connector Browser Extension</string>
+  <string name="infoLink_discoverTitle_connectbutton">√ Connect Button</string>
+  <string name="infoLink_discoverTitle_xrd">XRD Token</string>
+  <string name="infoLink_discoverTitle_web3">Web3</string>
+  <string name="infoLink_discoverTitle_transfers">Asset Transfers</string>
+  <string name="infoLink_discoverTitle_dashboard">Radix Dashboard</string>
+  <string name="infoLink_discoverTitle_bridging">Bridging</string>
+  <string name="infoLink_discoverTitle_payingaccount">Paying Account</string>
+  <string name="infoLink_discoverTitle_preauthorizations">Pre-authorizations</string>
+  <string name="infoLink_discoverTitle_possibledappcalls">Possible dApp Calls</string>
+  <string name="infoLink_discoverTitle_arculus">Arculus Card</string>
+  <string name="infoLink_discoverTitle_buildingshield">How Your Security Shield is Built</string>
+  <string name="infoLink_discoverTitle_emergencyfallback">Emergency Fallback</string>
+  <string name="infoLink_discoverTitle_ledgernano">Ledger Nano</string>
+  <string name="infoLink_discoverTitle_biometricspin">Biometrics/PIN</string>
+  <string name="infoLink_discoverTitle_passphrases">Passphrases</string>
+  <string name="infoLink_discoverTitle_passwords">Passwords</string>
+  <string name="infoLink_discoverTitle_securityshields">Security Shields</string>
+  <string name="infoLink_discoverDescription_tokens">Digital assets representing value or utility.</string>
+  <string name="infoLink_discoverDescription_nfts">Unique digital assets for art or collectibles.</string>
+  <string name="infoLink_discoverDescription_networkstaking">Stake XRD to secure the network and earn rewards.</string>
+  <string name="infoLink_discoverDescription_personas">Web3 identifiers for secure dApp authentication.</string>
+  <string name="infoLink_discoverDescription_dapps">Decentralized apps interacting with your wallet.</string>
+  <string name="infoLink_discoverDescription_guarantees">Set minimum deposits to guard against fluctuations.</string>
+  <string name="infoLink_discoverDescription_badges">Tokens or NFTs for authorization in dApps.</string>
+  <string name="infoLink_discoverDescription_poolunits">Tokens representing your share in liquidity pools.</string>
+  <string name="infoLink_discoverDescription_gateways">Connect your wallet to Radix networks.</string>
+  <string name="infoLink_discoverDescription_radixconnect">Bridge your wallet with desktop dApps securely.</string>
+  <string name="infoLink_discoverDescription_transactionfee">Small XRD fee for network operations.</string>
+  <string name="infoLink_discoverDescription_behaviors">Rules defining token or NFT actions.</string>
+  <string name="infoLink_discoverDescription_claimnfts">NFTs for pending unstake requests.</string>
+  <string name="infoLink_discoverDescription_liquidstakeunits">Tokens representing staked XRD.</string>
+  <string name="infoLink_discoverDescription_radixnetwork">Decentralized platform for secure asset ownership.</string>
+  <string name="infoLink_discoverDescription_accounts">Smart accounts for secure asset storage.</string>
+  <string name="infoLink_discoverDescription_radixwallet">Mobile app for managing Radix assets.</string>
+  <string name="infoLink_discoverDescription_transactions">Instructions for moving assets on the network.</string>
+  <string name="infoLink_discoverDescription_dex">Instant token swaps via decentralized exchanges.</string>
+  <string name="infoLink_discoverDescription_validators">Nodes securing the Radix Network.</string>
+  <string name="infoLink_discoverDescription_radixconnector">Browser extension linking wallet to dApps.</string>
+  <string name="infoLink_discoverDescription_connectbutton">Button to connect wallet to dApps.</string>
+  <string name="infoLink_discoverDescription_xrd">Native token for fees and transactions.</string>
+  <string name="infoLink_discoverDescription_web3">Decentralized internet with user-owned assets.</string>
+  <string name="infoLink_discoverDescription_transfers">Move tokens or NFTs between accounts.</string>
+  <string name="infoLink_discoverDescription_dashboard">Web dApp for network data and staking.</string>
+  <string name="infoLink_discoverDescription_bridging">Move assets into or out of Radix.</string>
+  <string name="infoLink_discoverDescription_payingaccount">Account used to pay transaction fees.</string>
+  <string name="infoLink_discoverDescription_preauthorizations">User-approved actions for dApps.</string>
+  <string name="infoLink_discoverDescription_possibledappcalls">Additional actions dApps might add.</string>
+  <string name="infoLink_discoverDescription_biometricspin">Secure access using biometrics or PIN.</string>
+  <string name="infoLink_discoverDescription_passphrases">Manually entered 24-word seed phrase.</string>
+  <string name="infoLink_discoverDescription_passwords">Decentralized passwords for extra security.</string>
+  <string name="infoLink_discoverDescription_arculus">NFC-enabled hardware wallet in card format.</string>
+  <string name="infoLink_discoverDescription_ledgernano">USB hardware wallet for secure transactions.</string>
+  <string name="infoLink_discoverDescription_buildingshield">Create multi-factor security for assets.</string>
+  <string name="infoLink_discoverDescription_securityshields">Multi-factor protection for accounts and recovery.</string>
+  <string name="infoLink_discoverDescription_emergencyfallback">Time-based recovery for lost factors.</string>
   <string name="hiddenEntities_title">Hidden Personas &amp; Accounts</string>
   <string name="hiddenEntities_text">You have hidden the following Personas and Accounts. They remain on the Radix Network, but while hidden, your wallet will treat them as if they don’t exist.</string>
   <string name="hiddenEntities_personas">Personas</string>
@@ -1646,4 +1721,24 @@ Code: %s</string>
   <string name="dappDirectory_filters_title">Tags</string>
   <string name="dappDirectory_error_heading">Failed to load dApps.</string>
   <string name="dappDirectory_error_message">Pull to refresh</string>
+  <string name="homePage_tab_discover">Discover</string>
+  <string name="discover_title">Discover</string>
+  <string name="discover_view_all_dapps">All dApps</string>
+  <string name="discover_view_approved_dapps">Approved dApps</string>
+  <string name="discover_categoryLearn_title">Learn About</string>
+  <string name="discover_categoryCommunity_title">Community</string>
+  <string name="discover_categoryBlogPosts_title">Blog Posts</string>
+  <string name="discover_seeMore_button">See More</string>
+  <string name="learn_title">Learn About</string>
+  <string name="blogPosts_title">Blog Posts</string>
+  <string name="discover_blogPosts_failure_title">Failed to load Blog Posts.</string>
+  <string name="dsicover_blogPosts_failure_cta">Pull to refresh</string>
+  <string name="discover_blogPosts_failure_cta_button">Tap to refresh</string>
+  <string name="discover_blogPosts_see_all_blog_posts">See all Blog Posts</string>
+  <string name="discover_socialLinks_twitter_title">Radix X Official</string>
+  <string name="discover_socialLinks_twitter_subtitle">Follow the official Radix X for news, updates, and insights.</string>
+  <string name="discover_socialLinks_telegram_title">Radix Telegram Official</string>
+  <string name="discover_socialLinks_telegram_subtitle">Join the Radix Telegram to chat, ask questions, and get updates.</string>
+  <string name="discover_socialLinks_discord_title">Radix Discord Official</string>
+  <string name="discover_socialLinks_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
 </resources>

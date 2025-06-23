@@ -15,6 +15,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -28,6 +31,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.edgeToEdge
 import com.babylon.wallet.android.designsystem.theme.rememberRadixThemeConfig
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
+import com.babylon.wallet.android.presentation.alerts.AlertHandler
+import com.babylon.wallet.android.presentation.alerts.AlertUI
+import com.babylon.wallet.android.presentation.alerts.AlertView
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
@@ -35,6 +41,8 @@ import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.openInAppUrl
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import com.radixdlt.sargon.os.driver.OnBiometricsLifecycleCallbacks
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,6 +73,9 @@ class MainActivity : AppCompatActivity() {
     // Automatic biometric handler that requests for biometrics when mnemonics are accessed from sargon os
     @Inject
     lateinit var biometricsHandler: BiometricsHandler
+
+    @Inject
+    lateinit var alertHandler: AlertHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -126,12 +137,19 @@ class MainActivity : AppCompatActivity() {
                             mainViewModel = viewModel,
                             onCloseApp = { finish() }
                         )
+
+                        HandleAlert()
                     }
                 }
             }
         }
 
         monitorAdvancedLockState()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.onAppToForeground()
     }
 
     @Composable
@@ -143,6 +161,33 @@ class MainActivity : AppCompatActivity() {
                 forceDarkStatusBar = isDevBannerVisible
             )
         }
+    }
+
+    @Composable
+    private fun HandleAlert() {
+        val alert = alertHandler.state().collectAsState().value
+        val ui = AlertUI.from(alert) ?: return
+        val context = LocalContext.current
+        val toolbarColor = RadixTheme.colors.background.toArgb()
+
+        AlertView(
+            modifier = Modifier.throttleClickable {
+                when (alert) {
+                    is AlertHandler.State.NewBlogPost -> {
+                        context.openInAppUrl(
+                            url = alert.post.url.toString(),
+                            toolbarColor = toolbarColor
+                        )
+                        alertHandler.reset()
+                    }
+
+                    AlertHandler.State.Idle -> {}
+                }
+            },
+            ui = ui,
+            autoDismiss = false,
+            onDismiss = alertHandler::reset
+        )
     }
 
     private fun monitorAdvancedLockState() {
@@ -197,11 +242,6 @@ class MainActivity : AppCompatActivity() {
             }
             fadeIn.start()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.onAppToForeground()
     }
 
     companion object {

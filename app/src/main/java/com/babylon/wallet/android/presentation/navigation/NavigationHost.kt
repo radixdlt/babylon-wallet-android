@@ -43,6 +43,8 @@ import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialo
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.dialogs.preauthorization.preAuthorizationStatusDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
+import com.babylon.wallet.android.presentation.discover.blogposts.blogPostsScreen
+import com.babylon.wallet.android.presentation.discover.learn.learnScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -122,7 +124,10 @@ fun NavigationHost(
                     if (isWithCloudBackupEnabled) {
                         navController.createAccountScreen()
                     } else {
-                        navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet, popToRoute = ROUTE_EULA_SCREEN)
+                        navController.connectCloudBackupScreen(
+                            connectMode = ConnectMode.NewWallet,
+                            popToRoute = ROUTE_EULA_SCREEN
+                        )
                     }
                 },
                 onBack = onCloseApp,
@@ -143,7 +148,10 @@ fun NavigationHost(
                 if (isWithCloudBackupEnabled) {
                     navController.createAccountScreen(popToRoute = ROUTE_EULA_SCREEN)
                 } else {
-                    navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet, popToRoute = ROUTE_EULA_SCREEN)
+                    navController.connectCloudBackupScreen(
+                        connectMode = ConnectMode.NewWallet,
+                        popToRoute = ROUTE_EULA_SCREEN
+                    )
                 }
             }
         )
@@ -272,6 +280,7 @@ fun NavigationHost(
                     is SettingsItem.TopLevelSettings.SecurityCenter -> {
                         navController.securityCenter()
                     }
+
                     SettingsItem.TopLevelSettings.Troubleshooting -> {
                         navController.troubleshootingSettings()
                     }
@@ -279,7 +288,10 @@ fun NavigationHost(
             },
             onDAppClick = {
                 navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
-            }
+            },
+            onInfoLinkClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onMoreInfoClick = { navController.learnScreen() },
+            onMoreBlogPostsClick = { navController.blogPostsScreen() }
         )
         account(
             onAccountPreferenceClick = { address ->
@@ -350,7 +362,8 @@ fun NavigationHost(
             onContinueClick = { accountId, requestSource ->
                 navController.createAccountConfirmationScreen(
                     accountId = accountId,
-                    requestSource = requestSource ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
+                    requestSource = requestSource
+                        ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
                 )
             },
             onAddLedgerDevice = {
@@ -702,6 +715,13 @@ fun NavigationHost(
             onClose = {
                 navController.popBackStack()
             }
+        )
+        learnScreen(
+            onBackClick = { navController.popBackStack() },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) }
+        )
+        blogPostsScreen(
+            onBackClick = { navController.popBackStack() }
         )
     }
 }
