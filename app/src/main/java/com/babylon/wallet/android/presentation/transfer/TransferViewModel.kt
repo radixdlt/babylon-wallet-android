@@ -665,6 +665,8 @@ sealed class TargetAccount {
             }
         }
 
+        val typedLowercase = typed.lowercase()
+
         override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
 
         enum class InputValidity {

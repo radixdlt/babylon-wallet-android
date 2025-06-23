@@ -54,20 +54,21 @@ class AccountsChooserDelegate @Inject constructor(
 
     fun onReceiverChanged(receiver: String) {
         val currentNetworkId = _state.value.fromAccount?.networkId ?: return
+        val receiverLowercase = receiver.lowercase()
         updateSheetState { sheetState ->
             val maybeAccountAddress =
-                AccountAddress.validatedOnNetworkOrNull(receiver, currentNetworkId)
+                AccountAddress.validatedOnNetworkOrNull(receiverLowercase, currentNetworkId)
 
             val inputValidity = if (maybeAccountAddress != null) {
                 val fromAccountAddressString = _state.value.fromAccount?.address?.string.orEmpty()
                 val selectedAccountAddressesString =
                     _state.value.targetAccounts.map { it.address?.string.orEmpty() }
-                if (receiver in selectedAccountAddressesString || receiver == fromAccountAddressString) {
+                if (receiverLowercase in selectedAccountAddressesString || receiverLowercase == fromAccountAddressString) {
                     TargetAccount.Other.InputValidity.ADDRESS_USED
                 } else {
                     TargetAccount.Other.InputValidity.VALID
                 }
-            } else if (isValidRadixDomainUseCase(receiver)) {
+            } else if (isValidRadixDomainUseCase(receiverLowercase)) {
                 TargetAccount.Other.InputValidity.VALID
             } else {
                 TargetAccount.Other.InputValidity.INVALID
@@ -187,7 +188,7 @@ class AccountsChooserDelegate @Inject constructor(
     ): TargetAccount? = when (val selectedAccount = sheetState.selectedAccount) {
         is TargetAccount.Other -> {
             val accountAddress = AccountAddress.validatedOnNetworkOrNull(
-                validating = selectedAccount.typed,
+                validating = selectedAccount.typedLowercase,
                 networkId = networkId
             )
 
@@ -214,7 +215,7 @@ class AccountsChooserDelegate @Inject constructor(
                     validity = accountAddressValidity(accountAddress)
                 )
             } else {
-                resolveRadixDomainUseCase(selectedAccount.typed)
+                resolveRadixDomainUseCase(selectedAccount.typedLowercase)
                     .fold(
                         onSuccess = { receiver ->
                             selectedAccount.copy(

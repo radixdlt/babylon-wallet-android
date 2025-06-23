@@ -150,7 +150,7 @@ private fun BlogPostsContent(
 
                 item {
                     RadixTextButton(
-                        modifier = modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.discover_blogPosts_see_all_blog_posts),

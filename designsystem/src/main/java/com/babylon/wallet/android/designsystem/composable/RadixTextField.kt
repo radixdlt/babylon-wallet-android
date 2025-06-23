@@ -84,6 +84,7 @@ fun RadixTextField(
                         Text(
                             text = it,
                             style = RadixTheme.typography.body1Regular,
+                            maxLines = if (singleLine) 1 else Int.MAX_VALUE
                         )
                     }
                 },

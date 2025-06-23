@@ -13,6 +13,7 @@ object Constants {
     const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"
 
     const val RAD_QUEST_URL = "https://radquest.io?wallet=ready"
+    const val RADIX_DOMAINS_URL = "https://docs.xrd.domains/#/wiki/records/namelets"
     const val RADIX_BLOG_POSTS_URL = "https://www.radixdlt.com/all-recent-posts"
 
     const val EULA_LIGHT = "eula/eula-light.html"
