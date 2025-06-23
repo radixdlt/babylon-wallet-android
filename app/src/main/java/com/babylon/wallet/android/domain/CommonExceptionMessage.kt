@@ -10,21 +10,31 @@ import com.radixdlt.sargon.errorCodeFromError
 import com.radixdlt.sargon.errorMessageFromError
 
 @Composable
-fun CommonException.toMessage(): String = with(LocalContext.current) {
-    toMessage(context = this)
-}
+fun CommonException.toMessage(includeSupportMessage: Boolean = true): String =
+    with(LocalContext.current) {
+        toMessage(
+            context = this,
+            includeSupportMessage = includeSupportMessage
+        )
+    }
 
-fun CommonException.toMessage(context: Context): String {
+fun CommonException.toMessage(
+    context: Context,
+    includeSupportMessage: Boolean = true
+): String {
     val messageBuilder = StringBuilder()
 
     messageBuilder.appendLine(publicMessage(context))
-    messageBuilder.appendLine()
-    messageBuilder.appendLine(
-        context.getString(
-            R.string.error_emailSupportMessage,
-            errorCodeFromError(error = this).toString()
+
+    if (includeSupportMessage) {
+        messageBuilder.appendLine()
+        messageBuilder.appendLine(
+            context.getString(
+                R.string.error_emailSupportMessage,
+                errorCodeFromError(error = this).toString()
+            )
         )
-    )
+    }
 
     if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
         messageBuilder.appendLine()
@@ -63,6 +73,7 @@ private fun CommonException.publicMessage(context: Context) = when (this) {
     is CommonException.RnsInvalidDomainConfiguration,
     is CommonException.RnsInvalidRecordContext,
     is CommonException.GwMissingResponseItem -> context.getString(R.string.error_rns_unknownDomain)
+
     is CommonException.RnsUnsupportedNetwork -> context.getString(R.string.error_transactionFailure_network)
     else -> context.getString(R.string.common_somethingWentWrong)
 }

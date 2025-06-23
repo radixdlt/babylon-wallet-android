@@ -205,7 +205,7 @@ fun BottomSheetDialogWrapper(
                         DefaultModalSheetDragHandle(
                             padding = PaddingValues(
                                 top = RadixTheme.dimensions.paddingSmall,
-                                bottom = RadixTheme.dimensions.paddingLarge
+                                bottom = RadixTheme.dimensions.paddingMedium
                             )
                         )
                     }
