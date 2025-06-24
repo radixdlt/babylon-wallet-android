@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
@@ -51,17 +55,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.domain.model.DirectoryDefinition
 import com.babylon.wallet.android.presentation.account.composable.HistoryFilterTag
-import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppDirectoryFilters
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.Category
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppCategoryType
+import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppDirectoryFilters
+import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppDirectoryTab
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppWithDetails
 import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -81,10 +86,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.Sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.designsystem.R as DSR
 
 @Composable
@@ -98,6 +99,7 @@ fun DAppDirectoryScreen(
         state = state,
         onDAppClick = onDAppClick,
         onRefresh = viewModel::onRefresh,
+        onTabSelected = viewModel::onTabSelected,
         onSearchTermUpdated = viewModel::onSearchTermUpdated,
         onFilterTagAdded = viewModel::onFilterTagAdded,
         onFilterTagRemoved = viewModel::onFilterTagRemoved,
@@ -111,6 +113,7 @@ private fun DAppDirectoryContent(
     modifier: Modifier = Modifier,
     state: DAppDirectoryViewModel.State,
     onRefresh: () -> Unit,
+    onTabSelected: (DAppDirectoryTab) -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
     onSearchTermUpdated: (String) -> Unit,
     onFilterTagAdded: (String) -> Unit,
@@ -155,8 +158,109 @@ private fun DAppDirectoryContent(
                     title = stringResource(R.string.dappDirectory_title),
                     onBackClick = {},
                     backIconType = BackIconType.None,
-                    windowInsets = WindowInsets.statusBarsAndBanner,
-                    actions = {
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+
+                val tabIndex = remember(state.selectedTab) {
+                    DAppDirectoryTab.entries.indexOf(state.selectedTab)
+                }
+
+                TabRow(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        .clip(shape = RadixTheme.shapes.roundedRectSmall),
+                    selectedTabIndex = tabIndex,
+                    containerColor = RadixTheme.colors.backgroundSecondary,
+                    divider = {},
+                    indicator = { tabPositions ->
+                        Box(
+                            modifier = Modifier
+                                .tabIndicatorOffset(tabPositions[tabIndex])
+                                .fillMaxHeight()
+                                .zIndex(-1f)
+                                .padding(2.dp)
+                                .background(
+                                    color = RadixTheme.colors.selectedSegmentedControl,
+                                    shape = RadixTheme.shapes.roundedRectSmall
+                                )
+                        )
+                    }
+                ) {
+                    DAppDirectoryTab.entries.forEach { tab ->
+                        val isSelected = tab == state.selectedTab
+                        Tab(
+                            selected = isSelected,
+                            onClick = {
+                                if (!isSelected) {
+                                    onTabSelected(tab)
+                                }
+                            },
+                            selectedContentColor = RadixTheme.colors.text,
+                            unselectedContentColor = RadixTheme.colors.textSecondary
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(
+                                    horizontal = RadixTheme.dimensions.paddingMedium,
+                                    vertical = RadixTheme.dimensions.paddingSmall
+                                ),
+                                text = tab.title(),
+                                style = if (isSelected) {
+                                    RadixTheme.typography.body1Header
+                                } else {
+                                    RadixTheme.typography.body1Regular
+                                },
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                        .padding(
+                            start = RadixTheme.dimensions.paddingDefault,
+                            end = if (state.isFiltersButtonVisible) {
+                                RadixTheme.dimensions.paddingSmall
+                            } else {
+                                RadixTheme.dimensions.paddingDefault
+                            }
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadixTextField(
+                        modifier = Modifier.weight(1f),
+                        value = state.filters.searchTerm,
+                        onValueChanged = onSearchTermUpdated,
+                        enabled = !state.isLoading,
+                        hint = stringResource(R.string.dappDirectory_search_placeholder),
+                        trailingIcon = {
+                            if (state.filters.searchTerm.isNotEmpty()) {
+                                IconButton(
+                                    onClick = {
+                                        onSearchTermUpdated("")
+                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(DSR.drawable.ic_close),
+                                        contentDescription = null,
+                                        tint = RadixTheme.colors.icon
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    painter = painterResource(DSR.drawable.ic_search),
+                                    contentDescription = null,
+                                    tint = if (state.isLoading) {
+                                        RadixTheme.colors.backgroundTertiary
+                                    } else {
+                                        RadixTheme.colors.icon
+                                    }
+                                )
+                            }
+                        }
+                    )
+
+                    if (state.isFiltersButtonVisible) {
                         AnimatedVisibility(
                             visible = !state.isLoading,
                             enter = fadeIn(),
@@ -177,42 +281,7 @@ private fun DAppDirectoryContent(
                             }
                         }
                     }
-                )
-
-                RadixTextField(
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth(),
-                    value = state.filters.searchTerm,
-                    onValueChanged = onSearchTermUpdated,
-                    enabled = !state.isLoading,
-                    hint = stringResource(R.string.dappDirectory_search_placeholder),
-                    trailingIcon = {
-                        if (state.filters.searchTerm.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    onSearchTermUpdated("")
-                                }
-                            ) {
-                                Icon(
-                                    painter = painterResource(DSR.drawable.ic_close),
-                                    contentDescription = null,
-                                    tint = RadixTheme.colors.icon
-                                )
-                            }
-                        } else {
-                            Icon(
-                                painter = painterResource(DSR.drawable.ic_search),
-                                contentDescription = null,
-                                tint = if (state.isLoading) {
-                                    RadixTheme.colors.backgroundTertiary
-                                } else {
-                                    RadixTheme.colors.icon
-                                }
-                            )
-                        }
-                    }
-                )
+                }
 
                 FilterTags(
                     state = state,
@@ -264,8 +333,8 @@ private fun DAppDirectoryContent(
                         is Category -> Text(
                             modifier = Modifier.fillMaxWidth(),
                             text = item.type.title(),
-                            style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.textSecondary,
+                            style = RadixTheme.typography.header,
+                            color = RadixTheme.colors.text,
                             maxLines = 1
                         )
 
@@ -484,6 +553,12 @@ private fun DAppCategoryType.title() = when (this) {
     DAppCategoryType.Unknown -> "Others" //TODO sergiu localize
 }
 
+@Composable
+private fun DAppDirectoryTab.title() = when (this) {
+    DAppDirectoryTab.All -> stringResource(R.string.discover_view_all_dapps)
+    DAppDirectoryTab.Approved -> stringResource(R.string.discover_view_approved_dapps)
+}
+
 @Preview
 @Composable
 fun DAppDirectoryPreviewLight(
@@ -498,7 +573,8 @@ fun DAppDirectoryPreviewLight(
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
             onAllFilterTagsRemoved = {},
-            onMessageShown = {}
+            onMessageShown = {},
+            onTabSelected = {}
         )
     }
 }
@@ -517,7 +593,8 @@ fun DAppDirectoryPreviewDark(
             onFilterTagAdded = {},
             onFilterTagRemoved = {},
             onAllFilterTagsRemoved = {},
-            onMessageShown = {}
+            onMessageShown = {},
+            onTabSelected = {}
         )
     }
 }
@@ -529,7 +606,6 @@ class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewM
             DAppDirectoryViewModel.State(
                 isLoading = false,
                 isRefreshing = false,
-                errorLoading = false,
                 items = listOf(
                     DAppWithDetails.sample(),
                     Category(
@@ -543,7 +619,6 @@ class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewM
             DAppDirectoryViewModel.State(
                 isLoading = false,
                 isRefreshing = false,
-                errorLoading = false,
                 items = listOf(
                     DAppWithDetails.sample(),
                 ),
@@ -556,7 +631,6 @@ class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewM
             DAppDirectoryViewModel.State(
                 isLoading = false,
                 isRefreshing = false,
-                errorLoading = false,
                 items = listOf(
                     DAppWithDetails.sample(),
                 ),
@@ -569,15 +643,7 @@ class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewM
             DAppDirectoryViewModel.State(
                 isLoading = false,
                 isRefreshing = false,
-                errorLoading = true,
-                items = emptyList(),
-                filters = DAppDirectoryFilters(),
-                uiMessage = null
-            ),
-            DAppDirectoryViewModel.State(
-                isLoading = false,
-                isRefreshing = false,
-                errorLoading = true,
+                errorLoadingDirectory = true,
                 items = emptyList(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null

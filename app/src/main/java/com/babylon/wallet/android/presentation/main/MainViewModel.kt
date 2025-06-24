@@ -373,6 +373,7 @@ enum class MainTab(val route: String) {
 
         val testnet: Set<MainTab> = setOf(
             Wallet,
+            DApps,
             Discover,
             Settings
         )
