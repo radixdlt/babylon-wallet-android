@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -68,10 +69,12 @@ import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DA
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppDirectoryFilters
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppDirectoryTab
 import com.babylon.wallet.android.presentation.dappdir.DAppDirectoryViewModel.DAppWithDetails
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.discover.common.views.LoadingErrorView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -91,7 +94,8 @@ import com.babylon.wallet.android.designsystem.R as DSR
 @Composable
 fun DAppDirectoryScreen(
     viewModel: DAppDirectoryViewModel,
-    onDAppClick: (address: AccountAddress) -> Unit
+    onDAppClick: (address: AccountAddress) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val state: DAppDirectoryViewModel.State by viewModel.state.collectAsStateWithLifecycle()
 
@@ -104,7 +108,8 @@ fun DAppDirectoryScreen(
         onFilterTagAdded = viewModel::onFilterTagAdded,
         onFilterTagRemoved = viewModel::onFilterTagRemoved,
         onAllFilterTagsRemoved = viewModel::onAllFilterTagsRemoved,
-        onMessageShown = viewModel::onMessageShown
+        onMessageShown = viewModel::onMessageShown,
+        onInfoClick = onInfoClick
     )
 }
 
@@ -119,7 +124,8 @@ private fun DAppDirectoryContent(
     onFilterTagAdded: (String) -> Unit,
     onFilterTagRemoved: (String) -> Unit,
     onAllFilterTagsRemoved: () -> Unit,
-    onMessageShown: () -> Unit
+    onMessageShown: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -170,7 +176,7 @@ private fun DAppDirectoryContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .clip(shape = RadixTheme.shapes.roundedRectSmall),
                     selectedTabIndex = tabIndex,
-                    containerColor = RadixTheme.colors.backgroundSecondary,
+                    containerColor = RadixTheme.colors.unselectedSegmentedControl,
                     divider = {},
                     indicator = { tabPositions ->
                         Box(
@@ -208,7 +214,7 @@ private fun DAppDirectoryContent(
                                     RadixTheme.typography.body1Header
                                 } else {
                                     RadixTheme.typography.body1Regular
-                                },
+                                }
                             )
                         }
                     }
@@ -351,14 +357,32 @@ private fun DAppDirectoryContent(
                 }
             }
 
-            if (state.errorLoading) {
-                LoadingErrorView(
+            when {
+                state.errorLoading -> LoadingErrorView(
                     modifier = Modifier
                         .padding(padding)
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                         .align(Alignment.Center),
                     title = stringResource(R.string.dappDirectory_error_heading),
                     subtitle = stringResource(R.string.dappDirectory_error_message)
+                )
+
+                state.isEmpty && state.selectedTab == DAppDirectoryTab.Approved -> EmptyStateView(
+                    modifier = Modifier
+                        .padding(padding)
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .align(Alignment.Center),
+                    title = stringResource(R.string.authorizedDapps_subtitle),
+                    onInfoClick = onInfoClick
+                )
+
+                state.isEmpty && state.selectedTab == DAppDirectoryTab.All -> EmptyStateView(
+                    modifier = Modifier
+                        .padding(padding)
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .align(Alignment.Center),
+                    title = "There are no dApps available", // TODO sergiu localize
+                    onInfoClick = onInfoClick
                 )
             }
 
@@ -549,8 +573,38 @@ private fun DAppCard(
 }
 
 @Composable
-private fun DAppCategoryType.title() = when (this) {
-    DAppCategoryType.Unknown -> "Others" //TODO sergiu localize
+fun EmptyStateView(
+    title: String,
+    onInfoClick: (GlossaryItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    ) {
+        Text(
+            text = title,
+            style = RadixTheme.typography.body1HighImportance,
+            color = RadixTheme.colors.textSecondary,
+            textAlign = TextAlign.Center
+        )
+
+        InfoButton(
+            text = stringResource(id = R.string.infoLink_title_dapps),
+            onClick = { onInfoClick(GlossaryItem.dapps) }
+        )
+    }
+}
+
+@Composable
+private fun DAppCategoryType.title() = when (this) { // TODO sergiu localize
+    DAppCategoryType.DeFi -> "DeFi"
+    DAppCategoryType.Utility -> "Utility"
+    DAppCategoryType.Dao -> "Dao"
+    DAppCategoryType.NFT -> "NFT"
+    DAppCategoryType.Meme -> "Meme"
+    DAppCategoryType.Unknown -> "Other"
 }
 
 @Composable
@@ -561,7 +615,7 @@ private fun DAppDirectoryTab.title() = when (this) {
 
 @Preview
 @Composable
-fun DAppDirectoryPreviewLight(
+private fun DAppDirectoryPreviewLight(
     @PreviewParameter(DAppDirectoryPreviewProvider::class) state: DAppDirectoryViewModel.State
 ) {
     RadixWalletPreviewTheme {
@@ -574,14 +628,15 @@ fun DAppDirectoryPreviewLight(
             onFilterTagRemoved = {},
             onAllFilterTagsRemoved = {},
             onMessageShown = {},
-            onTabSelected = {}
+            onTabSelected = {},
+            onInfoClick = {}
         )
     }
 }
 
 @Preview
 @Composable
-fun DAppDirectoryPreviewDark(
+private fun DAppDirectoryPreviewDark(
     @PreviewParameter(DAppDirectoryPreviewProvider::class) state: DAppDirectoryViewModel.State
 ) {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
@@ -594,7 +649,8 @@ fun DAppDirectoryPreviewDark(
             onFilterTagRemoved = {},
             onAllFilterTagsRemoved = {},
             onMessageShown = {},
-            onTabSelected = {}
+            onTabSelected = {},
+            onInfoClick = {}
         )
     }
 }
@@ -644,6 +700,22 @@ class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewM
                 isLoading = false,
                 isRefreshing = false,
                 errorLoadingDirectory = true,
+                items = emptyList(),
+                filters = DAppDirectoryFilters(),
+                uiMessage = null
+            ),
+            DAppDirectoryViewModel.State(
+                isLoading = false,
+                isRefreshing = false,
+                errorLoadingDirectory = false,
+                items = emptyList(),
+                filters = DAppDirectoryFilters(),
+                uiMessage = null
+            ),
+            DAppDirectoryViewModel.State(
+                isLoading = true,
+                isRefreshing = false,
+                errorLoadingDirectory = false,
                 items = emptyList(),
                 filters = DAppDirectoryFilters(),
                 uiMessage = null

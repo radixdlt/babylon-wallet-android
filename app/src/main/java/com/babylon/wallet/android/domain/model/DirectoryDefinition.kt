@@ -14,7 +14,7 @@ data class DirectoryDefinition(
     val dAppDefinitionAddress: AccountAddress,
     @SerialName(value = "tags")
     val tags: List<String>,
-    @SerialName(value = "category")
+    @SerialName(value = "dAppCategory")
     val category: String?
 )
 

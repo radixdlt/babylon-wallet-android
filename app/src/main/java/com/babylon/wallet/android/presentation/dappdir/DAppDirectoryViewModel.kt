@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dappdir
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DAppDirectory
@@ -15,6 +14,7 @@ import com.radixdlt.sargon.AuthorizedDapp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,9 +49,12 @@ class DAppDirectoryViewModel @Inject constructor(
 
     private val dAppDataState: MutableStateFlow<Map<AccountAddress, DAppWithDetails.Details>> =
         MutableStateFlow(emptyMap())
-    private val filtersState: MutableStateFlow<DAppDirectoryFilters> =
-        MutableStateFlow(DAppDirectoryFilters())
-    private val tabState: MutableStateFlow<DAppDirectoryTab> = MutableStateFlow(DAppDirectoryTab.All)
+    private val filtersByTabState: MutableStateFlow<Map<DAppDirectoryTab, DAppDirectoryFilters>> =
+        MutableStateFlow(DAppDirectoryTab.entries.associate { it to DAppDirectoryFilters() })
+    private val _tabState: MutableStateFlow<DAppDirectoryTab> = MutableStateFlow(DAppDirectoryTab.All)
+    private val tabState = _tabState.onEach { tab ->
+        _state.update { it.copy(selectedTab = tab) }
+    }
 
     private val directoryDAppsWithDetails: Flow<List<DAppWithDetails>> = combine(
         directoryState,
@@ -82,14 +85,22 @@ class DAppDirectoryViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val dAppsWithDetails: Flow<List<DAppWithDetails>> = tabState.onEach { tab ->
-        _state.update { it.copy(selectedTab = tab) }
-    }.flatMapLatest { tab ->
+    private val filtersState: Flow<DAppDirectoryFilters> = tabState.flatMapLatest { tab ->
+        filtersByTabState.map { filtersByTab ->
+            requireNotNull(filtersByTab[tab])
+        }.onEach { _state.update { state -> state.copy(filters = it) } }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dAppsWithDetails: Flow<List<DAppWithDetails>> = tabState.flatMapLatest { tab ->
         when (tab) {
             DAppDirectoryTab.All -> directoryDAppsWithDetails
             DAppDirectoryTab.Approved -> approvedDAppsWithDetails
         }
     }
+
+    private var fetchDAppsDirectoryJob: Job? = null
+    private var fetchApprovedDAppsJob: Job? = null
 
     init {
         fetchDAppsDirectory()
@@ -107,33 +118,32 @@ class DAppDirectoryViewModel @Inject constructor(
 
     fun onRefresh() {
         _state.update { it.copy(isRefreshing = true) }
-        dAppDataState.update { data -> data.mapValues { DAppWithDetails.Details.Fetching } }
         fetchDAppsDirectory()
         fetchApprovedDApps()
     }
 
     fun onTabSelected(tab: DAppDirectoryTab) {
-        tabState.update { tab }
+        _tabState.update { tab }
     }
 
     fun onSearchTermUpdated(term: String) {
-        filtersState.update { it.copy(searchTerm = term) }
+        updateFiltersState { it.copy(searchTerm = term) }
     }
 
     fun onFilterTagAdded(tag: String) {
-        filtersState.update {
+        updateFiltersState {
             it.copy(selectedTags = it.selectedTags + tag)
         }
     }
 
     fun onFilterTagRemoved(tag: String) {
-        filtersState.update {
+        updateFiltersState {
             it.copy(selectedTags = it.selectedTags - tag)
         }
     }
 
     fun onAllFilterTagsRemoved() {
-        filtersState.update {
+        updateFiltersState {
             it.copy(selectedTags = emptySet())
         }
     }
@@ -143,21 +153,19 @@ class DAppDirectoryViewModel @Inject constructor(
     }
 
     private fun fetchApprovedDApps() {
-        dAppConnectionRepository.getAuthorizedDApps()
+        fetchApprovedDAppsJob?.cancel()
+        fetchApprovedDAppsJob = dAppConnectionRepository.getAuthorizedDApps()
             .onEach { approvedDApps ->
                 approvedDAppsState.update { approvedDApps }
 
-                dAppDataState.update { dAppData ->
-                    dAppData.toMutableMap()
-                        .let { updatedDAppData ->
-                            approvedDApps.forEach { dApp ->
-                                // If the dApp is already present, we keep the existing details
-                                updatedDAppData[dApp.dappDefinitionAddress] =
-                                    dAppData[dApp.dappDefinitionAddress] ?: DAppWithDetails.Details.Fetching
+                dAppDataState.update { data ->
+                    data.toMutableMap().apply {
+                        putAll(
+                            approvedDApps.associate {
+                                it.dappDefinitionAddress to DAppWithDetails.Details.Fetching
                             }
-
-                            updatedDAppData
-                        }
+                        )
+                    }
                 }
             }
             .catch { error ->
@@ -174,7 +182,8 @@ class DAppDirectoryViewModel @Inject constructor(
     }
 
     private fun fetchDAppsDirectory() {
-        getDAppDirectoryUseCase(
+        fetchDAppsDirectoryJob?.cancel()
+        fetchDAppsDirectoryJob = getDAppDirectoryUseCase(
             isRefreshing = state.value.isRefreshing
         ).onEach { result ->
             result.onFailure { error ->
@@ -196,22 +205,20 @@ class DAppDirectoryViewModel @Inject constructor(
                 }
 
                 dAppDataState.update { data ->
-                    data.toMutableMap()
-                        .let { updatedDAppData ->
-                            directory.all.forEach { dApp ->
-                                // If the dApp is already present, we keep the existing details
-                                updatedDAppData[dApp.dAppDefinitionAddress] =
-                                    data[dApp.dAppDefinitionAddress] ?: DAppWithDetails.Details.Fetching
+                    data.toMutableMap().apply {
+                        putAll(
+                            directory.all.associate {
+                                it.dAppDefinitionAddress to DAppWithDetails.Details.Fetching
                             }
-
-                            updatedDAppData
-                        }
+                        )
+                    }
                 }
 
-                filtersState.update { filters ->
-                    filters.copy(
-                        availableTags = directory.all.map { it.tags }.flatten().toSet()
-                    )
+                val availableTags = directory.all.map { it.tags }.flatten().toSet()
+                DAppDirectoryTab.entries.forEach { tab ->
+                    updateFiltersState(tab) { filters ->
+                        filters.copy(availableTags = availableTags)
+                    }
                 }
             }
         }.flowOn(dispatcher).launchIn(viewModelScope)
@@ -225,7 +232,6 @@ class DAppDirectoryViewModel @Inject constructor(
             }
             .filter { unknownDefinitions -> unknownDefinitions.isNotEmpty() }
             .onEach { unknownDefinitions ->
-                Log.e("TAGTAG", "Fetch dApps for: $unknownDefinitions")
                 getDAppsUseCase(
                     definitionAddresses = unknownDefinitions,
                     needMostRecentData = state.value.isRefreshing
@@ -277,7 +283,7 @@ class DAppDirectoryViewModel @Inject constructor(
             combine(
                 directoryState,
                 dAppsWithDetails,
-                filtersState.onEach { _state.update { state -> state.copy(filters = it) } }
+                filtersState
             ) { directories, dAppsWithDetails, filters ->
                 val items = dAppsWithDetails.filterItems(filters, directories)
                 items to directories
@@ -291,7 +297,7 @@ class DAppDirectoryViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         isLoading = false,
-                        items = itemsByCategory.map { entry ->
+                        items = itemsByCategory.entries.sortedBy { it.key.ordinal }.map { entry ->
                             listOfNotNull(
                                 Category(
                                     type = entry.key
@@ -330,8 +336,10 @@ class DAppDirectoryViewModel @Inject constructor(
 
                 val (name, description) = when (val details = dAppWithDetails.details) {
                     is DAppWithDetails.Details.Data -> {
-                        (details.name.takeIf { it.isNotEmpty() }
-                            ?: directoryDefinition?.name) to details.description
+                        (
+                            details.name.takeIf { it.isNotEmpty() }
+                                ?: directoryDefinition?.name
+                            ) to details.description
                     }
 
                     is DAppWithDetails.Details.Error -> {
@@ -357,10 +365,26 @@ class DAppDirectoryViewModel @Inject constructor(
             }
         }.toList()
 
+    @Suppress("MagicNumber")
     private fun disableRefreshing() {
         viewModelScope.launch {
             delay(300) // Without delay the UI might not update correctly
             _state.update { it.copy(isRefreshing = false) }
+        }
+    }
+
+    private fun updateFiltersState(
+        forTab: DAppDirectoryTab = state.value.selectedTab,
+        update: (DAppDirectoryFilters) -> DAppDirectoryFilters
+    ) {
+        filtersByTabState.update { filtersByTab ->
+            filtersByTab.mapValues { (tab, currentValues) ->
+                if (tab == forTab) {
+                    update(currentValues)
+                } else {
+                    currentValues
+                }
+            }
         }
     }
 
@@ -380,6 +404,7 @@ class DAppDirectoryViewModel @Inject constructor(
             DAppDirectoryTab.All -> errorLoadingDirectory
             DAppDirectoryTab.Approved -> errorLoadingApprovedDApps
         }
+        val isEmpty: Boolean = items.isEmpty() && !isLoading && !errorLoading && filters.searchTerm.isBlank()
     }
 
     sealed interface Item
@@ -421,16 +446,23 @@ class DAppDirectoryViewModel @Inject constructor(
         fun isTagSelected(tag: String) = tag in selectedTags
     }
 
-    enum class DAppCategoryType {
+    enum class DAppCategoryType(val value: String) {
 
-        Unknown;
+        DeFi("DeFi"),
+        Utility("Utility"),
+        Dao("Dao"),
+        NFT("NFT"),
+        Meme("Meme"),
+        Unknown("Other");
 
         companion object {
 
-            fun from(value: String?): DAppCategoryType = when (value?.lowercase()) {
-                //TODO sergiu map categories to enum values
-                else -> Unknown
-            }
+            fun from(value: String?): DAppCategoryType = entries.firstOrNull {
+                it.name.equals(
+                    other = value,
+                    ignoreCase = true
+                )
+            } ?: Unknown
         }
     }
 
