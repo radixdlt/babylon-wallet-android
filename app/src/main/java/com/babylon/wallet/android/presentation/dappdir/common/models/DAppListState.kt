@@ -98,19 +98,23 @@ val DAppWithDetails.Companion.sample: Sample<DAppWithDetails>
 
         override fun invoke(): DAppWithDetails = DAppWithDetails(
             dAppDefinitionAddress = AccountAddress.sampleMainnet(),
+            hasDeposits = false,
             details = DAppWithDetails.Details.Data(
                 name = "Awesome DApp",
                 description = "Awesome DApp is an awesome dApp for trading on Radix.",
-                iconUri = null
+                iconUri = null,
+                tags = setOf("defi", "fungible", "token")
             )
         )
 
         override fun other(): DAppWithDetails = DAppWithDetails(
             dAppDefinitionAddress = AccountAddress.sampleMainnet.other(),
+            hasDeposits = false,
             details = DAppWithDetails.Details.Data(
                 name = "Dashboard",
                 description = "Explore assets and transactions on Radix",
-                iconUri = null
+                iconUri = null,
+                tags = emptySet()
             )
         )
     }

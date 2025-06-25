@@ -103,6 +103,7 @@ private fun DAppListFiltersContent(
                 onValueChanged = onSearchTermUpdated,
                 enabled = !isLoading,
                 hint = stringResource(R.string.dappDirectory_search_placeholder),
+                singleLine = true,
                 trailingIcon = {
                     if (filters.searchTerm.isNotEmpty()) {
                         IconButton(

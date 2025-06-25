@@ -32,6 +32,7 @@ class ApprovedDAppsViewModel @Inject constructor(
         approvedDApps.map { dApp ->
             DAppWithDetails(
                 dAppDefinitionAddress = dApp.dappDefinitionAddress,
+                hasDeposits = false,
                 details = dAppListDelegate.dAppDataState.value.getOrDefault(dApp.dappDefinitionAddress, DAppWithDetails.Details.Fetching)
             )
         }
@@ -42,7 +43,8 @@ class ApprovedDAppsViewModel @Inject constructor(
         dAppListDelegate.initialize(
             scope = viewModelScope,
             state = _state,
-            dAppsWithDetailsState = dAppsWithDetails
+            dAppsWithDetailsState = dAppsWithDetails,
+            observeAccountLockerDeposits = true
         )
         loadApprovedDApps()
     }

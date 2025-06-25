@@ -11,6 +11,7 @@ sealed interface DAppListItem {
 
     data class DAppWithDetails(
         val dAppDefinitionAddress: AccountAddress,
+        val hasDeposits: Boolean,
         val details: Details
     ) : DAppListItem {
 
@@ -26,7 +27,8 @@ sealed interface DAppListItem {
             data class Data(
                 val name: String,
                 val iconUri: Uri?,
-                val description: String?
+                val description: String?,
+                val tags: Set<String>
             ) : Details
         }
 

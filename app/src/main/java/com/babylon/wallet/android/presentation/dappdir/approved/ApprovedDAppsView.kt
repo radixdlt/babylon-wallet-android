@@ -100,7 +100,7 @@ private fun ApprovedDAppsContent(
 
 @Preview
 @Composable
-private fun AllDAppsPreviewLight(
+private fun ApprovedDAppsPreviewLight(
     @PreviewParameter(DAppListPreviewProvider::class) state: DAppListState
 ) {
     RadixWalletPreviewTheme {
@@ -120,7 +120,7 @@ private fun AllDAppsPreviewLight(
 
 @Preview
 @Composable
-private fun AllDAppsPreviewDark(
+private fun ApprovedDAppsPreviewDark(
     @PreviewParameter(DAppListPreviewProvider::class) state: DAppListState
 ) {
     RadixWalletPreviewTheme(enableDarkTheme = true) {

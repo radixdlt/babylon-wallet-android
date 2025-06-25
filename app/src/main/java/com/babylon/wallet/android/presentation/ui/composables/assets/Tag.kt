@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -16,6 +17,7 @@ import rdx.works.core.domain.resources.Tag
 @Composable
 fun Tag(
     modifier: Modifier = Modifier,
+    iconColor: Color = RadixTheme.colors.iconSecondary,
     tag: Tag
 ) {
     Row(
@@ -29,7 +31,7 @@ fun Tag(
                 painterResource(id = R.drawable.ic_token_tag)
             },
             contentDescription = "tag image",
-            tint = RadixTheme.colors.iconSecondary
+            tint = iconColor
         )
 
         Text(

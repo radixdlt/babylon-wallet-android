@@ -33,11 +33,13 @@ class AllDAppsViewModel @Inject constructor(
         directory?.highlighted.orEmpty().map {
             DAppWithDetails(
                 dAppDefinitionAddress = it.dAppDefinitionAddress,
+                hasDeposits = false,
                 details = dAppData.getOrDefault(it.dAppDefinitionAddress, DAppWithDetails.Details.Fetching)
             )
         } + directory?.others.orEmpty().map {
             DAppWithDetails(
                 dAppDefinitionAddress = it.dAppDefinitionAddress,
+                hasDeposits = false,
                 details = dAppData.getOrDefault(it.dAppDefinitionAddress, DAppWithDetails.Details.Fetching)
             )
         }
@@ -47,7 +49,8 @@ class AllDAppsViewModel @Inject constructor(
         dAppListDelegate.initialize(
             scope = viewModelScope,
             state = _state,
-            dAppsWithDetailsState = dAppsWithDetails
+            dAppsWithDetailsState = dAppsWithDetails,
+            observeAccountLockerDeposits = false
         )
     }
 

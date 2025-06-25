@@ -286,9 +286,7 @@ fun NavigationHost(
                     }
                 }
             },
-            onDAppClick = {
-                navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
-            },
+            onDAppClick = { navController.dAppDetailScreen(dappDefinitionAddress = it) },
             onInfoLinkClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onMoreInfoClick = { navController.learnScreen() },
             onMoreBlogPostsClick = { navController.blogPostsScreen() }

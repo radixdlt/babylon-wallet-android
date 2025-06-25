@@ -4,6 +4,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DAppDirectory
 import com.babylon.wallet.android.domain.usecases.GetDAppDirectoryUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.dappdir.common.delegates.DAppListDelegate.ViewActions
@@ -28,12 +29,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
+import rdx.works.core.mapWhen
 import javax.inject.Inject
-import kotlin.collections.map
 
+@Suppress("TooManyFunctions")
 class DAppListDelegate @Inject constructor(
     private val getDAppDirectoryUseCase: GetDAppDirectoryUseCase,
     private val getDAppsUseCase: GetDAppsUseCase,
+    private val accountLockersObserver: AccountLockersObserver,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : ViewModelDelegate<DAppListState>(), ViewActions {
 
@@ -46,6 +50,7 @@ class DAppListDelegate @Inject constructor(
     }
 
     private var loadDAppsJob: Job? = null
+    private var accountLockerDepositsJob: Job? = null
 
     override fun onSearchTermUpdated(term: String) {
         _filtersState.update { it.copy(searchTerm = term) }
@@ -66,11 +71,12 @@ class DAppListDelegate @Inject constructor(
     fun initialize(
         scope: CoroutineScope,
         state: MutableStateFlow<DAppListState>,
-        dAppsWithDetailsState: Flow<List<DAppWithDetails>>
+        dAppsWithDetailsState: Flow<List<DAppWithDetails>>,
+        observeAccountLockerDeposits: Boolean
     ) {
         super.invoke(scope, state)
         loadDAppDirectory()
-        observeDAppsData()
+        observeDAppsData(observeAccountLockerDeposits)
         observeStateChanges(dAppsWithDetailsState)
     }
 
@@ -106,7 +112,7 @@ class DAppListDelegate @Inject constructor(
         }
     }
 
-    private fun observeDAppsData() {
+    private fun observeDAppsData(observeAccountLockerDeposits: Boolean) {
         dAppDataState.map { data ->
             data.filter { it.value is DAppWithDetails.Details.Fetching }
                 .keys.toSet()
@@ -139,7 +145,8 @@ class DAppListDelegate @Inject constructor(
                             DAppWithDetails.Details.Data(
                                 name = dApp.name.orEmpty(),
                                 iconUri = dApp.iconUrl,
-                                description = dApp.description
+                                description = dApp.description,
+                                tags = dApp.tags
                             )
                         } else {
                             DAppWithDetails.Details.Error
@@ -147,12 +154,20 @@ class DAppListDelegate @Inject constructor(
                     }
                 }
 
-                // TODO sergiu expose tags from metadata
-                _filtersState.update {
-                    it.copy(
-                        availableTags = directoryState.value?.all?.map { it.tags }?.flatten()?.toSet().orEmpty()
-                    )
+                if (observeAccountLockerDeposits) {
+                    observeAccountLockerDeposits(dApps)
                 }
+
+                val availableTags = dApps.flatMap { dApp ->
+                    if (dApp.tags.isEmpty()) {
+                        // If the dApp has no tags defined in metadata, we try to get them from the directory
+                        directoryState.value?.findByAddress(dApp.dAppAddress)?.tags.orEmpty()
+                    } else {
+                        dApp.tags
+                    }
+                }.map { it.lowercase() }.sorted().toSet()
+
+                _filtersState.update { it.copy(availableTags = availableTags) }
             }
         }.catch { error ->
             onDAppsLoadingError(error)
@@ -207,11 +222,11 @@ class DAppListDelegate @Inject constructor(
     ): List<DAppWithDetails> = asSequence().filter { dAppWithDetails ->
         val directoryDefinition = directories?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
 
-        if (filters.selectedTags.isEmpty() || directoryDefinition == null) {
+        if (filters.selectedTags.isEmpty()) {
             true
         } else {
-            directoryDefinition.tags.map { it.lowercase() }
-                .containsAll(filters.selectedTags.map { it.lowercase() })
+            dAppWithDetails.data?.tags?.containsAll(filters.selectedTags) == true ||
+                directoryDefinition?.tags?.containsAll(filters.selectedTags) == true
         }
     }.filter { dAppWithDetails ->
         val term = filters.searchTerm.trim().lowercase()
@@ -249,6 +264,37 @@ class DAppListDelegate @Inject constructor(
             false
         }
     }.toList()
+
+    private fun observeAccountLockerDeposits(dApps: List<DApp>) {
+        accountLockerDepositsJob?.cancel()
+        accountLockerDepositsJob = viewModelScope.launch {
+            accountLockersObserver.depositsByAccount
+                .map { it.values.flatten() }
+                .collect { deposits ->
+                    _state.update { state ->
+                        val dAppDefinitionAddressesOfDAppsWithDeposits = dApps.filter { dApp ->
+                            deposits.any { deposit -> deposit.lockerAddress == dApp.lockerAddress }
+                        }.map {
+                            it.dAppAddress
+                        }
+
+                        state.copy(
+                            items = state.items.mapWhen(
+                                predicate = {
+                                    it is DAppWithDetails &&
+                                        it.dAppDefinitionAddress in dAppDefinitionAddressesOfDAppsWithDeposits
+                                },
+                                mutation = {
+                                    (it as DAppWithDetails).copy(
+                                        hasDeposits = true
+                                    )
+                                }
+                            )
+                        )
+                    }
+                }
+        }
+    }
 
     interface ViewActions {
 

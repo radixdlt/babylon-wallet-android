@@ -72,6 +72,7 @@ import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -81,6 +82,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.sargon.fields
 import java.util.Locale
@@ -476,7 +479,10 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.authorizedDapps_personaDetails_accountSharingDescription, dappName),
+                        text = stringResource(
+                            R.string.authorizedDapps_personaDetails_accountSharingDescription,
+                            dappName
+                        ),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.textSecondary,
                     )
@@ -538,8 +544,20 @@ class PreviewValuesProvider : PreviewParameterProvider<Pair<DAppWithResources, S
     override val values: Sequence<Pair<DAppWithResources, String?>>
         get() = sequenceOf(
             DAppWithResources(
-                dApp = sampleDapp,
-                fungibleResources = listOf(Resource.FungibleResource.sampleMainnet(), Resource.FungibleResource.sampleMainnet()),
+                dApp = sampleDapp.copy(
+                    metadata = sampleDapp.metadata + listOf(
+                        Metadata.Collection(
+                            key = ExplicitMetadataKey.TAGS.key,
+                            values = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.TAGS.key, "defi", MetadataType.String)
+                            )
+                        )
+                    )
+                ),
+                fungibleResources = listOf(
+                    Resource.FungibleResource.sampleMainnet(),
+                    Resource.FungibleResource.sampleMainnet()
+                ),
                 nonFungibleResources = listOf(
                     Resource.NonFungibleResource.sampleMainnet(),
                     Resource.NonFungibleResource.sampleMainnet()

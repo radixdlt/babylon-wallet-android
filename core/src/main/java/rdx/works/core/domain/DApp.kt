@@ -16,6 +16,10 @@ import rdx.works.core.domain.resources.metadata.claimedWebsites
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
+import rdx.works.core.domain.resources.metadata.tags
+import java.util.regex.Pattern
+
+private val DAPP_TAG = Pattern.compile("^[A-Za-z0-9\\\\-]+\$")
 
 data class DApp(
     val dAppAddress: AccountAddress,
@@ -40,6 +44,13 @@ data class DApp(
 
     val claimedEntities: List<String>
         get() = metadata.claimedEntities().orEmpty()
+
+    val tags: Set<String>
+        get() = metadata.tags().orEmpty()
+            .filter { DAPP_TAG.matcher(it).matches() }
+            .map { it.lowercase() }
+            .sorted()
+            .toSet()
 
     @Suppress("SwallowedException")
     fun isRelatedWith(origin: String): Boolean {

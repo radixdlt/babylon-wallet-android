@@ -24,6 +24,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DAppWebsiteAddressRow
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDefinitionAddressRow
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
@@ -33,7 +34,9 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Tag
 
 @Composable
 fun DappDetails(
@@ -100,6 +103,20 @@ fun DappDetails(
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
+
+                val tags = dAppWithResources.dApp.tags.map { Tag.Dynamic(name = it) }
+                if (tags.isNotEmpty()) {
+                    item {
+                        TagsSection(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensions.paddingXLarge),
+                            tags = tags.toPersistentList()
+                        )
+                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    }
+                }
+
                 if (isValidatingWebsite || validatedWebsite != null) {
                     item {
                         DAppWebsiteAddressRow(
