@@ -140,7 +140,7 @@ fun DAppCard(
                     details.data.tags.map { Tag.Dynamic(name = it) }
                 }.toPersistentList(),
                 borderColor = RadixTheme.colors.onCardSecondary,
-                iconColor = RadixTheme.colors.iconTertiary,
+                iconColor = RadixTheme.colors.iconSecondary,
                 maxLines = 2
             )
         } else {
