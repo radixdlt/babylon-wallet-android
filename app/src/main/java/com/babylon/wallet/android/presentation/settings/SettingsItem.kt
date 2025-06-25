@@ -21,8 +21,6 @@ sealed interface SettingsItem {
             val isRecoveryNeeded: Boolean = false // security problem 9
         ) : TopLevelSettings
 
-        data object ApprovedDapps : TopLevelSettings
-
         data object LinkedConnectors : TopLevelSettings
         data object Preferences : TopLevelSettings
 
@@ -32,7 +30,6 @@ sealed interface SettingsItem {
         @StringRes
         fun titleRes(): Int {
             return when (this) {
-                ApprovedDapps -> R.string.walletSettings_dapps_title
                 is Personas -> R.string.walletSettings_personas_title
                 is Preferences -> R.string.walletSettings_preferences_title
                 is DebugSettings -> R.string.settings_debugSettings
@@ -45,7 +42,6 @@ sealed interface SettingsItem {
         @StringRes
         fun subtitleRes(): Int {
             return when (this) {
-                ApprovedDapps -> R.string.walletSettings_dapps_subtitle
                 is Personas -> R.string.walletSettings_personas_subtitle
                 is Preferences -> R.string.walletSettings_preferences_subtitle
                 is DebugSettings -> R.string.settings_debugSettings
@@ -58,7 +54,6 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? {
             return when (this) {
-                ApprovedDapps -> DSR.ic_authorized_dapps
                 is Personas -> DSR.ic_personas
                 is Preferences -> DSR.ic_filter_list
                 is DebugSettings -> DSR.ic_app_settings
