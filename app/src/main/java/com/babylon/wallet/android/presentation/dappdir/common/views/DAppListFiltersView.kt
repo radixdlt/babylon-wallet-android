@@ -86,7 +86,7 @@ private fun DAppListFiltersContent(
     ) {
         Row(
             modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault)
                 .padding(
                     start = RadixTheme.dimensions.paddingDefault,
                     end = if (isFiltersButtonVisible) {

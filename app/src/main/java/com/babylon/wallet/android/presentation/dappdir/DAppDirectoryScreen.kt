@@ -94,6 +94,7 @@ private fun DAppDirectoryContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = RadixTheme.colors.background)
+                    .padding(bottom = RadixTheme.dimensions.paddingDefault)
             ) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.dappDirectory_title),
