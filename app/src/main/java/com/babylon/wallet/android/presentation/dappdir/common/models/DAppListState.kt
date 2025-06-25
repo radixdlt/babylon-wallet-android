@@ -21,7 +21,7 @@ data class DAppListState(
 
     val isEmpty: Boolean = items.isEmpty() && !isLoading && !errorLoading && filters.searchTerm.isBlank() &&
         filters.selectedTags.isEmpty()
-    val isFiltersButtonVisible: Boolean = !isLoading && filters.availableTags.isNotEmpty()
+    val isFiltersButtonVisible: Boolean = filters.availableTags.isNotEmpty()
 }
 
 class DAppListPreviewProvider : PreviewParameterProvider<DAppListState> {

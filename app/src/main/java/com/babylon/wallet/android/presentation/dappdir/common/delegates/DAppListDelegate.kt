@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -31,11 +32,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.mapWhen
+import rdx.works.core.sargon.isCurrentNetworkMainnet
+import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 class DAppListDelegate @Inject constructor(
     private val getDAppDirectoryUseCase: GetDAppDirectoryUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getDAppsUseCase: GetDAppsUseCase,
     private val accountLockersObserver: AccountLockersObserver,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
@@ -78,6 +82,7 @@ class DAppListDelegate @Inject constructor(
         loadDAppDirectory()
         observeDAppsData(observeAccountLockerDeposits)
         observeStateChanges(dAppsWithDetailsState)
+        observeNetworkGatewayChange()
     }
 
     fun loadDAppDirectory() {
@@ -205,6 +210,18 @@ class DAppListDelegate @Inject constructor(
                     )
                 }
             }.flowOn(dispatcher).launchIn(viewModelScope)
+        }
+    }
+
+    private fun observeNetworkGatewayChange() {
+        viewModelScope.launch {
+            getProfileUseCase.flow
+                .distinctUntilChangedBy { it.isCurrentNetworkMainnet }
+                .onEach {
+                    // Reset filters when the network gateway is changed
+                    _filtersState.update { DAppFilters() }
+                }
+                .launchIn(viewModelScope)
         }
     }
 
