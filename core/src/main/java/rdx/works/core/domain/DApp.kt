@@ -13,6 +13,7 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.accountType
 import rdx.works.core.domain.resources.metadata.claimedEntities
 import rdx.works.core.domain.resources.metadata.claimedWebsites
+import rdx.works.core.domain.resources.metadata.dAppCategory
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
@@ -51,6 +52,9 @@ data class DApp(
             .map { it.lowercase() }
             .sorted()
             .toSet()
+
+    val dAppCategory: String?
+        get() = metadata.dAppCategory()
 
     @Suppress("SwallowedException")
     fun isRelatedWith(origin: String): Boolean {

@@ -50,6 +50,8 @@ class DAppListDelegate @Inject constructor(
     val directoryState: MutableStateFlow<DAppDirectory?> = MutableStateFlow(null)
     val dAppDataState = MutableStateFlow<Map<AccountAddress, DAppWithDetails.Details>>(emptyMap())
 
+    private val dAppsState = MutableStateFlow<Map<AccountAddress, DApp>>(emptyMap())
+
     private val _filtersState: MutableStateFlow<DAppFilters> = MutableStateFlow(DAppFilters())
     private val filtersState: Flow<DAppFilters> = _filtersState.onEach {
         _state.update { state -> state.copy(filters = it) }
@@ -144,6 +146,8 @@ class DAppListDelegate @Inject constructor(
             }.onSuccess { dApps ->
                 val dAppDefinitionWithDetails = dApps.associateBy { it.dAppAddress }
 
+                dAppsState.update { dAppDefinitionWithDetails }
+
                 dAppDataState.update { data ->
                     data.mapValues {
                         val dApp = dAppDefinitionWithDetails[it.key]
@@ -185,17 +189,23 @@ class DAppListDelegate @Inject constructor(
         viewModelScope.launch {
             combine(
                 directoryState,
+                dAppsState,
                 dAppsWithDetailsState,
                 filtersState
-            ) { directories, dAppsWithDetails, filters ->
+            ) { directories, dApps, dAppsWithDetails, filters ->
                 val items = dAppsWithDetails.filterItems(filters, directories)
-                items to directories
-            }.onEach { itemsAndDirectories ->
-                val itemsByCategory = itemsAndDirectories.first.groupBy { item ->
-                    val directoryDefinition = itemsAndDirectories.second?.findByAddress(item.dAppDefinitionAddress)
-                    DAppCategoryType.from(directoryDefinition?.category)
-                }
+                items.groupBy { item ->
+                    val dApp = dApps[item.dAppDefinitionAddress]
+                    val metadataDAppCategory = DAppCategoryType.from(dApp?.dAppCategory)
 
+                    if (metadataDAppCategory == DAppCategoryType.Unknown) {
+                        val directoryDefinition = directories?.findByAddress(item.dAppDefinitionAddress)
+                        DAppCategoryType.from(directoryDefinition?.category)
+                    } else {
+                        metadataDAppCategory
+                    }
+                }
+            }.onEach { itemsByCategory ->
                 disableRefreshing()
                 _state.update { state ->
                     state.copy(
