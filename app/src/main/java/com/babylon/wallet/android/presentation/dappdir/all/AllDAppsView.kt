@@ -7,9 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListPreviewProvider
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListState
@@ -88,7 +90,7 @@ private fun AllDAppsContent(
         DAppListView(
             padding = padding,
             state = state,
-            emptyStateTitle = "There are no dApps available", // TODO sergiu localize,
+            emptyStateTitle = stringResource(id = R.string.dappDirectory_empty_message),
             onRefresh = onRefresh,
             onDAppClick = onDAppClick,
             onInfoClick = onInfoClick
