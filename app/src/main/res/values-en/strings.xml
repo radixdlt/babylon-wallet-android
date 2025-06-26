@@ -1721,6 +1721,13 @@ Code: %s</string>
   <string name="dappDirectory_filters_title">Tags</string>
   <string name="dappDirectory_error_heading">Failed to load dApps.</string>
   <string name="dappDirectory_error_message">Pull to refresh</string>
+  <string name="dappDirectory_empty_message">There are no dApps available on this network.</string>
+  <string name="dappDirectory_categoryDefi_title">DeFi</string>
+  <string name="dappDirectory_categoryUtility_title">Utility</string>
+  <string name="dappDirectory_categoryDao_title">Dao</string>
+  <string name="dappDirectory_categoryNFT_title">NFT</string>
+  <string name="dappDirectory_categoryMeme_title">Meme</string>
+  <string name="dappDirectory_categoryOther_title">Other</string>
   <string name="homePage_tab_discover">Discover</string>
   <string name="discover_title">Discover</string>
   <string name="discover_view_all_dapps">All dApps</string>
