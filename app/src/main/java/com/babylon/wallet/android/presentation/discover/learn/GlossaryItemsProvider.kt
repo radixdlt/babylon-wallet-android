@@ -47,11 +47,6 @@ class GlossaryItemsProvider @Inject constructor(
             .map { it.first }
     }
 
-    private fun List<String>.partiallyMatches(otherParts: List<String>): Boolean =
-        otherParts.all { otherPart ->
-            any { part -> part.contains(otherPart) }
-        }
-
     private data class SearchableContent(
         val title: String,
         val description: String,
@@ -91,6 +86,11 @@ class GlossaryItemsProvider @Inject constructor(
     }
 }
 
-private fun String.splitByWhitespace(): List<String> = trim()
+fun List<String>.partiallyMatches(otherParts: List<String>): Boolean =
+    otherParts.all { otherPart ->
+        any { part -> part.contains(otherPart) }
+    }
+
+fun String.splitByWhitespace(): List<String> = trim()
     .split(" ")
     .map { it.trim().lowercase() }

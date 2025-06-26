@@ -24,7 +24,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.assets.TagsView
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DAppWebsiteAddressRow
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDefinitionAddressRow
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
@@ -57,8 +57,7 @@ fun DappDetails(
         LazyColumn(
             contentPadding = PaddingValues(vertical = dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             dAppWithResources?.let { dAppWithResources ->
                 item {
@@ -104,19 +103,6 @@ fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
 
-                val tags = dAppWithResources.dApp.tags.map { Tag.Dynamic(name = it) }
-                if (tags.isNotEmpty()) {
-                    item {
-                        TagsSection(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingXLarge),
-                            tags = tags.toPersistentList()
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                    }
-                }
-
                 if (isValidatingWebsite || validatedWebsite != null) {
                     item {
                         DAppWebsiteAddressRow(
@@ -124,6 +110,19 @@ fun DappDetails(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = dimensions.paddingXLarge)
+                        )
+                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                    }
+                }
+
+                val tags = dAppWithResources.dApp.tags.map { Tag.Dynamic(name = it) }
+                if (tags.isNotEmpty()) {
+                    item {
+                        TagsSectionView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensions.paddingXLarge),
+                            tags = tags.toPersistentList()
                         )
                         Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                     }
@@ -285,5 +284,28 @@ fun DappDetails(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TagsSectionView(
+    tags: ImmutableList<Tag>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Text(
+            text = stringResource(id = R.string.assetDetails_tags),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.textSecondary
+        )
+
+        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+
+        TagsView(
+            modifier = Modifier.fillMaxWidth(),
+            tags = tags
+        )
     }
 }

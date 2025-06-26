@@ -195,7 +195,7 @@ private fun DappDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = state.dAppWithResources?.dApp.displayName(),
+                    title = state.dAppWithResources?.dApp.displayName().takeIf { !state.loading }.orEmpty(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )

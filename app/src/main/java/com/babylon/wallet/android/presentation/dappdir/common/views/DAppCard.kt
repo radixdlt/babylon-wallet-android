@@ -67,7 +67,7 @@ fun DAppCard(
                 dAppIconUrl = details?.data?.iconUri,
                 dAppName = details?.data?.name.orEmpty(),
                 shape = RadixTheme.shapes.roundedRectSmall,
-                backgroundColor = RadixTheme.colors.onCard
+                backgroundColor = RadixTheme.colors.backgroundTertiary
             )
 
             Column(
@@ -139,7 +139,7 @@ fun DAppCard(
                 tags = remember(details.data) {
                     details.data.tags.map { Tag.Dynamic(name = it) }
                 }.toPersistentList(),
-                borderColor = RadixTheme.colors.onCardSecondary,
+                borderColor = RadixTheme.colors.border,
                 iconColor = RadixTheme.colors.iconSecondary,
                 maxLines = 2
             )

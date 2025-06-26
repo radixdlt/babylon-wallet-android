@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.dappdir.common.models.DAppFilters
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem.Category
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem.DAppWithDetails
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListState
+import com.babylon.wallet.android.presentation.discover.learn.partiallyMatches
+import com.babylon.wallet.android.presentation.discover.learn.splitByWhitespace
 import com.radixdlt.sargon.AccountAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -233,55 +235,6 @@ class DAppListDelegate @Inject constructor(
         }
     }
 
-    private fun List<DAppWithDetails>.filterItems(
-        filters: DAppFilters,
-        directories: DAppDirectory?
-    ): List<DAppWithDetails> = asSequence().filter { dAppWithDetails ->
-        val directoryDefinition = directories?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
-
-        if (filters.selectedTags.isEmpty()) {
-            true
-        } else {
-            dAppWithDetails.data?.tags?.containsAll(filters.selectedTags) == true ||
-                directoryDefinition?.tags?.containsAll(filters.selectedTags) == true
-        }
-    }.filter { dAppWithDetails ->
-        val term = filters.searchTerm.trim().lowercase()
-
-        if (term.isBlank()) {
-            true
-        } else {
-            val directoryDefinition = directories?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
-
-            val (name, description) = when (val details = dAppWithDetails.details) {
-                is DAppWithDetails.Details.Data -> {
-                    val name = details.name.takeIf { it.isNotEmpty() } ?: directoryDefinition?.name
-                    name to details.description
-                }
-
-                is DAppWithDetails.Details.Error -> {
-                    directoryDefinition?.name to null
-                }
-
-                else -> null to null
-            }
-
-            if (name != null && name.lowercase().contains(term)) {
-                return@filter true
-            }
-
-            if (description != null && description.lowercase().contains(term)) {
-                return@filter true
-            }
-
-            if (name == null && description == null) {
-                return@filter true
-            }
-
-            false
-        }
-    }.toList()
-
     private fun observeAccountLockerDeposits(dApps: List<DApp>) {
         accountLockerDepositsJob?.cancel()
         accountLockerDepositsJob = viewModelScope.launch {
@@ -311,6 +264,70 @@ class DAppListDelegate @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun List<DAppWithDetails>.filterItems(
+        filters: DAppFilters,
+        directory: DAppDirectory?
+    ): List<DAppWithDetails> {
+        return asSequence().filterByTags(
+            tags = filters.selectedTags,
+            directory = directory
+        ).filterByTerm(
+            term = filters.searchTerm,
+            directory = directory
+        ).toList()
+    }
+
+    private fun Sequence<DAppWithDetails>.filterByTags(
+        tags: Set<String>,
+        directory: DAppDirectory?
+    ): Sequence<DAppWithDetails> = filter { dAppWithDetails ->
+        val directoryDefinition = directory?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
+
+        if (tags.isEmpty()) {
+            true
+        } else {
+            dAppWithDetails.data?.tags?.containsAll(tags) == true ||
+                directoryDefinition?.tags?.containsAll(tags) == true
+        }
+    }
+
+    @Suppress("MagicNumber")
+    private fun Sequence<DAppWithDetails>.filterByTerm(
+        term: String,
+        directory: DAppDirectory?
+    ): Sequence<DAppWithDetails> {
+        val normalizedTerm = term.trim().lowercase()
+        val termParts = normalizedTerm.splitByWhitespace()
+
+        return map { dAppWithDetails ->
+            if (normalizedTerm.isBlank()) {
+                dAppWithDetails to 0
+            } else {
+                val directoryDefinition = directory?.findByAddress(dAppWithDetails.dAppDefinitionAddress)
+                val name = when (val details = dAppWithDetails.details) {
+                    is DAppWithDetails.Details.Data -> details.name
+                    DAppWithDetails.Details.Error -> directoryDefinition?.name
+                    DAppWithDetails.Details.Fetching -> null
+                }
+                val description = dAppWithDetails.data?.description
+                val tags = dAppWithDetails.data?.tags
+
+                val relevance = when {
+                    name != null && name.lowercase().contains(normalizedTerm) -> 0
+                    description != null && description.lowercase().contains(normalizedTerm) -> 1
+                    name?.splitByWhitespace().orEmpty().partiallyMatches(termParts) -> 2
+                    description?.splitByWhitespace().orEmpty().partiallyMatches(termParts) -> 3
+                    tags != null && tags.any { it.contains(normalizedTerm) } -> 4
+                    else -> 5
+                }
+
+                dAppWithDetails to relevance
+            }
+        }.filter { it.second < 5 }
+            .sortedBy { it.second }
+            .map { it.first }
     }
 
     interface ViewActions {
