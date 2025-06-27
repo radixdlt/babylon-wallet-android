@@ -20,6 +20,7 @@ import rdx.works.core.domain.resources.metadata.name
 import rdx.works.core.domain.resources.metadata.tags
 import java.util.regex.Pattern
 
+// Alphanumeric string with dashes as word separator
 private val DAPP_TAG = Pattern.compile("^[A-Za-z0-9\\\\-]+\$")
 
 data class DApp(
@@ -49,7 +50,7 @@ data class DApp(
     val tags: Set<String>
         get() = metadata.tags().orEmpty()
             .filter { DAPP_TAG.matcher(it).matches() }
-            .map { it.lowercase() }
+            .map { it.lowercase() } // We allow tags to be defined with uppercase letters, but we always lowercase these.
             .sorted()
             .toSet()
 
