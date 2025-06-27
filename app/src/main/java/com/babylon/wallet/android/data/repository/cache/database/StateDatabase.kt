@@ -26,7 +26,7 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
         AccountLockerVaultItemEntity::class,
         DirectoryDefinitionEntity::class
     ],
-    version = StateDatabase.VERSION_13
+    version = StateDatabase.VERSION_14
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -76,8 +76,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Added account metadata")
         const val VERSION_12 = 12
 
-        // Added dApp directory
+        @Deprecated("Added dApp directory")
         const val VERSION_13 = 13
+
+        // Added dApp directory category
+        const val VERSION_14 = 14
 
         private const val NAME = "STATE_DATABASE"
 

@@ -321,13 +321,15 @@ object Thumbnail {
     fun DApp(
         modifier: Modifier = Modifier,
         dapp: DApp?,
-        shape: Shape = RadixTheme.shapes.roundedRectDefault
+        shape: Shape = RadixTheme.shapes.roundedRectDefault,
+        backgroundColor: Color = RadixTheme.colors.backgroundTertiary
     ) {
         DApp(
             modifier = modifier,
             dAppIconUrl = dapp?.iconUrl,
             dAppName = dapp?.name.orEmpty(),
-            shape = shape
+            shape = shape,
+            backgroundColor = backgroundColor
         )
     }
 
@@ -336,14 +338,16 @@ object Thumbnail {
         modifier: Modifier = Modifier,
         dAppIconUrl: Uri?,
         dAppName: String,
-        shape: Shape = RadixTheme.shapes.roundedRectDefault
+        shape: Shape = RadixTheme.shapes.roundedRectDefault,
+        backgroundColor: Color = RadixTheme.colors.backgroundTertiary
     ) {
         Custom(
             modifier = modifier,
             imageType = dAppIconUrl?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
             emptyDrawable = R.drawable.ic_dapp,
             shape = shape,
-            contentDescription = dAppName
+            contentDescription = dAppName,
+            backgroundColor = backgroundColor
         )
     }
 

@@ -83,6 +83,7 @@ private fun LearnContent(
                     value = state.searchQuery,
                     onValueChanged = onSearchQueryChange,
                     hint = stringResource(R.string.common_searchHint),
+                    singleLine = true,
                     trailingIcon = {
                         if (state.isSearchQueryEmpty) {
                             Icon(

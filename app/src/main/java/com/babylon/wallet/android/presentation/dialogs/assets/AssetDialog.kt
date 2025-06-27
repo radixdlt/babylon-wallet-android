@@ -4,6 +4,7 @@ package com.babylon.wallet.android.presentation.dialogs.assets
 
 import android.net.Uri
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -26,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -247,6 +249,7 @@ private fun HideAssetSheet(
                         stringResource(id = R.string.confirmation_hideAsset_message),
                         stringResource(id = R.string.confirmation_hideAsset_button)
                     )
+
                     is AssetDialogViewModel.State.HideConfirmationType.Collection -> Triple(
                         stringResource(id = R.string.confirmation_hideCollection_title),
                         stringResource(id = R.string.confirmation_hideCollection_message, type.name),
@@ -419,7 +422,6 @@ fun BehavioursSection(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagsSection(
     modifier: Modifier = Modifier,
@@ -434,25 +436,45 @@ fun TagsSection(
                 isLocked = false
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                content = {
-                    tags.forEach { tag ->
-                        Tag(
-                            modifier = Modifier
-                                .padding(RadixTheme.dimensions.paddingXXSmall)
-                                .border(
-                                    width = 1.dp,
-                                    color = RadixTheme.colors.divider,
-                                    shape = RadixTheme.shapes.roundedTag
-                                )
-                                .padding(RadixTheme.dimensions.paddingSmall),
-                            tag = tag
-                        )
-                    }
-                }
+            TagsView(
+                modifier = Modifier.fillMaxWidth(),
+                tags = tags
             )
         }
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TagsView(
+    tags: ImmutableList<Tag>,
+    modifier: Modifier = Modifier,
+    borderColor: Color = RadixTheme.colors.divider,
+    iconColor: Color = RadixTheme.colors.iconSecondary,
+    maxLines: Int = Int.MAX_VALUE
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
+        maxLines = maxLines,
+        content = {
+            tags.forEach { tag ->
+                Tag(
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp,
+                            color = borderColor,
+                            shape = RadixTheme.shapes.roundedTag
+                        )
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingSmall,
+                            vertical = RadixTheme.dimensions.paddingXXSmall
+                        ),
+                    tag = tag,
+                    iconColor = iconColor
+                )
+            }
+        }
+    )
 }

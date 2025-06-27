@@ -17,14 +17,15 @@ private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: Metadat
     it.key == key.key && (it as? Metadata.Primitive)?.valueType == type
 } as? Metadata.Primitive
 
-private fun List<Metadata>.findCollection(key: ExplicitMetadataKey, type: MetadataType): List<Metadata.Primitive>? = find {
-    it.key == key.key
-}?.let { metadata ->
-    (metadata as? Metadata.Collection)
-        ?.values
-        ?.filterIsInstance<Metadata.Primitive>()
-        ?.takeIf { values -> values.all { it.valueType == type } }
-}
+private fun List<Metadata>.findCollection(key: ExplicitMetadataKey, type: MetadataType): List<Metadata.Primitive>? =
+    find {
+        it.key == key.key
+    }?.let { metadata ->
+        (metadata as? Metadata.Collection)
+            ?.values
+            ?.filterIsInstance<Metadata.Primitive>()
+            ?.takeIf { values -> values.all { it.valueType == type } }
+    }
 
 fun List<Metadata>.description(): String? = findPrimitive(
     key = ExplicitMetadataKey.DESCRIPTION,
@@ -145,3 +146,8 @@ fun List<Metadata>.lockerAddress(): LockerAddress? = findPrimitive(
     key = ExplicitMetadataKey.ACCOUNT_LOCKER,
     type = MetadataType.Address
 )?.value?.let { runCatching { LockerAddress.init(it) }.getOrNull() }
+
+fun List<Metadata>.dAppCategory(): String? = findPrimitive(
+    key = ExplicitMetadataKey.DAPP_CATEGORY,
+    type = MetadataType.String
+)?.value

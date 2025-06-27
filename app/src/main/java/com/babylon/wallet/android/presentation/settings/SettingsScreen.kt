@@ -237,7 +237,6 @@ fun SettingsWithoutActiveConnectionPreview() {
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -264,7 +263,6 @@ fun SettingsWithSecurityProblem5Preview() {
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -302,7 +300,6 @@ fun SettingsWithSecurityProblems3And6Preview() {
                         isBackupNeeded = true,
                         isRecoveryNeeded = false
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -335,7 +332,6 @@ fun SettingsWithSecurityProblems7And9Preview() {
                         isBackupNeeded = false,
                         isRecoveryNeeded = true
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -368,7 +364,6 @@ fun SettingsWithSecurityProblems3And9Preview() {
                         isBackupNeeded = true,
                         isRecoveryNeeded = true
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -404,7 +399,6 @@ fun SettingsWithSecurityProblems3And5And9Preview() {
                         isBackupNeeded = true,
                         isRecoveryNeeded = true
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -440,7 +434,6 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenPersonasPreview() {
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -473,7 +466,6 @@ fun SettingsWithSecurityProblems7And9AndOnlyHiddenPersonasPreview() {
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting
@@ -509,7 +501,6 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenEntitiesPreview() {
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
-                    SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,
                     SettingsItem.TopLevelSettings.Troubleshooting

@@ -43,6 +43,7 @@ object Serializer {
             serializersModule = kotlinxSerializationAdapters
             ignoreUnknownKeys = true
             isLenient = true
+            explicitNulls = false
         }
     }
 }
