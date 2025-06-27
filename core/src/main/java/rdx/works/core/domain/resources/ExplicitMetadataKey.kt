@@ -70,7 +70,8 @@ enum class ExplicitMetadataKey(val key: String) {
             CLAIMED_ENTITIES,
             ICON_URL,
             ACCOUNT_LOCKER,
-            DAPP_CATEGORY
+            TAGS,
+            DAPP_CATEGORY,
         )
     }
 }
