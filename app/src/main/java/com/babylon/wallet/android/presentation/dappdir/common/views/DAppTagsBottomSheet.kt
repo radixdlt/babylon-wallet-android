@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -23,6 +26,7 @@ import com.babylon.wallet.android.presentation.account.composable.HistoryFilterT
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppFilters
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.coroutines.launch
 
@@ -55,23 +59,34 @@ fun DAppTagsBottomSheet(
         onDismissRequest = onDismissRequest,
         enableImePadding = true,
         sheetContent = {
-            Column {
-                RadixCenteredTopAppBar(
-                    title = stringResource(R.string.dappDirectory_filters_title),
-                    onBackClick = onDismissRequest,
-                    backIconType = BackIconType.Close,
-                    actions = {
-                        RadixTextButton(
-                            text = stringResource(R.string.transactionHistory_filters_clearAll),
-                            onClick = onAllFilterTagsRemoved
-                        )
-                    }
-                )
-
+            Scaffold(
+                containerColor = RadixTheme.colors.background,
+                topBar = {
+                    RadixCenteredTopAppBar(
+                        title = stringResource(R.string.dappDirectory_filters_title),
+                        onBackClick = onDismissRequest,
+                        backIconType = BackIconType.Close,
+                        actions = {
+                            RadixTextButton(
+                                text = stringResource(R.string.transactionHistory_filters_clearAll),
+                                onClick = onAllFilterTagsRemoved
+                            )
+                        }
+                    )
+                },
+                bottomBar = {
+                    RadixBottomBar(
+                        onClick = onDismissRequest,
+                        text = stringResource(id = R.string.common_confirm),
+                        insets = WindowInsets(0.dp)
+                    )
+                }
+            ) { padding ->
                 FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
+                        .padding(padding)
                         .padding(RadixTheme.dimensions.paddingDefault),
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
