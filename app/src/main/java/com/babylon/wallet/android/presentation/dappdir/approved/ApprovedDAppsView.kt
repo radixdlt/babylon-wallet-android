@@ -72,7 +72,7 @@ private fun ApprovedDAppsContent(
             DAppListFiltersView(
                 filters = state.filters,
                 isLoading = state.isLoading,
-                isFiltersButtonVisible = state.isFiltersButtonVisible,
+                isFiltersButtonEnabled = state.isFiltersButtonEnabled,
                 onSearchTermUpdated = onSearchTermUpdated,
                 onFilterTagAdded = onFilterTagAdded,
                 onFilterTagRemoved = onFilterTagRemoved,

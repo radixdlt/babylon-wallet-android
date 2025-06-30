@@ -36,7 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 fun DAppListFiltersView(
     filters: DAppFilters,
     isLoading: Boolean,
-    isFiltersButtonVisible: Boolean,
+    isFiltersButtonEnabled: Boolean,
     onSearchTermUpdated: (String) -> Unit,
     onFilterTagAdded: (String) -> Unit,
     onFilterTagRemoved: (String) -> Unit,
@@ -47,7 +47,7 @@ fun DAppListFiltersView(
     DAppListFiltersContent(
         filters = filters,
         isLoading = isLoading,
-        isFiltersButtonVisible = isFiltersButtonVisible,
+        isFiltersButtonEnabled = isFiltersButtonEnabled,
         onSearchTermUpdated = onSearchTermUpdated,
         onTagFiltersClick = { isFiltersVisible = true },
         onFilterTagRemoved = onFilterTagRemoved
@@ -74,7 +74,7 @@ fun DAppListFiltersView(
 private fun DAppListFiltersContent(
     filters: DAppFilters,
     isLoading: Boolean,
-    isFiltersButtonVisible: Boolean,
+    isFiltersButtonEnabled: Boolean,
     onSearchTermUpdated: (String) -> Unit,
     onTagFiltersClick: () -> Unit,
     onFilterTagRemoved: (String) -> Unit
@@ -89,11 +89,7 @@ private fun DAppListFiltersContent(
                 .padding(bottom = RadixTheme.dimensions.paddingDefault)
                 .padding(
                     start = RadixTheme.dimensions.paddingDefault,
-                    end = if (isFiltersButtonVisible) {
-                        RadixTheme.dimensions.paddingSmall
-                    } else {
-                        RadixTheme.dimensions.paddingDefault
-                    }
+                    end = RadixTheme.dimensions.paddingSmall
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -131,21 +127,20 @@ private fun DAppListFiltersContent(
                 }
             )
 
-            if (isFiltersButtonVisible) {
-                AnimatedVisibility(
-                    visible = !isLoading,
-                    enter = fadeIn(),
-                    exit = fadeOut()
+            AnimatedVisibility(
+                visible = !isLoading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                IconButton(
+                    onClick = onTagFiltersClick,
+                    enabled = isFiltersButtonEnabled
                 ) {
-                    IconButton(
-                        onClick = onTagFiltersClick
-                    ) {
-                        Icon(
-                            painterResource(id = DSR.ic_filter_list),
-                            tint = RadixTheme.colors.icon,
-                            contentDescription = null
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = DSR.ic_filter_list),
+                        tint = if (isFiltersButtonEnabled) RadixTheme.colors.icon else RadixTheme.colors.iconTertiary,
+                        contentDescription = null
+                    )
                 }
             }
         }

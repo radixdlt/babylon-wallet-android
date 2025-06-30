@@ -66,6 +66,7 @@ class ApprovedDAppsViewModel @Inject constructor(
             .onEach { approvedDApps ->
                 approvedDAppsState.update { approvedDApps }
                 dAppListDelegate.onDAppsLoaded(approvedDApps.map { it.dappDefinitionAddress })
+                _state.update { state -> state.copy(canRefresh = approvedDApps.isNotEmpty()) }
             }
             .catch { error ->
                 dAppListDelegate.onDAppsLoadingError(error)

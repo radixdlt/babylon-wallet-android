@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import kotlin.collections.map
@@ -27,6 +28,10 @@ class AllDAppsViewModel @Inject constructor(
                 // Shuffle order of other dApps
                 others = directory.others?.shuffled()
             )
+        }.onEach {
+            it?.let { directory ->
+                dAppListDelegate.onDAppsLoaded(it.all.map { it.dAppDefinitionAddress })
+            }
         },
         dAppListDelegate.dAppDataState
     ) { directory, dAppData ->

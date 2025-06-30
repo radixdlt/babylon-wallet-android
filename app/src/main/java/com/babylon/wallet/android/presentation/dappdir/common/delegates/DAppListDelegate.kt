@@ -98,12 +98,12 @@ class DAppListDelegate @Inject constructor(
                 onDAppsLoadingError(error)
             }.onSuccess { directory ->
                 directoryState.update { directory }
-                onDAppsLoaded(directory.all.map { it.dAppDefinitionAddress })
             }
         }.flowOn(dispatcher).launchIn(viewModelScope)
     }
 
     fun onDAppsLoaded(dAppDefinitionAddresses: List<AccountAddress>) {
+        disableRefreshing()
         dAppDataState.update { data ->
             data + dAppDefinitionAddresses.toSet().map { dAppDefinitionAddress ->
                 dAppDefinitionAddress to DAppWithDetails.Details.Fetching
@@ -115,6 +115,7 @@ class DAppListDelegate @Inject constructor(
         _state.update {
             it.copy(
                 uiMessage = UiMessage.ErrorMessage(error),
+                isRefreshing = false,
                 isLoading = false,
                 errorLoading = true
             )
