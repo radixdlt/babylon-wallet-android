@@ -63,7 +63,8 @@ fun DAppListView(
                 .pullToRefresh(
                     state = pullToRefreshState,
                     isRefreshing = state.isRefreshing,
-                    onRefresh = onRefresh
+                    onRefresh = onRefresh,
+                    enabled = state.canRefresh
                 ),
             contentPadding = padding.plus(
                 PaddingValues(RadixTheme.dimensions.paddingDefault)

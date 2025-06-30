@@ -69,10 +69,12 @@ fun DAppTagsBottomSheet(
                         onBackClick = onDismissRequest,
                         backIconType = BackIconType.Close,
                         actions = {
-                            RadixTextButton(
-                                text = stringResource(R.string.transactionHistory_filters_clearAll),
-                                onClick = onAllFilterTagsRemoved
-                            )
+                            if (filters.selectedTags.isNotEmpty()) {
+                                RadixTextButton(
+                                    text = stringResource(R.string.transactionHistory_filters_clearAll),
+                                    onClick = onAllFilterTagsRemoved
+                                )
+                            }
                         }
                     )
 
