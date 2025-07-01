@@ -1726,6 +1726,7 @@ Code: %s</string>
   <string name="dappDirectory_categoryOther_title">Other</string>
   <string name="dappDirectory_viewAllDApps">All dApps</string>
   <string name="dappDirectory_viewConnectedDApps">Connected dApps</string>
+  <string name="dappDirectory_connectedDApps_empty_description">These are the dApps that you have logged into using the Radix Wallet.</string>
   <string name="homePage_tab_discover">Discover</string>
   <string name="discover_title">Discover</string>
   <string name="discover_categoryLearn_title">Learn About</string>
