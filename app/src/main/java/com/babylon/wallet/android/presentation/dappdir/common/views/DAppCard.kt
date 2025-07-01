@@ -141,7 +141,7 @@ fun DAppCard(
                 }.toPersistentList(),
                 borderColor = RadixTheme.colors.border,
                 iconColor = RadixTheme.colors.iconSecondary,
-                maxLines = 2
+                maxLines = 1
             )
         } else {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
