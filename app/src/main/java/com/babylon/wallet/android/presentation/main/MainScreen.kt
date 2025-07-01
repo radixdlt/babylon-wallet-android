@@ -231,7 +231,7 @@ private fun MainContent(
                 DAppDirectoryScreen(
                     viewModel = hiltViewModel(),
                     allDAppsViewModel = hiltViewModel(),
-                    approvedDAppsViewModel = hiltViewModel(),
+                    connectedDAppsViewModel = hiltViewModel(),
                     onDAppClick = onDAppClick,
                     onInfoClick = onInfoLinkClick
                 )
