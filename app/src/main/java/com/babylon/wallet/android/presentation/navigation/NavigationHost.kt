@@ -70,7 +70,6 @@ import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
@@ -257,10 +256,6 @@ fun NavigationHost(
             },
             onSettingClick = { item ->
                 when (item) {
-                    SettingsItem.TopLevelSettings.ApprovedDapps -> {
-                        navController.approvedDAppsScreen()
-                    }
-
                     is SettingsItem.TopLevelSettings.Personas -> {
                         navController.personasScreen()
                     }
@@ -286,9 +281,7 @@ fun NavigationHost(
                     }
                 }
             },
-            onDAppClick = {
-                navController.dAppDetailScreen(dappDefinitionAddress = it, isReadOnly = true)
-            },
+            onDAppClick = { navController.dAppDetailScreen(dappDefinitionAddress = it) },
             onInfoLinkClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onMoreInfoClick = { navController.learnScreen() },
             onMoreBlogPostsClick = { navController.blogPostsScreen() }

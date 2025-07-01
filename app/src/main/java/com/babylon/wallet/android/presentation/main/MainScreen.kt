@@ -230,7 +230,10 @@ private fun MainContent(
             composable(MainTab.DApps.route) {
                 DAppDirectoryScreen(
                     viewModel = hiltViewModel(),
-                    onDAppClick = onDAppClick
+                    allDAppsViewModel = hiltViewModel(),
+                    approvedDAppsViewModel = hiltViewModel(),
+                    onDAppClick = onDAppClick,
+                    onInfoClick = onInfoLinkClick
                 )
             }
             composable(MainTab.Discover.route) {

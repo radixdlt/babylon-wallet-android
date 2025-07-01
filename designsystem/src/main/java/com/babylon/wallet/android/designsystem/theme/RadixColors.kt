@@ -60,6 +60,8 @@ data class RadixColors(
     val warning: Color,
     val warningSecondary: Color,
     val card: Color,
+    val cardSecondary: Color,
+    val unselectedSegmentedControl: Color,
     val selectedSegmentedControl: Color,
     val chipBackground: Color
 )
@@ -79,7 +81,7 @@ private val LightColorPalette = RadixColors(
     primaryButton = Blue2,
     secondaryButton = Gray4,
     divider = Gray4,
-    border = Gray1,
+    border = Gray3,
     textFieldBorder = Gray4,
     textFieldFocusedBorder = Gray1,
     textFieldBackground = Gray5,
@@ -90,6 +92,8 @@ private val LightColorPalette = RadixColors(
     warning = Orange3,
     warningSecondary = LightOrange,
     card = White,
+    cardSecondary = Gray5,
+    unselectedSegmentedControl = Gray4,
     selectedSegmentedControl = White,
     chipBackground = Gray1
 )
@@ -109,7 +113,7 @@ private val DarkColorPalette = RadixColors(
     primaryButton = Color(0xFF00C389),
     secondaryButton = Color(0xFF404243),
     divider = Color(0xFF404243),
-    border = Gray5,
+    border = Color(0xFF3F4142),
     textFieldBorder = Color(0xFF797B7F),
     textFieldFocusedBorder = Gray5,
     textFieldBackground = Color(0xFF404243),
@@ -119,7 +123,9 @@ private val DarkColorPalette = RadixColors(
     errorSecondary = LightRed,
     warning = Color(0xFFC47F00),
     warningSecondary = Color(0xFFE6DCCB),
-    card = Color(0xFF28292A),
+    card = Color(0xFF1E1F1F),
+    cardSecondary = Color(0xFF28292A),
+    unselectedSegmentedControl = Color(0xFF121212),
     selectedSegmentedControl = Color(0xFF646469),
     chipBackground = Color(0xFF404243)
 )

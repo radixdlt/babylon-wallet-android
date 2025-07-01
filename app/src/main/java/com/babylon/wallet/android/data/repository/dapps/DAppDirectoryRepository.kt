@@ -30,61 +30,58 @@ class DAppDirectoryRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : DAppDirectoryRepository {
 
-    override suspend fun getDirectory(isRefreshing: Boolean): Result<DAppDirectory> =
-        withContext(ioDispatcher) {
-            val cachedDirectory = dAppDirectoryDao.getDirectory(
-                minValidity = directoryValidity(isRefreshing = isRefreshing)
-            )
+    override suspend fun getDirectory(isRefreshing: Boolean): Result<DAppDirectory> = withContext(ioDispatcher) {
+        val cachedDirectory = dAppDirectoryDao.getDirectory(
+            minValidity = directoryValidity(isRefreshing = isRefreshing)
+        )
 
-            if (cachedDirectory.isEmpty()) {
-                fetchDirectory()
-                    .onSuccess { directory ->
-                        dAppDirectoryDao.resetDirectory()
+        if (cachedDirectory.isEmpty()) {
+            fetchDirectory().onSuccess { directory ->
+                dAppDirectoryDao.resetDirectory()
 
-                        val synced = InstantGenerator()
-                        val dAppEntities = directory.highlighted.orEmpty().map {
-                            DirectoryDefinitionEntity.from(
-                                definition = it,
-                                isHighlighted = true,
-                                synced = synced
-                            )
-                        } + directory.others.orEmpty().map {
-                            DirectoryDefinitionEntity.from(
-                                definition = it,
-                                isHighlighted = false,
-                                synced = synced
-                            )
-                        }
-
-                        dAppDirectoryDao.insertDirectory(directory = dAppEntities)
-                    }
-            } else {
-                val highlightedDApps = mutableListOf<DirectoryDefinition>()
-                val otherDApps = mutableListOf<DirectoryDefinition>()
-
-                cachedDirectory.onEach { dApp ->
-                    if (dApp.isHighlighted) {
-                        highlightedDApps.add(dApp.toDirectoryDefinition())
-                    } else {
-                        otherDApps.add(dApp.toDirectoryDefinition())
-                    }
+                val synced = InstantGenerator()
+                val dAppEntities = directory.highlighted.orEmpty().map {
+                    DirectoryDefinitionEntity.from(
+                        definition = it,
+                        isHighlighted = true,
+                        synced = synced
+                    )
+                } + directory.others.orEmpty().map {
+                    DirectoryDefinitionEntity.from(
+                        definition = it,
+                        isHighlighted = false,
+                        synced = synced
+                    )
                 }
 
-                Result.success(
-                    DAppDirectory(
-                        highlighted = highlightedDApps,
-                        others = otherDApps
-                    )
-                )
+                dAppDirectoryDao.insertDirectory(directory = dAppEntities)
             }
-        }
+        } else {
+            val highlightedDApps = mutableListOf<DirectoryDefinition>()
+            val otherDApps = mutableListOf<DirectoryDefinition>()
 
-    private suspend fun fetchDirectory(): Result<DAppDirectory> =
-        buildApi<DAppDirectoryApi>(
-            baseUrl = BASE_URL,
-            okHttpClient = okHttpClient,
-            jsonConverterFactory = jsonConverterFactory
-        ).directory().toResult()
+            cachedDirectory.onEach { dApp ->
+                if (dApp.isHighlighted) {
+                    highlightedDApps.add(dApp.toDirectoryDefinition())
+                } else {
+                    otherDApps.add(dApp.toDirectoryDefinition())
+                }
+            }
+
+            Result.success(
+                DAppDirectory(
+                    highlighted = highlightedDApps,
+                    others = otherDApps
+                )
+            )
+        }
+    }
+
+    private suspend fun fetchDirectory(): Result<DAppDirectory> = buildApi<DAppDirectoryApi>(
+        baseUrl = BASE_URL,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    ).directory().toResult()
 
     companion object {
         private const val BASE_URL = "https://dapps-list.radixdlt.com"

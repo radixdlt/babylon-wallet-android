@@ -6,7 +6,6 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.assets.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
@@ -18,17 +17,6 @@ import com.babylon.wallet.android.presentation.settings.troubleshooting.troubles
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController,
 ) {
-    approvedDAppsScreen(
-        onBackClick = {
-            navController.popBackStack()
-        },
-        onDAppClick = { dAppDefinitionAddress ->
-            navController.dAppDetailScreen(dAppDefinitionAddress)
-        },
-        onInfoClick = { glossaryItem ->
-            navController.infoDialog(glossaryItem)
-        }
-    )
     linkedConnectorsScreen(
         onInfoClick = { glossaryItem ->
             navController.infoDialog(glossaryItem)

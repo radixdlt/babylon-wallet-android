@@ -33,6 +33,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
@@ -98,7 +99,13 @@ class DappDetailViewModel @Inject constructor(
 
     private fun observeDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.getAuthorizedDAppFlow(args.dappDefinitionAddress).filterNotNull().collect { dapp ->
+            dAppConnectionRepository.getAuthorizedDAppFlow(args.dappDefinitionAddress).onEach { authorizedDApp ->
+                _state.update { state ->
+                    state.copy(
+                        isReadOnly = state.isReadOnly || authorizedDApp == null
+                    )
+                }
+            }.filterNotNull().collect { dapp ->
                 authorizedDapp = dapp
                 val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
                     getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
@@ -178,7 +185,8 @@ class DappDetailViewModel @Inject constructor(
     }
 
     fun onDisconnectPersona(persona: Persona) {
-        val lastPersona = _state.value.authorizedPersonas.size == 1 && _state.value.authorizedPersonas.first().address == persona.address
+        val lastPersona =
+            _state.value.authorizedPersonas.size == 1 && _state.value.authorizedPersonas.first().address == persona.address
         viewModelScope.launch {
             dAppConnectionRepository.deletePersonaForDApp(args.dappDefinitionAddress, persona.address)
             if (lastPersona) {
@@ -211,7 +219,8 @@ class DappDetailViewModel @Inject constructor(
             if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
                 (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.persona?.let { persona ->
                     val sharedAccounts = checkNotNull(
-                        authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(persona.address)?.sharedAccounts
+                        authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable()
+                            .getBy(persona.address)?.sharedAccounts
                     )
                     val request = WalletAuthorizedRequest(
                         remoteEntityId = RemoteEntityID.ConnectorId(""),
@@ -258,7 +267,10 @@ class DappDetailViewModel @Inject constructor(
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
-    data class EditPersona(val personaAddress: IdentityAddress, val requiredPersonaFields: RequiredPersonaFields? = null) :
+    data class EditPersona(
+        val personaAddress: IdentityAddress,
+        val requiredPersonaFields: RequiredPersonaFields? = null
+    ) :
         DappDetailEvent
 
     data object DappDeleted : DappDetailEvent

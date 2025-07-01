@@ -35,7 +35,6 @@ class SettingsViewModel @Inject constructor(
         SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter()),
         SettingsUiItem.Spacer,
         SettingsUiItem.Settings(Personas()),
-        SettingsUiItem.Settings(SettingsItem.TopLevelSettings.ApprovedDapps),
         SettingsUiItem.Settings(SettingsItem.TopLevelSettings.LinkedConnectors),
         SettingsUiItem.Spacer,
         SettingsUiItem.Settings(Preferences),
