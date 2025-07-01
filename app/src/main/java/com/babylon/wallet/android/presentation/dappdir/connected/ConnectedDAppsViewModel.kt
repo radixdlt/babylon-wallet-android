@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dappdir.approved
+package com.babylon.wallet.android.presentation.dappdir.connected
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -19,17 +19,17 @@ import rdx.works.profile.data.repository.DAppConnectionRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class ApprovedDAppsViewModel @Inject constructor(
+class ConnectedDAppsViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dAppListDelegate: DAppListDelegate
 ) : StateViewModel<DAppListState>(), DAppListDelegate.ViewActions by dAppListDelegate {
 
-    private val approvedDAppsState: MutableStateFlow<List<AuthorizedDapp>> = MutableStateFlow(emptyList())
+    private val connectedDAppsState: MutableStateFlow<List<AuthorizedDapp>> = MutableStateFlow(emptyList())
     private val dAppsWithDetails: Flow<List<DAppWithDetails>> = combine(
-        approvedDAppsState,
+        connectedDAppsState,
         dAppListDelegate.dAppDataState
-    ) { approvedDApps, dAppData ->
-        approvedDApps.map { dApp ->
+    ) { connectedDApps, dAppData ->
+        connectedDApps.map { dApp ->
             DAppWithDetails(
                 dAppDefinitionAddress = dApp.dappDefinitionAddress,
                 hasDeposits = false,
@@ -46,27 +46,27 @@ class ApprovedDAppsViewModel @Inject constructor(
             dAppsWithDetailsState = dAppsWithDetails,
             observeAccountLockerDeposits = true
         )
-        loadApprovedDApps()
+        loadConnectedDApps()
     }
 
     override fun initialState(): DAppListState = DAppListState(isLoading = true)
 
     fun onRefresh() {
         _state.update { it.copy(isRefreshing = true) }
-        loadApprovedDApps()
+        loadConnectedDApps()
     }
 
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
 
-    private fun loadApprovedDApps() {
+    private fun loadConnectedDApps() {
         loadDAppsJob?.cancel()
         loadDAppsJob = dAppConnectionRepository.getAuthorizedDApps()
-            .onEach { approvedDApps ->
-                approvedDAppsState.update { approvedDApps }
-                dAppListDelegate.onDAppsLoaded(approvedDApps.map { it.dappDefinitionAddress })
-                _state.update { state -> state.copy(canRefresh = approvedDApps.isNotEmpty()) }
+            .onEach { connectedDApps ->
+                connectedDAppsState.update { connectedDApps }
+                dAppListDelegate.onDAppsLoaded(connectedDApps.map { it.dappDefinitionAddress })
+                _state.update { state -> state.copy(canRefresh = connectedDApps.isNotEmpty()) }
             }
             .catch { error ->
                 dAppListDelegate.onDAppsLoadingError(error)

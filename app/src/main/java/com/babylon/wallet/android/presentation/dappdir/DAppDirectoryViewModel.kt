@@ -22,7 +22,7 @@ class DAppDirectoryViewModel @Inject constructor() : StateViewModel<DAppDirector
         enum class Tab {
 
             All,
-            Approved
+            Connected
         }
     }
 }

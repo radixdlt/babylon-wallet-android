@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dappdir.approved
+package com.babylon.wallet.android.presentation.dappdir.connected
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -24,15 +24,15 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.radixdlt.sargon.AccountAddress
 
 @Composable
-fun ApprovedDAppsView(
+fun ConnectedDAppsView(
     modifier: Modifier = Modifier,
-    viewModel: ApprovedDAppsViewModel,
+    viewModel: ConnectedDAppsViewModel,
     onDAppClick: (AccountAddress) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val state: DAppListState by viewModel.state.collectAsStateWithLifecycle()
 
-    ApprovedDAppsContent(
+    ConnectedDAppsContent(
         modifier = modifier,
         state = state,
         onSearchTermUpdated = viewModel::onSearchTermUpdated,
@@ -47,7 +47,7 @@ fun ApprovedDAppsView(
 }
 
 @Composable
-private fun ApprovedDAppsContent(
+private fun ConnectedDAppsContent(
     state: DAppListState,
     modifier: Modifier = Modifier,
     onSearchTermUpdated: (String) -> Unit,
@@ -90,7 +90,7 @@ private fun ApprovedDAppsContent(
         DAppListView(
             padding = padding,
             state = state,
-            emptyStateTitle = stringResource(R.string.authorizedDapps_subtitle),
+            emptyStateTitle = stringResource(R.string.dappDirectory_connectedDApps_empty_description),
             onRefresh = onRefresh,
             onDAppClick = onDAppClick,
             onInfoClick = onInfoClick
@@ -100,11 +100,11 @@ private fun ApprovedDAppsContent(
 
 @Preview
 @Composable
-private fun ApprovedDAppsPreviewLight(
+private fun ConnectedDAppsPreviewLight(
     @PreviewParameter(DAppListPreviewProvider::class) state: DAppListState
 ) {
     RadixWalletPreviewTheme {
-        ApprovedDAppsContent(
+        ConnectedDAppsContent(
             state = state,
             onDAppClick = {},
             onRefresh = {},
@@ -120,11 +120,11 @@ private fun ApprovedDAppsPreviewLight(
 
 @Preview
 @Composable
-private fun ApprovedDAppsPreviewDark(
+private fun ConnectedDAppsPreviewDark(
     @PreviewParameter(DAppListPreviewProvider::class) state: DAppListState
 ) {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
-        ApprovedDAppsContent(
+        ConnectedDAppsContent(
             state = state,
             onDAppClick = {},
             onRefresh = {},

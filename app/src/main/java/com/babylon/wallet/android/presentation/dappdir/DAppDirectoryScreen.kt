@@ -33,8 +33,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dappdir.all.AllDAppsView
 import com.babylon.wallet.android.presentation.dappdir.all.AllDAppsViewModel
-import com.babylon.wallet.android.presentation.dappdir.approved.ApprovedDAppsView
-import com.babylon.wallet.android.presentation.dappdir.approved.ApprovedDAppsViewModel
+import com.babylon.wallet.android.presentation.dappdir.connected.ConnectedDAppsView
+import com.babylon.wallet.android.presentation.dappdir.connected.ConnectedDAppsViewModel
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -47,7 +47,7 @@ fun DAppDirectoryScreen(
     modifier: Modifier = Modifier,
     viewModel: DAppDirectoryViewModel,
     allDAppsViewModel: AllDAppsViewModel,
-    approvedDAppsViewModel: ApprovedDAppsViewModel,
+    connectedDAppsViewModel: ConnectedDAppsViewModel,
     onDAppClick: (address: AccountAddress) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -68,10 +68,10 @@ fun DAppDirectoryScreen(
                 )
             }
 
-            DAppDirectoryViewModel.State.Tab.Approved -> {
-                ApprovedDAppsView(
+            DAppDirectoryViewModel.State.Tab.Connected -> {
+                ConnectedDAppsView(
                     modifier = Modifier.padding(it),
-                    viewModel = approvedDAppsViewModel,
+                    viewModel = connectedDAppsViewModel,
                     onDAppClick = onDAppClick,
                     onInfoClick = onInfoClick
                 )
@@ -165,8 +165,8 @@ private fun DAppDirectoryContent(
 
 @Composable
 private fun DAppDirectoryViewModel.State.Tab.title() = when (this) {
-    DAppDirectoryViewModel.State.Tab.All -> stringResource(R.string.discover_view_all_dapps)
-    DAppDirectoryViewModel.State.Tab.Approved -> stringResource(R.string.discover_view_approved_dapps)
+    DAppDirectoryViewModel.State.Tab.All -> stringResource(R.string.dappDirectory_viewAllDApps)
+    DAppDirectoryViewModel.State.Tab.Connected -> stringResource(R.string.dappDirectory_viewConnectedDApps)
 }
 
 @Preview
@@ -205,7 +205,7 @@ class DAppDirectoryPreviewProvider : PreviewParameterProvider<DAppDirectoryViewM
                 selectedTab = DAppDirectoryViewModel.State.Tab.All
             ),
             DAppDirectoryViewModel.State(
-                selectedTab = DAppDirectoryViewModel.State.Tab.Approved
+                selectedTab = DAppDirectoryViewModel.State.Tab.Connected
             )
         )
 }
