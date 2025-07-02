@@ -26,8 +26,8 @@ plugins {
 
 ext {
     minSdk = 27
-    compileSdk = 34
-    targetSdk = 34
+    compileSdk = 35
+    targetSdk = 35
     internalVersionName = "babylon"
     kotlinCompilerExtensionVersion = "1.5.15"  // Get version from catalog
 }
