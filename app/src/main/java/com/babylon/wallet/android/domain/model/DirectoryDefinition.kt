@@ -31,4 +31,6 @@ data class DAppDirectory(
     fun findByAddress(address: AccountAddress): DirectoryDefinition? {
         return all.firstOrNull { it.dAppDefinitionAddress == address }
     }
+
+    fun allDefinitionAddresses(): List<AccountAddress> = all.map { it.dAppDefinitionAddress }
 }
