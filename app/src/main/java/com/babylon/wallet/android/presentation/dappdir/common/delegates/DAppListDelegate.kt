@@ -89,7 +89,7 @@ class DAppListDelegate @Inject constructor(
         observeNetworkGatewayChange()
     }
 
-    fun loadDAppDirectory() {
+    fun loadDAppDirectory(onSuccess: ((DAppDirectory) -> Unit)? = null) {
         loadDAppsJob?.cancel()
         loadDAppsJob = getDAppDirectoryUseCase(
             isRefreshing = _state.value.isRefreshing
@@ -98,6 +98,7 @@ class DAppListDelegate @Inject constructor(
                 onDAppsLoadingError(error)
             }.onSuccess { directory ->
                 directoryState.update { directory }
+                onSuccess?.invoke(directory)
             }
         }.flowOn(dispatcher).launchIn(viewModelScope)
     }
@@ -146,6 +147,14 @@ class DAppListDelegate @Inject constructor(
                 disableRefreshing()
             }.onSuccess { dApps ->
                 val dAppDefinitionWithDetails = dApps.associateBy { it.dAppAddress }
+                val dAppTags = { dApp: DApp ->
+                    if (dApp.tags.isEmpty()) {
+                        // If the dApp has no tags defined in metadata, we try to get them from the directory
+                        directoryState.value?.findByAddress(dApp.dAppAddress)?.tags?.toSet().orEmpty()
+                    } else {
+                        dApp.tags
+                    }
+                }
 
                 dAppsState.update { dAppDefinitionWithDetails }
 
@@ -158,7 +167,7 @@ class DAppListDelegate @Inject constructor(
                                 name = dApp.name.orEmpty(),
                                 iconUri = dApp.iconUrl,
                                 description = dApp.description,
-                                tags = dApp.tags
+                                tags = dAppTags(dApp)
                             )
                         } else {
                             DAppWithDetails.Details.Error
@@ -170,14 +179,8 @@ class DAppListDelegate @Inject constructor(
                     observeAccountLockerDeposits(dApps)
                 }
 
-                val availableTags = dApps.flatMap { dApp ->
-                    if (dApp.tags.isEmpty()) {
-                        // If the dApp has no tags defined in metadata, we try to get them from the directory
-                        directoryState.value?.findByAddress(dApp.dAppAddress)?.tags.orEmpty()
-                    } else {
-                        dApp.tags
-                    }
-                }.map { it.lowercase() }.sorted().toSet()
+                val availableTags = dApps.flatMap { dApp -> dAppTags(dApp) }
+                    .map { it.lowercase() }.sorted().toSet()
 
                 _filtersState.update { it.copy(availableTags = availableTags) }
             }

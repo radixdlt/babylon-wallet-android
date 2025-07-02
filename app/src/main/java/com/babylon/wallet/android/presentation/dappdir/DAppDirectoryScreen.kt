@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,7 +60,6 @@ fun DAppDirectoryScreen(
         when (state.selectedTab) {
             DAppDirectoryViewModel.State.Tab.All -> {
                 AllDAppsView(
-                    modifier = Modifier.padding(it),
                     viewModel = allDAppsViewModel,
                     onDAppClick = onDAppClick,
                     onInfoClick = onInfoClick
@@ -70,7 +68,6 @@ fun DAppDirectoryScreen(
 
             DAppDirectoryViewModel.State.Tab.Connected -> {
                 ConnectedDAppsView(
-                    modifier = Modifier.padding(it),
                     viewModel = connectedDAppsViewModel,
                     onDAppClick = onDAppClick,
                     onInfoClick = onInfoClick
@@ -85,7 +82,7 @@ private fun DAppDirectoryContent(
     modifier: Modifier = Modifier,
     state: DAppDirectoryViewModel.State,
     onTabSelected: (DAppDirectoryViewModel.State.Tab) -> Unit,
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -159,7 +156,13 @@ private fun DAppDirectoryContent(
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        content(padding)
+        Box(
+            modifier = Modifier.padding(
+                top = padding.calculateTopPadding()
+            )
+        ) {
+            content()
+        }
     }
 }
 

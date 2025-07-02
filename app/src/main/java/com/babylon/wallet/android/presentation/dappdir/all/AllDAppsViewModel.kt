@@ -30,7 +30,7 @@ class AllDAppsViewModel @Inject constructor(
             )
         }.onEach {
             it?.let { directory ->
-                dAppListDelegate.onDAppsLoaded(it.all.map { it.dAppDefinitionAddress })
+                dAppListDelegate.onDAppsLoaded(it.allDefinitionAddresses())
             }
         },
         dAppListDelegate.dAppDataState
@@ -63,7 +63,11 @@ class AllDAppsViewModel @Inject constructor(
 
     fun onRefresh() {
         _state.update { it.copy(isRefreshing = true) }
-        dAppListDelegate.loadDAppDirectory()
+        dAppListDelegate.loadDAppDirectory(
+            onSuccess = { directory ->
+                dAppListDelegate.onDAppsLoaded(directory.allDefinitionAddresses())
+            }
+        )
     }
 
     fun onMessageShown() {
