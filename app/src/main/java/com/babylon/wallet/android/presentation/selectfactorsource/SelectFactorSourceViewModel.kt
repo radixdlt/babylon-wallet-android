@@ -1,0 +1,188 @@
+package com.babylon.wallet.android.presentation.selectfactorsource
+
+import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.common.toUiItem
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.EntitiesLinkedToFactorSource
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.kind
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import rdx.works.profile.domain.GetProfileUseCase
+import javax.inject.Inject
+
+@HiltViewModel
+class SelectFactorSourceViewModel @Inject constructor(
+    getProfileUseCase: GetProfileUseCase,
+    private val getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
+    private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
+    private val selectFactorSourceIOHandler: SelectFactorSourceIOHandler,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+) : StateViewModel<SelectFactorSourceViewModel.State>(),
+    OneOffEventHandler<SelectFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
+
+    private val input = selectFactorSourceIOHandler.getInput() as SelectFactorSourceInput.WithContext
+
+    private var observeDataJob: Job? = null
+
+    private val data = getProfileUseCase.flow.map { it.factorSources }
+        .map { allFactorSources ->
+            Data(
+                allFactorSources = allFactorSources.groupBy { it.kind },
+                entitiesLinkedToFactorSourceById = allFactorSources.mapNotNull { factorSource ->
+                    val entities = getEntitiesLinkedToFactorSourceUseCase(factorSource) ?: return@mapNotNull null
+                    factorSource.id to entities
+                }.toMap(),
+                statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
+                    deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>()
+                )
+            )
+        }.flowOn(defaultDispatcher).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
+            initialValue = Data()
+        )
+
+    init {
+        initData(
+            unusableFactorSources = emptyList()
+        )
+    }
+
+    override fun initialState(): State = State(
+        isLoading = true,
+        context = input.context
+    )
+
+    fun onSelectFactorSource(card: FactorSourceCard) {
+        _state.update { state ->
+            state.copy(
+                items = state.items.map { item ->
+                    when (item) {
+                        is State.UiItem.CategoryHeader -> item
+                        is State.UiItem.Factor -> item.copy(
+                            selectable = item.selectable.copy(
+                                selected = item.selectable.data.id == card.id
+                            )
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun onAddFactorSourceClick() {
+        viewModelScope.launch { addFactorSourceProxy.addFactorSource() }
+    }
+
+    fun onBackClick() {
+        viewModelScope.launch {
+            selectFactorSourceIOHandler.setOutput(SelectFactorSourceOutput.Init)
+            sendEvent(Event.Dismiss)
+        }
+    }
+
+    fun onContinueClick() {
+        val selectedFactorSourceCard = checkNotNull(state.value.selectedFactorSourceCard)
+
+        viewModelScope.launch {
+            selectFactorSourceIOHandler.setOutput(SelectFactorSourceOutput.Id(selectedFactorSourceCard.id))
+
+            sendEvent(
+                Event.Complete(
+                    factorSourceId = selectedFactorSourceCard.id
+                )
+            )
+        }
+    }
+
+    private fun initData(unusableFactorSources: List<FactorSourceId>) {
+        observeDataJob?.cancel()
+        observeDataJob = viewModelScope.launch {
+            data.collect { data ->
+                _state.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        items = data.allFactorSources.map { (kind, factorSources) ->
+                            listOf(
+                                State.UiItem.CategoryHeader(
+                                    kind = kind
+                                )
+                            ).plus(
+                                factorSources.map { factorSource ->
+                                    State.UiItem.Factor(
+                                        selectable = factorSource.toUiItem(
+                                            entitiesLinkedToFactorSourceById = data.entitiesLinkedToFactorSourceById,
+                                            statusMessagesByFactorSourceId = data.statusMessagesByFactorSourceId,
+                                            unusableFactorSources = unusableFactorSources,
+                                        )
+                                    )
+                                }
+                            )
+                        }.flatten()
+                    )
+                }
+            }
+        }
+    }
+
+    private data class Data(
+        val allFactorSources: Map<FactorSourceKind, List<FactorSource>> = emptyMap(),
+        val entitiesLinkedToFactorSourceById: Map<FactorSourceId, EntitiesLinkedToFactorSource> = emptyMap(),
+        val statusMessagesByFactorSourceId: Map<FactorSourceId, List<FactorSourceStatusMessage>> = emptyMap()
+    )
+
+    data class State(
+        val isLoading: Boolean,
+        val context: SelectFactorSourceInput.Context,
+        val items: List<UiItem> = emptyList()
+    ) : UiState {
+
+        val selectedFactorSourceCard = items.filterIsInstance<UiItem.Factor>()
+            .firstOrNull { it.selectable.selected }?.selectable?.data
+        val isButtonEnabled: Boolean = selectedFactorSourceCard != null
+
+        sealed interface UiItem {
+
+            data class CategoryHeader(
+                val kind: FactorSourceKind
+            ) : UiItem
+
+            data class Factor(
+                val selectable: Selectable<FactorSourceCard>
+            ) : UiItem
+        }
+    }
+
+    sealed interface Event : OneOffEvent {
+
+        data object Dismiss : Event
+
+        data class Complete(
+            val factorSourceId: FactorSourceId
+        ) : Event
+    }
+}

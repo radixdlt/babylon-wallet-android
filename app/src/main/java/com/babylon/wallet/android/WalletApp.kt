@@ -28,6 +28,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.signatures.ge
 import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -40,6 +41,7 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
+import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
@@ -139,6 +141,10 @@ fun WalletApp(
             navController = navController,
             addFactorSourceEvents = mainViewModel.addFactorSourceEvents
         )
+        HandleSelectFactorSourceEvents(
+            navController = navController,
+            selectFactorSourceEvents = mainViewModel.selectFactorSourceEvents
+        )
         ObserveHighPriorityScreens(
             navController = navController,
             onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -216,8 +222,24 @@ private fun HandleAddFactorSourceEvents(
     addFactorSourceEvents: Flow<AppEvent.AddFactorSource>
 ) {
     LaunchedEffect(Unit) {
-        addFactorSourceEvents.collect { _ ->
-            navController.addFactorSource()
+        addFactorSourceEvents.collect { event ->
+            if (event.withKind) {
+                navController.addFactorSource()
+            } else {
+                navController.addFactorSourceKind()
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleSelectFactorSourceEvents(
+    navController: NavController,
+    selectFactorSourceEvents: Flow<AppEvent.SelectFactorSource>
+) {
+    LaunchedEffect(Unit) {
+        selectFactorSourceEvents.collect { _ ->
+            navController.selectFactorSource()
         }
     }
 }

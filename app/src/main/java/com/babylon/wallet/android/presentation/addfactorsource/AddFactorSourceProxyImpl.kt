@@ -16,13 +16,13 @@ class AddFactorSourceProxyImpl @Inject constructor(
     private var input: AddFactorSourceInput = AddFactorSourceInput.Init
     private val _output = MutableSharedFlow<AddFactorSourceOutput>()
 
-    override suspend fun addFactorSource(kind: FactorSourceKind): AddFactorSourceOutput.Id {
+    override suspend fun addFactorSource(kind: FactorSourceKind?): AddFactorSourceOutput.Id? {
         input = AddFactorSourceInput.WithKind(kind)
 
-        appEventBus.sendEvent(AppEvent.AddFactorSource)
+        appEventBus.sendEvent(AppEvent.AddFactorSource(withKind = kind != null))
         val result = _output.first()
 
-        return result as AddFactorSourceOutput.Id
+        return result as? AddFactorSourceOutput.Id
     }
 
     override fun getInput(): AddFactorSourceInput {

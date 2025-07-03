@@ -1,10 +1,7 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors
+package com.babylon.wallet.android.presentation.selectfactorsource
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,96 +13,82 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.title
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.FactorSourceCategoryHeaderView
-import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
-import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
-import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
-import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
-import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun SelectFactorsScreen(
+fun SelectFactorSourceScreen(
     modifier: Modifier = Modifier,
-    viewModel: SelectFactorsViewModel,
+    viewModel: SelectFactorSourceViewModel,
     onDismiss: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    toRegularAccess: () -> Unit
+    onComplete: (FactorSourceId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    SelectFactorsContent(
+    SelectFactorSourceContent(
         modifier = modifier,
         state = state,
-        onDismiss = onDismiss,
-        onFactorCheckedChange = viewModel::onFactorCheckedChange,
-        onInfoClick = onInfoClick,
-        onSkipClick = viewModel::onSkipClick,
-        onBuildShieldClick = viewModel::onBuildShieldClick
+        onBackClick = viewModel::onBackClick,
+        onSelectFactorSource = viewModel::onSelectFactorSource,
+        onContinueClick = viewModel::onContinueClick,
+        onAddFactorSourceClick = viewModel::onAddFactorSourceClick
     )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                SelectFactorsViewModel.Event.ToRegularAccess -> toRegularAccess()
+                SelectFactorSourceViewModel.Event.Dismiss -> onDismiss()
+                is SelectFactorSourceViewModel.Event.Complete -> onComplete(event.factorSourceId)
             }
         }
     }
 }
 
 @Composable
-private fun SelectFactorsContent(
+private fun SelectFactorSourceContent(
     modifier: Modifier = Modifier,
-    state: SelectFactorsViewModel.State,
-    onDismiss: () -> Unit,
-    onFactorCheckedChange: (FactorSourceCard, Boolean) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onSkipClick: () -> Unit,
-    onBuildShieldClick: () -> Unit
+    state: SelectFactorSourceViewModel.State,
+    onBackClick: () -> Unit,
+    onSelectFactorSource: (FactorSourceCard) -> Unit,
+    onContinueClick: () -> Unit,
+    onAddFactorSourceClick: () -> Unit
 ) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.empty),
-                onBackClick = onDismiss,
-                windowInsets = WindowInsets.statusBarsAndBanner
+                title = stringResource(R.string.empty),
+                onBackClick = onBackClick
             )
         },
         bottomBar = {
             RadixBottomBar(
-                onClick = onBuildShieldClick,
-                text = stringResource(R.string.shieldSetupSelectFactors_buildButtonTitle),
+                onClick = onContinueClick,
+                text = state.context.buttonTitle(),
                 enabled = state.isButtonEnabled
             )
         },
@@ -121,55 +104,36 @@ private fun SelectFactorsContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Image(
-                    painter = painterResource(id = DSR.ic_select_factors),
-                    contentDescription = null
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
                 Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = R.string.shieldSetupSelectFactors_title),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = "Select Security Factor", // TODO localise
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
                 Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = R.string.shieldSetupSelectFactors_subtitle)
-                        .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = state.context.description(),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
                 )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-
-                state.status?.let {
-                    StatusView(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        status = it,
-                        onInfoClick = onInfoClick
-                    )
-                }
             }
 
             items(state.items) {
                 when (val item = it) {
-                    is SelectFactorsViewModel.State.UiItem.CategoryHeader -> FactorSourceCategoryHeaderView(
+                    is SelectFactorSourceViewModel.State.UiItem.CategoryHeader -> FactorSourceCategoryHeaderView(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXLarge),
-                        kind = item.kind,
-                        message = stringResource(id = R.string.shieldSetupStatus_factorCannotBeUsedByItself)
-                            .takeIf { state.cannotBeUsedByItself(item) }
+                        kind = item.kind
                     )
-                    is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
+
+                    is SelectFactorSourceViewModel.State.UiItem.Factor -> SelectableSingleChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
-                        item = item.card,
-                        onCheckedChange = onFactorCheckedChange
+                        item = item.selectable,
+                        onSelect = onSelectFactorSource
                     )
                 }
             }
@@ -177,10 +141,9 @@ private fun SelectFactorsContent(
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-                RadixTextButton(
-                    text = stringResource(id = R.string.shieldSetupSelectFactors_skipButtonTitle),
-                    onClick = onSkipClick,
-                    textAlign = TextAlign.Center
+                RadixSecondaryButton(
+                    text = "Add security factor", // TODO localise
+                    onClick = onAddFactorSourceClick
                 )
             }
         }
@@ -188,67 +151,37 @@ private fun SelectFactorsContent(
 }
 
 @Composable
-private fun StatusView(
-    modifier: Modifier = Modifier,
-    status: SelectedPrimaryThresholdFactorsStatus,
-    onInfoClick: (GlossaryItem) -> Unit
-) {
-    when (status) {
-        SelectedPrimaryThresholdFactorsStatus.Suboptimal -> StatusMessageText(
-            modifier = modifier,
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_recommendedFactors),
-                type = StatusMessage.Type.WARNING
-            )
-        )
-        SelectedPrimaryThresholdFactorsStatus.Insufficient -> StatusMessageText(
-            modifier = modifier,
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_selectFactors_atLeastOneFactor),
-                type = StatusMessage.Type.ERROR
-            )
-        )
-        is SelectedPrimaryThresholdFactorsStatus.Invalid -> StatusMessageText(
-            modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
-                    boldStyle = SpanStyle(
-                        color = RadixTheme.colors.textButton,
-                        fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
-                        fontSize = RadixTheme.typography.body2Link.fontSize
-                    )
-                ),
-                type = StatusMessage.Type.ERROR
-            )
-        )
-        SelectedPrimaryThresholdFactorsStatus.Optimal -> return
-    }
+private fun SelectFactorSourceInput.Context.buttonTitle() = when (this) {
+    SelectFactorSourceInput.Context.CreateAccount -> "Create Account" // TODO localise
+}
+
+@Composable
+private fun SelectFactorSourceInput.Context.description() = when (this) {
+    SelectFactorSourceInput.Context.CreateAccount -> "Choose the security factor you will use to create the new Account." // TODO localise
 }
 
 @Composable
 @Preview
-@UsesSampleValues
-private fun SelectFactorsPreview(
-    @PreviewParameter(SelectFactorsPreviewProvider::class) state: SelectFactorsViewModel.State
+private fun SelectFactorSourcePreview(
+    @PreviewParameter(SelectFactorSourcePreviewProvider::class) state: SelectFactorSourceViewModel.State
 ) {
     RadixWalletPreviewTheme {
-        SelectFactorsContent(
+        SelectFactorSourceContent(
             state = state,
-            onDismiss = {},
-            onFactorCheckedChange = { _, _ -> },
-            onInfoClick = {},
-            onSkipClick = {},
-            onBuildShieldClick = {},
+            onBackClick = {},
+            onSelectFactorSource = {},
+            onContinueClick = {},
+            onAddFactorSourceClick = {}
         )
     }
 }
 
 @UsesSampleValues
-class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewModel.State> {
+class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorSourceViewModel.State> {
 
     val items = listOf(
-        SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
-        SelectFactorsViewModel.State.UiItem.Factor(
+        SelectFactorSourceViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
+        SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -258,10 +191,14 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     name = "My Phone",
                     kind = FactorSourceKind.DEVICE,
                     includeDescription = false,
-                    lastUsedOn = null,
+                    lastUsedOn = "Feb 21, 2025",
                     messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    ),
+                    personas = persistentListOf(
+                        Persona.sampleMainnet()
+                    ),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
                     isEnabled = true
@@ -269,8 +206,8 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                 selected = false
             )
         ),
-        SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.ARCULUS_CARD),
-        SelectFactorsViewModel.State.UiItem.Factor(
+        SelectFactorSourceViewModel.State.UiItem.CategoryHeader(FactorSourceKind.ARCULUS_CARD),
+        SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -291,8 +228,8 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                 selected = false
             )
         ),
-        SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET),
-        SelectFactorsViewModel.State.UiItem.Factor(
+        SelectFactorSourceViewModel.State.UiItem.CategoryHeader(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET),
+        SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -313,7 +250,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                 selected = false
             )
         ),
-        SelectFactorsViewModel.State.UiItem.Factor(
+        SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -334,8 +271,8 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                 selected = false
             )
         ),
-        SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.PASSWORD),
-        SelectFactorsViewModel.State.UiItem.Factor(
+        SelectFactorSourceViewModel.State.UiItem.CategoryHeader(FactorSourceKind.PASSWORD),
+        SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -356,8 +293,8 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                 selected = true
             )
         ),
-        SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.OFF_DEVICE_MNEMONIC),
-        SelectFactorsViewModel.State.UiItem.Factor(
+        SelectFactorSourceViewModel.State.UiItem.CategoryHeader(FactorSourceKind.OFF_DEVICE_MNEMONIC),
+        SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
@@ -380,15 +317,16 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         )
     )
 
-    override val values: Sequence<SelectFactorsViewModel.State>
+    override val values: Sequence<SelectFactorSourceViewModel.State>
         get() = sequenceOf(
-            SelectFactorsViewModel.State(
-                items = items,
-                status = SelectedPrimaryThresholdFactorsStatus.Invalid(
-                    reason = SelectedPrimaryThresholdFactorsStatusInvalidReason.Other(
-                        underlying = SecurityShieldBuilderRuleViolation.PrimaryRoleMustHaveAtLeastOneFactor()
-                    )
-                )
+            SelectFactorSourceViewModel.State(
+                isLoading = false,
+                context = SelectFactorSourceInput.Context.CreateAccount,
+                items = items
+            ),
+            SelectFactorSourceViewModel.State(
+                isLoading = true,
+                context = SelectFactorSourceInput.Context.CreateAccount
             )
         )
 }

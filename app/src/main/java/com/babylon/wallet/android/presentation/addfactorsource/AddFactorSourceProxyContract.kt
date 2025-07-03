@@ -5,7 +5,7 @@ import com.radixdlt.sargon.FactorSourceKind
 
 interface AddFactorSourceProxy {
 
-    suspend fun addFactorSource(kind: FactorSourceKind): AddFactorSourceOutput.Id
+    suspend fun addFactorSource(kind: FactorSourceKind? = null): AddFactorSourceOutput.Id?
 }
 
 interface AddFactorSourceIOHandler {
@@ -17,7 +17,7 @@ interface AddFactorSourceIOHandler {
 
 sealed interface AddFactorSourceInput {
 
-    data class WithKind(val kind: FactorSourceKind) : AddFactorSourceInput
+    data class WithKind(val kind: FactorSourceKind?) : AddFactorSourceInput
 
     data object Init : AddFactorSourceInput
 }

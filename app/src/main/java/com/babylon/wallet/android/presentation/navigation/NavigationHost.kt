@@ -355,12 +355,8 @@ fun NavigationHost(
             onContinueClick = { accountId, requestSource ->
                 navController.createAccountConfirmationScreen(
                     accountId = accountId,
-                    requestSource = requestSource
-                        ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
+                    requestSource = requestSource ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
                 )
-            },
-            onAddLedgerDevice = {
-                navController.chooseLedger()
             }
         )
         chooseLedger(

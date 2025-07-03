@@ -8,10 +8,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
@@ -168,6 +170,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
             }
         )
         securityShieldsNavGraph(navController)
+        addFactorSourceKind(navController)
         addFactorSource(navController)
+        selectFactorSource(
+            onDismiss = navController::popBackStack,
+            onComplete = { navController.popBackStack() }
+        )
     }
 }

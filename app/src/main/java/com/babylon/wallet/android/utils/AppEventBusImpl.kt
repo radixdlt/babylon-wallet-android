@@ -78,7 +78,9 @@ sealed interface AppEvent {
         data object SpotCheck : AccessFactorSources
     }
 
-    data object AddFactorSource : AppEvent
+    data class AddFactorSource(val withKind: Boolean) : AppEvent
+
+    data object SelectFactorSource : AppEvent
 
     sealed class Status : AppEvent {
 

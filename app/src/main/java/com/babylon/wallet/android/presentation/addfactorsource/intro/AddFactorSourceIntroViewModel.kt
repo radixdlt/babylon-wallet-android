@@ -16,7 +16,7 @@ class AddFactorSourceIntroViewModel @Inject constructor(
     private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
 
     override fun initialState(): State = State(
-        factorSourceKind = input.kind
+        factorSourceKind = checkNotNull(input.kind)
     )
 
     data class State(
