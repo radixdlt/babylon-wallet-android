@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -38,7 +37,6 @@ fun OffDeviceMnemonicsScreen(
     viewModel: OffDeviceMnemonicsViewModel,
     onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToAddOffDeviceMnemonic: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -57,7 +55,6 @@ fun OffDeviceMnemonicsScreen(
         offDeviceMnemonicFactorSources = state.offDeviceMnemonicFactorSources,
         onOffDeviceMnemonicFactorSourceClick = viewModel::onOffDeviceMnemonicFactorSourceClick,
         onAddOffDeviceMnemonicClick = onNavigateToAddOffDeviceMnemonic,
-        onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
 }
@@ -68,7 +65,6 @@ private fun OffDeviceMnemonicsContent(
     offDeviceMnemonicFactorSources: PersistentList<FactorSourceCard>,
     onOffDeviceMnemonicFactorSourceClick: (FactorSourceId) -> Unit,
     onAddOffDeviceMnemonicClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -89,14 +85,11 @@ private fun OffDeviceMnemonicsContent(
             HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
-                mainFactorSource = null,
                 factorSources = offDeviceMnemonicFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
-                factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 onFactorSourceClick = onOffDeviceMnemonicFactorSourceClick,
-                onAddFactorSourceClick = onAddOffDeviceMnemonicClick,
-                onInfoClick = onInfoClick
+                onAddFactorSourceClick = onAddOffDeviceMnemonicClick
             )
         }
     }
@@ -160,8 +153,7 @@ private fun OffDeviceMnemonicsPreview() {
             ),
             onOffDeviceMnemonicFactorSourceClick = {},
             onAddOffDeviceMnemonicClick = {},
-            onBackClick = {},
-            onInfoClick = {}
+            onBackClick = {}
         )
     }
 }

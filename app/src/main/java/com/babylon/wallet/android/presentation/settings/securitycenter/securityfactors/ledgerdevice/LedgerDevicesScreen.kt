@@ -120,7 +120,6 @@ fun LedgerDevicesScreen(
                     onLedgerFactorSourceClick = viewModel::onLedgerFactorSourceClick,
                     onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
                     isNewLinkedConnectorConnected = state.isNewLinkedConnectorConnected,
-                    onInfoClick = onInfoClick,
                     onBackClick = onBackClick
                 )
             }
@@ -176,7 +175,6 @@ private fun LedgerDevicesContent(
     isNewLinkedConnectorConnected: Boolean,
     onLedgerFactorSourceClick: (FactorSourceId) -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
@@ -198,10 +196,8 @@ private fun LedgerDevicesContent(
             HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
-                mainFactorSource = null,
                 factorSources = ledgerFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_ledgerDescription,
-                factorSourceKind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 addFactorSourceButtonContent = {
                     RadixSecondaryButton(
                         modifier = Modifier
@@ -214,8 +210,7 @@ private fun LedgerDevicesContent(
                         enabled = isNewLinkedConnectorConnected
                     )
                 },
-                onFactorSourceClick = onLedgerFactorSourceClick,
-                onInfoClick = onInfoClick
+                onFactorSourceClick = onLedgerFactorSourceClick
             )
         }
     }
@@ -283,7 +278,6 @@ fun LedgerDevicesScreenPreview() {
             isNewLinkedConnectorConnected = true,
             onLedgerFactorSourceClick = {},
             onAddLedgerDeviceClick = {},
-            onInfoClick = {},
             onBackClick = {}
         )
     }
@@ -298,7 +292,6 @@ fun LedgerDevicesEmptyScreenPreview() {
             isNewLinkedConnectorConnected = true,
             onLedgerFactorSourceClick = {},
             onAddLedgerDeviceClick = {},
-            onInfoClick = {},
             onBackClick = {}
         )
     }

@@ -114,7 +114,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     )
                 )
             },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )
         ledgerDevices(
@@ -125,19 +124,16 @@ fun NavGraphBuilder.securityCenterNavGraph(
         arculusCards(
             onNavigateToArculusFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddArculusCard = { },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         offDeviceMnemonics(
             onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddOffDeviceMnemonic = { },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         passwords(
             onNavigateToPasswordFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToAddPassword = { },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         factorSourceDetails(

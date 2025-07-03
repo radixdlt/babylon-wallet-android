@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -38,7 +37,6 @@ fun ArculusCardsScreen(
     viewModel: ArculusCardsViewModel,
     onNavigateToArculusFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToAddArculusCard: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -57,7 +55,6 @@ fun ArculusCardsScreen(
         arculusFactorSources = state.arculusFactorSources,
         onArculusFactorSourceClick = viewModel::onArculusFactorSourceClick,
         onAddArculusCardClick = onNavigateToAddArculusCard,
-        onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
 }
@@ -68,7 +65,6 @@ private fun ArculusCardsContent(
     arculusFactorSources: PersistentList<FactorSourceCard>,
     onArculusFactorSourceClick: (FactorSourceId) -> Unit,
     onAddArculusCardClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -89,14 +85,11 @@ private fun ArculusCardsContent(
             HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
-                mainFactorSource = null,
                 factorSources = arculusFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_arculusCardDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_arculusCardAdd,
-                factorSourceKind = FactorSourceKind.ARCULUS_CARD,
                 onFactorSourceClick = onArculusFactorSourceClick,
-                onAddFactorSourceClick = onAddArculusCardClick,
-                onInfoClick = onInfoClick
+                onAddFactorSourceClick = onAddArculusCardClick
             )
         }
     }
@@ -160,8 +153,7 @@ fun ArculusCardsScreenPreview() {
             ),
             onArculusFactorSourceClick = {},
             onAddArculusCardClick = {},
-            onBackClick = {},
-            onInfoClick = {}
+            onBackClick = {}
         )
     }
 }

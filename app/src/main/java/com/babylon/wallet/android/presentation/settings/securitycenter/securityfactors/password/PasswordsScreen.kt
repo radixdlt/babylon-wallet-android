@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -38,7 +37,6 @@ fun PasswordsScreen(
     viewModel: PasswordsViewModel,
     onNavigateToPasswordFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToAddPassword: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -57,7 +55,6 @@ fun PasswordsScreen(
         passwordFactorSources = state.passwordFactorSources,
         onPasswordFactorSourceClick = viewModel::onPasswordFactorSourceClick,
         onAddPasswordClick = onNavigateToAddPassword,
-        onInfoClick = onInfoClick,
         onBackClick = onBackClick,
     )
 }
@@ -68,7 +65,6 @@ private fun PasswordsContent(
     passwordFactorSources: PersistentList<FactorSourceCard>,
     onPasswordFactorSourceClick: (FactorSourceId) -> Unit,
     onAddPasswordClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -89,14 +85,11 @@ private fun PasswordsContent(
             HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
-                mainFactorSource = null,
                 factorSources = passwordFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_passwordDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_passwordAdd,
-                factorSourceKind = FactorSourceKind.PASSWORD,
                 onFactorSourceClick = onPasswordFactorSourceClick,
-                onAddFactorSourceClick = onAddPasswordClick,
-                onInfoClick = onInfoClick
+                onAddFactorSourceClick = onAddPasswordClick
             )
         }
     }
@@ -160,8 +153,7 @@ private fun PasswordsScreenPreview() {
             ),
             onPasswordFactorSourceClick = {},
             onAddPasswordClick = {},
-            onBackClick = {},
-            onInfoClick = {}
+            onBackClick = {}
         )
     }
 }
