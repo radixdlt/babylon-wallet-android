@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -40,8 +40,8 @@ fun AddFactorSourceIntroScreen(
     modifier: Modifier = Modifier,
     viewModel: AddFactorSourceIntroViewModel,
     onDismiss: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onContinueClick: (FactorSourceKind) -> Unit
+    onAddDeviceFactorSource: () -> Unit,
+    onAddLedgerFactorSource: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -49,9 +49,18 @@ fun AddFactorSourceIntroScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
-        onInfoClick = onInfoClick,
-        onContinueClick = { onContinueClick(state.factorSourceKind) }
+        onContinueClick = viewModel::onContinueClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                AddFactorSourceIntroViewModel.Event.Dismiss -> onDismiss()
+                is AddFactorSourceIntroViewModel.Event.AddDeviceFactorSource -> onAddDeviceFactorSource()
+                AddFactorSourceIntroViewModel.Event.AddLedgerFactorSource -> onAddLedgerFactorSource()
+            }
+        }
+    }
 }
 
 @Composable
@@ -59,8 +68,6 @@ private fun AddFactorSourceIntroContent(
     modifier: Modifier = Modifier,
     state: AddFactorSourceIntroViewModel.State,
     onDismiss: () -> Unit,
-    @Suppress("UNUSED_PARAMETER")
-    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit
 ) {
     Scaffold(
@@ -114,13 +121,6 @@ private fun AddFactorSourceIntroContent(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-//            InfoButton(
-//                text = state.factorSourceKind.infoButtonTitle(),
-//                onClick = { onInfoClick(state.factorSourceKind.infoGlossaryItem()) }
-//            )
-
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         }
     }
@@ -154,7 +154,6 @@ private fun AddFactorSourceIntroPreview(
         AddFactorSourceIntroContent(
             state = state,
             onDismiss = {},
-            onInfoClick = {},
             onContinueClick = {}
         )
     }
