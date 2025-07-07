@@ -58,8 +58,9 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorScreen
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorUiState
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.ImportLegacyWalletUiState.Page
@@ -70,7 +71,6 @@ import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
-import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem

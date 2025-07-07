@@ -20,21 +20,24 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
 ) {
 
     suspend fun forDeviceFactorSources(
-        deviceFactorSources: List<FactorSource.Device>
+        deviceFactorSources: List<FactorSource.Device>,
+        ignoreIfNoEntitiesLinked: Boolean
     ): Map<FactorSourceId, List<FactorSourceStatusMessage>> = withContext(defaultDispatcher) {
         deviceFactorSources.mapNotNull { deviceFactorSource ->
             val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                 ?: return@mapNotNull null
             deviceFactorSource.id to forDeviceFactorSource(
                 deviceFactorSourceId = deviceFactorSource.id,
-                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource,
+                ignoreIfNoEntitiesLinked = ignoreIfNoEntitiesLinked
             )
         }.toMap()
     }
 
     suspend fun forDeviceFactorSource(
         deviceFactorSourceId: FactorSourceId,
-        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource
+        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource,
+        ignoreIfNoEntitiesLinked: Boolean
     ): List<FactorSourceStatusMessage> {
         val isDeviceFactorSourceLinkedToAnyEntities = listOf(
             entitiesLinkedToDeviceFactorSource.accounts,
@@ -45,7 +48,7 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
 
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
 
-        return if (isDeviceFactorSourceLinkedToAnyEntities) {
+        return if (!ignoreIfNoEntitiesLinked && isDeviceFactorSourceLinkedToAnyEntities) {
             val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
             listOf(deviceFactorSourceIntegrity.toMessage())
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check

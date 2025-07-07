@@ -163,4 +163,6 @@ sealed interface AppEvent {
                 get() = preAuthorizationId.bech32EncodedTxId
         }
     }
+
+    data object ConnectorLinked : AppEvent
 }

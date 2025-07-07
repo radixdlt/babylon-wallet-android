@@ -1,13 +1,11 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.intro
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -21,10 +19,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+
+@Composable
+fun LinkConnectorIntroScreen(
+    modifier: Modifier = Modifier,
+    onLinkConnectorClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    LinkConnectorScreen(
+        modifier = modifier,
+        onLinkConnectorClick = onLinkConnectorClick,
+        onCloseClick = onDismiss
+    )
+}
 
 @Composable
 fun LinkConnectorScreen(
@@ -36,13 +50,19 @@ fun LinkConnectorScreen(
     BackHandler(onBack = onCloseClick)
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = com.babylon.wallet.android.R.string.empty),
                 onBackClick = onCloseClick,
                 backIconType = backIconType,
-                windowInsets = WindowInsets.statusBarsAndBanner
+                windowInsets = WindowInsets.Companion.statusBarsAndBanner
+            )
+        },
+        bottomBar = {
+            RadixBottomBar(
+                text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                onClick = onLinkConnectorClick
             )
         },
         containerColor = RadixTheme.colors.background
@@ -77,14 +97,6 @@ fun LinkConnectorScreen(
                 color = RadixTheme.colors.text,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-            RadixPrimaryButton(
-                text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
-                onClick = onLinkConnectorClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
             )
         }
     }

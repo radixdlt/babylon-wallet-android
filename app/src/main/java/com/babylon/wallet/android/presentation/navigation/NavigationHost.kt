@@ -72,6 +72,9 @@ import com.babylon.wallet.android.presentation.rootdetection.RootDetectionConten
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.addLinkConnector
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.LINK_CONNECTOR_INTR_ROUTE
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.linkConnectorIntro
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
@@ -711,6 +714,14 @@ fun NavigationHost(
         )
         blogPostsScreen(
             onBackClick = { navController.popBackStack() }
+        )
+        linkConnectorIntro(
+            onDismiss = navController::popBackStack,
+            onLinkConnectorClick = navController::addLinkConnector
+        )
+        addLinkConnector(
+            onDismiss = { navController.popBackStack(LINK_CONNECTOR_INTR_ROUTE, true) },
+            onInfoClick = navController::infoDialog
         )
     }
 }

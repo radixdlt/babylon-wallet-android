@@ -25,13 +25,13 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorScreen
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorViewModel
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
-import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard

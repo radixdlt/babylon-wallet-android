@@ -60,7 +60,8 @@ class ChooseFactorSourceViewModel @Inject constructor(
                     factorSource.id to entities
                 }.toMap(),
                 statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
-                    deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>()
+                    deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>(),
+                    ignoreIfNoEntitiesLinked = true
                 )
             )
         }.flowOn(defaultDispatcher).stateIn(

@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
-import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceOutput
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,7 +12,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -22,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddFactorSourceIntroViewModel @Inject constructor(
-    private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
+    addFactorSourceIOHandler: AddFactorSourceIOHandler,
     private val p2pLinksRepository: P2PLinksRepository,
     private val appEventBus: AppEventBus
 ) : StateViewModel<AddFactorSourceIntroViewModel.State>(),
@@ -56,20 +54,9 @@ class AddFactorSourceIntroViewModel @Inject constructor(
         if (hasAtLeastOneLinkedConnector) {
             sendEvent(Event.AddLedgerFactorSource)
         } else {
-            // TODO link connector flow
-            return
-        }
-
-        val event = appEventBus.events
-            .filterIsInstance<AppEvent.AccessFactorSources.SelectLedgerOutcome>()
-            .first()
-
-        when (event) {
-            is AppEvent.AccessFactorSources.SelectLedgerOutcome.Rejected -> null
-            is AppEvent.AccessFactorSources.SelectLedgerOutcome.Selected -> {
-                addFactorSourceIOHandler.setOutput(AddFactorSourceOutput.Id(event.ledgerFactorSource.value.id.asGeneral()))
-                sendEvent(Event.Dismiss)
-            }
+            sendEvent(Event.AddLinkConnector)
+            appEventBus.events.filterIsInstance<AppEvent.ConnectorLinked>().first()
+            sendEvent(Event.AddLedgerFactorSource)
         }
     }
 
@@ -82,6 +69,8 @@ class AddFactorSourceIntroViewModel @Inject constructor(
         data object Dismiss : Event
 
         data object AddDeviceFactorSource : Event
+
+        data object AddLinkConnector : Event
 
         data object AddLedgerFactorSource : Event
     }
