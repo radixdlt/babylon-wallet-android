@@ -14,16 +14,19 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.extensions.SharedConstants
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.init
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,7 +39,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
 ) : StateViewModel<SetFactorSourceNameViewModel.State>(),
     OneOffEventHandler<SetFactorSourceNameViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val args = SetFactorNameArgs(savedStateHandle)
+    private val args = SetFactorNameArgs.from(savedStateHandle)
     private lateinit var addedFactorSourceId: FactorSourceId
 
     override fun initialState(): State = State(args.factorSourceKind)
@@ -46,11 +49,23 @@ class SetFactorSourceNameViewModel @Inject constructor(
 
         viewModelScope.launch {
             sargonOsManager.callSafely(dispatcher) {
-                addNewMnemonicFactorSource(
-                    factorSourceKind = args.factorSourceKind,
-                    mnemonicWithPassphrase = args.mnemonicWithPassphrase,
-                    name = state.value.name
-                )
+                when (args) {
+                    is SetFactorNameArgs.ForLedger -> {
+                        FactorSource.Ledger.init(
+                            id = args.factorSourceId,
+                            model = args.ledgerModel,
+                            name = state.value.name
+                        ).also { factorSource ->
+                            addFactorSource(factorSource)
+                        }.id
+                    }
+
+                    is SetFactorNameArgs.WithMnemonic -> addNewMnemonicFactorSource(
+                        factorSourceKind = args.factorSourceKind,
+                        mnemonicWithPassphrase = args.mnemonicWithPassphrase,
+                        name = state.value.name
+                    )
+                }
             }.onSuccess { factorSourceId ->
                 addedFactorSourceId = factorSourceId
 

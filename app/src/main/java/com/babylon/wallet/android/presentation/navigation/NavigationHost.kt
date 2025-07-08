@@ -28,6 +28,8 @@ import com.babylon.wallet.android.presentation.account.settings.devsettings.devS
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
+import com.babylon.wallet.android.presentation.addfactorsource.identify.identifyFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorName
 import com.babylon.wallet.android.presentation.boot.bootError
 import com.babylon.wallet.android.presentation.boot.navigateToBootError
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
@@ -722,6 +724,12 @@ fun NavigationHost(
         addLinkConnector(
             onDismiss = { navController.popBackStack(LINK_CONNECTOR_INTR_ROUTE, true) },
             onInfoClick = navController::infoDialog
+        )
+        identifyFactorSource(
+            onDismiss = navController::popBackStack,
+            onSetLedgerName = { factorSourceId, ledgerModel ->
+                navController.setFactorName(factorSourceId, ledgerModel)
+            }
         )
     }
 }

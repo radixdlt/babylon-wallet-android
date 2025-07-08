@@ -7,8 +7,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase.deviceSeedPhrase
+import com.babylon.wallet.android.presentation.addfactorsource.identify.identifyFactorSource
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.linkConnectorIntro
 
 const val ROUTE_ADD_FACTOR_INTRO = "add_factor_intro"
@@ -31,7 +31,7 @@ fun NavGraphBuilder.addFactorIntro(
             viewModel = hiltViewModel(),
             onDismiss = navController::popBackStack,
             onAddDeviceFactorSource = navController::deviceSeedPhrase,
-            onAddLedgerFactorSource = navController::chooseLedger, // TODO show identifying factor bottom sheet
+            onAddLedgerFactorSource = navController::identifyFactorSource,
             onAddLinkConnector = navController::linkConnectorIntro
         )
     }
