@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.addfactorsource.identify
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -83,7 +84,11 @@ class IdentifyFactorSourceViewModel @Inject constructor(
         }.onFailure { error ->
             _state.update { state ->
                 state.copy(
-                    errorMessage = UiMessage.ErrorMessage(error),
+                    errorMessage = if (error is FailedToGetDeviceId) {
+                        null
+                    } else {
+                        UiMessage.ErrorMessage(error)
+                    },
                     isInProgress = false
                 )
             }

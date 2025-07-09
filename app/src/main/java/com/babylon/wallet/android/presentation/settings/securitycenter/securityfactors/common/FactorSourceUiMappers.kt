@@ -42,11 +42,12 @@ fun FactorSource.toUiItem(
     } else {
         emptyList()
     }
+    val isFactorSourceLost = messages.contains(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource)
     val isSelected = id in alreadySelectedFactorSources
 
     return Selectable(
         toFactorSourceCard(
-            isEnabled = !isSelected && messages.isEmpty() && id !in unusableFactorSources,
+            isEnabled = !isSelected && !isFactorSourceLost && id !in unusableFactorSources,
             messages = (messages + cannotBeUsedHereMessage).toPersistentList(),
             accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
             personas = linkedEntities?.personas.orEmpty().toPersistentList(),

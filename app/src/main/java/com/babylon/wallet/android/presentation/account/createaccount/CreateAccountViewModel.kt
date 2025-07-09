@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.factorSourceById
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
@@ -79,7 +80,9 @@ class CreateAccountViewModel @Inject constructor(
                 if (!walletCreated) return@launch
             }
 
-            val factorSourceToCreateAccount = resolveFactorSource() ?: run {
+            val isFirstTime = args.requestSource?.isFirstTime() == true
+
+            val factorSourceToCreateAccount = resolveFactorSource(isFirstTime) ?: run {
                 _state.update { it.copy(isCreatingAccount = false) }
                 return@launch
             }
@@ -87,7 +90,7 @@ class CreateAccountViewModel @Inject constructor(
             val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
             val name = DisplayName.init(state.value.accountName.trim())
 
-            if (args.requestSource?.isFirstTime() == true) {
+            if (isFirstTime) {
                 firstAccountCreationStatusManager.onFirstAccountCreationInProgress()
             }
 
@@ -103,7 +106,7 @@ class CreateAccountViewModel @Inject constructor(
                 Timber.w(error)
                 _state.update { it.copy(isCreatingAccount = false) }
 
-                if (args.requestSource?.isFirstTime() == true) {
+                if (isFirstTime) {
                     firstAccountCreationStatusManager.onFirstAccountCreationAborted()
                 }
             }
@@ -176,11 +179,14 @@ class CreateAccountViewModel @Inject constructor(
         }
     }
 
-    private suspend fun resolveFactorSource(): FactorSource? =
+    private suspend fun resolveFactorSource(isFirstTime: Boolean): FactorSource? = if (isFirstTime) {
+        getProfileUseCase().mainBabylonFactorSource
+    } else {
         selectFactorSourceProxy.selectFactorSource(SelectFactorSourceInput.Context.CreateAccount)
             ?.let { factorSourceId ->
                 getProfileUseCase().factorSourceById(factorSourceId.value)
             }
+    }
 
     private suspend fun onAccountCreated(account: Account) {
         if (args.networkIdToSwitch != null) {

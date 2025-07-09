@@ -79,24 +79,15 @@ class SelectFactorSourceViewModel @Inject constructor(
     )
 
     fun onSelectFactorSource(card: FactorSourceCard) {
-        _state.update { state ->
-            state.copy(
-                items = state.items.map { item ->
-                    when (item) {
-                        is State.UiItem.CategoryHeader -> item
-                        is State.UiItem.Factor -> item.copy(
-                            selectable = item.selectable.copy(
-                                selected = item.selectable.data.id == card.id
-                            )
-                        )
-                    }
-                }
-            )
-        }
+        setSelectedFactorSource(card.id)
     }
 
     fun onAddFactorSourceClick() {
-        viewModelScope.launch { addFactorSourceProxy.addFactorSource() }
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource()?.value?.let { addedFactorSourceId ->
+                setSelectedFactorSource(addedFactorSourceId)
+            }
+        }
     }
 
     fun onBackClick() {
@@ -147,6 +138,23 @@ class SelectFactorSourceViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun setSelectedFactorSource(id: FactorSourceId) {
+        _state.update { state ->
+            state.copy(
+                items = state.items.map { item ->
+                    when (item) {
+                        is State.UiItem.CategoryHeader -> item
+                        is State.UiItem.Factor -> item.copy(
+                            selectable = item.selectable.copy(
+                                selected = item.selectable.data.id == id
+                            )
+                        )
+                    }
+                }
+            )
         }
     }
 
