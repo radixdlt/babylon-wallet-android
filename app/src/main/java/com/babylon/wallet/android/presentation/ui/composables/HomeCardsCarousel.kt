@@ -250,7 +250,7 @@ private fun HomeCard.title() = buildAnnotatedString {
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
         is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
-        HomeCard.JoinRadixRewards -> "Join Radix Rewards" // TODO crowdin
+        HomeCard.JoinRadixRewards -> stringResource(id = R.string.homePageCarousel_joinRadixRewards_title)
     }
     append(title)
 
@@ -266,7 +266,7 @@ private fun HomeCard.description() = when (this) {
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
     is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
-    HomeCard.JoinRadixRewards -> "Earn weekly Season Points by engaging in genuine on-chain activities." // TODO crowdin
+    HomeCard.JoinRadixRewards -> stringResource(id = R.string.homePageCarousel_joinRadixRewards_text)
 }
 
 @Composable
