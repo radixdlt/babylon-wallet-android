@@ -2,8 +2,8 @@
 
 package com.babylon.wallet.android.presentation.ui.composables
 
-import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,8 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.presentation.wallet.cards.opensExternalLink
@@ -115,13 +119,13 @@ private fun CardView(
                 .fillMaxSize()
                 .throttleClickable(onClick = onClick)
         ) {
-            val (titleView, descriptionView, endGraphicView, endIconView, closeIconView) = createRefs()
+            val (titleView, descriptionView, bgGraphicView, endIconView, closeIconView) = createRefs()
             createVerticalChain(titleView, descriptionView, chainStyle = ChainStyle.Packed)
 
-            val endGraphicRes = card.EndGraphicRes()
-            endGraphicRes?.let { painter ->
+            val backgroundPainter = card.backgroundPainter()
+            backgroundPainter?.let { painter ->
                 Image(
-                    modifier = Modifier.constrainAs(endGraphicView) {
+                    modifier = Modifier.constrainAs(bgGraphicView) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                         end.linkTo(parent.end)
@@ -133,21 +137,23 @@ private fun CardView(
                     painter = painter,
                     contentDescription = null,
                     alignment = Alignment.CenterEnd,
-                    contentScale = ContentScale.FillHeight
+                    contentScale = ContentScale.Crop
                 )
             }
-            val titleWidthPercent = remember(endGraphicRes) {
-                if (endGraphicRes == null) {
-                    // More content fits as there is no overlap with the graphic
-                    0.7f
-                } else {
-                    0.63f
+            val titleWidthPercent = remember(card) {
+                // More content fits as there is no overlap with the graphic
+                when (card) {
+                    HomeCard.Connector,
+                    HomeCard.ContinueRadQuest,
+                    HomeCard.StartRadQuest -> 0.63f
+
+                    is HomeCard.Dapp -> 0.7f
+                    HomeCard.JoinRadixRewards -> 0.8f
                 }
             }
 
-            val titleStyle = RadixTheme.typography.body1Header
-                .copy(color = RadixTheme.colors.text)
-            Text(
+            val titleStyle = card.titleStyle()
+            Box(
                 modifier = Modifier
                     .constrainAs(titleView) {
                         linkTo(
@@ -159,30 +165,33 @@ private fun CardView(
                         width = Dimension.percent(titleWidthPercent)
                         height = Dimension.wrapContent
                     }
-                    .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                text = card.title(),
-                style = titleStyle,
-                inlineContent = mapOf(
-                    INLINE_LINK_ICON to InlineTextContent(
-                        placeholder = Placeholder(
-                            width = titleStyle.fontSize,
-                            height = titleStyle.fontSize,
-                            placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom
-                        )
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .width(14.dp)
-                                .height(12.dp),
-                            painter = painterResource(id = R.drawable.ic_external_link),
-                            contentDescription = null,
-                            tint = RadixTheme.colors.iconSecondary
-                        )
-                    }
-                ),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+                    .padding(bottom = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    text = card.title(),
+                    style = titleStyle,
+                    inlineContent = mapOf(
+                        INLINE_LINK_ICON to InlineTextContent(
+                            placeholder = Placeholder(
+                                width = titleStyle.fontSize,
+                                height = titleStyle.fontSize,
+                                placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom
+                            )
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .width(14.dp)
+                                    .height(12.dp),
+                                painter = painterResource(id = R.drawable.ic_external_link),
+                                contentDescription = null,
+                                tint = card.iconColor()
+                            )
+                        }
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
             Text(
                 modifier = Modifier.constrainAs(descriptionView) {
@@ -200,7 +209,7 @@ private fun CardView(
                 },
                 text = card.description(),
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.text,
+                color = card.textColor(),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -228,7 +237,7 @@ private fun CardView(
                     },
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                 contentDescription = null,
-                tint = RadixTheme.colors.iconSecondary
+                tint = card.iconColor()
             )
         }
     }
@@ -241,6 +250,7 @@ private fun HomeCard.title() = buildAnnotatedString {
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
         is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
+        HomeCard.JoinRadixRewards -> "Join Radix Rewards" // TODO crowdin
     }
     append(title)
 
@@ -256,6 +266,7 @@ private fun HomeCard.description() = when (this) {
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
     is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
+    HomeCard.JoinRadixRewards -> "Earn weekly Season Points by engaging in genuine on-chain activities." // TODO crowdin
 }
 
 @Composable
@@ -264,7 +275,7 @@ private fun HomeCard.EndIcon(
 ) = when (this) {
     is HomeCard.Dapp -> {
         val uri = remember(iconUrl) {
-            iconUrl?.let { Uri.parse(it.toString()) }
+            iconUrl?.toString()?.toUri()
         }
 
         Thumbnail.DApp(
@@ -276,19 +287,94 @@ private fun HomeCard.EndIcon(
 
     HomeCard.StartRadQuest,
     HomeCard.Connector,
-    HomeCard.ContinueRadQuest -> {
+    HomeCard.ContinueRadQuest,
+    HomeCard.JoinRadixRewards -> {
     }
 }
 
 @Composable
-private fun HomeCard.EndGraphicRes() = when (this) {
+private fun HomeCard.backgroundPainter() = when (this) {
     HomeCard.Connector -> painterResource(id = R.drawable.ic_homecarousel_connect)
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
-    is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
+    HomeCard.JoinRadixRewards -> painterResource(id = R.drawable.ic_homecarousel_radix_rewards)
+    is HomeCard.Dapp -> null
+}
+
+@Composable
+private fun HomeCard.titleStyle() = when (this) {
+    HomeCard.JoinRadixRewards -> RadixTheme.typography.body1Header.copy(
+        brush = Brush.horizontalGradient(
+            colors = listOf(
+                Color(0xFFFF43CA),
+                Color(0xFF20E4FF),
+                Color(0xFF21FFBE)
+            )
+        )
+    )
+
+    else ->
+        RadixTheme.typography.body1Header
+            .copy(color = textColor())
+}
+
+@Composable
+private fun HomeCard.textColor() = when (this) {
+    HomeCard.JoinRadixRewards -> White
+    else -> RadixTheme.colors.text
+}
+
+@Composable
+private fun HomeCard.iconColor() = when (this) {
+    HomeCard.JoinRadixRewards -> White
+    else -> RadixTheme.colors.iconSecondary
 }
 
 private const val INLINE_LINK_ICON = "link_icon"
+
+@Preview
+@Composable
+fun HomeCardsCarouselJoinRadixRewardsPreviewLight() {
+    RadixWalletPreviewTheme {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.JoinRadixRewards,
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun HomeCardsCarouselJoinRadixRewardsPreviewDark() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.JoinRadixRewards,
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
 
 @Preview
 @Composable
