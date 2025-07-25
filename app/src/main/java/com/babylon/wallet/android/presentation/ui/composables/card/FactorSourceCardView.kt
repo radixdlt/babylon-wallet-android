@@ -91,7 +91,7 @@ fun FactorSourceCardView(
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
     containerColor: Color = RadixTheme.colors.card,
-    onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null,
+    onSecurityPromptMessageClick: ((SecurityPrompt) -> Unit)? = null,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
@@ -114,7 +114,7 @@ fun FactorSourceCardView(
 
         MessagesView(
             messages = item.messages,
-            onSecurityPromptMessageClicked = onSecurityPromptMessageClicked
+            onSecurityPromptMessageClicked = onSecurityPromptMessageClick
         )
 
         LinkedEntitiesView(
@@ -444,7 +444,7 @@ private fun FactorSourceCardPreview(
     RadixWalletPreviewTheme {
         FactorSourceCardView(
             item = item,
-            onSecurityPromptMessageClicked = {}
+            onSecurityPromptMessageClick = {}
         )
     }
 }

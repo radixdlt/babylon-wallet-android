@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.lastUsedOn
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -123,7 +124,7 @@ class SelectFactorSourceViewModel @Inject constructor(
                                     kind = kind
                                 )
                             ).plus(
-                                factorSources.map { factorSource ->
+                                factorSources.sortedByDescending { it.lastUsedOn }.map { factorSource ->
                                     State.UiItem.Factor(
                                         selectable = factorSource.toUiItem(
                                             entitiesLinkedToFactorSourceById = data.entitiesLinkedToFactorSourceById,

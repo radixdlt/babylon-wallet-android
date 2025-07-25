@@ -254,7 +254,7 @@ private fun AccountSettingsContent(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
                             .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
                         item = factorSourceCard,
-                        onSecurityPromptMessageClicked = onSecurityPromptMessageClicked
+                        onSecurityPromptMessageClick = onSecurityPromptMessageClicked
                     )
                 }
             }

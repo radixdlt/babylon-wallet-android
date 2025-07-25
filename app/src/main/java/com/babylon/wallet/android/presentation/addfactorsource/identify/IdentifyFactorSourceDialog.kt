@@ -132,7 +132,7 @@ private fun IdentifyFactorSourceContent(
 
                     AccessContent(
                         modifier = contentModifier,
-                        title = "Identifying Factor", // TODO localise
+                        title = stringResource(id = R.string.addFactorSource_identifying_title),
                         message = state.factorSourceKind.message(),
                         content = {
                             RadixTextButton(

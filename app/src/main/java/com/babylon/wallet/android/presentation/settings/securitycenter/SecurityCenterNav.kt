@@ -170,7 +170,8 @@ fun NavGraphBuilder.securityCenterNavGraph(
         addFactorSource(navController)
         selectFactorSource(
             onDismiss = navController::popBackStack,
-            onComplete = { navController.popBackStack() }
+            onComplete = { navController.popBackStack() },
+            onSecurityPromptMessageClick = { navController.securityCenter() }
         )
     }
 }

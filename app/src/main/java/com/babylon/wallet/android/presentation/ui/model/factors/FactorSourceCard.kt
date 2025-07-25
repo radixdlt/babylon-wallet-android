@@ -11,6 +11,7 @@ import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.supportsBabylon
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.sargon.lastUsedOn
 
 data class FactorSourceCard(
     val id: FactorSourceId,
@@ -48,14 +49,7 @@ fun FactorSource.toFactorSourceCard(
         },
         includeDescription = includeDescription,
         lastUsedOn = if (includeLastUsedOn) {
-            when (this) {
-                is FactorSource.ArculusCard -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.Device -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.Ledger -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.OffDeviceMnemonic -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.Password -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                else -> ""
-            }
+            lastUsedOn.relativeTimeFormatted()
         } else {
             null
         },

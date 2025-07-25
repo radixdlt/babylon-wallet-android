@@ -45,6 +45,15 @@ val FactorSource.Device.hasBabylonSeedPhraseLength: Boolean
 val FactorSource.Device.isBabylonDeviceFactorSource: Boolean
     get() = supportsBabylon && hasBabylonSeedPhraseLength
 
+val FactorSource.lastUsedOn: OffsetDateTime
+    get() = when (this) {
+        is FactorSource.ArculusCard -> this.value.common.lastUsedOn
+        is FactorSource.Device -> this.value.common.lastUsedOn
+        is FactorSource.Ledger -> this.value.common.lastUsedOn
+        is FactorSource.OffDeviceMnemonic -> this.value.common.lastUsedOn
+        is FactorSource.Password -> this.value.common.lastUsedOn
+    }
+
 fun FactorSource.Device.Companion.babylon(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
     hostInfo: HostInfo,

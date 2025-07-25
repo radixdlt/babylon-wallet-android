@@ -92,7 +92,7 @@ private fun AddFactorSourceKindContent(
             item {
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = "Add Security Factor", // TODO localise
+                    text = stringResource(id = R.string.addFactorSource_selectKind_title),
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
@@ -102,7 +102,7 @@ private fun AddFactorSourceKindContent(
 
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = "Choose the Security Factor kind you want to add.", // TODO localise
+                    text = stringResource(id = R.string.addFactorSource_selectKind_description),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center

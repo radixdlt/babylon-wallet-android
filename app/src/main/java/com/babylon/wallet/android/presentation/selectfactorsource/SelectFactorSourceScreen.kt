@@ -29,6 +29,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.FactorSourceCategoryHeaderView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -45,7 +46,8 @@ fun SelectFactorSourceScreen(
     modifier: Modifier = Modifier,
     viewModel: SelectFactorSourceViewModel,
     onDismiss: () -> Unit,
-    onComplete: (FactorSourceId) -> Unit
+    onComplete: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -55,7 +57,8 @@ fun SelectFactorSourceScreen(
         onBackClick = viewModel::onBackClick,
         onSelectFactorSource = viewModel::onSelectFactorSource,
         onContinueClick = viewModel::onContinueClick,
-        onAddFactorSourceClick = viewModel::onAddFactorSourceClick
+        onAddFactorSourceClick = viewModel::onAddFactorSourceClick,
+        onSecurityPromptMessageClick = onSecurityPromptMessageClick
     )
 
     LaunchedEffect(Unit) {
@@ -75,7 +78,8 @@ private fun SelectFactorSourceContent(
     onBackClick: () -> Unit,
     onSelectFactorSource: (FactorSourceCard) -> Unit,
     onContinueClick: () -> Unit,
-    onAddFactorSourceClick: () -> Unit
+    onAddFactorSourceClick: () -> Unit,
+    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -106,7 +110,7 @@ private fun SelectFactorSourceContent(
             item {
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = "Select Security Factor", // TODO localise
+                    text = stringResource(id = R.string.addFactorSource_selectSecurityFactor),
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.text,
                     textAlign = TextAlign.Center
@@ -133,7 +137,8 @@ private fun SelectFactorSourceContent(
                     is SelectFactorSourceViewModel.State.UiItem.Factor -> SelectableSingleChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
                         item = item.selectable,
-                        onSelect = onSelectFactorSource
+                        onSelect = onSelectFactorSource,
+                        onSecurityPromptMessageClick = onSecurityPromptMessageClick
                     )
                 }
             }
@@ -142,7 +147,7 @@ private fun SelectFactorSourceContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
                 RadixSecondaryButton(
-                    text = "Add security factor", // TODO localise
+                    text = stringResource(id = R.string.addFactorSource_selectSecurityFactor),
                     onClick = onAddFactorSourceClick
                 )
             }
@@ -171,7 +176,8 @@ private fun SelectFactorSourcePreview(
             onBackClick = {},
             onSelectFactorSource = {},
             onContinueClick = {},
-            onAddFactorSourceClick = {}
+            onAddFactorSourceClick = {},
+            onSecurityPromptMessageClick = {}
         )
     }
 }
