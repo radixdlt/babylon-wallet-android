@@ -89,6 +89,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personadetail.p
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
@@ -546,6 +547,12 @@ fun NavigationHost(
             },
             onDeleteAccountClick = {
                 navController.deleteAccount(accountAddress = it)
+            },
+            onFactorSourceCardClick = { factorSourceId ->
+                navController.factorSourceDetails(factorSourceId)
+            },
+            onSecurityPromptMessageClick = {
+                navController.securityCenter()
             }
         )
         deleteAccount(

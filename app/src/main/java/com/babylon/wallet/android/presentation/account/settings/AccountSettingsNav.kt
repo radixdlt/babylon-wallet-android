@@ -11,7 +11,9 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 
@@ -34,11 +36,14 @@ fun NavController.accountSettings(
     }
 }
 
+@Suppress("LongParameterList")
 fun NavGraphBuilder.accountSettings(
     onBackClick: () -> Unit,
     onAccountSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
-    onDeleteAccountClick: (AccountAddress) -> Unit
+    onDeleteAccountClick: (AccountAddress) -> Unit,
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
 ) {
     composable(
         route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
@@ -63,7 +68,9 @@ fun NavGraphBuilder.accountSettings(
             onBackClick = onBackClick,
             onSettingItemClick = onAccountSettingItemClick,
             onHideAccountClick = onHideAccountClick,
-            onDeleteAccountClick = onDeleteAccountClick
+            onDeleteAccountClick = onDeleteAccountClick,
+            onFactorSourceCardClick = onFactorSourceCardClick,
+            onSecurityPromptMessageClick = onSecurityPromptMessageClick
         )
     }
 }

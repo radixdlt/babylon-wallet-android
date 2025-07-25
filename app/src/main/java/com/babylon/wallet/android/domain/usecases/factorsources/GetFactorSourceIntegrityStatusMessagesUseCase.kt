@@ -20,24 +20,21 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
 ) {
 
     suspend fun forDeviceFactorSources(
-        deviceFactorSources: List<FactorSource.Device>,
-        ignoreIfNoEntitiesLinked: Boolean
+        deviceFactorSources: List<FactorSource.Device>
     ): Map<FactorSourceId, List<FactorSourceStatusMessage>> = withContext(defaultDispatcher) {
         deviceFactorSources.mapNotNull { deviceFactorSource ->
             val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                 ?: return@mapNotNull null
             deviceFactorSource.id to forDeviceFactorSource(
                 deviceFactorSourceId = deviceFactorSource.id,
-                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource,
-                ignoreIfNoEntitiesLinked = ignoreIfNoEntitiesLinked
+                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
             )
         }.toMap()
     }
 
     suspend fun forDeviceFactorSource(
         deviceFactorSourceId: FactorSourceId,
-        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource,
-        ignoreIfNoEntitiesLinked: Boolean
+        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource
     ): List<FactorSourceStatusMessage> {
         val isDeviceFactorSourceLinkedToAnyEntities = listOf(
             entitiesLinkedToDeviceFactorSource.accounts,
@@ -48,8 +45,9 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
 
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
 
-        return if (!ignoreIfNoEntitiesLinked && isDeviceFactorSourceLinkedToAnyEntities) {
-            val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
+        return if (isDeviceFactorSourceLinkedToAnyEntities) {
+            val deviceFactorSourceIntegrity =
+                entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
             listOf(deviceFactorSourceIntegrity.toMessage())
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
             // the integrity, but we can check if the user backed up the seed phrase
