@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.wallet.cards
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
+import com.babylon.wallet.android.utils.Constants.RADIX_REWARDS_URL
 import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.HomeCard
 import kotlinx.collections.immutable.toPersistentList
@@ -35,6 +36,8 @@ class HomeCardsDelegate @Inject constructor(
 
                 HomeCard.StartRadQuest -> openUrl(RAD_QUEST_URL)
 
+                HomeCard.JoinRadixRewards -> openUrl(RADIX_REWARDS_URL)
+
                 else -> {}
             }
 
@@ -60,4 +63,4 @@ class HomeCardsDelegate @Inject constructor(
     }
 }
 
-fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest
+fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.JoinRadixRewards
