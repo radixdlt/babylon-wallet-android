@@ -62,7 +62,8 @@ class BiometricsPinViewModel @Inject constructor(
                         val securityMessages =
                             getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSource(
                                 deviceFactorSourceId = deviceFactorSource.id,
-                                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource,
+                                includeNoIssuesStatus = true
                             )
                         deviceFactorSource.value.toFactorSourceCard(
                             messages = securityMessages.toPersistentList(),

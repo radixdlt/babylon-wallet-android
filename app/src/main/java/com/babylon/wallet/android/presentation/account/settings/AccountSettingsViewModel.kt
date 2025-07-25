@@ -22,9 +22,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -124,10 +122,11 @@ class AccountSettingsViewModel @Inject constructor(
                         ).toPersistentList(),
                         securedWith = accountAndFactorSource.second?.toFactorSourceCard(
                             includeLastUsedOn = true,
-                            messages = (accountAndFactorSource.second as? FactorSource.Device)?.let { deviceFactorSource ->
-                                getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
-                                    deviceFactorSources = listOf(deviceFactorSource)
-                                )[deviceFactorSource.id]
+                            messages = accountAndFactorSource.second?.let { factorSource ->
+                                getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(
+                                    factorSource = factorSource,
+                                    includeNoIssuesStatus = false
+                                )
                             }.orEmpty().toPersistentList()
                         )
                     )

@@ -247,7 +247,7 @@ private fun AccountSettingsContent(
             state.securedWith?.let { factorSourceCard ->
                 item {
                     SectionTitle(
-                        title = "Secured with" // TODO crowdin
+                        title = "Secured with" // TODO localise
                     )
 
                     FactorSourceCardView(

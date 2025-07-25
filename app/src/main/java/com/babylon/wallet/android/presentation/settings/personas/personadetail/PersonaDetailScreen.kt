@@ -29,22 +29,31 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
+import com.babylon.wallet.android.presentation.ui.composables.PersonaDataSectionHeader
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -57,7 +66,9 @@ fun PersonaDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onEditPersona: (IdentityAddress) -> Unit,
-    onDAppClick: (DApp) -> Unit
+    onDAppClick: (DApp) -> Unit,
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -94,7 +105,9 @@ fun PersonaDetailScreen(
         onDAppClick = onDAppClick,
         onHidePersona = {
             showHidePersonaPrompt = true
-        }
+        },
+        onFactorSourceCardClick = onFactorSourceCardClick,
+        onSecurityPromptMessageClick = onSecurityPromptMessageClick
     )
 }
 
@@ -105,7 +118,9 @@ private fun PersonaDetailContent(
     onBackClick: () -> Unit,
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onHidePersona: () -> Unit
+    onHidePersona: () -> Unit,
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -144,8 +159,11 @@ private fun PersonaDetailContent(
                     .padding(padding),
                 persona = state.persona,
                 authorizedDapps = state.authorizedDapps,
+                securedWith = state.securedWith,
                 onDAppClick = onDAppClick,
-                onEditPersona = onEditPersona
+                onEditPersona = onEditPersona,
+                onFactorSourceCardClick = onFactorSourceCardClick,
+                onSecurityPromptMessageClick = onSecurityPromptMessageClick
             )
         } else {
             FullscreenCircularProgressContent()
@@ -158,8 +176,11 @@ private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: Persona,
     authorizedDapps: ImmutableList<DApp>,
+    securedWith: FactorSourceCard?,
     onDAppClick: (DApp) -> Unit,
-    onEditPersona: (IdentityAddress) -> Unit
+    onEditPersona: (IdentityAddress) -> Unit,
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault),
@@ -207,6 +228,34 @@ private fun PersonaDetailList(
                 )
             }
         }
+
+        securedWith?.let { factorSourceCard ->
+            item {
+                PersonaDataSectionHeader(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = "Secured with", // TODO localise
+                    textStyle = RadixTheme.typography.body1Header
+                )
+
+                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+
+                FactorSourceCardView(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
+                    item = factorSourceCard,
+                    onSecurityPromptMessageClick = onSecurityPromptMessageClick
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                    color = RadixTheme.colors.divider
+                )
+            }
+        }
+
         item {
             RadixSecondaryButton(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -269,11 +318,16 @@ fun PersonaDetailContentPreview() {
                     DApp.sampleMainnet.other()
                 ),
                 persona = Persona.sampleMainnet(),
+                securedWith = FactorSource.sample().toFactorSourceCard(
+                    includeLastUsedOn = true
+                )
             ),
             onBackClick = {},
             onEditPersona = {},
             onDAppClick = {},
-            onHidePersona = {}
+            onHidePersona = {},
+            onFactorSourceCardClick = {},
+            onSecurityPromptMessageClick = {}
         )
     }
 }

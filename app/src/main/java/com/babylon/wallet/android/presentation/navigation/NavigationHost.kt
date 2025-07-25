@@ -436,6 +436,12 @@ fun NavigationHost(
             },
             onDAppClick = {
                 navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress)
+            },
+            onFactorSourceCardClick = { factorSourceId ->
+                navController.factorSourceDetails(factorSourceId)
+            },
+            onSecurityPromptMessageClick = {
+                navController.securityCenter()
             }
         )
         personaEditScreen(onBackClick = {

@@ -64,10 +64,9 @@ fun PersonaDataStringField(
     singleLine: Boolean = true
 ) {
     Column(modifier = modifier) {
-        Text(
+        PersonaDataSectionHeader(
             text = label,
-            style = labelStyle,
-            color = RadixTheme.colors.textSecondary
+            textStyle = labelStyle
         )
         Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         Text(
@@ -79,4 +78,18 @@ fun PersonaDataStringField(
             maxLines = if (singleLine) 1 else Int.MAX_VALUE
         )
     }
+}
+
+@Composable
+fun PersonaDataSectionHeader(
+    modifier: Modifier = Modifier,
+    text: String,
+    textStyle: TextStyle = RadixTheme.typography.body1Regular
+) {
+    Text(
+        modifier = modifier,
+        text = text,
+        style = textStyle,
+        color = RadixTheme.colors.textSecondary
+    )
 }

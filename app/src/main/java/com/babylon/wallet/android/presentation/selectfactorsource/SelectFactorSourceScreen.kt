@@ -157,12 +157,14 @@ private fun SelectFactorSourceContent(
 
 @Composable
 private fun SelectFactorSourceInput.Context.buttonTitle() = when (this) {
-    SelectFactorSourceInput.Context.CreateAccount -> "Create Account" // TODO localise
+    SelectFactorSourceInput.Context.CreateAccount -> stringResource(id = R.string.createAccount_introduction_title)
+    SelectFactorSourceInput.Context.CreatePersona -> stringResource(id = R.string.createPersona_introduction_title)
 }
 
 @Composable
 private fun SelectFactorSourceInput.Context.description() = when (this) {
     SelectFactorSourceInput.Context.CreateAccount -> "Choose the security factor you will use to create the new Account." // TODO localise
+    SelectFactorSourceInput.Context.CreatePersona -> "Choose the security factor you will use to create the new Persona." // TODO localise
 }
 
 @Composable

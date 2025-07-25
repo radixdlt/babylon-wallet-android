@@ -20,21 +20,24 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
 ) {
 
     suspend fun forDeviceFactorSources(
-        deviceFactorSources: List<FactorSource.Device>
+        deviceFactorSources: List<FactorSource.Device>,
+        includeNoIssuesMessage: Boolean
     ): Map<FactorSourceId, List<FactorSourceStatusMessage>> = withContext(defaultDispatcher) {
         deviceFactorSources.mapNotNull { deviceFactorSource ->
             val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                 ?: return@mapNotNull null
             deviceFactorSource.id to forDeviceFactorSource(
                 deviceFactorSourceId = deviceFactorSource.id,
-                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource,
+                includeNoIssuesStatus = includeNoIssuesMessage
             )
         }.toMap()
     }
 
     suspend fun forDeviceFactorSource(
         deviceFactorSourceId: FactorSourceId,
-        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource
+        entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource,
+        includeNoIssuesStatus: Boolean
     ): List<FactorSourceStatusMessage> {
         val isDeviceFactorSourceLinkedToAnyEntities = listOf(
             entitiesLinkedToDeviceFactorSource.accounts,
@@ -48,19 +51,37 @@ class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
         return if (isDeviceFactorSourceLinkedToAnyEntities) {
             val deviceFactorSourceIntegrity =
                 entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
-            listOf(deviceFactorSourceIntegrity.toMessage())
+            listOfNotNull(
+                deviceFactorSourceIntegrity.toMessage(
+                    includeNoIssuesStatus = includeNoIssuesStatus
+                )
+            )
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
             // the integrity, but we can check if the user backed up the seed phrase
-            listOf(FactorSourceStatusMessage.NoSecurityIssues)
+            listOfNotNull(FactorSourceStatusMessage.NoSecurityIssues.takeIf { includeNoIssuesStatus })
         } else {
             // otherwise we don't show any warnings
             emptyList()
         }
     }
 
-    private fun FactorSourceIntegrity.Device.toMessage(): FactorSourceStatusMessage = when {
-        this.v1.isMnemonicPresentInSecureStorage.not() -> FactorSourceStatusMessage.SecurityPrompt.LostFactorSource
-        this.v1.isMnemonicMarkedAsBackedUp.not() -> FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase
-        else -> FactorSourceStatusMessage.NoSecurityIssues
+    suspend fun forFactorSource(
+        factorSource: FactorSource,
+        includeNoIssuesStatus: Boolean
+    ): List<FactorSourceStatusMessage> = withContext(defaultDispatcher) {
+        (factorSource as? FactorSource.Device)?.let { deviceFactorSource ->
+            forDeviceFactorSources(
+                deviceFactorSources = listOf(deviceFactorSource),
+                includeNoIssuesMessage = includeNoIssuesStatus
+            )[deviceFactorSource.id]
+        }.orEmpty()
     }
+
+    private fun FactorSourceIntegrity.Device.toMessage(includeNoIssuesStatus: Boolean): FactorSourceStatusMessage? =
+        when {
+            this.v1.isMnemonicPresentInSecureStorage.not() -> FactorSourceStatusMessage.SecurityPrompt.LostFactorSource
+            this.v1.isMnemonicMarkedAsBackedUp.not() -> FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase
+            includeNoIssuesStatus -> FactorSourceStatusMessage.NoSecurityIssues
+            else -> null
+        }
 }

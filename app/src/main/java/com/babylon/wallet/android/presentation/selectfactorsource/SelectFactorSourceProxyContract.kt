@@ -22,7 +22,8 @@ sealed interface SelectFactorSourceInput {
 
     enum class Context {
 
-        CreateAccount
+        CreateAccount,
+        CreatePersona
     }
 }
 
