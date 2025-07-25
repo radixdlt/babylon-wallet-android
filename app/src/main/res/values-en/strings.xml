@@ -585,6 +585,7 @@
 Code: %s</string>
   <string name="error_rns_unknownDomain">This XRD domain does not exist, or is not associated to any account.</string>
   <string name="error_rns_unknownDomainButtonTitle">Visit XRD domains</string>
+  <string name="error_unknownArculusCard">Unknown Arculus Card</string>
   <string name="importOlympiaAccounts_scanQR_title">Import Legacy Olympia Accounts</string>
   <string name="importOlympiaAccounts_scanQR_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="importOlympiaAccounts_scanQR_scannedLabel">Scanned: %d/%d</string>
@@ -815,6 +816,10 @@ Code: %s</string>
   <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
+  <string name="addFactorSource_ledger_title">Add a New Ledger Nano</string>
+  <string name="addFactorSource_ledger_description">Ledger Nanos are hardware signing devices you can connect to your Radix Wallet with a USB cable and computer.</string>
+  <string name="addFactorSource_ledger_nameTitle">Name your New Ledger Nano</string>
+  <string name="addFactorSource_ledger_identifyingInstructions">Choose the Ledger Nano to use. Make sure it\'s connected to a computer with a linked Radix Connector browser extension.</string>
   <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can restore access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).\n\n**For security, backups do not contain any seed phrases or private keys. You must write them down separately.**</string>
   <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
   <string name="profileBackup_manualBackups_title">Manual Backups</string>
@@ -1042,6 +1047,7 @@ Code: %s</string>
   <string name="enterSeedPhrase_titleBabylonMain">Enter Main Seed Phrase</string>
   <string name="enterSeedPhrase_titleBabylon">Enter Babylon Seed Phrase</string>
   <string name="enterSeedPhrase_titleOlympia">Enter Olympia Seed Phrase</string>
+  <string name="enterSeedPhrase_bip39Instruction">Enter your BIP39 seed phrase</string>
   <string name="recoverWalletWithoutProfile_start_headerTitle">Recover Control Without Backup</string>
   <string name="recoverWalletWithoutProfile_start_headerSubtitle">If you have no wallet backup in the cloud, or as an exported backup file, you still have other restore options.</string>
   <string name="recoverWalletWithoutProfile_start_babylonSectionTitle">I have my main “Babylon” 24-word seed phrase.</string>
@@ -1061,6 +1067,8 @@ Code: %s</string>
   <string name="recoverWalletWithoutProfile_complete_headerTitle">Recovery Complete</string>
   <string name="recoverWalletWithoutProfile_complete_headerSubtitle">Accounts discovered in the scan have been added to your wallet.\n\nIf you have any “Legacy” Accounts (created on the Olympia network) to import - or any Accounts using a Ledger hardware wallet device - please continue and then use the **Account Recovery Scan** option in your Radix Wallet settings under **Account Security**.</string>
   <string name="recoverWalletWithoutProfile_complete_continueButton">Continue</string>
+  <string name="recoverWalletWithoutProfile_recoverBabylonAccounts">Recover Babylon Accounts</string>
+  <string name="recoverWalletWithoutProfile_recoverOlympiaAccounts">Recover Olympia Accounts</string>
   <string name="transactionHistory_title">History</string>
   <string name="transactionHistory_settingsSection">Settings</string>
   <string name="transactionHistory_withdrawnSection">Withdrawn</string>
@@ -1714,6 +1722,16 @@ Code: %s</string>
   <string name="newFactor_error_notCreated">Factor not created</string>
   <string name="newFactor_success_title">Success</string>
   <string name="newFactor_success_subtitle">Security factor added successfully</string>
+  <string name="addFactorSource_selectKind_title">Add Security Factor</string>
+  <string name="addFactorSource_selectKind_description">Choose the Security Factor kind you want to add.</string>
+  <string name="addFactorSource_identifying_title">Identifying Factor</string>
+  <string name="addFactorSource_arculus_title">Add a New Arculus Card</string>
+  <string name="addFactorSource_arculus_description">Arculus Cards are hardware signing devices you tap to your phone to sign a transaction.</string>
+  <string name="addFactorSource_arculus_nameTitle">Name your New Arculus Card</string>
+  <string name="addFactorSource_arculus_identifyingInstructions">Tap and hold the Arculus Card you want to use to your phone.</string>
+  <string name="addFactorSource_addNewSecurityFactor">Add a new Security Factor</string>
+  <string name="addFactorSource_selectSecurityFactor">Select Security Factor</string>
+  <string name="addFactorSource_chooseSecurityFactorToRecover">Choose the security factor you will use to Recover Accounts</string>
   <string name="dappDirectory_title">dApp Directory</string>
   <string name="dappDirectory_search_placeholder">Search for a dApp...</string>
   <string name="dappDirectory_filters_title">Tags</string>
