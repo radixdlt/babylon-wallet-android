@@ -41,9 +41,11 @@ import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.Acco
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.AccountUiItem
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.assets.Assets
@@ -54,6 +56,7 @@ import rdx.works.core.domain.assets.SupportedCurrency
 @Composable
 fun AccountCardView(
     modifier: Modifier = Modifier,
+    factorSource: FactorSource? = null,
     accountWithAssets: AccountUiItem,
     onApplySecuritySettingsClick: () -> Unit,
     onLockerDepositClick: (AccountUiItem, AccountLockerDeposit) -> Unit
@@ -152,6 +155,7 @@ fun AccountCardView(
                 start.linkTo(parent.start)
             },
             address = accountWithAssets.account.address.asGeneral(),
+            factorSource = accountWithAssets.factorSource,
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = addressTextColor,
             iconColor = addressTextColor
@@ -314,6 +318,7 @@ fun AccountCardPreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
+                    factorSource = FactorSource.sample()
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -346,7 +351,8 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     deposits = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
-                    isLoadingBalance = false
+                    isLoadingBalance = false,
+                    factorSource = null
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -384,6 +390,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
+                    factorSource = null
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -417,7 +424,8 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         deposits = persistentListOf(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
-                        isFiatBalanceVisible = true
+                        isFiatBalanceVisible = true,
+                        factorSource = null
                     ),
                     onApplySecuritySettingsClick = {},
                     onLockerDepositClick = { _, _ -> }
@@ -446,7 +454,8 @@ fun AccountCardEmptyPreview() {
                         deposits = persistentListOf(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
-                        isFiatBalanceVisible = true
+                        isFiatBalanceVisible = true,
+                        factorSource = null
                     ),
                     onApplySecuritySettingsClick = {},
                     onLockerDepositClick = { _, _ -> }
@@ -478,7 +487,8 @@ fun AccountCardLoadingPreview() {
                     deposits = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
-                    isLoadingBalance = true
+                    isLoadingBalance = true,
+                    factorSource = null
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }

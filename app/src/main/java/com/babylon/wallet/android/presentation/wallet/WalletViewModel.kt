@@ -28,12 +28,17 @@ import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HomeCard
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isLegacy
 import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -79,7 +84,7 @@ class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
     private val checkDeletedAccountsOnLedgerUseCase: CheckDeletedAccountsOnLedgerUseCase,
-    getProfileUseCase: GetProfileUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
@@ -117,6 +122,7 @@ class WalletViewModel @Inject constructor(
         observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
+        observeFactorSources()
         homeCards(scope = viewModelScope, state = _state)
         accountLockersDelegate(scope = viewModelScope, state = _state)
     }
@@ -287,6 +293,19 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    private fun observeFactorSources() {
+        viewModelScope.launch {
+            getProfileUseCase.flow.map { it.factorSources }
+                .collect { factorSources ->
+                    _state.update { state ->
+                        state.copy(
+                            factorSources = factorSources.associateBy { it.id }
+                        )
+                    }
+                }
+        }
+    }
+
     fun onRefresh() {
         loadAssets(refreshType = RefreshType.WalletRefresh)
         refreshAccountLockers()
@@ -375,7 +394,8 @@ class WalletViewModel @Inject constructor(
         private val accountsWithLockerDeposits: Map<AccountAddress, List<AccountLockerDeposit>> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val uiMessage: UiMessage? = null,
-        val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList()
+        val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList(),
+        val factorSources: Map<FactorSourceId, FactorSource> = emptyMap()
     ) : UiState {
 
         val isRefreshing: Boolean = refreshType.showRefreshIndicator
@@ -387,6 +407,9 @@ class WalletViewModel @Inject constructor(
             val account = accountWithAssets.account
             val isLegacyOlympiaAccount = account.isLegacy
             val isUnsecuredLedgerControlledAccount = account.isUnsecuredLedgerControlled
+            val factorSource = account.unsecuredControllingFactorInstance?.factorSourceId?.let {
+                factorSources[it.asGeneral()]
+            }
 
             AccountUiItem(
                 account = account,
@@ -404,7 +427,8 @@ class WalletViewModel @Inject constructor(
                 isFiatBalanceVisible = isFiatBalanceVisible,
                 fiatTotalValue = prices.totalBalance(forAccount = accountWithAssets),
                 isLoadingAssets = accountWithAssets.assets == null,
-                isLoadingBalance = prices.isLoadingBalance(forAccount = accountWithAssets)
+                isLoadingBalance = prices.isLoadingBalance(forAccount = accountWithAssets),
+                factorSource = factorSource
             )
         }
 
@@ -485,7 +509,8 @@ class WalletViewModel @Inject constructor(
             val deposits: PersistentList<AccountLockerDeposit>,
             val isFiatBalanceVisible: Boolean,
             val isLoadingAssets: Boolean,
-            val isLoadingBalance: Boolean
+            val isLoadingBalance: Boolean,
+            val factorSource: FactorSource?
         )
 
         sealed interface PricesState {

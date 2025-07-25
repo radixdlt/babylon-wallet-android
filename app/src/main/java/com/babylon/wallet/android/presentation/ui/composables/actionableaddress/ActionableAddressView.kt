@@ -2,8 +2,11 @@ package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -20,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -36,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.copyToClipboard
@@ -44,10 +49,13 @@ import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -70,7 +78,8 @@ fun ActionableAddressView(
     isVisitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
-    iconColor: Color = textColor
+    iconColor: Color = textColor,
+    factorSource: FactorSource? = null
 ) {
     val actionableAddress by ActionableAddress.remember(
         address = address,
@@ -82,7 +91,8 @@ fun ActionableAddressView(
         address = actionableAddress,
         textStyle = textStyle,
         textColor = textColor,
-        iconColor = iconColor
+        iconColor = iconColor,
+        factorSource = factorSource
     )
 }
 
@@ -135,6 +145,7 @@ fun ActionableAddressView(
 }
 
 private const val INLINE_ICON_ID = "icon"
+private const val INLINE_FACTOR_SOURCE_ID = "factor_source"
 
 @Composable
 private fun ActionableAddressView(
@@ -143,6 +154,7 @@ private fun ActionableAddressView(
     textStyle: TextStyle,
     textColor: Color,
     iconColor: Color,
+    factorSource: FactorSource? = null
 ) {
     if (address != null) {
         Box(modifier = modifier) {
@@ -162,6 +174,10 @@ private fun ActionableAddressView(
                     append(address.displayable)
                     append(" ")
                     appendInlineContent(id = INLINE_ICON_ID)
+                    if (factorSource != null) {
+                        append(" • ")
+                        appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
+                    }
                 },
                 color = textColor,
                 maxLines = address.maxLines,
@@ -176,6 +192,33 @@ private fun ActionableAddressView(
                             contentDescription = address.contentDescription(),
                             tint = iconColor,
                         )
+                    },
+                    INLINE_FACTOR_SOURCE_ID to InlineTextContent(
+                        Placeholder(
+                            textStyle.fontSize * (factorSource?.name?.length ?: 0),
+                            textStyle.fontSize * 1.2,
+                            PlaceholderVerticalAlign.Center
+                        )
+                    ) {
+                        factorSource?.let { factorSource ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
+                            ) {
+                                Text(
+                                    text = factorSource.name,
+                                    style = textStyle,
+                                    color = textColor
+                                )
+
+                                Icon(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    painter = painterResource(id = factorSource.kind.iconRes()),
+                                    contentDescription = null,
+                                    tint = iconColor
+                                )
+                            }
+                        }
                     }
                 )
             )
@@ -325,7 +368,8 @@ sealed interface ActionableAddress {
 
         override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
 
-        override fun dashboardUrl(): String = "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
+        override fun dashboardUrl(): String =
+            "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
 
         @Composable
         override fun icon() = when (icon) {
@@ -370,7 +414,8 @@ sealed interface ActionableAddress {
 
         override fun rawAddress(): String = hash.formatted(format = AddressFormat.RAW)
 
-        override fun dashboardUrl(): String = "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
+        override fun dashboardUrl(): String =
+            "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
 
         @Composable
         override fun icon() = when (icon) {
