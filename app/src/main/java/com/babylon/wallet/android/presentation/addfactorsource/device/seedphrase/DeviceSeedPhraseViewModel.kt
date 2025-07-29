@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.addfactorsource.device.seedphras
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.factors.DeviceMnemonicBuilderClient
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -11,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.radixdlt.sargon.Bip39WordCount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
@@ -19,15 +22,27 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeviceSeedPhraseViewModel @Inject constructor(
+    addFactorSourceIOHandler: AddFactorSourceIOHandler,
     private val deviceMnemonicBuilderClient: DeviceMnemonicBuilderClient
 ) : StateViewModel<DeviceSeedPhraseViewModel.State>(),
     OneOffEventHandler<DeviceSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
+
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
 
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     init {
         viewModelScope.launch {
-            seedPhraseInputDelegate.setWords(deviceMnemonicBuilderClient.generateMnemonicWords())
+            when (input.context) {
+                AddFactorSourceInput.Context.New -> {
+                    seedPhraseInputDelegate.setWords(deviceMnemonicBuilderClient.generateMnemonicWords())
+                }
+
+                is AddFactorSourceInput.Context.Recovery -> {
+                    seedPhraseInputDelegate.setSeedPhraseSize(Bip39WordCount.TWENTY_FOUR)
+                    _state.update { state -> state.copy(isEditingEnabled = true) }
+                }
+            }
 
             seedPhraseInputDelegate.state.collect { delegateState ->
                 _state.update { state ->
@@ -39,7 +54,7 @@ class DeviceSeedPhraseViewModel @Inject constructor(
         }
     }
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(context = input.context)
 
     fun onDismissMessage() {
         _state.update { state -> state.copy(errorMessage = null) }
@@ -67,6 +82,10 @@ class DeviceSeedPhraseViewModel @Inject constructor(
         )
     }
 
+    fun onNumberOfWordsChanged(wordCount: Bip39WordCount) {
+        seedPhraseInputDelegate.setSeedPhraseSize(wordCount)
+    }
+
     fun onConfirmClick() {
         viewModelScope.launch {
             if (state.value.isEditingEnabled) {
@@ -75,12 +94,12 @@ class DeviceSeedPhraseViewModel @Inject constructor(
                         seedPhraseState = state.seedPhraseState.copy(
                             seedPhraseWords = deviceMnemonicBuilderClient.createMnemonicFromWords(state.seedPhraseState.seedPhraseWords)
                                 .toPersistentList()
-                        ),
+                        )
                     )
                 }
             }
 
-            deviceMnemonicBuilderClient.isFactorAlreadyInUse()
+            deviceMnemonicBuilderClient.isFactorAlreadyInUse(input.kind)
                 .onSuccess { isFactorAlreadyInUse ->
                     if (isFactorAlreadyInUse) {
                         _state.update { state ->
@@ -106,11 +125,13 @@ class DeviceSeedPhraseViewModel @Inject constructor(
     }
 
     data class State(
+        val context: AddFactorSourceInput.Context,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
         val isEditingEnabled: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState {
 
+        val isOlympiaRecovery = context is AddFactorSourceInput.Context.Recovery && context.isOlympia
         val isConfirmButtonEnabled = seedPhraseState.isInputComplete()
     }
 }

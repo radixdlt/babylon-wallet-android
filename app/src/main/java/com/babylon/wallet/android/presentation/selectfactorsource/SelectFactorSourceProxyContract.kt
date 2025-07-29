@@ -20,10 +20,15 @@ sealed interface SelectFactorSourceInput {
 
     data object Init : SelectFactorSourceInput
 
-    enum class Context {
+    sealed interface Context {
 
-        CreateAccount,
-        CreatePersona
+        data object CreateAccount : Context
+
+        data object CreatePersona : Context
+
+        data class AccountRecovery(
+            val isOlympia: Boolean
+        ) : Context
     }
 }
 

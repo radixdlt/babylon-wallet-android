@@ -7,8 +7,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
@@ -90,16 +88,10 @@ fun NavGraphBuilder.troubleshootingNavGraph(
             onBack = {
                 navController.popBackStack()
             },
-            onChooseSeedPhrase = {
-                navController.chooseSeedPhrase(it)
-            },
-            onChooseLedger = { isOlympia ->
-                navController.chooseLedger(
-                    ledgerSelectionPurpose = if (isOlympia) {
-                        LedgerSelectionPurpose.RecoveryScanOlympia
-                    } else {
-                        LedgerSelectionPurpose.RecoveryScanBabylon
-                    }
+            onFactorSourceSelected = { factorSourceId, isForOlympia ->
+                navController.accountRecoveryScan(
+                    factorSourceId = factorSourceId,
+                    isOlympia = isForOlympia
                 )
             }
         )

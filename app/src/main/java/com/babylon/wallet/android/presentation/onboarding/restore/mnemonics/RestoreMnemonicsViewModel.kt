@@ -15,14 +15,10 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileToCheck
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isLegacy
-import com.radixdlt.sargon.extensions.isMain
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -75,16 +71,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
             } ?: ProfileToCheck.Current
 
             val recoverableFactorSources = profileToCheck.recoverableFactorSources()
-                // we want main factor source to go first
-                .sortedByDescending {
-                    it.factorSource.isMain
-                }
 
-            val mainBDFS = recoverableFactorSources.find { it.factorSource.isMain }?.factorSource
             _state.update {
                 it.copy(
-                    recoverableFactorSources = recoverableFactorSources,
-                    mainBabylonFactorSourceId = mainBDFS?.value?.id?.asGeneral()
+                    recoverableFactorSources = recoverableFactorSources
                 )
             }
 
@@ -284,7 +274,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
-        private val mainBabylonFactorSourceId: FactorSourceId.Hash? = null,
         private val selectedIndex: Int = -1,
         val screenType: ScreenType = ScreenType.Loading,
         val isMovingForward: Boolean = false,
@@ -307,9 +296,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val recoverableFactorSource: RecoverableFactorSource?
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
-
-        val isMainBabylonSeedPhrase: Boolean
-            get() = recoverableFactorSource?.factorSource?.id == mainBabylonFactorSourceId
 
         val isPrimaryButtonEnabled: Boolean
             get() = (screenType != ScreenType.SeedPhrase || seedPhraseState.isValidSeedPhrase()) && !isSecondaryButtonLoading

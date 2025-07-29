@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -46,7 +47,12 @@ class AddFactorViewModel @Inject constructor(
     fun onButtonClick() {
         val selectedKind = state.value.selected ?: error("No factor source selected")
         viewModelScope.launch {
-            addFactorSourceProxy.addFactorSource(selectedKind)
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKindPreselected(
+                    kind = selectedKind,
+                    context = AddFactorSourceInput.Context.New
+                )
+            )
             checkShieldPrerequisites()
         }
     }

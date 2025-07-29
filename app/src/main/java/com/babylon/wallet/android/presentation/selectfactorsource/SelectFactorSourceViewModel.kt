@@ -5,7 +5,9 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
+import com.babylon.wallet.android.presentation.addfactorsource.kind.isSupported
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -21,6 +23,8 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.extensions.supportsBabylon
+import com.radixdlt.sargon.extensions.supportsOlympia
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -51,14 +55,29 @@ class SelectFactorSourceViewModel @Inject constructor(
 
     private val data = getProfileUseCase.flow.map { it.factorSources }
         .map { allFactorSources ->
+            val eligibleFactorSources = allFactorSources.filter { factorSource ->
+                factorSource.kind in input.context.supportedKinds
+            }.filter { factorSource ->
+                when (val context = input.context) {
+                    SelectFactorSourceInput.Context.CreateAccount,
+                    SelectFactorSourceInput.Context.CreatePersona -> true
+
+                    is SelectFactorSourceInput.Context.AccountRecovery -> if (context.isOlympia) {
+                        factorSource.supportsOlympia
+                    } else {
+                        factorSource.supportsBabylon
+                    }
+                }
+            }
+
             Data(
-                allFactorSources = allFactorSources.groupBy { it.kind },
-                entitiesLinkedToFactorSourceById = allFactorSources.mapNotNull { factorSource ->
+                factorSources = eligibleFactorSources.groupBy { it.kind },
+                entitiesLinkedToFactorSourceById = eligibleFactorSources.mapNotNull { factorSource ->
                     val entities = getEntitiesLinkedToFactorSourceUseCase(factorSource) ?: return@mapNotNull null
                     factorSource.id to entities
                 }.toMap(),
                 statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
-                    deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>(),
+                    deviceFactorSources = eligibleFactorSources.filterIsInstance<FactorSource.Device>(),
                     includeNoIssuesMessage = true
                 )
             )
@@ -85,7 +104,19 @@ class SelectFactorSourceViewModel @Inject constructor(
 
     fun onAddFactorSourceClick() {
         viewModelScope.launch {
-            addFactorSourceProxy.addFactorSource()?.value?.let { addedFactorSourceId ->
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.FromKinds(
+                    kinds = input.context.supportedKinds,
+                    context = when (input.context) {
+                        is SelectFactorSourceInput.Context.AccountRecovery -> AddFactorSourceInput.Context.Recovery(
+                            isOlympia = input.context.isOlympia
+                        )
+
+                        SelectFactorSourceInput.Context.CreateAccount,
+                        SelectFactorSourceInput.Context.CreatePersona -> AddFactorSourceInput.Context.New
+                    }
+                )
+            )?.value?.let { addedFactorSourceId ->
                 setSelectedFactorSource(addedFactorSourceId)
             }
         }
@@ -119,7 +150,7 @@ class SelectFactorSourceViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         isLoading = false,
-                        items = data.allFactorSources.map { (kind, factorSources) ->
+                        items = data.factorSources.map { (kind, factorSources) ->
                             listOf(
                                 State.UiItem.CategoryHeader(
                                     kind = kind
@@ -130,7 +161,7 @@ class SelectFactorSourceViewModel @Inject constructor(
                                         selectable = factorSource.toUiItem(
                                             entitiesLinkedToFactorSourceById = data.entitiesLinkedToFactorSourceById,
                                             statusMessagesByFactorSourceId = data.statusMessagesByFactorSourceId,
-                                            unusableFactorSources = unusableFactorSources,
+                                            unusableFactorSources = unusableFactorSources
                                         )
                                     )
                                 }
@@ -160,7 +191,7 @@ class SelectFactorSourceViewModel @Inject constructor(
     }
 
     private data class Data(
-        val allFactorSources: Map<FactorSourceKind, List<FactorSource>> = emptyMap(),
+        val factorSources: Map<FactorSourceKind, List<FactorSource>> = emptyMap(),
         val entitiesLinkedToFactorSourceById: Map<FactorSourceId, EntitiesLinkedToFactorSource> = emptyMap(),
         val statusMessagesByFactorSourceId: Map<FactorSourceId, List<FactorSourceStatusMessage>> = emptyMap()
     )
@@ -196,3 +227,17 @@ class SelectFactorSourceViewModel @Inject constructor(
         ) : Event
     }
 }
+
+private val SelectFactorSourceInput.Context.supportedKinds
+    get() = when {
+        (this is SelectFactorSourceInput.Context.AccountRecovery && isOlympia) -> listOf(
+            FactorSourceKind.DEVICE,
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+        )
+
+        else -> listOf(
+            FactorSourceKind.DEVICE,
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+            FactorSourceKind.ARCULUS_CARD
+        )
+    }.filter { it.isSupported }

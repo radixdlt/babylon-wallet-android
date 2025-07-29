@@ -199,23 +199,14 @@ private fun RestoreMnemonicsContent(
                                     strokeWidth = 2.dp
                                 )
                             } else {
-                                val buttonModifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                                    .padding(bottom = RadixTheme.dimensions.paddingSmall)
-                                if (state.isMainBabylonSeedPhrase) {
-                                    RadixTextButton(
-                                        modifier = buttonModifier,
-                                        text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
-                                        onClick = onSkipMainSeedPhraseClick
-                                    )
-                                } else {
-                                    RadixTextButton(
-                                        modifier = buttonModifier,
-                                        text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-                                        onClick = onSkipSeedPhraseClick
-                                    )
-                                }
+                                RadixTextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                                        .padding(bottom = RadixTheme.dimensions.paddingSmall),
+                                    text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                                    onClick = onSkipSeedPhraseClick
+                                )
                             }
                         }
                     }
@@ -290,13 +281,7 @@ private fun EntitiesView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(
-                id = if (state.isMainBabylonSeedPhrase) {
-                    R.string.recoverSeedPhrase_header_titleMain
-                } else {
-                    R.string.recoverSeedPhrase_header_titleOther
-                }
-            ),
+            text = stringResource(id = R.string.recoverSeedPhrase_header_titleOther),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.text
@@ -307,13 +292,8 @@ private fun EntitiesView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(
-                id = if (state.isMainBabylonSeedPhrase) {
-                    R.string.recoverSeedPhrase_header_subtitleMainSeedPhrase
-                } else {
-                    R.string.recoverSeedPhrase_header_subtitleOtherSeedPhrase
-                }
-            ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+            text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleOtherSeedPhrase)
+                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.text

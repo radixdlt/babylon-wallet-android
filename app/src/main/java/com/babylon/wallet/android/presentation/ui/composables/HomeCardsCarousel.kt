@@ -241,6 +241,7 @@ private fun HomeCard.title() = buildAnnotatedString {
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
         is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
+        HomeCard.JoinRadixRewards -> TODO()
     }
     append(title)
 
@@ -256,6 +257,7 @@ private fun HomeCard.description() = when (this) {
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
     is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
+    HomeCard.JoinRadixRewards -> TODO()
 }
 
 @Composable
@@ -278,6 +280,8 @@ private fun HomeCard.EndIcon(
     HomeCard.Connector,
     HomeCard.ContinueRadQuest -> {
     }
+
+    HomeCard.JoinRadixRewards -> TODO()
 }
 
 @Composable
@@ -286,6 +290,7 @@ private fun HomeCard.EndGraphicRes() = when (this) {
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
     is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_homecarousel_radquest)
+    HomeCard.JoinRadixRewards -> TODO()
 }
 
 private const val INLINE_LINK_ICON = "link_icon"

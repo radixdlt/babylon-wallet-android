@@ -8,8 +8,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
-import com.radixdlt.sargon.DeviceMnemonicValidationOutcome
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicValidationOutcome
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -63,10 +63,10 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
     fun onConfirmClick() {
         viewModelScope.launch {
             when (val outcome = deviceMnemonicBuilderClient.confirmWords(state.value.words)) {
-                DeviceMnemonicValidationOutcome.Valid -> {
+                MnemonicValidationOutcome.Valid -> {
                     sendEvent(Event.Confirmed(deviceMnemonicBuilderClient.getMnemonicWithPassphrase()))
                 }
-                is DeviceMnemonicValidationOutcome.Invalid -> {
+                is MnemonicValidationOutcome.Invalid -> {
                     val incorrectIndices = outcome.indicesInMnemonic.map { it.toInt() }
 
                     _state.update { state ->

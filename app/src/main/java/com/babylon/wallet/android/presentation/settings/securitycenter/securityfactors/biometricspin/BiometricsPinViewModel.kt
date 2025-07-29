@@ -5,6 +5,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -90,7 +91,12 @@ class BiometricsPinViewModel @Inject constructor(
 
     fun onAddBiometricsPinClick() {
         viewModelScope.launch {
-            addFactorSourceProxy.addFactorSource(FactorSourceKind.DEVICE)
+            addFactorSourceProxy.addFactorSource(
+                input = AddFactorSourceInput.WithKindPreselected(
+                    kind = FactorSourceKind.DEVICE,
+                    context = AddFactorSourceInput.Context.New
+                )
+            )
         }
     }
 

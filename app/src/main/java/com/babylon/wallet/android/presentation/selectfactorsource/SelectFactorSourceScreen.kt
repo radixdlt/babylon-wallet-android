@@ -92,7 +92,7 @@ private fun SelectFactorSourceContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
-                text = state.context.buttonTitle(),
+                text = stringResource(id = R.string.common_continue),
                 enabled = state.isButtonEnabled
             )
         },
@@ -147,7 +147,7 @@ private fun SelectFactorSourceContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
                 RadixSecondaryButton(
-                    text = stringResource(id = R.string.addFactorSource_selectSecurityFactor),
+                    text = stringResource(id = R.string.addFactorSource_addNewSecurityFactor),
                     onClick = onAddFactorSourceClick
                 )
             }
@@ -156,15 +156,10 @@ private fun SelectFactorSourceContent(
 }
 
 @Composable
-private fun SelectFactorSourceInput.Context.buttonTitle() = when (this) {
-    SelectFactorSourceInput.Context.CreateAccount -> stringResource(id = R.string.createAccount_introduction_title)
-    SelectFactorSourceInput.Context.CreatePersona -> stringResource(id = R.string.createPersona_introduction_title)
-}
-
-@Composable
 private fun SelectFactorSourceInput.Context.description() = when (this) {
     SelectFactorSourceInput.Context.CreateAccount -> "Choose the security factor you will use to create the new Account." // TODO localise
     SelectFactorSourceInput.Context.CreatePersona -> "Choose the security factor you will use to create the new Persona." // TODO localise
+    is SelectFactorSourceInput.Context.AccountRecovery -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToRecover)
 }
 
 @Composable

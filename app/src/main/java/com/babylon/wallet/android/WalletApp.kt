@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.derivepublick
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
@@ -223,10 +224,12 @@ private fun HandleAddFactorSourceEvents(
 ) {
     LaunchedEffect(Unit) {
         addFactorSourceEvents.collect { event ->
-            if (event.withKind) {
-                navController.addFactorSource()
-            } else {
-                navController.addFactorSourceKind()
+            when (event.input) {
+                is AddFactorSourceInput.FromKinds,
+                is AddFactorSourceInput.OfAnyKind -> navController.addFactorSourceKind()
+
+                is AddFactorSourceInput.WithKindPreselected -> navController.addFactorSource()
+                AddFactorSourceInput.Init -> null
             }
         }
     }

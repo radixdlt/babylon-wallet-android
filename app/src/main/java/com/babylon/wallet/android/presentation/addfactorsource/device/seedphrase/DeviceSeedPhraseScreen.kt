@@ -1,16 +1,24 @@
 package com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,18 +28,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
@@ -48,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestion
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
+import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -70,6 +83,7 @@ fun DeviceSeedPhraseScreen(
         onWordChanged = viewModel::onWordChanged,
         onWordSelected = viewModel::onWordSelected,
         onEnterCustomSeedPhraseClick = viewModel::onEnterCustomSeedPhraseClick,
+        onNumberOfWordsChanged = viewModel::onNumberOfWordsChanged,
         onConfirmClick = viewModel::onConfirmClick
     )
 
@@ -92,6 +106,7 @@ private fun DeviceSeedPhraseContent(
     onWordChanged: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
     onEnterCustomSeedPhraseClick: () -> Unit,
+    onNumberOfWordsChanged: (Bip39WordCount) -> Unit,
     onConfirmClick: () -> Unit
 ) {
     SecureScreen()
@@ -162,7 +177,10 @@ private fun DeviceSeedPhraseContent(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = stringResource(id = R.string.newBiometricFactor_seedPhrase_title),
+                text = when (state.context) {
+                    AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_title)
+                    is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.enterSeedPhrase_bip39Instruction)
+                },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
@@ -172,11 +190,81 @@ private fun DeviceSeedPhraseContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle),
+                text = when (state.context) {
+                    AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle)
+                    is AddFactorSourceInput.Context.Recovery -> "Enter your BIP39 seed phrase. Make sure it's backed up securely and accessible only to you." // TODO localise
+                },
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
+
+            if (state.isOlympiaRecovery) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                val tabs = remember {
+                    Bip39WordCount.entries.sortedByDescending { it.value }
+                }
+                var tabIndex by remember { mutableStateOf(0) }
+
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            vertical = RadixTheme.dimensions.paddingSmall
+                        ),
+                    text = stringResource(id = R.string.importMnemonic_numberOfWordsPicker),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.text,
+                    textAlign = TextAlign.Center
+                )
+
+                TabRow(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectSmall),
+                    selectedTabIndex = tabIndex,
+                    containerColor = Color.Transparent,
+                    divider = {},
+                    indicator = { tabPositions ->
+                        Box(
+                            modifier = Modifier
+                                .tabIndicatorOffset(tabPositions[tabIndex])
+                                .fillMaxHeight()
+                                .zIndex(-1f)
+                                .padding(2.dp)
+                                .background(
+                                    color = RadixTheme.colors.selectedSegmentedControl,
+                                    shape = RadixTheme.shapes.roundedRectSmall
+                                )
+                        )
+                    }
+                ) {
+                    tabs.forEach { tab ->
+                        val isSelected = tabs.indexOf(tab) == tabIndex
+                        val interactionSource = remember { MutableInteractionSource() }
+                        Tab(
+                            modifier = Modifier.wrapContentWidth(),
+                            selected = isSelected,
+                            onClick = {
+                                tabIndex = tabs.indexOf(tab)
+                                onNumberOfWordsChanged(tab)
+                            },
+                            interactionSource = interactionSource,
+                            selectedContentColor = RadixTheme.colors.text,
+                            unselectedContentColor = RadixTheme.colors.textSecondary
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(
+                                    vertical = RadixTheme.dimensions.paddingSmall
+                                ),
+                                text = tab.value.toString(),
+                                style = RadixTheme.typography.body1HighImportance,
+                            )
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
 
@@ -235,6 +323,7 @@ private fun DeviceSeedPhrasePreview(
             onDismissMessage = {},
             onWordChanged = { _, _ -> },
             onWordSelected = { _, _ -> },
+            onNumberOfWordsChanged = {},
             onConfirmClick = {},
             onEnterCustomSeedPhraseClick = {},
         )
@@ -247,6 +336,7 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
     override val values: Sequence<DeviceSeedPhraseViewModel.State>
         get() = sequenceOf(
             DeviceSeedPhraseViewModel.State(
+                context = AddFactorSourceInput.Context.New,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
                         SeedPhraseWord(
@@ -258,6 +348,9 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                 )
             ),
             DeviceSeedPhraseViewModel.State(
+                context = AddFactorSourceInput.Context.Recovery(
+                    isOlympia = true
+                ),
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
                         SeedPhraseWord(
@@ -270,6 +363,7 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                 isEditingEnabled = true
             ),
             DeviceSeedPhraseViewModel.State(
+                context = AddFactorSourceInput.Context.New,
                 errorMessage = UiMessage.ErrorMessage(RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse)
             )
         )

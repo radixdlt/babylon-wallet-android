@@ -34,7 +34,7 @@ class SeedPhraseInputDelegate(
             state.copy(
                 seedPhraseWords = (0 until size.value.toInt()).map {
                     SeedPhraseWord(
-                        it,
+                        index = it,
                         lastWord = it == size.value.toInt() - 1
                     )
                 }.toPersistentList()

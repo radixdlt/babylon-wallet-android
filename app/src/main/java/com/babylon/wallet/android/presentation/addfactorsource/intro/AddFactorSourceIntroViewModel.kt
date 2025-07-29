@@ -26,7 +26,7 @@ class AddFactorSourceIntroViewModel @Inject constructor(
 ) : StateViewModel<AddFactorSourceIntroViewModel.State>(),
     OneOffEventHandler<AddFactorSourceIntroViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
 
     override fun initialState(): State = State(
         factorSourceKind = checkNotNull(input.kind)

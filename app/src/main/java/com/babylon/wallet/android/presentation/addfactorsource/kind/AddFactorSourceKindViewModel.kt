@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.addfactorsource.kind
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceOutput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -25,19 +26,27 @@ class AddFactorSourceKindViewModel @Inject constructor(
 ) : StateViewModel<AddFactorSourceKindViewModel.State>(),
     OneOffEventHandler<AddFactorSourceKindViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private val input = addFactorSourceIOHandler.getInput()
+
     init {
         _state.update { state ->
             state.copy(
                 isLoading = false,
-                items = FactorSourceKind.entries.filter { it.isSupported }
-                    .map {
-                        Selectable(
-                            data = FactorSourceKindCard(
-                                kind = it,
-                                messages = persistentListOf()
-                            )
-                        )
+                items = FactorSourceKind.entries.filter {
+                    when (input) {
+                        is AddFactorSourceInput.FromKinds -> it in input.kinds
+                        is AddFactorSourceInput.OfAnyKind -> it.isSupported
+                        AddFactorSourceInput.Init,
+                        is AddFactorSourceInput.WithKindPreselected -> error("Shouldn't be here")
                     }
+                }.map {
+                    Selectable(
+                        data = FactorSourceKindCard(
+                            kind = it,
+                            messages = persistentListOf()
+                        )
+                    )
+                }
             )
         }
     }
@@ -67,7 +76,9 @@ class AddFactorSourceKindViewModel @Inject constructor(
         val selectedItem = checkNotNull(state.value.selectedItem)
 
         viewModelScope.launch {
-            val factorSourceId = addFactorSourceProxy.addFactorSource(selectedItem.kind)?.value ?: return@launch
+            val factorSourceId = addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKindPreselected(selectedItem.kind, input.context())
+            )?.value ?: return@launch
 
             addFactorSourceIOHandler.setOutput(AddFactorSourceOutput.Id(factorSourceId))
             sendEvent(Event.Complete(selectedItem.kind))

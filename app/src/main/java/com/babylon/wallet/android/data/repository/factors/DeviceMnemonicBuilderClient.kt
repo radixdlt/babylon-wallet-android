@@ -4,8 +4,9 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.DeviceMnemonicBuilder
-import com.radixdlt.sargon.DeviceMnemonicValidationOutcome
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicBuilder
+import com.radixdlt.sargon.MnemonicValidationOutcome
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,7 +21,7 @@ class DeviceMnemonicBuilderClient @Inject constructor(
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    private var deviceMnemonicBuilder = DeviceMnemonicBuilder()
+    private var deviceMnemonicBuilder = MnemonicBuilder()
 
     suspend fun generateMnemonicWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         executeMutating { generateNewMnemonic() }
@@ -44,8 +45,8 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         )
     }
 
-    suspend fun isFactorAlreadyInUse(): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
-        isFactorSourceAlreadyInUse(deviceMnemonicBuilder.getFactorSourceId())
+    suspend fun isFactorAlreadyInUse(kind: FactorSourceKind): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
+        isFactorSourceAlreadyInUse(deviceMnemonicBuilder.getFactorSourceId(kind))
     }
 
     suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
@@ -59,7 +60,7 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         }
     }
 
-    suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicValidationOutcome = withContext(dispatcher) {
+    suspend fun confirmWords(words: List<SeedPhraseWord>): MnemonicValidationOutcome = withContext(dispatcher) {
         deviceMnemonicBuilder.validateWords(words.associate { it.index.toUShort() to it.value })
     }
 
@@ -80,7 +81,7 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         }
     }
 
-    private suspend fun executeMutating(function: suspend DeviceMnemonicBuilder.() -> DeviceMnemonicBuilder) = withContext(dispatcher) {
+    private suspend fun executeMutating(function: suspend MnemonicBuilder.() -> MnemonicBuilder) = withContext(dispatcher) {
         deviceMnemonicBuilder = deviceMnemonicBuilder.function()
     }
 }

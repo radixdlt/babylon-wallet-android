@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.addfactorsource
 
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -16,10 +15,10 @@ class AddFactorSourceProxyImpl @Inject constructor(
     private var input: AddFactorSourceInput = AddFactorSourceInput.Init
     private val _output = MutableSharedFlow<AddFactorSourceOutput>()
 
-    override suspend fun addFactorSource(kind: FactorSourceKind?): AddFactorSourceOutput.Id? {
-        input = AddFactorSourceInput.WithKind(kind)
+    override suspend fun addFactorSource(input: AddFactorSourceInput): AddFactorSourceOutput.Id? {
+        this.input = input
 
-        appEventBus.sendEvent(AppEvent.AddFactorSource(withKind = kind != null))
+        appEventBus.sendEvent(AppEvent.AddFactorSource(input))
         val result = _output.first()
 
         return result as? AddFactorSourceOutput.Id

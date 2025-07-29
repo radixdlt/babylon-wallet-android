@@ -142,7 +142,7 @@ class CreateAccountViewModel @Inject constructor(
         keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
         return runCatching {
-            sargonOs.newWallet(shouldPreDeriveInstances = false)
+            sargonOs.newWallet()
         }.onSuccess {
             // Since we choose to create a new profile, this is the time
             // we discard the data copied from the cloud backup, since they represent

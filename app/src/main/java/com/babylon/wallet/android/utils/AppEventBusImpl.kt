@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.utils
 
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
@@ -78,7 +79,7 @@ sealed interface AppEvent {
         data object SpotCheck : AccessFactorSources
     }
 
-    data class AddFactorSource(val withKind: Boolean) : AppEvent
+    data class AddFactorSource(val input: AddFactorSourceInput) : AppEvent
 
     data object SelectFactorSource : AppEvent
 

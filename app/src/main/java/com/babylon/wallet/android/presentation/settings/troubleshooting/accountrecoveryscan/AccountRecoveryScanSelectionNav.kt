@@ -8,7 +8,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.radixdlt.sargon.FactorSourceId
 
 private const val ROUTE = "account_recovery_scan_selection"
 
@@ -18,8 +18,7 @@ fun NavController.accountRecoveryScanSelection() {
 
 fun NavGraphBuilder.accountRecoveryScanSelection(
     onBack: () -> Unit,
-    onChooseSeedPhrase: (MnemonicType) -> Unit,
-    onChooseLedger: (Boolean) -> Unit
+    onFactorSourceSelected: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     composable(
         route = ROUTE,
@@ -39,8 +38,7 @@ fun NavGraphBuilder.accountRecoveryScanSelection(
         AccountRecoveryScanSelectionScreen(
             viewModel = hiltViewModel(),
             onBack = onBack,
-            onChooseSeedPhrase = onChooseSeedPhrase,
-            onChooseLedger = onChooseLedger
+            onFactorSourceSelected = onFactorSourceSelected
         )
     }
 }

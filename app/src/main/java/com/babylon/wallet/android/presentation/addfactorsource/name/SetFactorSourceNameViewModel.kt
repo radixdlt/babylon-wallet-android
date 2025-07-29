@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceOutput
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -14,11 +15,13 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.DeviceFactorSourceType
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.extensions.SharedConstants
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +43,8 @@ class SetFactorSourceNameViewModel @Inject constructor(
     OneOffEventHandler<SetFactorSourceNameViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = SetFactorNameArgs.from(savedStateHandle)
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
+
     private lateinit var addedFactorSourceId: FactorSourceId
 
     override fun initialState(): State = State(args.factorSourceKind)
@@ -48,25 +53,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
         _state.update { state -> state.copy(saveInProgress = true) }
 
         viewModelScope.launch {
-            sargonOsManager.callSafely(dispatcher) {
-                when (args) {
-                    is SetFactorNameArgs.ForLedger -> {
-                        FactorSource.Ledger.init(
-                            id = args.factorSourceId,
-                            model = args.ledgerModel,
-                            name = state.value.name
-                        ).also { factorSource ->
-                            addFactorSource(factorSource)
-                        }.id
-                    }
-
-                    is SetFactorNameArgs.WithMnemonic -> addNewMnemonicFactorSource(
-                        factorSourceKind = args.factorSourceKind,
-                        mnemonicWithPassphrase = args.mnemonicWithPassphrase,
-                        name = state.value.name
-                    )
-                }
-            }.onSuccess { factorSourceId ->
+            saveFactorSource().onSuccess { factorSourceId ->
                 addedFactorSourceId = factorSourceId
 
                 if (factorSourceId is FactorSourceId.Hash &&
@@ -124,6 +111,46 @@ class SetFactorSourceNameViewModel @Inject constructor(
 
             addFactorSourceIOHandler.setOutput(AddFactorSourceOutput.Id(addedFactorSourceId))
             sendEvent(Event.Saved)
+        }
+    }
+
+    private suspend fun saveFactorSource(): Result<FactorSourceId> = sargonOsManager.callSafely(dispatcher) {
+        when (args) {
+            is SetFactorNameArgs.ForLedger -> {
+                FactorSource.Ledger.init(
+                    id = args.factorSourceId,
+                    model = args.ledgerModel,
+                    name = state.value.name
+                ).also { factorSource ->
+                    addFactorSource(factorSource)
+                }.id
+            }
+
+            is SetFactorNameArgs.WithMnemonic -> {
+                when (args.factorSourceKind) {
+                    FactorSourceKind.DEVICE -> createDeviceFactorSource(
+                        mnemonicWithPassphrase = args.mnemonicWithPassphrase,
+                        factorType = when (input.context) {
+                            AddFactorSourceInput.Context.New -> DeviceFactorSourceType.BABYLON
+                            is AddFactorSourceInput.Context.Recovery -> if (input.context.isOlympia) {
+                                DeviceFactorSourceType.OLYMPIA
+                            } else {
+                                DeviceFactorSourceType.BABYLON
+                            }
+                        }
+                    ).id.asGeneral()
+
+                    FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                    FactorSourceKind.ARCULUS_CARD,
+                    FactorSourceKind.PASSWORD -> addNewMnemonicFactorSource(
+                        factorSourceKind = args.factorSourceKind,
+                        mnemonicWithPassphrase = args.mnemonicWithPassphrase,
+                        name = state.value.name
+                    )
+
+                    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> error("Shouldn't be here")
+                }
+            }
         }
     }
 

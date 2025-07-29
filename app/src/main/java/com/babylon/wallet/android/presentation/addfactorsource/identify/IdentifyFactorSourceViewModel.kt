@@ -31,7 +31,7 @@ class IdentifyFactorSourceViewModel @Inject constructor(
 ) : StateViewModel<IdentifyFactorSourceViewModel.State>(),
     OneOffEventHandler<IdentifyFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
 
     init {
         identifyFactorSource()
