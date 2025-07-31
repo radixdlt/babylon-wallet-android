@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.addfactorsource.kind
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceKindCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.collections.immutable.persistentListOf
@@ -68,6 +70,7 @@ private fun AddFactorSourceKindContent(
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.empty),
+                windowInsets = WindowInsets.statusBarsAndBanner,
                 onBackClick = onBackClick
             )
         },

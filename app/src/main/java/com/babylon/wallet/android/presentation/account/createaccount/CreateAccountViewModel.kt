@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.factorSourceById
-import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
@@ -82,7 +81,7 @@ class CreateAccountViewModel @Inject constructor(
 
             val isFirstTime = args.requestSource?.isFirstTime() == true
 
-            val factorSourceToCreateAccount = resolveFactorSource(isFirstTime) ?: run {
+            val factorSourceToCreateAccount = resolveFactorSource() ?: run {
                 _state.update { it.copy(isCreatingAccount = false) }
                 return@launch
             }
@@ -179,14 +178,11 @@ class CreateAccountViewModel @Inject constructor(
         }
     }
 
-    private suspend fun resolveFactorSource(isFirstTime: Boolean): FactorSource? = if (isFirstTime) {
-        getProfileUseCase().mainBabylonFactorSource
-    } else {
+    private suspend fun resolveFactorSource(): FactorSource? =
         selectFactorSourceProxy.selectFactorSource(SelectFactorSourceInput.Context.CreateAccount)
             ?.let { factorSourceId ->
                 getProfileUseCase().factorSourceById(factorSourceId.value)
             }
-    }
 
     private suspend fun onAccountCreated(account: Account) {
         if (args.networkIdToSwitch != null) {

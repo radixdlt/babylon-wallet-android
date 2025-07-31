@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.selectfactorsource
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
@@ -60,7 +61,7 @@ class SelectFactorSourceViewModel @Inject constructor(
             }.filter { factorSource ->
                 when (val context = input.context) {
                     SelectFactorSourceInput.Context.CreateAccount,
-                    SelectFactorSourceInput.Context.CreatePersona -> true
+                    SelectFactorSourceInput.Context.CreatePersona -> factorSource.supportsBabylon
 
                     is SelectFactorSourceInput.Context.AccountRecovery -> if (context.isOlympia) {
                         factorSource.supportsOlympia
@@ -78,8 +79,11 @@ class SelectFactorSourceViewModel @Inject constructor(
                 }.toMap(),
                 statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
                     deviceFactorSources = eligibleFactorSources.filterIsInstance<FactorSource.Device>(),
-                    includeNoIssuesMessage = true
-                )
+                    includeNoIssuesMessage = true,
+                    checkIntegrityOnlyIfAnyEntitiesLinked = false
+                ).also {
+                    Log.e("TAGTAG", "Status messages: $it")
+                }
             )
         }.flowOn(defaultDispatcher).stateIn(
             scope = viewModelScope,
@@ -161,7 +165,8 @@ class SelectFactorSourceViewModel @Inject constructor(
                                         selectable = factorSource.toUiItem(
                                             entitiesLinkedToFactorSourceById = data.entitiesLinkedToFactorSourceById,
                                             statusMessagesByFactorSourceId = data.statusMessagesByFactorSourceId,
-                                            unusableFactorSources = unusableFactorSources
+                                            unusableFactorSources = unusableFactorSources,
+                                            includeNoIssuesMessage = true
                                         )
                                     )
                                 }

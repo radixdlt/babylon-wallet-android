@@ -92,18 +92,9 @@ fun RestoreMnemonicsScreen(
         onSkipSeedPhraseClick = {
             viewModel.onSkipSeedPhraseClick()
         },
-        onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
         onSubmitClick = {
-            when (state.screenType) {
-                RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
-                    viewModel.skipMainSeedPhraseAndCreateNew()
-                }
-
-                else -> {
-                    keyboardController?.hide()
-                    viewModel.onSubmit()
-                }
-            }
+            keyboardController?.hide()
+            viewModel.onSubmit()
         },
         onWordTyped = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
@@ -128,7 +119,6 @@ private fun RestoreMnemonicsContent(
     state: RestoreMnemonicsViewModel.State,
     onBackClick: () -> Unit,
     onSkipSeedPhraseClick: () -> Unit,
-    onSkipMainSeedPhraseClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
@@ -181,8 +171,6 @@ private fun RestoreMnemonicsContent(
                             RestoreMnemonicsViewModel.State.ScreenType.Loading -> R.string.empty
                             RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
                             RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
-                            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
-                                R.string.recoverSeedPhrase_skipMainSeedPhraseButton
                         }
                     ),
                     enabled = state.isPrimaryButtonEnabled,
@@ -256,15 +244,6 @@ private fun RestoreMnemonicsContent(
                     onFocusedWordIndexChanged = { focusedWordIndex = it }
                 )
             }
-
-            AnimatedVisibility(
-                modifier = Modifier.padding(padding),
-                visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase,
-                enter = enterTransition,
-                exit = exitTransition
-            ) {
-                NoMainSeedPhraseView()
-            }
         }
     }
 }
@@ -336,38 +315,6 @@ private fun EntitiesView(
 }
 
 @Composable
-private fun NoMainSeedPhraseView(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_header_titleNoMainSeedPhrase),
-            textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.text
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleNoMainSeedPhrase)
-                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-            textAlign = TextAlign.Start,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.text
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-    }
-}
-
-@Composable
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
@@ -431,7 +378,6 @@ private fun RestoreMnemonicsContentPreview(
             state = state,
             onBackClick = {},
             onSkipSeedPhraseClick = {},
-            onSkipMainSeedPhraseClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
@@ -471,15 +417,6 @@ class RestoreMnemonicsPreviewProvider : PreviewParameterProvider<RestoreMnemonic
                         )
                     }.toPersistentList()
                 )
-            ),
-            RestoreMnemonicsViewModel.State(
-                recoverableFactorSources = listOf(
-                    RecoverableFactorSource(
-                        associatedAccounts = Account.sampleMainnet.all,
-                        factorSource = FactorSource.Device.sample()
-                    )
-                ),
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase
             ),
             RestoreMnemonicsViewModel.State(
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Loading

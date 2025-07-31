@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.NetworkId
@@ -65,9 +64,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 // Reset keyspec before importing any mnemonic, when keyspec is invalid
                 keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
-                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)?.let {
-                    ProfileToCheck.Specific(it)
-                }
+                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
+                    ?.let {
+                        ProfileToCheck.Specific(it)
+                    }
             } ?: ProfileToCheck.Current
 
             val recoverableFactorSources = profileToCheck.recoverableFactorSources()
@@ -129,22 +129,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
     }
 
-    fun onSkipMainSeedPhraseClick() {
-        _state.update {
-            it.copy(
-                screenType = State.ScreenType.NoMainSeedPhrase,
-                isMovingForward = true
-            )
-        }
-    }
-
-    fun skipMainSeedPhraseAndCreateNew() {
-        viewModelScope.launch {
-            _state.update { state -> state.copy(hasSkippedMainSeedPhrase = true) }
-            showNextRecoverableFactorSourceOrFinish()
-        }
-    }
-
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
@@ -185,7 +169,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         ).onSuccess {
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
-            showNextRecoverableFactorSourceOrFinish(skipAuth = true)
+            showNextRecoverableFactorSourceOrFinish()
         }.onFailure { error ->
             if (error is ProfileException.SecureStorageAccess) {
                 appEventBus.sendEvent(AppEvent.SecureFolderWarning)
@@ -197,7 +181,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     @Suppress("NestedBlockDepth")
-    private suspend fun showNextRecoverableFactorSourceOrFinish(skipAuth: Boolean = false) {
+    private suspend fun showNextRecoverableFactorSourceOrFinish() {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
@@ -205,57 +189,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
             _state.update { it.proceedToNextRecoverable() }
         } else {
-            if (_state.value.hasSkippedMainSeedPhrase) {
-                _state.update { it.copy(isPrimaryButtonLoading = true) }
-
-                args.backupType?.let { backupType ->
-                    if (skipAuth.not() && biometricAuthProvider().not()) {
-                        _state.update { it.copy(isPrimaryButtonLoading = false) }
-                        return
-                    }
-
-                    restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = true)
-                        .onSuccess {
-                            _state.update { state ->
-                                state.copy(
-                                    isPrimaryButtonLoading = false,
-                                    hasSkippedMainSeedPhrase = false
-                                )
-                            }
-                            onRestorationComplete()
-                        }.onFailure {
-                            if (it is CommonException.SecureStorageWriteException) {
-                                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                                _state.update { state ->
-                                    state.copy(isPrimaryButtonLoading = false)
-                                }
-                            } else {
-                                _state.update { state ->
-                                    state.copy(
-                                        isPrimaryButtonLoading = false,
-                                        uiMessage = UiMessage.ErrorMessage(it)
-                                    )
-                                }
-                            }
-                        }
-                } ?: run {
-                    _state.update { state ->
-                        state.copy(
-                            isPrimaryButtonLoading = false,
-                            hasSkippedMainSeedPhrase = false
-                        )
-                    }
-                    onRestorationComplete()
-                }
-            } else {
-                updateSecondaryButtonLoading(true)
-                args.backupType?.let { backupType ->
-                    restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = false)
-                        .onSuccess { updateSecondaryButtonLoading(false) }
-                        .onFailure { updateSecondaryButtonLoading(false) }
-                }
-                onRestorationComplete()
+            updateSecondaryButtonLoading(true)
+            args.backupType?.let { backupType ->
+                restoreProfileFromBackupUseCase(backupType = backupType)
+                    .onSuccess { updateSecondaryButtonLoading(false) }
+                    .onFailure { updateSecondaryButtonLoading(false) }
             }
+            onRestorationComplete()
         }
     }
 
@@ -280,7 +220,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
         val isPrimaryButtonLoading: Boolean = false,
         val isSecondaryButtonLoading: Boolean = false,
-        val hasSkippedMainSeedPhrase: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
@@ -288,7 +227,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
             data object Loading : ScreenType
             data object Entities : ScreenType
             data object SeedPhrase : ScreenType
-            data object NoMainSeedPhrase : ScreenType
         }
 
         val nextRecoverableFactorSource: RecoverableFactorSource?

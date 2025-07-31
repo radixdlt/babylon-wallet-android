@@ -125,7 +125,8 @@ class AccountSettingsViewModel @Inject constructor(
                             messages = accountAndFactorSource.second?.let { factorSource ->
                                 getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(
                                     factorSource = factorSource,
-                                    includeNoIssuesStatus = false
+                                    includeNoIssuesStatus = false,
+                                    checkIntegrityOnlyIfAnyEntitiesLinked = false
                                 )
                             }.orEmpty().toPersistentList()
                         )

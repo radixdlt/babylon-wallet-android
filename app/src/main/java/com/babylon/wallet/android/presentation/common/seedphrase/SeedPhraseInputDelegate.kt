@@ -69,7 +69,7 @@ class SeedPhraseInputDelegate(
                 it.copy(value = value.trim())
             }).toPersistentList()
             state.copy(
-                seedPhraseWords = updatedWords,
+                seedPhraseWords = updatedWords
             )
         }
         debounceJob?.cancel()

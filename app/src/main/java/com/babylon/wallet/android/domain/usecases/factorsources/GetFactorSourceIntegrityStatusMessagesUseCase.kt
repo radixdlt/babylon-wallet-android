@@ -8,71 +8,64 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
-import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 
 class GetFactorSourceIntegrityStatusMessagesUseCase @Inject constructor(
     private val getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
-    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend fun forDeviceFactorSources(
         deviceFactorSources: List<FactorSource.Device>,
-        includeNoIssuesMessage: Boolean
+        includeNoIssuesMessage: Boolean,
+        checkIntegrityOnlyIfAnyEntitiesLinked: Boolean
     ): Map<FactorSourceId, List<FactorSourceStatusMessage>> = withContext(defaultDispatcher) {
         deviceFactorSources.mapNotNull { deviceFactorSource ->
             val entitiesLinkedToDeviceFactorSource = getEntitiesLinkedToFactorSourceUseCase(deviceFactorSource)
                 ?: return@mapNotNull null
             deviceFactorSource.id to forDeviceFactorSource(
-                deviceFactorSourceId = deviceFactorSource.id,
                 entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource,
-                includeNoIssuesStatus = includeNoIssuesMessage
+                includeNoIssuesStatus = includeNoIssuesMessage,
+                checkIntegrityOnlyIfAnyEntitiesLinked = checkIntegrityOnlyIfAnyEntitiesLinked
             )
         }.toMap()
     }
 
-    suspend fun forDeviceFactorSource(
-        deviceFactorSourceId: FactorSourceId,
+    fun forDeviceFactorSource(
         entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource,
-        includeNoIssuesStatus: Boolean
+        includeNoIssuesStatus: Boolean,
+        checkIntegrityOnlyIfAnyEntitiesLinked: Boolean
     ): List<FactorSourceStatusMessage> {
-        val isDeviceFactorSourceLinkedToAnyEntities = listOf(
-            entitiesLinkedToDeviceFactorSource.accounts,
-            entitiesLinkedToDeviceFactorSource.personas,
-            entitiesLinkedToDeviceFactorSource.hiddenAccounts,
-            entitiesLinkedToDeviceFactorSource.hiddenPersonas
-        ).any { it.isNotEmpty() }
+        val isLinkedToAnyEntity = with(entitiesLinkedToDeviceFactorSource) {
+            accounts.isNotEmpty() ||
+                personas.isNotEmpty() ||
+                hiddenAccounts.isNotEmpty() ||
+                hiddenPersonas.isNotEmpty()
+        }
 
-        val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
+        val shouldCheckIntegrity = !checkIntegrityOnlyIfAnyEntitiesLinked || isLinkedToAnyEntity
 
-        return if (isDeviceFactorSourceLinkedToAnyEntities) {
-            val deviceFactorSourceIntegrity =
-                entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
+        return if (shouldCheckIntegrity) {
             listOfNotNull(
-                deviceFactorSourceIntegrity.toMessage(
-                    includeNoIssuesStatus = includeNoIssuesStatus
-                )
+                (entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device)
+                    .toMessage(includeNoIssuesStatus)
             )
-        } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
-            // the integrity, but we can check if the user backed up the seed phrase
-            listOfNotNull(FactorSourceStatusMessage.NoSecurityIssues.takeIf { includeNoIssuesStatus })
         } else {
-            // otherwise we don't show any warnings
             emptyList()
         }
     }
 
     suspend fun forFactorSource(
         factorSource: FactorSource,
-        includeNoIssuesStatus: Boolean
+        includeNoIssuesStatus: Boolean,
+        checkIntegrityOnlyIfAnyEntitiesLinked: Boolean
     ): List<FactorSourceStatusMessage> = withContext(defaultDispatcher) {
         (factorSource as? FactorSource.Device)?.let { deviceFactorSource ->
             forDeviceFactorSources(
                 deviceFactorSources = listOf(deviceFactorSource),
-                includeNoIssuesMessage = includeNoIssuesStatus
+                includeNoIssuesMessage = includeNoIssuesStatus,
+                checkIntegrityOnlyIfAnyEntitiesLinked = checkIntegrityOnlyIfAnyEntitiesLinked
             )[deviceFactorSource.id]
         }.orEmpty()
     }

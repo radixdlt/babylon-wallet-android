@@ -61,7 +61,8 @@ class ChooseFactorSourceViewModel @Inject constructor(
                 }.toMap(),
                 statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
                     deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>(),
-                    includeNoIssuesMessage = false
+                    includeNoIssuesMessage = false,
+                    checkIntegrityOnlyIfAnyEntitiesLinked = false
                 )
             )
         }.flowOn(defaultDispatcher).stateIn(
@@ -100,7 +101,8 @@ class ChooseFactorSourceViewModel @Inject constructor(
                                                 entitiesLinkedToFactorSourceById = data.entitiesLinkedToFactorSourceById,
                                                 statusMessagesByFactorSourceId = data.statusMessagesByFactorSourceId,
                                                 alreadySelectedFactorSources = alreadySelectedFactorSources,
-                                                unusableFactorSources = unusableFactorSources
+                                                unusableFactorSources = unusableFactorSources,
+                                                includeNoIssuesMessage = false
                                             )
                                             .toPersistentList()
                                     )

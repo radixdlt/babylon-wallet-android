@@ -10,7 +10,7 @@ sealed class ProfileException(msg: String? = null, cause: Throwable? = null) : T
     data object InvalidSnapshot : ProfileException("The snapshot is invalid")
     data object InvalidPassword : ProfileException("The password is invalid")
     data object NoMnemonic : ProfileException("Please restore your Seed Phrase and try again")
-    data object SecureStorageAccess : ProfileException("There was issue tying to access mnemonic secure storage")
+    data object SecureStorageAccess : ProfileException("There was an issue tying to access mnemonic secure storage")
 
     data object InvalidMnemonic : ProfileException("Invalid mnemonic")
 }

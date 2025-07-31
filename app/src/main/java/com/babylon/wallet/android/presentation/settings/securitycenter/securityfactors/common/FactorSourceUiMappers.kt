@@ -17,12 +17,14 @@ fun List<FactorSource>.toUiItems(
     statusMessagesByFactorSourceId: Map<FactorSourceId, List<FactorSourceStatusMessage>>,
     alreadySelectedFactorSources: List<FactorSourceId> = emptyList(),
     unusableFactorSources: List<FactorSourceId> = emptyList(),
+    includeNoIssuesMessage: Boolean
 ): List<Selectable<FactorSourceCard>> = map { factorSource ->
     factorSource.toUiItem(
         entitiesLinkedToFactorSourceById = entitiesLinkedToFactorSourceById,
         statusMessagesByFactorSourceId = statusMessagesByFactorSourceId,
         alreadySelectedFactorSources = alreadySelectedFactorSources,
-        unusableFactorSources = unusableFactorSources
+        unusableFactorSources = unusableFactorSources,
+        includeNoIssuesMessage = includeNoIssuesMessage
     )
 }
 
@@ -31,10 +33,14 @@ fun FactorSource.toUiItem(
     statusMessagesByFactorSourceId: Map<FactorSourceId, List<FactorSourceStatusMessage>>,
     alreadySelectedFactorSources: List<FactorSourceId> = emptyList(),
     unusableFactorSources: List<FactorSourceId> = emptyList(),
+    includeNoIssuesMessage: Boolean
 ): Selectable<FactorSourceCard> {
     val messages = statusMessagesByFactorSourceId.getOrDefault(id, emptyList())
-        // We don't want to show the success checkmark indicating the factor source was backed up
-        .filterNot { it is FactorSourceStatusMessage.NoSecurityIssues }
+        .apply {
+            if (!includeNoIssuesMessage) {
+                filterNot { it is FactorSourceStatusMessage.NoSecurityIssues }
+            }
+        }
     val linkedEntities = entitiesLinkedToFactorSourceById[id]
 
     val cannotBeUsedHereMessage = if (id in unusableFactorSources) {

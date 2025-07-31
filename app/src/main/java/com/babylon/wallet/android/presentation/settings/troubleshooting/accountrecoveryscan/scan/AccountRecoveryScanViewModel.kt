@@ -124,7 +124,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     .filter { it.status == AccountWithOnLedgerStatus.Status.Active }
                     .map { it.account }.toPersistentList()
 
-                val maxActiveIndex = allRecoveredAccounts.indexOfLast { it.status == AccountWithOnLedgerStatus.Status.Active }
+                val maxActiveIndex =
+                    allRecoveredAccounts.indexOfLast { it.status == AccountWithOnLedgerStatus.Status.Active }
                 val inactiveAccounts = if (maxActiveIndex == -1) {
                     persistentListOf()
                 } else {
@@ -149,7 +150,12 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 if (error is CommonException.HostInteractionAborted) {
                     _state.update { state -> state.copy(isScanningNetwork = false) }
                 } else {
-                    _state.update { state -> state.copy(isScanningNetwork = false, uiMessage = UiMessage.ErrorMessage(error)) }
+                    _state.update { state ->
+                        state.copy(
+                            isScanningNetwork = false,
+                            uiMessage = UiMessage.ErrorMessage(error)
+                        )
+                    }
                     delay(Constants.SNACKBAR_SHOW_DURATION_MS)
                     sendEvent(Event.CloseScan)
                 }
@@ -202,6 +208,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                         _state.update { it.copy(isScanningNetwork = false) }
                     }
                 }
+
                 is DerivePublicKeysSource.FactorSource -> {
                     if (accountsToRecover.isNotEmpty()) {
                         addRecoveredAccountsToProfileUseCase(accounts = accountsToRecover)

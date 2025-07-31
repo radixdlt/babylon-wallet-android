@@ -129,16 +129,6 @@ private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, Li
         }
     }
 
-val Profile.mainBabylonFactorSource: FactorSource.Device?
-    get() {
-        val babylonFactorSources = deviceFactorSources.filter { it.isBabylonDeviceFactorSource }
-        return if (babylonFactorSources.size == 1) {
-            babylonFactorSources.first()
-        } else {
-            babylonFactorSources.firstOrNull { it.value.common.flags.contains(FactorSourceFlag.MAIN) }
-        }
-    }
-
 val Profile.babylonFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
         entry.key.isBabylonDeviceFactorSource

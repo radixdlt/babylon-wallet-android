@@ -14,8 +14,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        backupType: BackupType,
-        mainSeedPhraseSkipped: Boolean
+        backupType: BackupType
     ): Result<Unit> {
         val sargonOs = sargonOsManager.sargonOs
 
@@ -26,7 +25,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
         return runCatching {
             sargonOs.importWallet(
                 profile = profile,
-                bdfsSkipped = mainSeedPhraseSkipped
+                bdfsSkipped = false
             )
         }.onSuccess {
             backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)

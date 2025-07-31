@@ -99,7 +99,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             is ProfileException.InvalidSnapshot -> stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel)
             is ProfileException.InvalidPassword -> stringResource(id = R.string.recoverProfileBackup_passwordWrong)
             is ProfileException.NoMnemonic -> "Please restore your Seed Phrase and try again"
-            is ProfileException.SecureStorageAccess -> "There was issue tying to access mnemonic secure storage"
+            is ProfileException.SecureStorageAccess -> "There was an issue tying to access mnemonic secure storage"
             is ProfileException.AuthenticationSigningAlreadyExist -> "Signing Entity $entity already has authenticationSigning"
             ProfileException.InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
         }

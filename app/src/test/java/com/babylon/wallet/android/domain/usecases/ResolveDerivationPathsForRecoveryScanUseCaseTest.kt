@@ -22,7 +22,7 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.sargon.changeGatewayToNetworkId
-import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -39,7 +39,7 @@ class ResolveDerivationPathsForRecoveryScanUseCaseTest {
 
         coEvery { getProfileUseCase.finishedOnboardingProfile() } returns profile
 
-        val bdfs = requireNotNull(profile.mainBabylonFactorSource)
+        val bdfs = profile.deviceFactorSources.first()
 
         val paths = sut(
             source = DerivePublicKeysSource.FactorSource(v1 = bdfs.value.id),
@@ -75,7 +75,7 @@ class ResolveDerivationPathsForRecoveryScanUseCaseTest {
 
         coEvery { getProfileUseCase.finishedOnboardingProfile() } returns profile
 
-        val bdfs = requireNotNull(profile.mainBabylonFactorSource)
+        val bdfs = profile.deviceFactorSources.first()
 
         val paths = sut(
             source = DerivePublicKeysSource.FactorSource(v1 = bdfs.value.id),

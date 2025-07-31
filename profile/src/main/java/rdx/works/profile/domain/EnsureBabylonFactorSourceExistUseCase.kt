@@ -14,7 +14,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.olympiaBackwardsCompatible
 import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.data.repository.HostInfoRepository
@@ -34,7 +34,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
 
     suspend operator fun invoke(): Result<Profile> {
         val profile = profileRepository.profile.first()
-        if (profile.mainBabylonFactorSource != null) return Result.success(profile)
+        if (profile.deviceFactorSources.isNotEmpty()) return Result.success(profile)
         val hostInfo = hostInfoRepository.getHostInfo()
         return mnemonicRepository.createNew().fold(onSuccess = { mnemonic ->
             val deviceFactorSource = FactorSource.Device.babylon(
@@ -111,6 +111,6 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     }
 
     suspend fun babylonFactorSourceExist(): Boolean {
-        return profileRepository.profile.first().mainBabylonFactorSource != null
+        return profileRepository.profile.first().deviceFactorSources.isNotEmpty()
     }
 }
