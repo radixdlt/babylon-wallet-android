@@ -15,6 +15,7 @@ object Constants {
     const val RAD_QUEST_URL = "https://radquest.io?wallet=ready"
     const val RADIX_DOMAINS_URL = "https://docs.xrd.domains/#/wiki/records/namelets"
     const val RADIX_BLOG_POSTS_URL = "https://www.radixdlt.com/all-recent-posts"
+    const val RADIX_REWARDS_URL = "https://incentives-preview.radixdlt.com"
 
     const val EULA_LIGHT = "eula/eula-light.html"
     const val EULA_DARK = "eula/eula-dark.html"
