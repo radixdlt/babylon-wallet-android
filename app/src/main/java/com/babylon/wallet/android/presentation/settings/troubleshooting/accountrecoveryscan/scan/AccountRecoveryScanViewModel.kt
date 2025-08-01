@@ -95,7 +95,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    @Suppress("UnsafeCallOnNullableType")
+    @Suppress("LongMethod")
     private fun scan(recoverySource: DerivePublicKeysSource) {
         viewModelScope.launch {
             _state.update { it.copy(recoverySource = recoverySource, isScanningNetwork = true) }

@@ -135,18 +135,10 @@ class SetFactorSourceNameViewModel @Inject constructor(
 
         is SetFactorNameArgs.WithMnemonic -> when (args.factorSourceKind) {
             FactorSourceKind.DEVICE -> saveDeviceFactorSource(args)
-
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> error("Shouldn't be here")
             FactorSourceKind.OFF_DEVICE_MNEMONIC,
             FactorSourceKind.ARCULUS_CARD,
-            FactorSourceKind.PASSWORD -> sargonOsManager.callSafely(dispatcher) {
-                addNewMnemonicFactorSource(
-                    factorSourceKind = args.factorSourceKind,
-                    mnemonicWithPassphrase = args.mnemonicWithPassphrase,
-                    name = state.value.name
-                )
-            }
-
-            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> error("Shouldn't be here")
+            FactorSourceKind.PASSWORD -> error("Not yet supported")
         }
     }
 
@@ -163,7 +155,13 @@ class SetFactorSourceNameViewModel @Inject constructor(
                     DeviceFactorSourceType.BABYLON
                 }
             }
-        )
+        ).let {
+            it.copy(
+                hint = it.hint.copy(
+                    label = state.value.name
+                )
+            )
+        }
 
         return biometricsAuthenticateUseCase.asResult().then {
             mnemonicRepository.saveMnemonic(
@@ -180,17 +178,10 @@ class SetFactorSourceNameViewModel @Inject constructor(
                 addFactorSource(factorSource.asGeneral())
             }.mapCatching { added ->
                 if (added) {
-                    factorSource.asGeneral()
+                    factorSource.id.asGeneral()
                 } else {
                     throw RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
                 }
-            }
-        }.then { addedFactorSource ->
-            sargonOsManager.callSafely(dispatcher) {
-                sargonOsManager.sargonOs.updateFactorSourceName(
-                    factorSource = addedFactorSource,
-                    name = state.value.name
-                ).id
             }
         }
     }
