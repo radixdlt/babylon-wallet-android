@@ -3,6 +3,9 @@ package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -10,23 +13,24 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.Account
+import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileToCheck
-import com.radixdlt.sargon.extensions.isLegacy
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
-import rdx.works.core.sargon.active
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.deviceFactorSources
-import rdx.works.core.sargon.isHidden
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
@@ -36,7 +40,7 @@ import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions", "LongParameterList")
+@Suppress("LongParameterList")
 @HiltViewModel
 class RestoreMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -45,16 +49,18 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
+    private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
     private val keystoreManager: KeystoreManager,
     private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
-    lateinit var biometricAuthProvider: suspend () -> Boolean
 
     override fun initialState(): State = State()
 
@@ -74,7 +80,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
             _state.update {
                 it.copy(
-                    recoverableFactorSources = recoverableFactorSources
+                    recoverableFactorSources = recoverableFactorSources,
+                    isLoading = false
                 )
             }
 
@@ -93,28 +100,43 @@ class RestoreMnemonicsViewModel @Inject constructor(
             ProfileToCheck.Current -> getProfileUseCase()
             is ProfileToCheck.Specific -> this.v1
         }
+        val factorSources = profile.deviceFactorSources
+        val statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
+            deviceFactorSources = factorSources,
+            includeNoIssuesMessage = true,
+            checkIntegrityOnlyIfAnyEntitiesLinked = false
+        )
 
-        return profile.deviceFactorSources.map { deviceFactorSource ->
-            sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                factorSource = deviceFactorSource,
-                profileToCheck = this
-            ) to deviceFactorSource
-        }.filter {
-            (it.first.integrity as? FactorSourceIntegrity.Device)?.v1?.isMnemonicPresentInSecureStorage == false
-        }.map { (entities, deviceFactorSource) ->
-            val babylonAccounts = entities.accounts.filter { !it.isLegacy }
-            val olympiaAccounts = entities.accounts.filter { it.isLegacy }
+        return factorSources.map { factorSource ->
+            val messages = statusMessagesByFactorSourceId.getOrDefault(factorSource.id, emptyList())
+            val linkedEntities = sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
+                entitiesLinkedToFactorSource(
+                    factorSource = factorSource,
+                    profileToCheck = this@recoverableFactorSources
+                )
+            }.getOrNull()
 
             RecoverableFactorSource(
-                associatedAccounts = babylonAccounts.ifEmpty { olympiaAccounts },
-                factorSource = deviceFactorSource
+                factorSource = factorSource,
+                card = factorSource.toFactorSourceCard(
+                    isEnabled = true,
+                    messages = messages.toPersistentList(),
+                    accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
+                    personas = linkedEntities?.personas.orEmpty().toPersistentList(),
+                    hasHiddenEntities = !linkedEntities?.hiddenAccounts.isNullOrEmpty() ||
+                        !linkedEntities?.hiddenPersonas.isNullOrEmpty()
+                )
             )
         }
     }
 
     fun onBackClick() {
-        if (state.value.screenType != State.ScreenType.Entities) {
-            _state.update { it.copy(screenType = State.ScreenType.Entities, isMovingForward = false) }
+        val previousRecoverableFactorSource = state.value.previousRecoverableFactorSource
+        if (previousRecoverableFactorSource != null) {
+            seedPhraseInputDelegate.reset()
+            seedPhraseInputDelegate.setSeedPhraseSize(previousRecoverableFactorSource.factorSource.value.hint.mnemonicWordCount)
+
+            _state.update { it.proceedToPreviousRecoverable() }
         } else {
             viewModelScope.launch {
                 if (args.backupType is BackupType.File) {
@@ -145,23 +167,14 @@ class RestoreMnemonicsViewModel @Inject constructor(
         seedPhraseInputDelegate.onPassphraseChanged(value)
     }
 
-    fun onSubmit() {
-        if (state.value.screenType == State.ScreenType.Entities) {
-            _state.update {
-                it.copy(
-                    screenType = State.ScreenType.SeedPhrase,
-                    isMovingForward = true
-                )
-            }
-        } else {
-            viewModelScope.launch { restoreMnemonic() }
-        }
+    fun onContinueClick() {
+        viewModelScope.launch { restoreMnemonic() }
     }
 
     private suspend fun restoreMnemonic() {
         val factorSourceToRecover = state.value
             .recoverableFactorSource?.factorSource ?: return
-        if (biometricAuthProvider.invoke().not()) return
+        if (biometricsAuthenticateUseCase().not()) return
         _state.update { it.copy(isPrimaryButtonLoading = true) }
         restoreMnemonicUseCase(
             factorSource = factorSourceToRecover,
@@ -180,7 +193,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    @Suppress("NestedBlockDepth")
     private suspend fun showNextRecoverableFactorSourceOrFinish() {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
@@ -215,49 +227,43 @@ class RestoreMnemonicsViewModel @Inject constructor(
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
         private val selectedIndex: Int = -1,
-        val screenType: ScreenType = ScreenType.Loading,
-        val isMovingForward: Boolean = false,
+        val isLoading: Boolean = true,
         val uiMessage: UiMessage? = null,
         val isPrimaryButtonLoading: Boolean = false,
         val isSecondaryButtonLoading: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
-        sealed interface ScreenType {
-            data object Loading : ScreenType
-            data object Entities : ScreenType
-            data object SeedPhrase : ScreenType
-        }
+        val previousRecoverableFactorSource: RecoverableFactorSource?
+            get() = recoverableFactorSources.getOrNull(selectedIndex - 1)
 
         val nextRecoverableFactorSource: RecoverableFactorSource?
             get() = recoverableFactorSources.getOrNull(selectedIndex + 1)
 
         val recoverableFactorSource: RecoverableFactorSource?
-            get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
+            get() = recoverableFactorSources.getOrNull(selectedIndex)
 
         val isPrimaryButtonEnabled: Boolean
-            get() = (screenType != ScreenType.SeedPhrase || seedPhraseState.isValidSeedPhrase()) && !isSecondaryButtonLoading
+            get() = seedPhraseState.isValidSeedPhrase() && !isSecondaryButtonLoading
 
         fun proceedToNextRecoverable() = copy(
-            selectedIndex = selectedIndex + 1,
-            isMovingForward = true,
-            screenType = ScreenType.Entities
+            selectedIndex = selectedIndex + 1
+        )
+
+        fun proceedToPreviousRecoverable() = copy(
+            selectedIndex = selectedIndex - 1
         )
     }
 
     sealed interface Event : OneOffEvent {
+
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
+
         data object CloseApp : Event
     }
-}
 
-data class RecoverableFactorSource(
-    val associatedAccounts: List<Account>,
-    val factorSource: FactorSource.Device
-) {
-    val activeAccountsToDisplay: List<Account>
-        get() = associatedAccounts.active()
-
-    val areAllAccountsHidden: Boolean
-        get() = associatedAccounts.isNotEmpty() && associatedAccounts.all { it.isHidden }
+    data class RecoverableFactorSource(
+        val factorSource: FactorSource.Device,
+        val card: FactorSourceCard
+    )
 }

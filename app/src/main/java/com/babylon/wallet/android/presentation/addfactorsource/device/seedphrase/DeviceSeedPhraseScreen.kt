@@ -192,7 +192,9 @@ private fun DeviceSeedPhraseContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = when (state.context) {
                     AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle)
-                    is AddFactorSourceInput.Context.Recovery -> "Enter your BIP39 seed phrase. Make sure it's backed up securely and accessible only to you." // TODO localise
+                    is AddFactorSourceInput.Context.Recovery ->
+                        "Enter your BIP39 seed phrase. " +
+                            "Make sure it's backed up securely and accessible only to you." // TODO localise
                 },
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.text,

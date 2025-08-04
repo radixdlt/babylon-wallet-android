@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.selectfactorsource
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
@@ -81,9 +80,7 @@ class SelectFactorSourceViewModel @Inject constructor(
                     deviceFactorSources = eligibleFactorSources.filterIsInstance<FactorSource.Device>(),
                     includeNoIssuesMessage = true,
                     checkIntegrityOnlyIfAnyEntitiesLinked = false
-                ).also {
-                    Log.e("TAGTAG", "Status messages: $it")
-                }
+                )
             )
         }.flowOn(defaultDispatcher).stateIn(
             scope = viewModelScope,

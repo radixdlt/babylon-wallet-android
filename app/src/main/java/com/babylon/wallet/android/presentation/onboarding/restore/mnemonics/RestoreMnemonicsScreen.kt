@@ -1,14 +1,7 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,14 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,13 +23,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -50,6 +36,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsViewModel.RecoverableFactorSource
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -58,17 +45,14 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
-import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
-import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.sargon.sample
 
@@ -79,11 +63,6 @@ fun RestoreMnemonicsScreen(
     onDismiss: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        viewModel.biometricAuthProvider = { context.biometricAuthenticateSuspend() }
-    }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     RestoreMnemonicsContent(
@@ -92,11 +71,11 @@ fun RestoreMnemonicsScreen(
         onSkipSeedPhraseClick = {
             viewModel.onSkipSeedPhraseClick()
         },
-        onSubmitClick = {
+        onContinueClick = {
             keyboardController?.hide()
-            viewModel.onSubmit()
+            viewModel.onContinueClick()
         },
-        onWordTyped = viewModel::onWordChanged,
+        onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
         onWordSelected = viewModel::onWordSelected,
         onMessageShown = viewModel::onMessageShown
@@ -112,15 +91,14 @@ fun RestoreMnemonicsScreen(
     }
 }
 
-@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun RestoreMnemonicsContent(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
     onBackClick: () -> Unit,
     onSkipSeedPhraseClick: () -> Unit,
-    onSubmitClick: () -> Unit,
-    onWordTyped: (Int, String) -> Unit,
+    onContinueClick: () -> Unit,
+    onWordChanged: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit
@@ -135,22 +113,27 @@ private fun RestoreMnemonicsContent(
         onMessageShown = onMessageShown
     )
 
-    var focusedWordIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
+    var focusedWordIndex by remember { mutableStateOf<Int?>(null) }
     val isSuggestionsVisible = state.seedPhraseState.rememberSuggestionsVisibilityState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(state.uiMessage) {
+        if (state.uiMessage != null) {
+            keyboardController?.hide()
+        }
+    }
 
     Scaffold(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "",
+                title = stringResource(R.string.enterSeedPhrase_header_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities && isSuggestionsVisible) {
+            if (isSuggestionsVisible) {
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
@@ -164,38 +147,30 @@ private fun RestoreMnemonicsContent(
                         }
                     }
                 )
-            } else if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Loading) {
+            } else if (!state.isLoading) {
                 RadixBottomBar(
-                    text = stringResource(
-                        when (state.screenType) {
-                            RestoreMnemonicsViewModel.State.ScreenType.Loading -> R.string.empty
-                            RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
-                            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
-                        }
-                    ),
+                    text = stringResource(R.string.common_continue),
                     enabled = state.isPrimaryButtonEnabled,
                     isLoading = state.isPrimaryButtonLoading,
-                    onClick = onSubmitClick,
+                    onClick = onContinueClick,
                     additionalTopContent = {
-                        if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
-                            if (state.isSecondaryButtonLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .padding(vertical = RadixTheme.dimensions.paddingMedium)
-                                        .size(20.dp),
-                                    color = RadixTheme.colors.icon,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                RadixTextButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                                        .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                                    text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-                                    onClick = onSkipSeedPhraseClick
-                                )
-                            }
+                        if (state.isSecondaryButtonLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(vertical = RadixTheme.dimensions.paddingMedium)
+                                    .size(20.dp),
+                                color = RadixTheme.colors.icon,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            RadixTextButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                                    .padding(bottom = RadixTheme.dimensions.paddingSmall),
+                                text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                                onClick = onSkipSeedPhraseClick
+                            )
                         }
                     }
                 )
@@ -209,160 +184,62 @@ private fun RestoreMnemonicsContent(
         },
         containerColor = RadixTheme.colors.background
     ) { padding ->
-        if (state.screenType !is RestoreMnemonicsViewModel.State.ScreenType.Loading) {
-            val enterTransition = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it })
-            val exitTransition = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+        SecureScreen()
 
-            AnimatedVisibility(
-                modifier = Modifier.padding(padding),
-                visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities,
-                enter = enterTransition,
-                exit = exitTransition
+        val scrollState = rememberScrollState()
+        HideKeyboardOnFullScroll(scrollState)
+
+        if (!state.isLoading) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .verticalScroll(scrollState)
+                    .keyboardVisiblePadding(
+                        padding = padding,
+                        bottom = if (isSuggestionsVisible) {
+                            RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
+                        } else {
+                            RadixTheme.dimensions.paddingDefault
+                        }
+                    )
             ) {
-                EntitiesView(
-                    state = state
-                )
-            }
-
-            AnimatedVisibility(
-                modifier = Modifier.keyboardVisiblePadding(
-                    padding = padding,
-                    bottom = if (isSuggestionsVisible) {
-                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
-                    } else {
-                        RadixTheme.dimensions.paddingDefault
-                    }
-                ),
-                visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase,
-                enter = enterTransition,
-                exit = exitTransition
-            ) {
-                SeedPhraseView(
-                    state = state,
-                    onWordChanged = onWordTyped,
-                    onPassphraseChanged = onPassphraseChanged,
-                    onFocusedWordIndexChanged = { focusedWordIndex = it }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EntitiesView(
-    modifier: Modifier = Modifier,
-    state: RestoreMnemonicsViewModel.State
-) {
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_header_titleOther),
-            textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.text
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleOtherSeedPhrase)
-                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-            textAlign = TextAlign.Center,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.text
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        state.recoverableFactorSource?.let { recoverable ->
-            if (recoverable.areAllAccountsHidden) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge)
-                        .background(RadixTheme.colors.backgroundSecondary, shape = RadixTheme.shapes.roundedRectMedium)
-                ) {
-                    Text(
+                state.recoverableFactorSource?.let {
+                    FactorSourceCardView(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingXXLarge),
-                        text = stringResource(id = R.string.recoverSeedPhrase_hiddenAccountsOnly),
-                        textAlign = TextAlign.Center,
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.textSecondary
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        item = it.card
+                    )
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+
+                SeedPhraseInputForm(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    seedPhraseWords = state.seedPhraseState.seedPhraseWords,
+                    bip39Passphrase = state.seedPhraseState.bip39Passphrase,
+                    onWordChanged = onWordChanged,
+                    onPassphraseChanged = onPassphraseChanged,
+                    onFocusedWordIndexChanged = { focusedWordIndex = it },
+                    initiallyFocusedIndex = 0
+                )
+
+                val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
+                    state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+                }
+
+                if (shouldDisplaySeedPhraseWarning) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                    WarningText(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
                     )
                 }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-                    contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    items(recoverable.activeAccountsToDisplay) { account ->
-                        SimpleAccountCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            account = account
-                        )
-                    }
-                }
             }
-        }
-    }
-}
-
-@Composable
-private fun SeedPhraseView(
-    modifier: Modifier = Modifier,
-    state: RestoreMnemonicsViewModel.State,
-    onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
-    onPassphraseChanged: (String) -> Unit
-) {
-    SecureScreen()
-
-    val scrollState = rememberScrollState()
-    HideKeyboardOnFullScroll(scrollState)
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .imePadding()
-            .verticalScroll(scrollState)
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.enterSeedPhrase_header_title),
-            textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.text
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        SeedPhraseInputForm(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            seedPhraseWords = state.seedPhraseState.seedPhraseWords,
-            bip39Passphrase = state.seedPhraseState.bip39Passphrase,
-            onWordChanged = onWordChanged,
-            onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged,
-            initiallyFocusedIndex = 0
-        )
-        val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
-            state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
-        }
-        if (shouldDisplaySeedPhraseWarning) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            WarningText(
-                modifier = Modifier.fillMaxWidth(),
-                text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
-            )
         }
     }
 }
@@ -378,8 +255,8 @@ private fun RestoreMnemonicsContentPreview(
             state = state,
             onBackClick = {},
             onSkipSeedPhraseClick = {},
-            onSubmitClick = {},
-            onWordTyped = { _, _ -> },
+            onContinueClick = {},
+            onWordChanged = { _, _ -> },
             onPassphraseChanged = {},
             onWordSelected = { _, _ -> },
             onMessageShown = {}
@@ -395,20 +272,10 @@ class RestoreMnemonicsPreviewProvider : PreviewParameterProvider<RestoreMnemonic
             RestoreMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
-                        associatedAccounts = Account.sampleMainnet.all,
-                        factorSource = FactorSource.Device.sample()
+                        factorSource = FactorSource.Device.sample(),
+                        card = FactorSource.Device.sample().toFactorSourceCard()
                     )
                 ),
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
-            ),
-            RestoreMnemonicsViewModel.State(
-                recoverableFactorSources = listOf(
-                    RecoverableFactorSource(
-                        associatedAccounts = Account.sampleMainnet.all,
-                        factorSource = FactorSource.Device.sample()
-                    )
-                ),
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = (0 until 24).map {
                         SeedPhraseWord(
@@ -416,10 +283,10 @@ class RestoreMnemonicsPreviewProvider : PreviewParameterProvider<RestoreMnemonic
                             lastWord = it == 23
                         )
                     }.toPersistentList()
-                )
+                ),
+                isLoading = false,
+                selectedIndex = 0
             ),
-            RestoreMnemonicsViewModel.State(
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.Loading
-            )
+            RestoreMnemonicsViewModel.State()
         )
 }
