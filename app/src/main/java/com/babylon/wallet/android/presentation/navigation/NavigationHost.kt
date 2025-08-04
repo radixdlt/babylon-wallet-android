@@ -17,7 +17,6 @@ import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREAT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
@@ -363,23 +362,6 @@ fun NavigationHost(
                     accountId = accountId,
                     requestSource = requestSource ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
                 )
-            }
-        )
-        chooseLedger(
-            onBackClick = {
-                navController.navigateUp()
-            },
-            onFinish = {
-                navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
-            },
-            onStartRecovery = { factorSourceId, isOlympia ->
-                navController.accountRecoveryScan(
-                    factorSourceId = factorSourceId,
-                    isOlympia = isOlympia
-                )
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         createAccountConfirmationScreen(

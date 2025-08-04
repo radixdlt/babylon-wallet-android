@@ -62,7 +62,6 @@ import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.Add
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.ImportLegacyWalletUiState.Page
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
@@ -199,7 +198,7 @@ private fun ImportLegacyWalletContent(
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     verifiedLedgerDevices: ImmutableList<FactorSource.Ledger>,
-    addLedgerSheetState: AddLedgerDeviceUiState.ShowContent,
+    addLedgerSheetState: UseLedgerDelegate.UseLedgerDelegateState.AddLedgerContent,
     onContinueWithLedgerClick: () -> Unit,
     deviceModel: LedgerHardwareWalletModel?,
     shouldShowAddLinkConnectorScreen: Boolean,

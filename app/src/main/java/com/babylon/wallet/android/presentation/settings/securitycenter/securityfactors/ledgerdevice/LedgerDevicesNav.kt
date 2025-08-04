@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
 private const val ROUTE = "ledger_hardware_wallets_route"
@@ -19,8 +18,7 @@ fun NavController.ledgerDevices() {
 }
 
 fun NavGraphBuilder.ledgerDevices(
-    onNavigateToLedgerFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
+    toFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -40,10 +38,7 @@ fun NavGraphBuilder.ledgerDevices(
     ) {
         LedgerDevicesScreen(
             viewModel = hiltViewModel(),
-            onNavigateToLedgerFactorSourceDetails = onNavigateToLedgerFactorSourceDetails,
-            addLedgerDeviceViewModel = hiltViewModel(),
-            addLinkConnectorViewModel = hiltViewModel(),
-            onInfoClick = onInfoClick,
+            toFactorSourceDetails = toFactorSourceDetails,
             onBackClick = onBackClick
         )
     }

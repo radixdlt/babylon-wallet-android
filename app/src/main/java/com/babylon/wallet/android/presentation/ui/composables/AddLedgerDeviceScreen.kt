@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,14 +38,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.UseLedgerDelegate.UseLedgerDelegateState.AddLedgerContent
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import rdx.works.core.sargon.displayName
 
 @Composable
 fun AddLedgerDeviceScreen(
     modifier: Modifier = Modifier,
-    showContent: AddLedgerDeviceUiState.ShowContent,
+    showContent: AddLedgerContent,
     uiMessage: UiMessage? = null,
     deviceModel: LedgerHardwareWalletModel?,
     onSendAddLedgerRequestClick: () -> Unit,
@@ -107,7 +106,7 @@ fun AddLedgerDeviceScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     when (showContent) {
-                        AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo -> {
+                        AddLedgerContent.AddLedgerDeviceInfo -> {
                             Icon(
                                 painterResource(id = R.drawable.ic_hardware_ledger_big),
                                 tint = themedColorTint(),
@@ -146,7 +145,7 @@ fun AddLedgerDeviceScreen(
                             )
                         }
 
-                        AddLedgerDeviceUiState.ShowContent.NameLedgerDevice -> {
+                        AddLedgerContent.NameLedgerDevice -> {
                             Text(
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_title),
                                 style = RadixTheme.typography.title,
@@ -220,7 +219,7 @@ fun AddLedgerDeviceScreenPreview() {
     RadixWalletTheme {
         AddLedgerDeviceScreen(
             modifier = Modifier.fillMaxSize(),
-            showContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+            showContent = AddLedgerContent.AddLedgerDeviceInfo,
             uiMessage = null,
             deviceModel = LedgerHardwareWalletModel.NANO_S,
             onSendAddLedgerRequestClick = {},
@@ -241,7 +240,7 @@ fun AddLedgerDeviceContentPreview3() {
     RadixWalletTheme {
         AddLedgerDeviceScreen(
             modifier = Modifier.fillMaxSize(),
-            showContent = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
+            showContent = AddLedgerContent.NameLedgerDevice,
             uiMessage = null,
             deviceModel = LedgerHardwareWalletModel.NANO_S_PLUS,
             onSendAddLedgerRequestClick = {},

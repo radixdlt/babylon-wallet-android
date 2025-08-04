@@ -4,7 +4,6 @@ import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIn
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.delay
@@ -62,13 +61,6 @@ sealed interface AppEvent {
 
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {
-
-        sealed interface SelectLedgerOutcome : AccessFactorSources {
-
-            data class Selected(val ledgerFactorSource: FactorSource.Ledger) : SelectLedgerOutcome
-
-            data object Rejected : SelectLedgerOutcome
-        }
 
         data object RequestAuthorization : AccessFactorSources
 

@@ -9,10 +9,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.accountRecoveryScanSelection
-import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.troubleshooting.reset.resetWalletScreen
@@ -92,20 +90,6 @@ fun NavGraphBuilder.troubleshootingNavGraph(
                 navController.accountRecoveryScan(
                     factorSourceId = factorSourceId,
                     isOlympia = isForOlympia
-                )
-            }
-        )
-        chooseSeedPhrase(
-            onBack = {
-                navController.popBackStack()
-            },
-            onAddSeedPhrase = {
-                navController.addSingleMnemonic(mnemonicType = it)
-            },
-            onRecoveryScanWithFactorSource = { factorSourceId, isOlympia ->
-                navController.accountRecoveryScan(
-                    factorSourceId = factorSourceId,
-                    isOlympia = isOlympia
                 )
             }
         )

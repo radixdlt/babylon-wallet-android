@@ -19,7 +19,7 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.UseLedgerDelegate.UseLedgerDelegateState.AddLedgerContent
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
@@ -102,7 +102,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     val state = delegateState.addLedgerSheetState
                     uiState.copy(
                         addLedgerSheetState = state,
-                        shouldShowAddLedgerDeviceScreen = state == AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
+                        shouldShowAddLedgerDeviceScreen = state == AddLedgerContent.NameLedgerDevice,
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
                         uiMessage = delegateState.uiMessage
@@ -487,7 +487,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             if (useLedgerDelegate.state.first().hasLedgerDevices.not()) {
                 _state.update {
                     it.copy(
-                        addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+                        addLedgerSheetState = AddLedgerContent.AddLedgerDeviceInfo,
                         shouldShowAddLedgerDeviceScreen = true,
                     )
                 }
@@ -530,7 +530,7 @@ data class ImportLegacyWalletUiState(
     val waitingForLedgerResponse: Boolean = false,
     val verifiedLedgerDevices: ImmutableList<FactorSource.Ledger> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
-    val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+    val addLedgerSheetState: AddLedgerContent = AddLedgerContent.AddLedgerDeviceInfo,
     val seedPhraseInputState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,

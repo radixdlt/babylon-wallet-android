@@ -211,7 +211,6 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
                 AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
                 AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
-                is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
             }
         }
     }

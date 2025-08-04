@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -17,6 +17,7 @@ import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ProfileToCheck
@@ -29,7 +30,6 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -42,8 +42,7 @@ import javax.inject.Inject
 class LedgerDevicesViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
-    private val ledgerMessenger: LedgerMessenger,
-    private val p2PLinksRepository: P2PLinksRepository,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<LedgerDevicesViewModel.State>(),
     OneOffEventHandler<LedgerDevicesViewModel.Event> by OneOffEventHandlerImpl() {
@@ -121,85 +120,18 @@ class LedgerDevicesViewModel @Inject constructor(
 
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
-                .asList()
-                .isNotEmpty()
-
-            if (hasAtLeastOneLinkedConnector) {
-                _state.update {
-                    it.copy(showContent = State.ShowContent.AddLedger)
-                }
-            } else {
-                _state.update {
-                    it.copy(
-                        showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
-                            source = ShowLinkConnectorPromptState.Source.UseLedger
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    fun dismissConnectorPrompt(linkConnector: Boolean) {
-        _state.update {
-            it.copy(
-                showContent = if (linkConnector) {
-                    State.ShowContent.LinkNewConnector
-                } else {
-                    it.showContent
-                },
-                showLinkConnectorPromptState = ShowLinkConnectorPromptState.None
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKindPreselected(
+                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                    context = AddFactorSourceInput.Context.New
+                )
             )
         }
     }
 
-    fun disableAddLedgerButtonUntilConnectionIsEstablished() {
-        _state.update {
-            it.copy(showContent = State.ShowContent.Details)
-        }
-        ledgerMessenger.isAnyLinkedConnectorConnected
-            .dropWhile { isConnected ->
-                _state.update { state ->
-                    state.copy(isNewLinkedConnectorConnected = isConnected)
-                }
-                isConnected.not() // continue while isConnected is not true
-            }
-            .launchIn(viewModelScope)
-    }
-
-    fun onCloseClick() {
-        _state.update {
-            it.copy(showContent = State.ShowContent.Details)
-        }
-    }
-
-    fun onLinkConnectorClick() {
-        _state.update {
-            it.copy(showContent = State.ShowContent.AddLinkConnector)
-        }
-    }
-
-    fun onNewConnectorCloseClick() {
-        _state.update {
-            it.copy(showContent = State.ShowContent.Details)
-        }
-    }
-
     data class State(
-        val showContent: ShowContent = ShowContent.Details,
-        val ledgerFactorSources: PersistentList<FactorSourceCard> = persistentListOf(),
-        val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
-        val isNewLinkedConnectorConnected: Boolean = true
-    ) : UiState {
-
-        sealed interface ShowContent {
-            data object Details : ShowContent
-            data object AddLedger : ShowContent
-            data object LinkNewConnector : ShowContent
-            data object AddLinkConnector : ShowContent
-        }
-    }
+        val ledgerFactorSources: PersistentList<FactorSourceCard> = persistentListOf()
+    ) : UiState
 
     sealed interface Event : OneOffEvent {
 

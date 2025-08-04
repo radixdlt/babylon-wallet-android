@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
-import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
@@ -117,8 +116,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onBackClick = { navController.popBackStack() }
         )
         ledgerDevices(
-            onNavigateToLedgerFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            toFactorSourceDetails = { navController.factorSourceDetails(it) },
             onBackClick = { navController.navigateUp() }
         )
         arculusCards(
