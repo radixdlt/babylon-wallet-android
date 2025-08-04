@@ -44,7 +44,7 @@ import javax.inject.Inject
 @HiltViewModel
 @Suppress("LongParameterList", "TooManyFunctions")
 class CreateAccountViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val firstAccountCreationStatusManager: FirstAccountCreationStatusManager,
     private val syncAccountThirdPartyDepositsWithLedger: SyncAccountThirdPartyDepositsWithLedger,
     private val getProfileUseCase: GetProfileUseCase,

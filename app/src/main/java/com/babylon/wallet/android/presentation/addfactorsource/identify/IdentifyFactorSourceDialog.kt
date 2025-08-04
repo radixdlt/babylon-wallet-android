@@ -83,7 +83,10 @@ fun IdentifyFactorSourceDialog(
 @Composable
 private fun FactorSourceKind.message() = when (this) {
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ->
-        "Choose the **Ledger Nano** to use. Make sure it’s connected to a computer with a linked Radix Connector browser extension."
+        (
+            "Choose the **Ledger Nano** to use. Make sure it’s connected " +
+                "to a computer with a linked Radix Connector browser extension."
+            ) // TODO localise
             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
 
     FactorSourceKind.DEVICE,

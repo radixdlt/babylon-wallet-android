@@ -27,8 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoButtonTitle
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoGlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
@@ -40,6 +44,7 @@ fun AddFactorSourceIntroScreen(
     modifier: Modifier = Modifier,
     viewModel: AddFactorSourceIntroViewModel,
     onDismiss: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onAddDeviceFactorSource: () -> Unit,
     onAddLedgerFactorSource: () -> Unit,
     onAddLinkConnector: () -> Unit
@@ -50,6 +55,7 @@ fun AddFactorSourceIntroScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
+        onInfoClick = onInfoClick,
         onContinueClick = viewModel::onContinueClick
     )
 
@@ -70,6 +76,7 @@ private fun AddFactorSourceIntroContent(
     modifier: Modifier = Modifier,
     state: AddFactorSourceIntroViewModel.State,
     onDismiss: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit
 ) {
     Scaffold(
@@ -123,6 +130,13 @@ private fun AddFactorSourceIntroContent(
                 textAlign = TextAlign.Center
             )
 
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+            InfoButton(
+                text = state.factorSourceKind.infoButtonTitle(),
+                onClick = { onInfoClick(state.factorSourceKind.infoGlossaryItem()) }
+            )
+
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         }
     }
@@ -156,6 +170,7 @@ private fun AddFactorSourceIntroPreview(
         AddFactorSourceIntroContent(
             state = state,
             onDismiss = {},
+            onInfoClick = {},
             onContinueClick = {}
         )
     }
