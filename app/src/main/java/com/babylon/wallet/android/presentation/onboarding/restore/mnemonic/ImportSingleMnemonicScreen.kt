@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,7 +60,7 @@ private fun ImportSingleMnemonicsContent(
 ) {
     ImportMnemonicContentView(
         modifier = modifier,
-        isLoading = false,
+        isLoading = state.isLoading,
         uiMessage = state.uiMessage,
         factorSourceCard = state.factorSourceCard,
         isOlympia = state.isOlympia,
@@ -69,9 +68,8 @@ private fun ImportSingleMnemonicsContent(
         bottomBar = {
             RadixBottomBar(
                 text = stringResource(R.string.common_confirm),
-                enabled = remember(state.seedPhraseState) {
-                    state.seedPhraseState.isValidSeedPhrase()
-                },
+                enabled = state.isButtonEnabled,
+                isLoading = state.isButtonLoading,
                 onClick = onContinueClick
             )
         },
@@ -90,6 +88,7 @@ fun ImportSingleMnemonicPreview() {
     RadixWalletTheme {
         ImportSingleMnemonicsContent(
             state = ImportSingleMnemonicViewModel.State(
+                isLoading = false,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = (0 until 24).map {
                         SeedPhraseWord(

@@ -41,7 +41,7 @@ import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
-import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardViewEntryPoint
+import com.babylon.wallet.android.presentation.ui.composables.card.EventBusComposableEntryPoint
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openInAppUrl
 import com.radixdlt.sargon.os.driver.BiometricsHandler
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint
 
     @Inject
-    lateinit var factorSourceCardViewEntryPoint: FactorSourceCardViewEntryPoint
+    lateinit var factorSourceCardViewEntryPoint: EventBusComposableEntryPoint
 
     // Automatic biometric handler that requests for biometrics when mnemonics are accessed from sargon os
     @Inject

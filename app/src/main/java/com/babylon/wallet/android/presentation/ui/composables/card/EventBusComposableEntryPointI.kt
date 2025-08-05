@@ -16,36 +16,36 @@ import javax.inject.Inject
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
-interface FactorSourceCardViewEntryPointI {
+interface EventBusComposableEntryPointI {
 
     fun appEventBus(): AppEventBus
 }
 
 @ActivityRetainedScoped
-class FactorSourceCardViewEntryPoint @Inject constructor(
+class EventBusComposableEntryPoint @Inject constructor(
     @ApplicationContext context: Context
-) : FactorSourceCardViewEntryPointI {
+) : EventBusComposableEntryPointI {
 
-    private val provider = EntryPoints.get(context, FactorSourceCardViewEntryPointI::class.java)
+    private val provider = EntryPoints.get(context, EventBusComposableEntryPointI::class.java)
 
     override fun appEventBus(): AppEventBus = provider.appEventBus()
 }
 
-val factorSourceCardViewEntryPointMock = object : FactorSourceCardViewEntryPointI {
+val eventBusComposableEntryPointMock = object : EventBusComposableEntryPointI {
     override fun appEventBus(): AppEventBus = AppEventBusImpl()
 }
 
 @Suppress("CompositionLocalAllowlist")
-val LocalFactorSourceCardViewEntryPoint = compositionLocalOf<FactorSourceCardViewEntryPointI> {
+val LocalEventBusComposableEntryPoint = compositionLocalOf<EventBusComposableEntryPointI> {
     error("No FactorSourceCardViewEntryPoint provided")
 }
 
 @Composable
 fun ProvideMockFactorSourceCardViewEntryPoint(
-    entryPoint: FactorSourceCardViewEntryPointI = factorSourceCardViewEntryPointMock,
+    entryPoint: EventBusComposableEntryPointI = eventBusComposableEntryPointMock,
     content: @Composable () -> Unit
 ) {
-    CompositionLocalProvider(LocalFactorSourceCardViewEntryPoint provides entryPoint) {
+    CompositionLocalProvider(LocalEventBusComposableEntryPoint provides entryPoint) {
         content()
     }
 }

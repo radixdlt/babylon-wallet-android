@@ -133,6 +133,8 @@ fun ImportMnemonicContentView(
                     )
             ) {
                 factorSourceCard?.let {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
                     FactorSourceCardView(
                         modifier = Modifier
                             .fillMaxWidth()

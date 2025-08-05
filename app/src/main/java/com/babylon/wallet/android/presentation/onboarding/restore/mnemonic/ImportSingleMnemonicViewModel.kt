@@ -52,7 +52,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
     private val args = ImportSingleMnemonicNavArgs(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(isLoading = true)
 
     init {
         viewModelScope.launch {
@@ -63,7 +63,10 @@ class ImportSingleMnemonicViewModel @Inject constructor(
 
         when {
             args.factorSourceId != null -> initFactorSource(args.factorSourceId)
-            else -> seedPhraseInputDelegate.setSeedPhraseSize(Bip39WordCount.TWENTY_FOUR)
+            else -> {
+                seedPhraseInputDelegate.setSeedPhraseSize(Bip39WordCount.TWENTY_FOUR)
+                _state.update { it.copy(isLoading = false) }
+            }
         }
     }
 
@@ -98,6 +101,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
             if (!biometricsAuthenticateUseCase()) {
                 return@launch
             }
+            _state.update { it.copy(isButtonLoading = true) }
 
             val mnemonic = _state.value.seedPhraseState.toMnemonicWithPassphrase()
 
@@ -114,6 +118,8 @@ class ImportSingleMnemonicViewModel @Inject constructor(
                     _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
                 }
             }
+
+            _state.update { it.copy(isButtonLoading = true) }
         }
     }
 
@@ -130,7 +136,14 @@ class ImportSingleMnemonicViewModel @Inject constructor(
         viewModelScope.launch {
             val factorSource = getProfileUseCase.invoke().deviceFactorSources.firstOrNull {
                 it.id == factorSourceId
-            } ?: return@launch
+            }
+
+            if (factorSource == null) {
+                seedPhraseInputDelegate.setSeedPhraseSize(Bip39WordCount.TWENTY_FOUR)
+                _state.update { it.copy(isLoading = false) }
+                return@launch
+            }
+
             seedPhraseInputDelegate.setSeedPhraseSize(factorSource.value.hint.mnemonicWordCount)
 
             val linkedEntities = sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
@@ -142,6 +155,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
 
             _state.update {
                 it.copy(
+                    isLoading = false,
                     factorSourceCard = factorSource.toFactorSourceCard(
                         includeLastUsedOn = true,
                         accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
@@ -155,11 +169,16 @@ class ImportSingleMnemonicViewModel @Inject constructor(
     }
 
     data class State(
+        val isLoading: Boolean,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
         val factorSourceCard: FactorSourceCard? = null,
         val isOlympia: Boolean = false,
-        val uiMessage: UiMessage? = null
-    ) : UiState
+        val uiMessage: UiMessage? = null,
+        val isButtonLoading: Boolean = false
+    ) : UiState {
+
+        val isButtonEnabled = seedPhraseState.isValidSeedPhrase() && !isButtonLoading
+    }
 
     sealed interface Event : OneOffEvent {
         data object FactorSourceAdded : Event

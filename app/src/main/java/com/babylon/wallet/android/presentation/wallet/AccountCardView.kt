@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,23 +44,27 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
+import com.babylon.wallet.android.presentation.ui.composables.card.LocalEventBusComposableEntryPoint
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
 import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.AccountTag
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.AccountUiItem
+import com.babylon.wallet.android.utils.AppEvent
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -282,12 +287,54 @@ fun AccountCardView(
                 )
             }
         ) {
+            val dependenciesProvider = LocalEventBusComposableEntryPoint.current
+            val coroutineScope = rememberCoroutineScope()
+            val sendEvent = remember {
+                { event: AppEvent.FixSecurityIssue ->
+                    coroutineScope.launch {
+                        dependenciesProvider.appEventBus().sendEvent(event)
+                    }
+                }
+            }
+
             accountWithAssets.securityPrompts?.forEach { securityPromptType ->
                 AccountPromptLabel(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = RadixTheme.dimensions.paddingMedium),
-                    onClick = onApplySecuritySettingsClick,
+                    onClick = {
+                        val factorSourceId = accountWithAssets.factorSource?.id
+
+                        when (securityPromptType) {
+                            SecurityPromptType.WRITE_DOWN_SEED_PHRASE -> {
+                                if (factorSourceId != null) {
+                                    sendEvent(
+                                        AppEvent.FixSecurityIssue.WriteDownSeedPhrase(
+                                            factorSourceId = factorSourceId
+                                        )
+                                    )
+                                } else {
+                                    onApplySecuritySettingsClick()
+                                }
+                            }
+
+                            SecurityPromptType.RECOVERY_REQUIRED -> {
+                                if (factorSourceId != null) {
+                                    sendEvent(
+                                        AppEvent.FixSecurityIssue.ImportMnemonic(
+                                            factorSourceId = factorSourceId
+                                        )
+                                    )
+                                } else {
+                                    onApplySecuritySettingsClick()
+                                }
+                            }
+
+                            SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM,
+                            SecurityPromptType.WALLET_NOT_RECOVERABLE,
+                            SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> onApplySecuritySettingsClick()
+                        }
+                    },
                     text = securityPromptType.toText()
                 )
             }

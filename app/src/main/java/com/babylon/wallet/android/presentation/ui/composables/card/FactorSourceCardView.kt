@@ -114,7 +114,7 @@ fun FactorSourceCardView(
             endContent = endContent
         )
 
-        val dependenciesProvider = LocalFactorSourceCardViewEntryPoint.current
+        val dependenciesProvider = LocalEventBusComposableEntryPoint.current
         val coroutineScope = rememberCoroutineScope()
 
         MessagesView(
