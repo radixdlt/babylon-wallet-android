@@ -116,6 +116,7 @@ fun ArculusCardsScreenPreview() {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 FactorSourceCard(
@@ -132,6 +133,7 @@ fun ArculusCardsScreenPreview() {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 FactorSourceCard(
@@ -148,6 +150,7 @@ fun ArculusCardsScreenPreview() {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             ),

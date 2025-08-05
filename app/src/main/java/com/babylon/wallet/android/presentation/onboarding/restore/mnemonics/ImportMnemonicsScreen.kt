@@ -36,7 +36,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsViewModel.RecoverableFactorSource
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsViewModel.RecoverableFactorSource
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -57,15 +57,15 @@ import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.sargon.sample
 
 @Composable
-fun RestoreMnemonicsScreen(
-    viewModel: RestoreMnemonicsViewModel,
+fun ImportMnemonicsScreen(
+    viewModel: ImportMnemonicsViewModel,
     onCloseApp: () -> Unit,
     onDismiss: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    RestoreMnemonicsContent(
+    ImportMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
         onSkipSeedPhraseClick = {
@@ -84,17 +84,17 @@ fun RestoreMnemonicsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is RestoreMnemonicsViewModel.Event.FinishRestoration -> onDismiss(it.isMovingToMain)
-                is RestoreMnemonicsViewModel.Event.CloseApp -> onCloseApp()
+                is ImportMnemonicsViewModel.Event.FinishRestoration -> onDismiss(it.isMovingToMain)
+                is ImportMnemonicsViewModel.Event.CloseApp -> onCloseApp()
             }
         }
     }
 }
 
 @Composable
-private fun RestoreMnemonicsContent(
+private fun ImportMnemonicsContent(
     modifier: Modifier = Modifier,
-    state: RestoreMnemonicsViewModel.State,
+    state: ImportMnemonicsViewModel.State,
     onBackClick: () -> Unit,
     onSkipSeedPhraseClick: () -> Unit,
     onContinueClick: () -> Unit,
@@ -182,7 +182,7 @@ private fun RestoreMnemonicsContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         SecureScreen()
 
@@ -247,11 +247,11 @@ private fun RestoreMnemonicsContent(
 @UsesSampleValues
 @Preview
 @Composable
-private fun RestoreMnemonicsContentPreview(
-    @PreviewParameter(RestoreMnemonicsPreviewProvider::class) state: RestoreMnemonicsViewModel.State,
+private fun ImportMnemonicsContentPreview(
+    @PreviewParameter(ImportMnemonicsPreviewProvider::class) state: ImportMnemonicsViewModel.State,
 ) {
     RadixWalletTheme {
-        RestoreMnemonicsContent(
+        ImportMnemonicsContent(
             state = state,
             onBackClick = {},
             onSkipSeedPhraseClick = {},
@@ -265,11 +265,11 @@ private fun RestoreMnemonicsContentPreview(
 }
 
 @UsesSampleValues
-class RestoreMnemonicsPreviewProvider : PreviewParameterProvider<RestoreMnemonicsViewModel.State> {
+class ImportMnemonicsPreviewProvider : PreviewParameterProvider<ImportMnemonicsViewModel.State> {
 
-    override val values: Sequence<RestoreMnemonicsViewModel.State>
+    override val values: Sequence<ImportMnemonicsViewModel.State>
         get() = sequenceOf(
-            RestoreMnemonicsViewModel.State(
+            ImportMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
                         factorSource = FactorSource.Device.sample(),
@@ -287,6 +287,6 @@ class RestoreMnemonicsPreviewProvider : PreviewParameterProvider<RestoreMnemonic
                 isLoading = false,
                 selectedIndex = 0
             ),
-            RestoreMnemonicsViewModel.State()
+            ImportMnemonicsViewModel.State()
         )
 }

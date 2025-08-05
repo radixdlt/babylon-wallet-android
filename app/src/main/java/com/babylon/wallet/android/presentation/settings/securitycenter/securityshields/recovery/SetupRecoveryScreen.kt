@@ -618,6 +618,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -634,6 +635,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     )
                 ),
@@ -652,6 +654,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -668,6 +671,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     )
                 ),
@@ -689,6 +693,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     )
                 ),
@@ -707,6 +712,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     )
                 ),

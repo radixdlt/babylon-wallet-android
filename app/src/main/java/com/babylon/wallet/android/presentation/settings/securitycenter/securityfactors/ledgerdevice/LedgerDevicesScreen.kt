@@ -147,6 +147,7 @@ fun LedgerDevicesScreenPreview() {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             ),

@@ -264,6 +264,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -286,6 +287,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -308,6 +310,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -329,6 +332,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -351,6 +355,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = true
@@ -373,6 +378,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false

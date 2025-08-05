@@ -73,33 +73,29 @@ class MainViewModel @Inject constructor(
     val observeP2PLinks
         get() = incomingRequestsDelegate.observeP2PLinks
 
-    val statusEvents = appEventBus
-        .events
+    val statusEvents = appEventBus.events
         .filterIsInstance<AppEvent.Status>()
 
-    val addressDetailsEvents = appEventBus
-        .events
+    val addressDetailsEvents = appEventBus.events
         .filterIsInstance<AppEvent.AddressDetails>()
 
-    val accountDeletedEvents = appEventBus
-        .events
+    val accountDeletedEvents = appEventBus.events
         .filterIsInstance<AppEvent.AccountDeleted>()
 
-    val accountsDetectedDeletedEvents = appEventBus
-        .events
+    val accountsDetectedDeletedEvents = appEventBus.events
         .filterIsInstance<AppEvent.AccountsPreviouslyDeletedDetected>()
 
-    val accessFactorSourcesEvents = appEventBus
-        .events
+    val accessFactorSourcesEvents = appEventBus.events
         .filterIsInstance<AppEvent.AccessFactorSources>()
 
-    val addFactorSourceEvents = appEventBus
-        .events
+    val addFactorSourceEvents = appEventBus.events
         .filterIsInstance<AppEvent.AddFactorSource>()
 
-    val selectFactorSourceEvents = appEventBus
-        .events
+    val selectFactorSourceEvents = appEventBus.events
         .filterIsInstance<AppEvent.SelectFactorSource>()
+
+    val fixSecurityIssueEvents = appEventBus.events
+        .filterIsInstance<AppEvent.FixSecurityIssue>()
 
     val isDevBannerVisible = getProfileUseCase.state.map { profileState ->
         when (profileState) {

@@ -62,11 +62,11 @@ import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonicsScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
@@ -181,10 +181,10 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onRestoreConfirmed = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
+                navController.importMnemonics(
+                    args = ImportMnemonicsArgs(
                         backupType = it,
-                        requestSource = RestoreMnemonicsRequestSource.Onboarding
+                        requestSource = ImportMnemonicsRequestSource.Onboarding
                     )
                 )
             },
@@ -192,7 +192,7 @@ fun NavigationHost(
                 navController.restoreWithoutBackupScreen()
             }
         )
-        restoreMnemonicsScreen(
+        importMnemonicsScreen(
             onCloseApp = onCloseApp,
             onDismiss = { isMovingToMain ->
                 if (isMovingToMain) {
@@ -202,7 +202,7 @@ fun NavigationHost(
                 }
             }
         )
-        addSingleMnemonic(
+        importSingleMnemonic(
             onBackClick = {
                 navController.popBackStack()
             },
@@ -213,7 +213,7 @@ fun NavigationHost(
         restoreWithoutBackupScreen(
             onBack = { navController.popBackStack() },
             onRestoreConfirmed = {
-                navController.addSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
+                navController.importSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
             },
             onNewUserConfirmClick = {
                 navController.popBackStack(Screen.OnboardingDestination.route, inclusive = false)
@@ -421,14 +421,13 @@ fun NavigationHost(
             },
             onFactorSourceCardClick = { factorSourceId ->
                 navController.factorSourceDetails(factorSourceId)
-            },
-            onSecurityPromptMessageClick = {
-                navController.securityCenter()
             }
         )
-        personaEditScreen(onBackClick = {
-            navController.navigateUp()
-        })
+        personaEditScreen(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        )
         transactionReviewScreen(
             onBackClick = {
                 navController.popBackStack()
@@ -538,9 +537,6 @@ fun NavigationHost(
             },
             onFactorSourceCardClick = { factorSourceId ->
                 navController.factorSourceDetails(factorSourceId)
-            },
-            onSecurityPromptMessageClick = {
-                navController.securityCenter()
             }
         )
         deleteAccount(

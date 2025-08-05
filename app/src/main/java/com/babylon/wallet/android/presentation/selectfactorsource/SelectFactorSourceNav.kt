@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.FactorSourceId
 
 private const val ROUTE_SELECT_FACTOR_SOURCE = "select_factor_source"
@@ -18,8 +17,7 @@ fun NavController.selectFactorSource() {
 
 fun NavGraphBuilder.selectFactorSource(
     onDismiss: () -> Unit,
-    onComplete: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onComplete: (FactorSourceId) -> Unit
 ) {
     composable(
         route = ROUTE_SELECT_FACTOR_SOURCE,
@@ -31,8 +29,7 @@ fun NavGraphBuilder.selectFactorSource(
         SelectFactorSourceScreen(
             viewModel = hiltViewModel(),
             onDismiss = onDismiss,
-            onComplete = onComplete,
-            onSecurityPromptMessageClick = onSecurityPromptMessageClick
+            onComplete = onComplete
         )
     }
 }

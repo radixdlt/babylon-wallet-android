@@ -45,7 +45,6 @@ import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSource
@@ -67,8 +66,7 @@ fun PersonaDetailScreen(
     modifier: Modifier = Modifier,
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -106,8 +104,7 @@ fun PersonaDetailScreen(
         onHidePersona = {
             showHidePersonaPrompt = true
         },
-        onFactorSourceCardClick = onFactorSourceCardClick,
-        onSecurityPromptMessageClick = onSecurityPromptMessageClick
+        onFactorSourceCardClick = onFactorSourceCardClick
     )
 }
 
@@ -119,8 +116,7 @@ private fun PersonaDetailContent(
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onHidePersona: () -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -162,8 +158,7 @@ private fun PersonaDetailContent(
                 securedWith = state.securedWith,
                 onDAppClick = onDAppClick,
                 onEditPersona = onEditPersona,
-                onFactorSourceCardClick = onFactorSourceCardClick,
-                onSecurityPromptMessageClick = onSecurityPromptMessageClick
+                onFactorSourceCardClick = onFactorSourceCardClick
             )
         } else {
             FullscreenCircularProgressContent()
@@ -179,8 +174,7 @@ private fun PersonaDetailList(
     securedWith: FactorSourceCard?,
     onDAppClick: (DApp) -> Unit,
     onEditPersona: (IdentityAddress) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault),
@@ -245,8 +239,7 @@ private fun PersonaDetailList(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
-                    item = factorSourceCard,
-                    onSecurityPromptMessageClick = onSecurityPromptMessageClick
+                    item = factorSourceCard
                 )
 
                 HorizontalDivider(
@@ -326,8 +319,7 @@ fun PersonaDetailContentPreview() {
             onEditPersona = {},
             onDAppClick = {},
             onHidePersona = {},
-            onFactorSourceCardClick = {},
-            onSecurityPromptMessageClick = {}
+            onFactorSourceCardClick = {}
         )
     }
 }

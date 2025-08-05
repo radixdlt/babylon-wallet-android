@@ -26,7 +26,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
@@ -43,14 +42,12 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun SelectableSingleChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
-    onSecurityPromptMessageClick: ((SecurityPrompt) -> Unit)? = null,
     item: Selectable<FactorSourceCard>,
     onSelect: (FactorSourceCard) -> Unit
 ) {
     FactorSourceCardView(
         modifier = modifier.noIndicationClickable(item.data.isEnabled) { onSelect(item.data) },
         item = item.data,
-        onSecurityPromptMessageClick = onSecurityPromptMessageClick,
         endContent = {
             RadioButtonSelectorView(
                 isEnabled = item.data.isEnabled,
@@ -228,11 +225,12 @@ private fun SelectableSingleChoiceFactorSourceCardPreview() {
                     includeDescription = false,
                     lastUsedOn = "Today",
                     kind = FactorSourceKind.ARCULUS_CARD,
-                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase),
+                    messages = persistentListOf(SecurityPrompt.WriteDownSeedPhrase),
                     accounts = persistentListOf(Account.sampleMainnet()),
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = true
@@ -263,6 +261,7 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = true
@@ -293,6 +292,7 @@ private fun SimpleSelectableSingleChoiceFactorSourceCardPreview() {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = true
@@ -336,6 +336,7 @@ private fun RemovableFactorSourceCardPreview() {
                 personas = persistentListOf(),
                 hasHiddenEntities = false,
                 supportsBabylon = true,
+                supportsOlympia = false,
                 isEnabled = true
             ),
             onRemoveClick = {}

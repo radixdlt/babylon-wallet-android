@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
-import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.hasHiddenEntities
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -21,7 +21,6 @@ import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileToCheck
-import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
@@ -42,24 +41,23 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
-class RestoreMnemonicsViewModel @Inject constructor(
+class ImportMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
     private val keystoreManager: KeystoreManager,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-) : StateViewModel<RestoreMnemonicsViewModel.State>(),
-    OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<ImportMnemonicsViewModel.State>(),
+    OneOffEventHandler<ImportMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val args = RestoreMnemonicsArgs.from(savedStateHandle)
+    private val args = ImportMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     override fun initialState(): State = State()
@@ -101,14 +99,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
             is ProfileToCheck.Specific -> this.v1
         }
         val factorSources = profile.deviceFactorSources
-        val statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
-            deviceFactorSources = factorSources,
-            includeNoIssuesMessage = true,
-            checkIntegrityOnlyIfAnyEntitiesLinked = false
-        )
 
         return factorSources.map { factorSource ->
-            val messages = statusMessagesByFactorSourceId.getOrDefault(factorSource.id, emptyList())
             val linkedEntities = sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
                 entitiesLinkedToFactorSource(
                     factorSource = factorSource,
@@ -119,12 +111,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
             RecoverableFactorSource(
                 factorSource = factorSource,
                 card = factorSource.toFactorSourceCard(
-                    isEnabled = true,
-                    messages = messages.toPersistentList(),
                     accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
                     personas = linkedEntities?.personas.orEmpty().toPersistentList(),
-                    hasHiddenEntities = !linkedEntities?.hiddenAccounts.isNullOrEmpty() ||
-                        !linkedEntities?.hiddenPersonas.isNullOrEmpty()
+                    hasHiddenEntities = linkedEntities.hasHiddenEntities
                 )
             )
         }
@@ -215,7 +204,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         homeCardsRepository.walletRestored()
         sendEvent(
             Event.FinishRestoration(
-                isMovingToMain = args.requestSource != RestoreMnemonicsRequestSource.FactorSourceDetails
+                isMovingToMain = args.requestSource != ImportMnemonicsRequestSource.FactorSourceDetails
             )
         )
     }

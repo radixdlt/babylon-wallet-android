@@ -4,6 +4,7 @@ import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIn
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.delay
@@ -158,4 +159,16 @@ sealed interface AppEvent {
     }
 
     data object ConnectorLinked : AppEvent
+
+    sealed interface FixSecurityIssue : AppEvent {
+
+        data class RestoreMnemonic(
+            val factorSourceId: FactorSourceId,
+            val isOlympia: Boolean
+        ) : FixSecurityIssue
+
+        data class WriteDownSeedPhrase(
+            val factorSourceId: FactorSourceId
+        ) : FixSecurityIssue
+    }
 }

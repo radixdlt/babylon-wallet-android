@@ -31,7 +31,6 @@ import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSin
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.FactorSourceCategoryHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -48,8 +47,7 @@ fun SelectFactorSourceScreen(
     modifier: Modifier = Modifier,
     viewModel: SelectFactorSourceViewModel,
     onDismiss: () -> Unit,
-    onComplete: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onComplete: (FactorSourceId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -59,8 +57,7 @@ fun SelectFactorSourceScreen(
         onBackClick = viewModel::onBackClick,
         onSelectFactorSource = viewModel::onSelectFactorSource,
         onContinueClick = viewModel::onContinueClick,
-        onAddFactorSourceClick = viewModel::onAddFactorSourceClick,
-        onSecurityPromptMessageClick = onSecurityPromptMessageClick
+        onAddFactorSourceClick = viewModel::onAddFactorSourceClick
     )
 
     LaunchedEffect(Unit) {
@@ -80,8 +77,7 @@ private fun SelectFactorSourceContent(
     onBackClick: () -> Unit,
     onSelectFactorSource: (FactorSourceCard) -> Unit,
     onContinueClick: () -> Unit,
-    onAddFactorSourceClick: () -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onAddFactorSourceClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -140,8 +136,7 @@ private fun SelectFactorSourceContent(
                     is SelectFactorSourceViewModel.State.UiItem.Factor -> SelectableSingleChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
                         item = item.selectable,
-                        onSelect = onSelectFactorSource,
-                        onSecurityPromptMessageClick = onSecurityPromptMessageClick
+                        onSelect = onSelectFactorSource
                     )
                 }
             }
@@ -176,8 +171,7 @@ private fun SelectFactorSourcePreview(
             onBackClick = {},
             onSelectFactorSource = {},
             onContinueClick = {},
-            onAddFactorSourceClick = {},
-            onSecurityPromptMessageClick = {}
+            onAddFactorSourceClick = {}
         )
     }
 }
@@ -207,6 +201,7 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
                     ),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -229,6 +224,7 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -251,6 +247,7 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -272,6 +269,7 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -294,6 +292,7 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = true
@@ -316,6 +315,7 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false

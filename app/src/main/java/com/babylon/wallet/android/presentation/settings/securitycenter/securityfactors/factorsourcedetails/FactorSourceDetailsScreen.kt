@@ -51,15 +51,17 @@ fun FactorSourceDetailsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is FactorSourceDetailsViewModel.Event.NavigateToSeedPhrase ->
-                    navigateToViewSeedPhrase(
-                        event.factorSourceId
-                    )
+                is FactorSourceDetailsViewModel.Event.NavigateToSeedPhrase -> {
+                    navigateToViewSeedPhrase(event.factorSourceId)
+                }
 
-                is FactorSourceDetailsViewModel.Event.NavigateToSeedPhraseRestore ->
+                is FactorSourceDetailsViewModel.Event.NavigateToSeedPhraseRestore -> {
                     navigateToViewSeedPhraseRestore()
+                }
 
-                FactorSourceDetailsViewModel.Event.NavigateBack -> onBackClick()
+                FactorSourceDetailsViewModel.Event.NavigateBack -> {
+                    onBackClick()
+                }
             }
         }
     }

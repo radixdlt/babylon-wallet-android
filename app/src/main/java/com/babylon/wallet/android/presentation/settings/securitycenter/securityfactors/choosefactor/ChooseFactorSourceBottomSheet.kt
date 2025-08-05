@@ -276,6 +276,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     ),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             ),
@@ -299,6 +300,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     ),
                     hasHiddenEntities = true,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             ),
@@ -317,6 +319,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             ),
@@ -339,6 +342,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     ),
                     hasHiddenEntities = true,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             )
@@ -363,6 +367,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     ),
                     hasHiddenEntities = false,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             ),
@@ -381,6 +386,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     personas = persistentListOf(),
                     hasHiddenEntities = true,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 )
             )

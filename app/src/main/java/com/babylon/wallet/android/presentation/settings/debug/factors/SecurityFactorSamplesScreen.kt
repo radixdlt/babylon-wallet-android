@@ -185,6 +185,7 @@ private fun SecurityFactorSamplesPreview() {
                         ),
                         hasHiddenEntities = true,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     )
                 ),
@@ -228,6 +229,7 @@ private fun SecurityFactorSamplesPreview() {
                             personas = persistentListOf(),
                             hasHiddenEntities = false,
                             supportsBabylon = true,
+                            supportsOlympia = false,
                             isEnabled = true
                         )
                     )
@@ -248,6 +250,7 @@ private fun SecurityFactorSamplesPreview() {
                             personas = persistentListOf(),
                             hasHiddenEntities = false,
                             supportsBabylon = true,
+                            supportsOlympia = false,
                             isEnabled = true
                         )
                     )

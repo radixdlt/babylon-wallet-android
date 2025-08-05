@@ -8,7 +8,6 @@ import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCommon
 import com.radixdlt.sargon.FactorSourceCryptoParameters
-import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
@@ -23,8 +22,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
-import com.radixdlt.sargon.extensions.vendor
-import com.radixdlt.sargon.extensions.version
 import com.radixdlt.sargon.samples.Sample
 import rdx.works.core.TimestampGenerator
 import java.time.OffsetDateTime
@@ -59,10 +56,9 @@ fun FactorSource.Device.Companion.babylon(
     hostInfo: HostInfo,
     createdAt: Timestamp = OffsetDateTime.now(),
     isMain: Boolean = false
-): FactorSource.Device = device(
+): FactorSource.Device = FactorSource.Device.babylon(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
     hostInfo = hostInfo,
-    isOlympia = false,
     createdAt = createdAt,
     isMain = isMain
 )
@@ -71,52 +67,11 @@ fun FactorSource.Device.Companion.olympia(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
     hostInfo: HostInfo,
     createdAt: Timestamp = OffsetDateTime.now()
-): FactorSource.Device = device(
+): FactorSource.Device = FactorSource.Device.olympia(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
     hostInfo = hostInfo,
-    isOlympia = true,
-    createdAt = createdAt,
-    isMain = false
+    createdAt = createdAt
 )
-
-@Suppress("LongParameterList")
-fun FactorSource.Device.Companion.device(
-    mnemonicWithPassphrase: MnemonicWithPassphrase,
-    hostInfo: HostInfo,
-    isOlympia: Boolean,
-    createdAt: Timestamp,
-    isMain: Boolean = false
-): FactorSource.Device {
-    require((isMain && isOlympia).not()) {
-        "Olympia Device factor source should never be marked 'main'."
-    }
-    // TODO Replace with the initializer from Sargon
-    return DeviceFactorSource(
-        id = FactorSourceId.Hash.init(
-            kind = FactorSourceKind.DEVICE,
-            mnemonicWithPassphrase = mnemonicWithPassphrase
-        ).value,
-        common = FactorSourceCommon(
-            cryptoParameters = if (isOlympia) {
-                FactorSourceCryptoParameters.olympia
-            } else {
-                FactorSourceCryptoParameters.babylon
-            },
-            addedOn = createdAt,
-            lastUsedOn = createdAt,
-            flags = if (isMain) listOf(FactorSourceFlag.MAIN) else emptyList()
-        ),
-        hint = DeviceFactorSourceHint(
-            model = hostInfo.description.model,
-            deviceName = hostInfo.description.name,
-            label = "My Phone",
-            mnemonicWordCount = mnemonicWithPassphrase.mnemonic.wordCount,
-            systemVersion = hostInfo.hostOs.version,
-            hostAppVersion = hostInfo.hostOs.version,
-            hostVendor = hostInfo.hostOs.vendor
-        )
-    ).asGeneral()
-}
 
 fun FactorSource.Ledger.Companion.init(
     id: FactorSourceId.Hash,

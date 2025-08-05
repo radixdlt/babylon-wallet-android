@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.supportsOlympia
 import javax.inject.Inject
 
 @HiltViewModel
@@ -117,7 +118,8 @@ class BiometricsPinViewModel @Inject constructor(
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
-            supportsBabylon = this.asGeneral().supportsBabylon,
+            supportsBabylon = asGeneral().supportsBabylon,
+            supportsOlympia = asGeneral().supportsOlympia,
             isEnabled = true
         )
     }

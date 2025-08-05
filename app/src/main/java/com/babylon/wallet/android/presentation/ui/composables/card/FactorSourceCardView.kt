@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +48,7 @@ import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
@@ -60,6 +62,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
 
 @Composable
 fun FactorSourceKindCardView(
@@ -90,8 +93,7 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
-    containerColor: Color = RadixTheme.colors.card,
-    onSecurityPromptMessageClick: ((SecurityPrompt) -> Unit)? = null,
+    containerColor: Color = RadixTheme.colors.cardSecondary,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
@@ -112,9 +114,34 @@ fun FactorSourceCardView(
             endContent = endContent
         )
 
+        val dependenciesProvider = LocalFactorSourceCardViewEntryPoint.current
+        val coroutineScope = rememberCoroutineScope()
+
         MessagesView(
             messages = item.messages,
-            onSecurityPromptMessageClicked = onSecurityPromptMessageClick
+            onSecurityPromptMessageClicked = { message ->
+                coroutineScope.launch {
+                    when (message) {
+                        SecurityPrompt.SeedPhraseNeedRecovery,
+                        SecurityPrompt.LostFactorSource -> {
+                            dependenciesProvider.appEventBus().sendEvent(
+                                AppEvent.FixSecurityIssue.RestoreMnemonic(
+                                    factorSourceId = item.id,
+                                    isOlympia = !item.supportsBabylon && item.supportsOlympia
+                                )
+                            )
+                        }
+                        SecurityPrompt.EntitiesNotRecoverable,
+                        SecurityPrompt.WriteDownSeedPhrase -> {
+                            dependenciesProvider.appEventBus().sendEvent(
+                                AppEvent.FixSecurityIssue.WriteDownSeedPhrase(
+                                    factorSourceId = item.id
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         )
 
         LinkedEntitiesView(
@@ -443,8 +470,7 @@ private fun FactorSourceCardPreview(
 ) {
     RadixWalletPreviewTheme {
         FactorSourceCardView(
-            item = item,
-            onSecurityPromptMessageClick = {}
+            item = item
         )
     }
 }
@@ -512,6 +538,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 ),
                 hasHiddenEntities = true,
                 supportsBabylon = true,
+                supportsOlympia = false,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -538,6 +565,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
                 supportsBabylon = true,
+                supportsOlympia = false,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -558,6 +586,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
                 supportsBabylon = true,
+                supportsOlympia = false,
                 isEnabled = false
             ),
             FactorSourceCard(
@@ -577,6 +606,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 ),
                 hasHiddenEntities = false,
                 supportsBabylon = true,
+                supportsOlympia = false,
                 isEnabled = true
             ),
             FactorSourceCard(
@@ -593,6 +623,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 personas = persistentListOf(),
                 hasHiddenEntities = true,
                 supportsBabylon = true,
+                supportsOlympia = false,
                 isEnabled = true
             )
         )

@@ -26,7 +26,7 @@ internal class RevealSeedPhraseArgs(val factorSourceId: FactorSourceId.Hash) {
     )
 }
 
-fun NavController.revealSeedPhrase(factorSourceId: FactorSourceId.Hash) {
+fun NavController.revealSeedPhrase(factorSourceId: FactorSourceId) {
     navigate("reveal_seed_phrase/${factorSourceId.toJson()}")
 }
 

@@ -41,8 +41,11 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
@@ -146,6 +149,10 @@ fun WalletApp(
             navController = navController,
             selectFactorSourceEvents = mainViewModel.selectFactorSourceEvents
         )
+        HandleFixSecurityIssueEvents(
+            navController = navController,
+            events = mainViewModel.fixSecurityIssueEvents
+        )
         ObserveHighPriorityScreens(
             navController = navController,
             onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -242,6 +249,35 @@ private fun HandleSelectFactorSourceEvents(
     LaunchedEffect(Unit) {
         selectFactorSourceEvents.collect { _ ->
             navController.selectFactorSource()
+        }
+    }
+}
+
+@Composable
+private fun HandleFixSecurityIssueEvents(
+    navController: NavController,
+    events: Flow<AppEvent.FixSecurityIssue>
+) {
+    LaunchedEffect(Unit) {
+        events.collect { event ->
+            when (event) {
+                is AppEvent.FixSecurityIssue.RestoreMnemonic -> {
+                    navController.importSingleMnemonic(
+                        factorSourceId = event.factorSourceId,
+                        mnemonicType = if (event.isOlympia) {
+                            MnemonicType.Olympia
+                        } else {
+                            MnemonicType.Babylon
+                        }
+                    )
+                }
+
+                is AppEvent.FixSecurityIssue.WriteDownSeedPhrase -> {
+                    navController.revealSeedPhrase(
+                        factorSourceId = event.factorSourceId
+                    )
+                }
+            }
         }
     }
 }

@@ -24,6 +24,7 @@ import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.supportsBabylon
+import com.radixdlt.sargon.extensions.supportsOlympia
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -107,7 +108,8 @@ class LedgerDevicesViewModel @Inject constructor(
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
-            supportsBabylon = this.asGeneral().supportsBabylon,
+            supportsBabylon = asGeneral().supportsBabylon,
+            supportsOlympia = asGeneral().supportsOlympia,
             isEnabled = true
         )
     }

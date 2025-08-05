@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
+import rdx.works.core.sargon.addFirstBabylonDeviceFactorSource
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.deviceFactorSources
@@ -43,8 +43,8 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
                 createdAt = TimestampGenerator(),
                 isMain = true
             )
-            val updatedProfile = profile.addMainBabylonDeviceFactorSource(
-                mainBabylonFactorSource = deviceFactorSource
+            val updatedProfile = profile.addFirstBabylonDeviceFactorSource(
+                firstBabylonFactorSource = deviceFactorSource
             )
             profileRepository.saveProfile(updatedProfile)
             Result.success(updatedProfile)

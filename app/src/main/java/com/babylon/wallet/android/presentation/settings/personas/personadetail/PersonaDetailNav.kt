@@ -11,7 +11,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.init
@@ -37,8 +36,7 @@ fun NavGraphBuilder.personaDetailScreen(
     onBackClick: () -> Unit,
     onPersonaEdit: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DETAIL,
@@ -65,8 +63,7 @@ fun NavGraphBuilder.personaDetailScreen(
             onBackClick = onBackClick,
             onEditPersona = onPersonaEdit,
             onDAppClick = onDAppClick,
-            onFactorSourceCardClick = onFactorSourceCardClick,
-            onSecurityPromptMessageClick = onSecurityPromptMessageClick
+            onFactorSourceCardClick = onFactorSourceCardClick
         )
     }
 }

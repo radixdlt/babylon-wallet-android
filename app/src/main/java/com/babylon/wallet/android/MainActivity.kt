@@ -41,6 +41,7 @@ import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardViewEntryPoint
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openInAppUrl
 import com.radixdlt.sargon.os.driver.BiometricsHandler
@@ -69,6 +70,9 @@ class MainActivity : AppCompatActivity() {
     // During development we use a mock ActionableAddressViewEntryPoint in order to have previews.
     @Inject
     lateinit var actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint
+
+    @Inject
+    lateinit var factorSourceCardViewEntryPoint: FactorSourceCardViewEntryPoint
 
     // Automatic biometric handler that requests for biometrics when mnemonics are accessed from sargon os
     @Inject
@@ -115,7 +119,8 @@ class MainActivity : AppCompatActivity() {
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
                 CustomCompositionProviders(
                     isBalanceVisible = isVisible,
-                    actionableAddressViewEntryPoint = actionableAddressViewEntryPoint
+                    actionableAddressViewEntryPoint = actionableAddressViewEntryPoint,
+                    factorSourceCardViewEntryPoint = factorSourceCardViewEntryPoint
                 ) {
                     val devBannerState by remember(isDevBannerVisible) {
                         derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }

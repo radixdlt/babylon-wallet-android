@@ -156,6 +156,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     personas = persistentListOf(),
                     hasHiddenEntities = true,
                     supportsBabylon = true,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
@@ -229,6 +230,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
             supportsBabylon = this.asGeneral().supportsBabylon,
+            supportsOlympia = false,
             isEnabled = true
         )
     }
@@ -251,6 +253,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             personas = personas,
             hasHiddenEntities = hasHiddenEntities,
             supportsBabylon = this.asGeneral().supportsBabylon,
+            supportsOlympia = false,
             isEnabled = true
         )
     }

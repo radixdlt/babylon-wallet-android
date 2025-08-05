@@ -9,6 +9,7 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.supportsBabylon
+import com.radixdlt.sargon.extensions.supportsOlympia
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.lastUsedOn
@@ -24,6 +25,7 @@ data class FactorSourceCard(
     val personas: PersistentList<Persona>,
     val hasHiddenEntities: Boolean,
     val supportsBabylon: Boolean,
+    val supportsOlympia: Boolean,
     val isEnabled: Boolean
 )
 
@@ -45,7 +47,6 @@ fun FactorSource.toFactorSourceCard(
             is FactorSource.Ledger -> this.value.hint.label
             is FactorSource.OffDeviceMnemonic -> this.value.hint.label.value
             is FactorSource.Password -> this.value.hint.label
-            else -> ""
         },
         includeDescription = includeDescription,
         lastUsedOn = if (includeLastUsedOn) {
@@ -59,6 +60,7 @@ fun FactorSource.toFactorSourceCard(
         personas = personas,
         hasHiddenEntities = hasHiddenEntities,
         supportsBabylon = supportsBabylon,
+        supportsOlympia = supportsOlympia,
         isEnabled = isEnabled
     )
 }

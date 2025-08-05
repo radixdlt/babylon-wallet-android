@@ -41,7 +41,6 @@ import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceC
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -63,8 +62,7 @@ fun AccountSettingsScreen(
     onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
     onDeleteAccountClick: (AccountAddress) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: (SecurityPrompt) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -99,8 +97,7 @@ fun AccountSettingsScreen(
         onHideAccount = viewModel::onHideAccountRequest,
         onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
         onDeleteAccount = viewModel::onDeleteAccountRequest,
-        onFactorSourceCardClick = onFactorSourceCardClick,
-        onSecurityPromptMessageClicked = onSecurityPromptMessageClick
+        onFactorSourceCardClick = onFactorSourceCardClick
     )
 
     if (state.isBottomSheetVisible) {
@@ -142,8 +139,7 @@ private fun AccountSettingsContent(
     onHideAccount: () -> Unit,
     onDeleteAccount: () -> Unit,
     onSnackbarMessageShown: () -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClicked: (SecurityPrompt) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -253,8 +249,7 @@ private fun AccountSettingsContent(
                     FactorSourceCardView(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
                             .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
-                        item = factorSourceCard,
-                        onSecurityPromptMessageClick = onSecurityPromptMessageClicked
+                        item = factorSourceCard
                     )
                 }
             }
@@ -365,8 +360,7 @@ fun AccountSettingsPreview() {
             onHideAccount = {},
             onDeleteAccount = {},
             onSnackbarMessageShown = {},
-            onFactorSourceCardClick = {},
-            onSecurityPromptMessageClicked = {}
+            onFactorSourceCardClick = {}
         )
     }
 }

@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +41,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
-import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -51,34 +50,35 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun AddSingleMnemonicScreen(
-    viewModel: AddSingleMnemonicViewModel,
+fun ImportSingleMnemonicScreen(
+    viewModel: ImportSingleMnemonicViewModel,
     onBackClick: () -> Unit,
     onStartRecovery: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-    AddSingleMnemonicsContent(
+
+    ImportSingleMnemonicsContent(
         state = state,
         onBackClick = onBackClick,
         onSubmitClick = {
             if (state.mnemonicType == MnemonicType.BabylonMain) { // screen opened from onboarding flow
                 viewModel.onAddMainSeedPhrase()
             } else {
-                context.biometricAuthenticate { result ->
-                    if (result == BiometricAuthenticationResult.Succeeded) {
-                        viewModel.onAddFactorSource()
-                    }
-                }
+                viewModel.onAddFactorSource()
             }
         },
         onWordTyped = viewModel::onWordChanged,
@@ -91,17 +91,17 @@ fun AddSingleMnemonicScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                AddSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
-                AddSingleMnemonicViewModel.Event.MainSeedPhraseCompleted -> onStartRecovery()
+                ImportSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
+                ImportSingleMnemonicViewModel.Event.MainSeedPhraseCompleted -> onStartRecovery()
             }
         }
     }
 }
 
 @Composable
-private fun AddSingleMnemonicsContent(
+private fun ImportSingleMnemonicsContent(
     modifier: Modifier = Modifier,
-    state: AddSingleMnemonicViewModel.State,
+    state: ImportSingleMnemonicViewModel.State,
     onBackClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
@@ -130,7 +130,7 @@ private fun AddSingleMnemonicsContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "",
+                title = stringResource(R.string.enterSeedPhrase_header_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -166,14 +166,10 @@ private fun AddSingleMnemonicsContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
-        val title = when (state.mnemonicType) {
-            MnemonicType.BabylonMain -> stringResource(id = R.string.enterSeedPhrase_titleBabylonMain)
-            MnemonicType.Babylon -> stringResource(id = R.string.enterSeedPhrase_titleBabylon)
-            MnemonicType.Olympia -> stringResource(id = R.string.enterSeedPhrase_titleOlympia)
-        }
         val isOlympia = state.mnemonicType == MnemonicType.Olympia
+
         Box(
             modifier = Modifier
                 .keyboardVisiblePadding(
@@ -186,11 +182,11 @@ private fun AddSingleMnemonicsContent(
                 )
         ) {
             SeedPhraseView(
-                title = title,
                 onWordChanged = onWordTyped,
                 onPassphraseChanged = onPassphraseChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it },
                 seedPhraseState = state.seedPhraseState,
+                factorSourceCard = state.factorSourceCard,
                 onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
                 isOlympia = isOlympia
             )
@@ -201,12 +197,12 @@ private fun AddSingleMnemonicsContent(
 @Composable
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
-    title: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,
     onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit = {},
     seedPhraseState: SeedPhraseInputDelegate.State,
+    factorSourceCard: FactorSourceCard?,
     isOlympia: Boolean
 ) {
     SecureScreen()
@@ -220,30 +216,25 @@ private fun SeedPhraseView(
             .imePadding()
             .verticalScroll(scrollState)
     ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = title,
-            textAlign = TextAlign.Center,
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.text
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-        WarningText(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = AnnotatedString(stringResource(R.string.enterSeedPhrase_warning)),
-            iconRes = DSR.ic_warning_error
-        )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        factorSourceCard?.let {
+            FactorSourceCardView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                item = it
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        }
+
         if (isOlympia) {
             val tabs = remember {
                 Bip39WordCount.entries.sortedBy { it.value }
             }
             var tabIndex by remember { mutableStateOf(0) }
+
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -255,6 +246,7 @@ private fun SeedPhraseView(
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
+
             TabRow(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -300,8 +292,10 @@ private fun SeedPhraseView(
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
+
         SeedPhraseInputForm(
             modifier = Modifier
                 .fillMaxWidth()
@@ -322,6 +316,7 @@ private fun SeedPhraseView(
 
         if (shouldDisplayInvalidSeedPhraseWarning) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
             WarningText(
                 modifier = Modifier.fillMaxWidth(),
                 text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
@@ -330,12 +325,23 @@ private fun SeedPhraseView(
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
-fun AddMnemonicsSeedPhraseContent() {
+fun ImportSingleMnemonicPreview() {
     RadixWalletTheme {
-        AddSingleMnemonicsContent(
-            state = AddSingleMnemonicViewModel.State(),
+        ImportSingleMnemonicsContent(
+            state = ImportSingleMnemonicViewModel.State(
+                seedPhraseState = SeedPhraseInputDelegate.State(
+                    seedPhraseWords = (0 until 24).map {
+                        SeedPhraseWord(
+                            index = it,
+                            lastWord = it == 23
+                        )
+                    }.toPersistentList()
+                ),
+                factorSourceCard = FactorSource.sample().toFactorSourceCard()
+            ),
             onBackClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },

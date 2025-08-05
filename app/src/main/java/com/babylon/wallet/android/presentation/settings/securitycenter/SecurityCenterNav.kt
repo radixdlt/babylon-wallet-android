@@ -9,9 +9,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
 import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
 import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
@@ -76,7 +76,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.backupScreen()
                 },
                 onRecoverEntitiesClick = {
-                    navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
+                    navController.importMnemonics(args = ImportMnemonicsArgs(requestSource = ImportMnemonicsRequestSource.Settings))
                 },
                 onBackupEntities = {
                     navController.biometricsPin()
@@ -107,9 +107,9 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToWriteDownSeedPhrase = { navController.revealSeedPhrase(it) },
             onNavigateToSeedPhraseRestore = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
-                        requestSource = RestoreMnemonicsRequestSource.FactorSourceDetails
+                navController.importMnemonics(
+                    args = ImportMnemonicsArgs(
+                        requestSource = ImportMnemonicsRequestSource.FactorSourceDetails
                     )
                 )
             },
@@ -139,9 +139,9 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 navController.revealSeedPhrase(factorSourceId = factorSourceId)
             },
             navigateToViewSeedPhraseRestore = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
-                        requestSource = RestoreMnemonicsRequestSource.FactorSourceDetails
+                navController.importMnemonics(
+                    args = ImportMnemonicsArgs(
+                        requestSource = ImportMnemonicsRequestSource.FactorSourceDetails
                     )
                 )
             },
@@ -168,8 +168,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
         addFactorSource(navController)
         selectFactorSource(
             onDismiss = navController::popBackStack,
-            onComplete = { navController.popBackStack() },
-            onSecurityPromptMessageClick = { navController.securityCenter() }
+            onComplete = { navController.popBackStack() }
         )
     }
 }

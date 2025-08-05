@@ -134,6 +134,7 @@ private fun BiometricsPinPreview() {
                         ),
                         hasHiddenEntities = true,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     ),
                     FactorSourceCard(
@@ -150,6 +151,7 @@ private fun BiometricsPinPreview() {
                         personas = persistentListOf(),
                         hasHiddenEntities = true,
                         supportsBabylon = true,
+                        supportsOlympia = false,
                         isEnabled = true
                     )
                 )

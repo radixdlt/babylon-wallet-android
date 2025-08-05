@@ -119,6 +119,7 @@ class SelectFactorsViewModel @Inject constructor(
                     personas = persistentListOf(),
                     hasHiddenEntities = false,
                     supportsBabylon = supportsBabylon,
+                    supportsOlympia = false,
                     isEnabled = true
                 ),
                 selected = false
