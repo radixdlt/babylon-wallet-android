@@ -125,9 +125,8 @@ fun FactorSourceCardView(
                         SecurityPrompt.SeedPhraseNeedRecovery,
                         SecurityPrompt.LostFactorSource -> {
                             dependenciesProvider.appEventBus().sendEvent(
-                                AppEvent.FixSecurityIssue.RestoreMnemonic(
-                                    factorSourceId = item.id,
-                                    isOlympia = !item.supportsBabylon && item.supportsOlympia
+                                AppEvent.FixSecurityIssue.ImportMnemonic(
+                                    factorSourceId = item.id
                                 )
                             )
                         }

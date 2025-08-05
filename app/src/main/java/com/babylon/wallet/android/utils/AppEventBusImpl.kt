@@ -162,9 +162,8 @@ sealed interface AppEvent {
 
     sealed interface FixSecurityIssue : AppEvent {
 
-        data class RestoreMnemonic(
-            val factorSourceId: FactorSourceId,
-            val isOlympia: Boolean
+        data class ImportMnemonic(
+            val factorSourceId: FactorSourceId
         ) : FixSecurityIssue
 
         data class WriteDownSeedPhrase(

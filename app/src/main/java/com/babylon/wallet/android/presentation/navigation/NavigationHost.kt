@@ -61,7 +61,7 @@ import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
@@ -213,7 +213,7 @@ fun NavigationHost(
         restoreWithoutBackupScreen(
             onBack = { navController.popBackStack() },
             onRestoreConfirmed = {
-                navController.importSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
+                navController.importSingleMnemonic(context = Context.ImportMainSeedPhrase)
             },
             onNewUserConfirmClick = {
                 navController.popBackStack(Screen.OnboardingDestination.route, inclusive = false)

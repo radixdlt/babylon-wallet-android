@@ -41,7 +41,7 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
@@ -261,14 +261,10 @@ private fun HandleFixSecurityIssueEvents(
     LaunchedEffect(Unit) {
         events.collect { event ->
             when (event) {
-                is AppEvent.FixSecurityIssue.RestoreMnemonic -> {
+                is AppEvent.FixSecurityIssue.ImportMnemonic -> {
                     navController.importSingleMnemonic(
                         factorSourceId = event.factorSourceId,
-                        mnemonicType = if (event.isOlympia) {
-                            MnemonicType.Olympia
-                        } else {
-                            MnemonicType.Babylon
-                        }
+                        context = Context.ImportSeedPhrase
                     )
                 }
 

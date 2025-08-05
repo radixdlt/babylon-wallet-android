@@ -1,24 +1,16 @@
 package com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,15 +20,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColors
@@ -45,6 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.seedphrase.NumberOfWordsTabView
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -53,7 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
-import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputView
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
@@ -84,6 +74,7 @@ fun DeviceSeedPhraseScreen(
         onWordSelected = viewModel::onWordSelected,
         onEnterCustomSeedPhraseClick = viewModel::onEnterCustomSeedPhraseClick,
         onNumberOfWordsChanged = viewModel::onNumberOfWordsChanged,
+        onPassphraseChanged = viewModel::onPassphraseChanged,
         onConfirmClick = viewModel::onConfirmClick
     )
 
@@ -107,6 +98,7 @@ private fun DeviceSeedPhraseContent(
     onWordSelected: (Int, String) -> Unit,
     onEnterCustomSeedPhraseClick: () -> Unit,
     onNumberOfWordsChanged: (Bip39WordCount) -> Unit,
+    onPassphraseChanged: (String) -> Unit,
     onConfirmClick: () -> Unit
 ) {
     SecureScreen()
@@ -204,79 +196,24 @@ private fun DeviceSeedPhraseContent(
             if (state.isOlympiaRecovery) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                val tabs = remember {
-                    Bip39WordCount.entries.sortedByDescending { it.value }
-                }
-                var tabIndex by remember { mutableStateOf(0) }
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            vertical = RadixTheme.dimensions.paddingSmall
-                        ),
-                    text = stringResource(id = R.string.importMnemonic_numberOfWordsPicker),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.text,
-                    textAlign = TextAlign.Center
+                NumberOfWordsTabView(
+                    selectedNumberOfWords = state.seedPhraseState.seedPhraseWords.size,
+                    onNumberOfWordsChanged = onNumberOfWordsChanged
                 )
-
-                TabRow(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .background(RadixTheme.colors.backgroundTertiary, RadixTheme.shapes.roundedRectSmall),
-                    selectedTabIndex = tabIndex,
-                    containerColor = Color.Transparent,
-                    divider = {},
-                    indicator = { tabPositions ->
-                        Box(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[tabIndex])
-                                .fillMaxHeight()
-                                .zIndex(-1f)
-                                .padding(2.dp)
-                                .background(
-                                    color = RadixTheme.colors.selectedSegmentedControl,
-                                    shape = RadixTheme.shapes.roundedRectSmall
-                                )
-                        )
-                    }
-                ) {
-                    tabs.forEach { tab ->
-                        val isSelected = tabs.indexOf(tab) == tabIndex
-                        val interactionSource = remember { MutableInteractionSource() }
-                        Tab(
-                            modifier = Modifier.wrapContentWidth(),
-                            selected = isSelected,
-                            onClick = {
-                                tabIndex = tabs.indexOf(tab)
-                                onNumberOfWordsChanged(tab)
-                            },
-                            interactionSource = interactionSource,
-                            selectedContentColor = RadixTheme.colors.text,
-                            unselectedContentColor = RadixTheme.colors.textSecondary
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(
-                                    vertical = RadixTheme.dimensions.paddingSmall
-                                ),
-                                text = tab.value.toString(),
-                                style = RadixTheme.typography.body1HighImportance,
-                            )
-                        }
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
 
-            SeedPhraseInputView(
+            SeedPhraseInputForm(
                 modifier = Modifier.fillMaxWidth(),
                 seedPhraseWords = state.seedPhraseState.seedPhraseWords,
+                bip39Passphrase = state.seedPhraseState.bip39Passphrase,
                 onWordChanged = onWordChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it },
+                onPassphraseChanged = onPassphraseChanged,
                 initiallyFocusedIndex = focusedWordIndex,
-                textFieldColors = MnemonicTextFieldColors.default()
+                textFieldColors = MnemonicTextFieldColors.default(),
+                showAdvancedMode = state.isOlympiaRecovery
             )
 
             val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
@@ -326,6 +263,7 @@ private fun DeviceSeedPhrasePreview(
             onWordChanged = { _, _ -> },
             onWordSelected = { _, _ -> },
             onNumberOfWordsChanged = {},
+            onPassphraseChanged = {},
             onConfirmClick = {},
             onEnterCustomSeedPhraseClick = {},
         )

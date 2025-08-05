@@ -86,6 +86,10 @@ class DeviceSeedPhraseViewModel @Inject constructor(
         seedPhraseInputDelegate.setSeedPhraseSize(wordCount)
     }
 
+    fun onPassphraseChanged(value: String) {
+        seedPhraseInputDelegate.onPassphraseChanged(value)
+    }
+
     fun onConfirmClick() {
         viewModelScope.launch {
             if (state.value.isEditingEnabled) {

@@ -88,12 +88,10 @@ class GetSignaturesViewModelTest {
     private val otherDeviceMnemonic = MnemonicWithPassphrase.init(phrase = newMnemonicSampleDeviceOther().phrase)
     private val fakeLedgerMnemonic = MnemonicWithPassphrase.init(phrase = newMnemonicSampleLedger().phrase)
     private val deviceFactorSource1 = newDeviceFactorSourceBabylon(
-        isMain = true,
         mnemonicWithPassphrase = deviceMnemonic,
         hostInfo = HostInfo.sample()
     )
     private val deviceFactorSource2 = newDeviceFactorSourceBabylon(
-        isMain = false,
         mnemonicWithPassphrase = otherDeviceMnemonic,
         hostInfo = HostInfo.sample()
     )

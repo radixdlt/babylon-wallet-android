@@ -46,7 +46,6 @@ class AccessDeviceFactorSourceUseCaseTest {
 
     private val mnemonicWithPassphrase = MnemonicWithPassphrase.sample()
     private val device = newDeviceFactorSourceBabylon(
-        isMain = true,
         mnemonicWithPassphrase = mnemonicWithPassphrase,
         hostInfo = HostInfo.sample()
     )

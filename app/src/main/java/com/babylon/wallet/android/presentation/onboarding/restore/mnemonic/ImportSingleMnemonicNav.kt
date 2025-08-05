@@ -16,35 +16,37 @@ import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 
 private const val ARGS_FACTOR_SOURCE_ID = "factor_source_id"
-private const val ARGS_MNEMONIC_TYPE = "mnemonic_type"
+private const val ARGS_CONTEXT = "context"
 private const val ROUTE_IMPORT_SINGLE_MNEMONIC =
-    "import_single_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}&${ARGS_MNEMONIC_TYPE}={$ARGS_MNEMONIC_TYPE}"
+    "import_single_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}&${ARGS_CONTEXT}={$ARGS_CONTEXT}"
 
 fun NavController.importSingleMnemonic(
-    factorSourceId: FactorSourceId? = null,
-    mnemonicType: MnemonicType = MnemonicType.Babylon
+    context: Context,
+    factorSourceId: FactorSourceId? = null
 ) {
-    navigate(route = "import_single_mnemonic?$ARGS_FACTOR_SOURCE_ID=${factorSourceId?.toJson()}&${ARGS_MNEMONIC_TYPE}=$mnemonicType")
-}
-
-internal class AddSingleMnemonicNavArgs(
-    val factorSourceId: FactorSourceId?,
-    val mnemonicType: MnemonicType = MnemonicType.Babylon
-) {
-    constructor(savedStateHandle: SavedStateHandle) : this(
-        savedStateHandle.get<String>(
-            ARGS_FACTOR_SOURCE_ID
-        )?.let { FactorSourceId.fromJson(it) },
-        checkNotNull(
-            savedStateHandle.get<MnemonicType>(
-                ARGS_MNEMONIC_TYPE
-            )
-        ),
+    navigate(
+        route = "import_single_mnemonic?" +
+            "$ARGS_FACTOR_SOURCE_ID=${factorSourceId?.toJson()}" +
+            "&${ARGS_CONTEXT}=$context"
     )
 }
 
-enum class MnemonicType {
-    Babylon, Olympia, BabylonMain
+internal class ImportSingleMnemonicNavArgs(
+    val factorSourceId: FactorSourceId?,
+    val context: Context
+) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        savedStateHandle.get<String>(ARGS_FACTOR_SOURCE_ID)?.let {
+            FactorSourceId.fromJson(it)
+        },
+        checkNotNull(savedStateHandle.get<Context>(ARGS_CONTEXT)),
+    )
+}
+
+enum class Context {
+
+    ImportMainSeedPhrase,
+    ImportSeedPhrase
 }
 
 fun NavGraphBuilder.importSingleMnemonic(
@@ -61,9 +63,9 @@ fun NavGraphBuilder.importSingleMnemonic(
                 nullable = true
                 type = NavType.StringType
             },
-            navArgument(name = ARGS_MNEMONIC_TYPE) {
-                defaultValue = MnemonicType.Babylon
-                type = NavType.EnumType(MnemonicType::class.java)
+            navArgument(name = ARGS_CONTEXT) {
+                defaultValue = Context.ImportSeedPhrase
+                type = NavType.EnumType(Context::class.java)
             }
         ),
         enterTransition = {

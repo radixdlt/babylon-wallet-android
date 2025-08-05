@@ -53,7 +53,8 @@ fun SeedPhraseInputForm(
     bip39Passphrase: String,
     onFocusedWordIndexChanged: (Int) -> Unit,
     showAdvancedMode: Boolean = true,
-    initiallyFocusedIndex: Int? = null
+    initiallyFocusedIndex: Int? = null,
+    textFieldColors: MnemonicTextFieldColors = MnemonicTextFieldColors.default()
 ) {
     Column(
         modifier = modifier
@@ -65,7 +66,8 @@ fun SeedPhraseInputForm(
             seedPhraseWords = seedPhraseWords,
             onWordChanged = onWordChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged,
-            initiallyFocusedIndex = initiallyFocusedIndex
+            initiallyFocusedIndex = initiallyFocusedIndex,
+            textFieldColors = textFieldColors
         )
         AnimatedVisibility(visible = advancedMode) {
             RadixTextField(
@@ -100,7 +102,7 @@ fun SeedPhraseInputForm(
 }
 
 @Composable
-fun SeedPhraseInputView(
+private fun SeedPhraseInputView(
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
     onWordChanged: (Int, String) -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,

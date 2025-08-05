@@ -21,6 +21,8 @@ import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileToCheck
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.supportsOlympia
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
@@ -30,12 +32,13 @@ import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.deviceFactorSources
+import rdx.works.core.sargon.supportsBabylon
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
-import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
+import rdx.works.profile.domain.backup.ImportMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
@@ -45,7 +48,7 @@ class ImportMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
-    private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
+    private val importMnemonicUseCase: ImportMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
@@ -161,16 +164,18 @@ class ImportMnemonicsViewModel @Inject constructor(
     }
 
     private suspend fun restoreMnemonic() {
-        val factorSourceToRecover = state.value
-            .recoverableFactorSource?.factorSource ?: return
-        if (biometricsAuthenticateUseCase().not()) return
+        val factorSourceToRecover = state.value.recoverableFactorSource?.factorSource ?: return
+        if (!biometricsAuthenticateUseCase()) {
+            return
+        }
+
         _state.update { it.copy(isPrimaryButtonLoading = true) }
-        restoreMnemonicUseCase(
-            factorSource = factorSourceToRecover,
+
+        importMnemonicUseCase(
+            factorSourceId = factorSourceToRecover.value.id.asGeneral(),
             mnemonicWithPassphrase = _state.value.seedPhraseState.toMnemonicWithPassphrase()
         ).onSuccess {
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
-            _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
             showNextRecoverableFactorSourceOrFinish()
         }.onFailure { error ->
             if (error is ProfileException.SecureStorageAccess) {
@@ -178,12 +183,14 @@ class ImportMnemonicsViewModel @Inject constructor(
             } else {
                 _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
         }
+
+        _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
     }
 
     private suspend fun showNextRecoverableFactorSourceOrFinish() {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
+
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
             seedPhraseInputDelegate.setSeedPhraseSize(nextRecoverableFactorSource.factorSource.value.hint.mnemonicWordCount)
@@ -191,17 +198,20 @@ class ImportMnemonicsViewModel @Inject constructor(
             _state.update { it.proceedToNextRecoverable() }
         } else {
             updateSecondaryButtonLoading(true)
+
             args.backupType?.let { backupType ->
                 restoreProfileFromBackupUseCase(backupType = backupType)
                     .onSuccess { updateSecondaryButtonLoading(false) }
                     .onFailure { updateSecondaryButtonLoading(false) }
+
+                homeCardsRepository.walletRestored()
             }
+
             onRestorationComplete()
         }
     }
 
     private suspend fun onRestorationComplete() {
-        homeCardsRepository.walletRestored()
         sendEvent(
             Event.FinishRestoration(
                 isMovingToMain = args.requestSource != ImportMnemonicsRequestSource.FactorSourceDetails
@@ -234,6 +244,9 @@ class ImportMnemonicsViewModel @Inject constructor(
 
         val isPrimaryButtonEnabled: Boolean
             get() = seedPhraseState.isValidSeedPhrase() && !isSecondaryButtonLoading
+
+        val isOlympia: Boolean
+            get() = recoverableFactorSource?.factorSource?.let { it.supportsOlympia && !it.supportsBabylon } == true
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1
