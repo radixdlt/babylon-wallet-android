@@ -28,12 +28,12 @@ import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSin
 import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
@@ -128,41 +128,14 @@ private fun SelectableFactorSourcesListPreview() {
             factorSourceKind = FactorSourceKind.DEVICE,
             factorSources = persistentListOf(
                 Selectable(
-                    data = FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My Phone 666",
-                        includeDescription = false,
-                        lastUsedOn = "Today",
-                        kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    data = DeviceFactorSource.sample().asGeneral().toFactorSourceCard()
                 ),
                 Selectable(
-                    data = FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My Phone 999",
-                        includeDescription = false,
-                        lastUsedOn = "Yesterday",
-                        kind = FactorSourceKind.DEVICE,
+                    data = DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard(
                         messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
                         accounts = persistentListOf(
                             Account.sampleMainnet()
                         ),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
                     )
                 )
             ),

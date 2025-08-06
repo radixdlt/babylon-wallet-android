@@ -12,6 +12,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceInput
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.SargonOsManager
@@ -24,6 +26,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -33,6 +36,7 @@ class CreatePersonaViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
     private val preferencesManager: PreferencesManager,
+    private val selectFactorSourceProxy: SelectFactorSourceProxy
 ) : StateViewModel<CreatePersonaViewModel.State>(),
     OneOffEventHandler<CreatePersonaViewModel.Event> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
@@ -66,8 +70,18 @@ class CreatePersonaViewModel @Inject constructor(
             val networkId = profile.currentGateway.network.id
             val isFirstPersonaAboutToBeCreated = profile.activePersonasOnCurrentNetwork.isEmpty()
 
+            val selectedFactorSource = selectFactorSourceProxy.selectFactorSource(
+                context = SelectFactorSourceInput.Context.CreatePersona
+            )?.let { factorSourceId ->
+                getProfileUseCase().factorSourceById(factorSourceId.value)
+            } ?: run {
+                _state.update { it.copy(isPersonaCreating = false) }
+                return@launch
+            }
+
             runCatching {
-                sargonOsManager.sargonOs.createAndSaveNewPersonaWithMainBdfs(
+                sargonOsManager.sargonOs.createAndSaveNewPersonaWithFactorSource(
+                    factorSource = selectedFactorSource,
                     networkId = networkId,
                     name = DisplayName.init(_state.value.personaDisplayName.value.trim()),
                     personaData = personaData

@@ -22,8 +22,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 @Composable
 fun AccountPromptLabel(
     onClick: (() -> Unit)?,
-    modifier: Modifier = Modifier,
     text: String,
+    modifier: Modifier = Modifier,
     labelColor: Color = White,
     contentColor: Color = White,
     @DrawableRes iconRes: Int = R.drawable.ic_warning_error,

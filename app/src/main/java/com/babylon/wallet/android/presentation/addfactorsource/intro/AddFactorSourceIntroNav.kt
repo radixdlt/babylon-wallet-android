@@ -8,9 +8,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase.deviceSeedPhrase
+import com.babylon.wallet.android.presentation.addfactorsource.identify.identifyFactorSource
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.radixdlt.sargon.FactorSourceKind
-import timber.log.Timber
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.linkConnectorIntro
 
 const val ROUTE_ADD_FACTOR_INTRO = "add_factor_intro"
 
@@ -30,18 +30,11 @@ fun NavGraphBuilder.addFactorIntro(
     ) {
         AddFactorSourceIntroScreen(
             viewModel = hiltViewModel(),
-            onDismiss = { navController.popBackStack() },
-            onContinueClick = { factorSourceKind ->
-                // TODO handle all factor source kinds
-                when (factorSourceKind) {
-                    FactorSourceKind.DEVICE -> navController.deviceSeedPhrase()
-                    else -> {
-                        navController.popBackStack()
-                        Timber.w("Not yet implemented")
-                    }
-                }
-            },
-            onInfoClick = { item -> navController.infoDialog(item) }
+            onDismiss = navController::popBackStack,
+            onInfoClick = { item -> navController.infoDialog(item) },
+            onAddDeviceFactorSource = navController::deviceSeedPhrase,
+            onAddLedgerFactorSource = navController::identifyFactorSource,
+            onAddLinkConnector = navController::linkConnectorIntro
         )
     }
 }

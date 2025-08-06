@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,23 +44,25 @@ import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
 
 @Composable
 fun FactorSourceKindCardView(
@@ -90,8 +93,7 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
-    containerColor: Color = RadixTheme.colors.card,
-    onSecurityPromptMessageClicked: ((SecurityPrompt) -> Unit)? = null,
+    containerColor: Color = RadixTheme.colors.cardSecondary,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
@@ -112,9 +114,34 @@ fun FactorSourceCardView(
             endContent = endContent
         )
 
+        val dependenciesProvider = LocalEventBusComposableEntryPoint.current
+        val coroutineScope = rememberCoroutineScope()
+
         MessagesView(
             messages = item.messages,
-            onSecurityPromptMessageClicked = onSecurityPromptMessageClicked
+            onSecurityPromptMessageClicked = { message ->
+                coroutineScope.launch {
+                    when (message) {
+                        SecurityPrompt.SeedPhraseNeedRecovery,
+                        SecurityPrompt.LostFactorSource -> {
+                            dependenciesProvider.appEventBus().sendEvent(
+                                AppEvent.FixSecurityIssue.ImportMnemonic(
+                                    factorSourceId = item.id
+                                )
+                            )
+                        }
+
+                        SecurityPrompt.EntitiesNotRecoverable,
+                        SecurityPrompt.WriteDownSeedPhrase -> {
+                            dependenciesProvider.appEventBus().sendEvent(
+                                AppEvent.FixSecurityIssue.WriteDownSeedPhrase(
+                                    factorSourceId = item.id
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         )
 
         LinkedEntitiesView(
@@ -443,8 +470,7 @@ private fun FactorSourceCardPreview(
 ) {
     RadixWalletPreviewTheme {
         FactorSourceCardView(
-            item = item,
-            onSecurityPromptMessageClicked = {}
+            item = item
         )
     }
 }
@@ -485,15 +511,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
 
     override val values: Sequence<FactorSourceCard>
         get() = sequenceOf(
-            FactorSourceCard(
-                id = FactorSourceId.Hash.init(
-                    kind = FactorSourceKind.DEVICE,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                ),
-                name = "My Phone",
-                includeDescription = false,
-                lastUsedOn = "Today",
-                kind = FactorSourceKind.DEVICE,
+            DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
                 messages = persistentListOf(
                     FactorSourceStatusMessage.PassphraseHint,
                     FactorSourceStatusMessage.Dynamic(
@@ -510,19 +528,8 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
                 ),
-                hasHiddenEntities = true,
-                supportsBabylon = true,
-                isEnabled = true
             ),
-            FactorSourceCard(
-                id = FactorSourceId.Hash.init(
-                    kind = FactorSourceKind.DEVICE,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                ),
-                name = "My Phone",
-                includeDescription = false,
-                lastUsedOn = "Today",
-                kind = FactorSourceKind.DEVICE,
+            DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard(
                 messages = persistentListOf(
                     FactorSourceStatusMessage.PassphraseHint,
                     FactorSourceStatusMessage.Dynamic(
@@ -535,65 +542,20 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 accounts = persistentListOf(
                     Account.sampleMainnet()
                 ),
-                personas = persistentListOf(),
-                hasHiddenEntities = true,
-                supportsBabylon = true,
-                isEnabled = true
             ),
-            FactorSourceCard(
-                id = FactorSourceId.Hash.init(
-                    kind = FactorSourceKind.DEVICE,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                ),
-                name = "My Phone",
-                includeDescription = false,
-                lastUsedOn = "Today",
-                kind = FactorSourceKind.DEVICE,
-                messages = persistentListOf(
-                    FactorSourceStatusMessage.CannotBeUsedHere,
-                ),
-                accounts = persistentListOf(
-                    Account.sampleMainnet()
-                ),
-                personas = persistentListOf(),
-                hasHiddenEntities = true,
-                supportsBabylon = true,
-                isEnabled = false
+            DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
+                messages = persistentListOf(FactorSourceStatusMessage.CannotBeUsedHere),
+                accounts = persistentListOf(Account.sampleMainnet())
             ),
-            FactorSourceCard(
-                id = FactorSourceId.Hash.init(
-                    kind = FactorSourceKind.DEVICE,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                ),
-                name = "My Phone",
-                includeDescription = false,
-                lastUsedOn = "Today",
-                kind = FactorSourceKind.DEVICE,
-                messages = persistentListOf(),
+            DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard(
                 accounts = persistentListOf(Account.sampleMainnet()),
                 personas = persistentListOf(
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
                 ),
-                hasHiddenEntities = false,
-                supportsBabylon = true,
-                isEnabled = true
             ),
-            FactorSourceCard(
-                id = FactorSourceId.Hash.init(
-                    kind = FactorSourceKind.DEVICE,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                ),
-                name = "My Phone",
-                includeDescription = false,
-                lastUsedOn = "Yesterday",
-                kind = FactorSourceKind.DEVICE,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf(),
-                hasHiddenEntities = true,
-                supportsBabylon = true,
-                isEnabled = true
+            DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
+                hasHiddenEntities = true
             )
         )
 }

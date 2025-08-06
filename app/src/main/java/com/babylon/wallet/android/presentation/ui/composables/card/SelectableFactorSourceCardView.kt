@@ -26,18 +26,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
-import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.ArculusCardFactorSource
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
-import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SelectableSingleChoiceFactorSourceCard(
@@ -216,22 +213,7 @@ private fun SelectableSingleChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         SelectableSingleChoiceFactorSourceCard(
             item = Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Arculus Card Secret",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.ARCULUS_CARD,
-                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase),
-                    accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = true
             ),
             onSelect = {}
@@ -246,22 +228,7 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         SelectableMultiChoiceFactorSourceCard(
             item = Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Arculus Card Secret",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.ARCULUS_CARD,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = true
             ),
             onCheckedChange = { _, _ -> }
@@ -276,22 +243,7 @@ private fun SimpleSelectableSingleChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         SimpleSelectableSingleChoiceFactorSourceCard(
             item = Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "My Phone",
-                    includeDescription = true,
-                    lastUsedOn = null,
-                    kind = FactorSourceKind.DEVICE,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = true
             ),
             onSelect = {}
@@ -319,22 +271,7 @@ private fun SimpleSelectableMultiChoiceFactorSourceCardPreview() {
 private fun RemovableFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         RemovableFactorSourceCard(
-            item = FactorSourceCard(
-                id = FactorSourceId.Hash.init(
-                    kind = FactorSourceKind.DEVICE,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                ),
-                name = "My Phone",
-                includeDescription = true,
-                lastUsedOn = null,
-                kind = FactorSourceKind.DEVICE,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf(),
-                hasHiddenEntities = false,
-                supportsBabylon = true,
-                isEnabled = true
-            ),
+            item = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
             onRemoveClick = {}
         )
     }

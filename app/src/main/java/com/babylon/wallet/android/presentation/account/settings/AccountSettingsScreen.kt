@@ -28,7 +28,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.State
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
@@ -38,15 +37,20 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +61,8 @@ fun AccountSettingsScreen(
     modifier: Modifier = Modifier,
     onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
-    onDeleteAccountClick: (AccountAddress) -> Unit
+    onDeleteAccountClick: (AccountAddress) -> Unit,
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -79,24 +84,20 @@ fun AccountSettingsScreen(
 
     AccountSettingsContent(
         modifier = modifier,
+        state = state,
         onBackClick = onBackClick,
         onMessageShown = viewModel::onMessageShown,
-        error = state.error,
-        account = state.account,
         onShowRenameAccountClick = viewModel::onRenameAccountRequest,
-        settingsSections = state.settingsSections,
         onSettingClick = { item ->
             state.account?.address?.let { accountAddress ->
                 onSettingItemClick(item, accountAddress)
             }
         },
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
-        faucetState = state.faucetState,
-        isXrdLoading = state.isFreeXRDLoading,
         onHideAccount = viewModel::onHideAccountRequest,
-        isAccountNameUpdated = state.isAccountNameUpdated,
         onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
-        onDeleteAccount = viewModel::onDeleteAccountRequest
+        onDeleteAccount = viewModel::onDeleteAccountRequest,
+        onFactorSourceCardClick = onFactorSourceCardClick
     )
 
     if (state.isBottomSheetVisible) {
@@ -128,32 +129,28 @@ fun AccountSettingsScreen(
 
 @Composable
 private fun AccountSettingsContent(
+    state: State,
     onBackClick: () -> Unit,
     onMessageShown: () -> Unit,
-    error: UiMessage?,
-    account: Account?,
     onShowRenameAccountClick: () -> Unit,
     modifier: Modifier = Modifier,
-    settingsSections: ImmutableList<AccountSettingsSection>,
     onSettingClick: (AccountSettingItem) -> Unit,
     onGetFreeXrdClick: () -> Unit,
-    faucetState: FaucetState,
-    isXrdLoading: Boolean,
     onHideAccount: () -> Unit,
     onDeleteAccount: () -> Unit,
-    isAccountNameUpdated: Boolean,
     onSnackbarMessageShown: () -> Unit,
+    onFactorSourceCardClick: (FactorSourceId) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
-        message = error,
+        message = state.error,
         snackbarHostState = snackbarHostState,
         onMessageShown = onMessageShown
     )
 
     val accountUpdatedText = stringResource(R.string.accountSettings_updatedAccountHUDMessage)
-    LaunchedEffect(isAccountNameUpdated) {
-        if (isAccountNameUpdated) {
+    LaunchedEffect(state.isAccountNameUpdated) {
+        if (state.isAccountNameUpdated) {
             snackbarHostState.showSnackbar(
                 message = accountUpdatedText,
                 duration = SnackbarDuration.Short,
@@ -175,17 +172,17 @@ private fun AccountSettingsContent(
         bottomBar = {
             RadixBottomBar(
                 additionalTopContent = {
-                    if (faucetState is FaucetState.Available) {
+                    if (state.faucetState is FaucetState.Available) {
                         RadixSecondaryButton(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                             text = stringResource(R.string.accountSettings_getXrdTestTokens),
                             onClick = onGetFreeXrdClick,
-                            isLoading = isXrdLoading,
-                            enabled = !isXrdLoading && faucetState.isEnabled
+                            isLoading = state.isFreeXRDLoading,
+                            enabled = !state.isFreeXRDLoading && state.faucetState.isEnabled
                         )
-                        if (isXrdLoading) {
+                        if (state.isFreeXRDLoading) {
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -232,25 +229,34 @@ private fun AccountSettingsContent(
             contentPadding = padding
         ) {
             item {
-                account?.let {
+                state.account?.let {
                     SimpleAccountCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                             .padding(top = RadixTheme.dimensions.paddingDefault),
-                        account = account
+                        account = state.account
                     )
                 }
             }
-            settingsSections.forEach { section ->
+
+            state.securedWith?.let { factorSourceCard ->
                 item {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = section.titleRes()),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.textSecondary
+                    SectionTitle(
+                        title = stringResource(id = R.string.common_securedWith)
+                    )
+
+                    FactorSourceCardView(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
+                        item = factorSourceCard
+                    )
+                }
+            }
+            state.settingsSections.forEach { section ->
+                item {
+                    SectionTitle(
+                        title = stringResource(id = section.titleRes())
                     )
                 }
                 val lastSettingsItem = section.settingsItems.last()
@@ -279,6 +285,20 @@ private fun AccountSettingsContent(
             }
         }
     }
+}
+
+@Composable
+private fun SectionTitle(
+    title: String
+) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingDefault),
+        text = title,
+        style = RadixTheme.typography.body1HighImportance,
+        color = RadixTheme.colors.textSecondary
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -314,27 +334,33 @@ private fun HideAccountSheet(
 fun AccountSettingsPreview() {
     RadixWalletTheme {
         AccountSettingsContent(
-            onBackClick = {},
-            onMessageShown = {},
-            error = null,
-            account = Account.sampleMainnet(),
-            onShowRenameAccountClick = {},
-            settingsSections = persistentListOf(
-                AccountSettingsSection.AccountSection(
-                    listOf(
-                        AccountSettingItem.AccountLabel,
-                        AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL)
+            state = State(
+                error = null,
+                account = Account.sampleMainnet(),
+                settingsSections = persistentListOf(
+                    AccountSettingsSection.AccountSection(
+                        listOf(
+                            AccountSettingItem.AccountLabel,
+                            AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL)
+                        )
                     )
+                ),
+                faucetState = FaucetState.Available(isEnabled = true),
+                isFreeXRDLoading = false,
+                isAccountNameUpdated = false,
+                securedWith = FactorSource.sample().toFactorSourceCard(
+                    includeLastUsedOn = true
                 )
             ),
+            onBackClick = {},
+            onMessageShown = {},
+            onShowRenameAccountClick = {},
             onSettingClick = {},
             onGetFreeXrdClick = {},
-            faucetState = FaucetState.Available(isEnabled = true),
-            isXrdLoading = false,
             onHideAccount = {},
             onDeleteAccount = {},
-            isAccountNameUpdated = false,
-            onSnackbarMessageShown = {}
+            onSnackbarMessageShown = {},
+            onFactorSourceCardClick = {}
         )
     }
 }

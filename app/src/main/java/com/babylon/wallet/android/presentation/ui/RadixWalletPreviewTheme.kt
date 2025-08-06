@@ -9,6 +9,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixThemeConfig
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ProvideMockActionableAddressViewEntryPoint
+import com.babylon.wallet.android.presentation.ui.composables.card.ProvideMockFactorSourceCardViewEntryPoint
 
 @Composable
 fun RadixWalletPreviewTheme(
@@ -18,28 +19,30 @@ fun RadixWalletPreviewTheme(
     content: @Composable () -> Unit,
 ) {
     ProvideMockActionableAddressViewEntryPoint {
-        RadixWalletTheme(
-            config = RadixThemeConfig(
-                isDarkTheme = enableDarkTheme
-            ),
-            content = {
-                if (backgroundType != PreviewBackgroundType.NONE) {
-                    Box(
-                        modifier = modifier.background(
-                            color = when (backgroundType) {
-                                PreviewBackgroundType.PRIMARY -> RadixTheme.colors.background
-                                PreviewBackgroundType.SECONDARY -> RadixTheme.colors.backgroundSecondary
-                                PreviewBackgroundType.NONE -> error("Not Possible")
-                            }
-                        )
-                    ) {
+        ProvideMockFactorSourceCardViewEntryPoint {
+            RadixWalletTheme(
+                config = RadixThemeConfig(
+                    isDarkTheme = enableDarkTheme
+                ),
+                content = {
+                    if (backgroundType != PreviewBackgroundType.NONE) {
+                        Box(
+                            modifier = modifier.background(
+                                color = when (backgroundType) {
+                                    PreviewBackgroundType.PRIMARY -> RadixTheme.colors.background
+                                    PreviewBackgroundType.SECONDARY -> RadixTheme.colors.backgroundSecondary
+                                    PreviewBackgroundType.NONE -> error("Not Possible")
+                                }
+                            )
+                        ) {
+                            content()
+                        }
+                    } else {
                         content()
                     }
-                } else {
-                    content()
                 }
-            }
-        )
+            )
+        }
     }
 }
 

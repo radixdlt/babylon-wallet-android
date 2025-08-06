@@ -59,16 +59,18 @@ import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFact
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewSize
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
-import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.ArculusCardFactorSource
+import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
 import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.Threshold
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -241,14 +243,17 @@ private fun FactorListStatusView(
         SetupRegularAccessViewModel.State.FactorListStatus.PrimaryEmpty -> ShieldSetupMissingFactorStatusView(
             modifier = modifier
         )
+
         SetupRegularAccessViewModel.State.FactorListStatus.NotEnoughFactors -> ShieldSetupNotEnoughFactorsStatusView(
             modifier = modifier,
             onInfoClick = onInfoClick
         )
+
         SetupRegularAccessViewModel.State.FactorListStatus.Unsafe -> ShieldSetupUnsafeCombinationStatusView(
             modifier = modifier,
             onInfoClick = onInfoClick
         )
+
         SetupRegularAccessViewModel.State.FactorListStatus.Ok -> {}
     }
 }
@@ -397,8 +402,12 @@ private fun ThresholdFactorsView(
 
             Text(
                 text = buildAnnotatedString {
-                    val annotatedPart = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_selection)
-                    val text = stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_title, annotatedPart)
+                    val annotatedPart =
+                        stringResource(id = R.string.shieldWizardRegularAccess_thresholdDescription_selection)
+                    val text = stringResource(
+                        id = R.string.shieldWizardRegularAccess_thresholdDescription_title,
+                        annotatedPart
+                    )
                     val parts = text.split(annotatedPart)
                     append(parts.getOrNull(0).orEmpty())
                     appendInlineContent(id = inlineContentKey)
@@ -599,89 +608,14 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
         get() = sequenceOf(
             SetupRegularAccessViewModel.State(
                 thresholdFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My Phone",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    ),
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.ARCULUS_CARD,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Arculus Card Secret",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
+                    ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard()
                 ),
                 overrideFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My Secret Stick",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    ),
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "ShizzleWords",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    LedgerHardwareWalletFactorSource.sample().asGeneral().toFactorSourceCard(),
+                    OffDeviceMnemonicFactorSource.sample().asGeneral().toFactorSourceCard()
                 ),
-                authenticationFactor = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "My Phone",
-                    includeDescription = true,
-                    lastUsedOn = null,
-                    kind = FactorSourceKind.DEVICE,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                authenticationFactor = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
                 isOverrideSectionVisible = true
             ),
             SetupRegularAccessViewModel.State(
@@ -710,38 +644,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
             ),
             SetupRegularAccessViewModel.State(
                 thresholdFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My Phone",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    ),
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My second phone",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
+                    DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard()
                 ),
                 selectThreshold = null,
                 threshold = Threshold.Specific(2.toUByte()),

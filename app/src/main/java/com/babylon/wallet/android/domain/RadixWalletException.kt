@@ -102,6 +102,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is BuildTransactionHeader,
                 is ConvertManifest,
                 is RequestNotFound -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+
                 is PrepareNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
                 is SubmitNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION
                 is FailedToFindAccountWithEnoughFundsToLockFee -> {
@@ -180,7 +181,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object FailedToDerivePublicKeys : LedgerCommunicationException()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
         data object FailedToSignAuthChallenge : LedgerCommunicationException()
-        data class FailedToSignTransaction(val reason: LedgerErrorCode, override val message: String?) : LedgerCommunicationException()
+        data class FailedToSignTransaction(val reason: LedgerErrorCode, override val message: String?) :
+            LedgerCommunicationException()
 
         override val dappWalletInteractionErrorType: DappWalletInteractionErrorType
             get() = when (this) {
@@ -228,7 +230,9 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
     sealed class AddFactorSource : RadixWalletException() {
 
-        data object FactorSourceAlreadyInUse : AddFactorSource()
+        data class FactorSourceAlreadyInUse(
+            val factorSourceName: String?
+        ) : AddFactorSource()
 
         data object FactorSourceNotCreated : AddFactorSource()
     }
@@ -317,13 +321,16 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically -> context.getString(
             R.string.common_somethingWentWrong
         )
+
         is RadixWalletException.DappRequestException.PreviewError -> context.getString(R.string.error_transactionFailure_reviewFailure)
         is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose -> context.getString(
             R.string.dAppRequest_validationOutcome_preAuthorizationExpirationTooClose
         )
+
         is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired -> context.getString(
             R.string.dAppRequest_validationOutcome_preAuthorizationExpired
         )
+
         RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(
             R.string.dAppRequest_validationOutcome_invalidPersonaOrAccoubts
         )
@@ -415,6 +422,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
             is RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
+
             RadixWalletException.PrepareTransactionException.RequestNotFound -> R.string.error_transactionFailure_prepare
         }
     )
@@ -428,12 +436,15 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
     is BackupServiceException.Unknown -> "Unknown error occurred cause: ${cause?.message}"
 }
 
-fun RadixWalletException.AddFactorSource.toUserFriendlyMessage(context: Context): String = context.getString(
-    when (this) {
-        RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> R.string.newFactor_error_alreadyInUse
-        RadixWalletException.AddFactorSource.FactorSourceNotCreated -> R.string.newFactor_error_notCreated
-    }
-)
+fun RadixWalletException.AddFactorSource.toUserFriendlyMessage(context: Context): String = when (this) {
+    is RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> factorSourceName ?: "Unknown"
+    RadixWalletException.AddFactorSource.FactorSourceNotCreated -> context.getString(R.string.newFactor_error_notCreated)
+}
+
+fun RadixWalletException.AddFactorSource.toUserFriendlyAlertTitle(context: Context): String? = when (this) {
+    is RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> context.getString(R.string.newFactor_error_alreadyInUse)
+    RadixWalletException.AddFactorSource.FactorSourceNotCreated -> null
+}
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
@@ -456,6 +467,21 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
 @Composable
 fun RadixWalletException.userFriendlyMessage(): String {
     return toUserFriendlyMessage(LocalContext.current)
+}
+
+fun RadixWalletException.toUserFriendlyAlertTitle(context: Context): String? {
+    return when (this) {
+        is RadixWalletException.ResourceCouldNotBeResolvedInTransaction,
+        is RadixWalletException.DappRequestException,
+        is RadixWalletException.DappVerificationException,
+        is RadixWalletException.LedgerCommunicationException,
+        is RadixWalletException.PrepareTransactionException,
+        is RadixWalletException.TransactionSubmitException,
+        is RadixWalletException.GatewayException,
+        is RadixWalletException.LinkConnectionException,
+        is RadixWalletException.CloudBackupException -> null
+        is RadixWalletException.AddFactorSource -> toUserFriendlyAlertTitle(context)
+    }
 }
 
 fun Throwable.getDappMessage(): String? {

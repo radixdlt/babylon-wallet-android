@@ -51,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBa
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
@@ -111,7 +110,7 @@ fun WalletScreen(
 
     LaunchedEffect(Unit) {
         viewModel.babylonFactorSourceDoesNotExistEvent.collect {
-            viewModel.createBabylonFactorSource { context.biometricAuthenticateSuspend() }
+            viewModel.createBabylonFactorSource()
         }
     }
 

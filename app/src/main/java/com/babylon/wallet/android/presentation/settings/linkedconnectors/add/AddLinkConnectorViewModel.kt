@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.linkedconnectors
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.add
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -11,6 +11,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,6 +24,7 @@ import javax.inject.Inject
 class AddLinkConnectorViewModel @Inject constructor(
     private val parseLinkConnectionDetailsUseCase: ParseLinkConnectionDetailsUseCase,
     private val establishP2PLinkConnectionUseCase: EstablishP2PLinkConnectionUseCase,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<AddLinkConnectorUiState>(),
     OneOffEventHandler<AddLinkConnectorViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -139,6 +142,7 @@ class AddLinkConnectorViewModel @Inject constructor(
                 }
                 exitLinking(false)
             }.onSuccess {
+                appEventBus.sendEvent(AppEvent.ConnectorLinked)
                 exitLinking(true)
             }
         }

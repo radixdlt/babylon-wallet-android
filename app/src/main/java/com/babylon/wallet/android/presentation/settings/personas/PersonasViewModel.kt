@@ -10,7 +10,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
-import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -48,12 +46,10 @@ class PersonasViewModel @Inject constructor(
                 getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork },
                 getEntitiesWithSecurityPromptUseCase()
             ) { personas, entitiesWithSecurityPrompts ->
-                val babylonFactorSource = getProfileUseCase().mainBabylonFactorSource
                 _state.update {
                     it.copy(
                         personas = personas.toPersistentList(),
                         entitiesWithSecurityPrompts = entitiesWithSecurityPrompts,
-                        babylonFactorSource = babylonFactorSource
                     )
                 }
             }
@@ -69,7 +65,6 @@ class PersonasViewModel @Inject constructor(
     }
 
     data class PersonasUiState(
-        val babylonFactorSource: FactorSource.Device? = null,
         val personas: ImmutableList<Persona> = persistentListOf(),
         val entitiesWithSecurityPrompts: List<EntityWithSecurityPrompt> = emptyList()
     ) : UiState {

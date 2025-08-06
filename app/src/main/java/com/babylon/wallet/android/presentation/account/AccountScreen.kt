@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
+import com.babylon.wallet.android.presentation.ui.composables.HandleSecurityPrompt
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -85,6 +87,8 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -473,15 +477,26 @@ private fun AccountHeader(
                 exit = fadeOut()
             ) {
                 Column {
+                    val factorSourceId = remember(state.accountWithAssets) {
+                        state.accountWithAssets?.account
+                            ?.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral()
+                    }
+                    val securityPromptClickEvent = remember { mutableStateOf<SecurityPromptType?>(null) }
+
+                    HandleSecurityPrompt(
+                        factorSourceId = factorSourceId,
+                        clickEvent = securityPromptClickEvent,
+                        onConsumeUpstream = onApplySecuritySettingsClick,
+                        onConsumed = { securityPromptClickEvent.value = null }
+                    )
+
                     state.securityPrompts?.forEach { securityPromptType ->
                         AccountPromptLabel(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 48.dp)
                                 .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                            onClick = {
-                                onApplySecuritySettingsClick()
-                            },
+                            onClick = { securityPromptClickEvent.value = securityPromptType },
                             text = securityPromptType.toText()
                         )
                     }

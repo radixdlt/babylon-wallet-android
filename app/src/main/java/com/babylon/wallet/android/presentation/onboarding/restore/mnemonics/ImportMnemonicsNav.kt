@@ -15,44 +15,43 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.ARG_REQUEST_SOURCE
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.domain.backup.BackupType
 
 private const val ARGS_REQUEST_SOURCE = "arg_request_source"
 private const val ARGS_BACKUP_TYPE = "backup_type"
-private const val ROUTE = "restore_mnemonics?$ARGS_BACKUP_TYPE={$ARGS_BACKUP_TYPE}&$ARGS_REQUEST_SOURCE={$ARGS_REQUEST_SOURCE}"
+private const val ROUTE = "import_mnemonics?$ARGS_BACKUP_TYPE={$ARGS_BACKUP_TYPE}&$ARGS_REQUEST_SOURCE={$ARGS_REQUEST_SOURCE}"
 
-enum class RestoreMnemonicsRequestSource {
+enum class ImportMnemonicsRequestSource {
     Onboarding,
     Settings,
     FactorSourceDetails
 }
 
-fun NavController.restoreMnemonics(
-    args: RestoreMnemonicsArgs
+fun NavController.importMnemonics(
+    args: ImportMnemonicsArgs
 ) {
     val backupType = Json.encodeToString(args.backupType)
-    navigate(route = "restore_mnemonics?$ARGS_BACKUP_TYPE=$backupType&$ARGS_REQUEST_SOURCE=${args.requestSource}")
+    navigate(route = "import_mnemonics?$ARGS_BACKUP_TYPE=$backupType&$ARGS_REQUEST_SOURCE=${args.requestSource}")
 }
 
 @Serializable
-data class RestoreMnemonicsArgs(
+data class ImportMnemonicsArgs(
     val backupType: BackupType? = null,
-    val requestSource: RestoreMnemonicsRequestSource
+    val requestSource: ImportMnemonicsRequestSource
 ) {
     companion object {
-        fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
+        fun from(savedStateHandle: SavedStateHandle): ImportMnemonicsArgs {
             val backupType: BackupType? = savedStateHandle.get<String>(ARGS_BACKUP_TYPE)?.let {
                 Json.decodeFromString(it)
             }
-            val requestSource = checkNotNull(savedStateHandle[ARGS_REQUEST_SOURCE]) as RestoreMnemonicsRequestSource
-            return RestoreMnemonicsArgs(backupType, requestSource)
+            val requestSource = checkNotNull(savedStateHandle[ARGS_REQUEST_SOURCE]) as ImportMnemonicsRequestSource
+            return ImportMnemonicsArgs(backupType, requestSource)
         }
     }
 }
 
-fun NavGraphBuilder.restoreMnemonicsScreen(
+fun NavGraphBuilder.importMnemonicsScreen(
     onCloseApp: () -> Unit,
     onDismiss: (Boolean) -> Unit
 ) {
@@ -67,7 +66,7 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
                 type = NavType.StringType
             },
             navArgument(ARGS_REQUEST_SOURCE) {
-                type = NavType.EnumType(RestoreMnemonicsRequestSource::class.java)
+                type = NavType.EnumType(ImportMnemonicsRequestSource::class.java)
             }
         ),
         enterTransition = {
@@ -82,13 +81,13 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
         popExitTransition = {
             slideOutOfContainer(
                 when (initialState.getRequestSource()) {
-                    RestoreMnemonicsRequestSource.Onboarding -> AnimatedContentTransitionScope.SlideDirection.Left
+                    ImportMnemonicsRequestSource.Onboarding -> AnimatedContentTransitionScope.SlideDirection.Left
                     else -> AnimatedContentTransitionScope.SlideDirection.Right
                 }
             )
         }
     ) {
-        RestoreMnemonicsScreen(
+        ImportMnemonicsScreen(
             viewModel = hiltViewModel(),
             onCloseApp = onCloseApp,
             onDismiss = onDismiss
@@ -96,10 +95,10 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
     }
 }
 
-private fun NavBackStackEntry.getRequestSource(): RestoreMnemonicsRequestSource {
+private fun NavBackStackEntry.getRequestSource(): ImportMnemonicsRequestSource {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        checkNotNull(arguments?.getSerializable(ARG_REQUEST_SOURCE, RestoreMnemonicsRequestSource::class.java))
+        checkNotNull(arguments?.getSerializable(ARG_REQUEST_SOURCE, ImportMnemonicsRequestSource::class.java))
     } else {
-        arguments?.getSerializable(ARG_REQUEST_SOURCE) as RestoreMnemonicsRequestSource
+        arguments?.getSerializable(ARG_REQUEST_SOURCE) as ImportMnemonicsRequestSource
     }
 }

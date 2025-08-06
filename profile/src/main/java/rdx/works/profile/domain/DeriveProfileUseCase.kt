@@ -41,7 +41,6 @@ class DeriveProfileUseCase @Inject constructor(
 
                 sargonOs.newWalletWithDerivedBdfs(
                     hdFactorSource = PrivateHierarchicalDeterministicFactorSource.babylon(
-                        isMain = true,
                         mnemonicWithPassphrase = mnemonicWithPassphrase,
                         hostInfo = hostInfo
                     ),

@@ -12,10 +12,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.common.toUiItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.SecurityFactorTypeUiItem
-import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.EntitiesLinkedToFactorSource
 import com.radixdlt.sargon.FactorSource
@@ -60,7 +60,9 @@ class ChooseFactorSourceViewModel @Inject constructor(
                     factorSource.id to entities
                 }.toMap(),
                 statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
-                    deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>()
+                    deviceFactorSources = allFactorSources.filterIsInstance<FactorSource.Device>(),
+                    includeNoIssuesMessage = false,
+                    checkIntegrityOnlyIfAnyEntitiesLinked = false
                 )
             )
         }.flowOn(defaultDispatcher).stateIn(
@@ -96,9 +98,11 @@ class ChooseFactorSourceViewModel @Inject constructor(
                                         kind = kind,
                                         items = data.allFactorSources.getOrDefault(kind, emptyList())
                                             .toUiItems(
+                                                entitiesLinkedToFactorSourceById = data.entitiesLinkedToFactorSourceById,
+                                                statusMessagesByFactorSourceId = data.statusMessagesByFactorSourceId,
                                                 alreadySelectedFactorSources = alreadySelectedFactorSources,
                                                 unusableFactorSources = unusableFactorSources,
-                                                data = data,
+                                                includeNoIssuesMessage = false
                                             )
                                             .toPersistentList()
                                     )
@@ -193,36 +197,6 @@ class ChooseFactorSourceViewModel @Inject constructor(
 
         listOf(header) + items
     }.flatten()
-
-    private fun List<FactorSource>.toUiItems(
-        alreadySelectedFactorSources: List<FactorSourceId>,
-        unusableFactorSources: List<FactorSourceId>,
-        data: Data
-    ): List<Selectable<FactorSourceCard>> = map { factorSource ->
-        val messages = data.statusMessagesByFactorSourceId.getOrDefault(factorSource.id, emptyList())
-            // We don't want to show the success checkmark indicating the factor source was backed up
-            .filterNot { it is FactorSourceStatusMessage.NoSecurityIssues }
-        val linkedEntities = data.entitiesLinkedToFactorSourceById[factorSource.id]
-
-        val cannotBeUsedHereMessage = if (factorSource.id in unusableFactorSources) {
-            listOf(FactorSourceStatusMessage.CannotBeUsedHere)
-        } else {
-            emptyList()
-        }
-        val isSelected = factorSource.id in alreadySelectedFactorSources
-
-        Selectable(
-            factorSource.toFactorSourceCard(
-                isEnabled = !isSelected && messages.isEmpty() && factorSource.id !in unusableFactorSources,
-                messages = (messages + cannotBeUsedHereMessage).toPersistentList(),
-                accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
-                personas = linkedEntities?.personas.orEmpty().toPersistentList(),
-                hasHiddenEntities = !linkedEntities?.hiddenAccounts.isNullOrEmpty() ||
-                    !linkedEntities?.hiddenPersonas.isNullOrEmpty()
-            ),
-            selected = isSelected
-        )
-    }
 
     private data class Data(
         val kindsByCategories: List<FactorSourceKindsByCategory> = emptyList(),

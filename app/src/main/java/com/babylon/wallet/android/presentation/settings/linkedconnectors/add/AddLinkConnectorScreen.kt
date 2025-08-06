@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.add
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -32,13 +34,49 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
+import com.babylon.wallet.android.presentation.ui.composables.NumberedValuesList
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.linkedconnector.LinkedConnectorMessageScreen
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.collections.immutable.persistentListOf
+
+@Composable
+fun AddLinkConnectorScreen(
+    modifier: Modifier = Modifier,
+    viewModel: AddLinkConnectorViewModel,
+    onDismiss: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    AddLinkConnectorScreen(
+        modifier = modifier,
+        state = state,
+        onQrCodeScanned = viewModel::onQrCodeScanned,
+        onQrCodeScanFailure = viewModel::onQrCodeScanFailure,
+        onConnectorDisplayNameChanged = viewModel::onConnectorDisplayNameChanged,
+        onInfoClick = onInfoClick,
+        onContinueClick = viewModel::onContinueClick,
+        onCloseClick = viewModel::onCloseClick,
+        onErrorDismiss = viewModel::onErrorDismiss
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is AddLinkConnectorViewModel.Event.Close -> onDismiss()
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -94,7 +132,7 @@ private fun AddLinkConnectorContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onCloseClick,
                 backIconType = BackIconType.Close,
-                windowInsets = WindowInsets.statusBarsAndBanner
+                windowInsets = WindowInsets.Companion.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.background,

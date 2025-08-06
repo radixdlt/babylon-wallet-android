@@ -2,10 +2,8 @@ package com.babylon.wallet.android.presentation.settings.troubleshooting.account
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,32 +22,35 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.FactorSourceId
 
 @Composable
 fun AccountRecoveryScanSelectionScreen(
     viewModel: AccountRecoveryScanSelectionViewModel,
     onBack: () -> Unit,
-    onChooseSeedPhrase: (MnemonicType) -> Unit,
-    onChooseLedger: (Boolean) -> Unit,
+    onFactorSourceSelected: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     AccountRecoveryScanSelectionContent(
         onBackClick = viewModel::onBackClick,
-        onUseFactorSource = viewModel::onUseFactorSource,
+        onRecoverBabylonAccounts = viewModel::onRecoverBabylonAccounts,
+        onRecoverOlympiaAccounts = viewModel::onRecoverOlympiaAccounts,
         isMainnet = state.isMainnet
     )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                AccountRecoveryScanSelectionViewModel.Event.OnDismiss -> onBack()
-                is AccountRecoveryScanSelectionViewModel.Event.ChooseLedger -> onChooseLedger(it.isOlympia)
-                is AccountRecoveryScanSelectionViewModel.Event.ChooseSeedPhrase -> onChooseSeedPhrase(it.mnemonicType)
+                AccountRecoveryScanSelectionViewModel.Event.OnDismiss -> {
+                    onBack()
+                }
+                is AccountRecoveryScanSelectionViewModel.Event.FactorSourceSelected -> {
+                    onFactorSourceSelected(it.factorSourceId, it.isForOlympia)
+                }
             }
         }
     }
@@ -59,7 +60,8 @@ fun AccountRecoveryScanSelectionScreen(
 private fun AccountRecoveryScanSelectionContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onUseFactorSource: (RecoveryType) -> Unit,
+    onRecoverBabylonAccounts: () -> Unit,
+    onRecoverOlympiaAccounts: () -> Unit,
     isMainnet: Boolean,
 ) {
     val backCallback = {
@@ -131,18 +133,8 @@ private fun AccountRecoveryScanSelectionContent(
             )
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.accountRecoveryScan_seedPhraseButtonTitle),
-                onClick = {
-                    onUseFactorSource(RecoveryType.DeviceBabylon)
-                }
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            RadixSecondaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.accountRecoveryScan_ledgerButtonTitle),
-                onClick = {
-                    onUseFactorSource(RecoveryType.LedgerBabylon)
-                }
+                text = stringResource(id = R.string.recoverWalletWithoutProfile_recoverBabylonAccounts),
+                onClick = onRecoverBabylonAccounts
             )
             if (isMainnet) {
                 HorizontalDivider(
@@ -171,23 +163,16 @@ private fun AccountRecoveryScanSelectionContent(
                 )
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.accountRecoveryScan_seedPhraseButtonTitle),
-                    onClick = {
-                        onUseFactorSource(RecoveryType.DeviceOlympia)
-                    }
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.accountRecoveryScan_ledgerButtonTitle),
-                    onClick = {
-                        onUseFactorSource(RecoveryType.LedgerOlympia)
-                    }
+                    text = stringResource(id = R.string.recoverWalletWithoutProfile_recoverOlympiaAccounts),
+                    onClick = onRecoverOlympiaAccounts
                 )
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = RadixTheme.dimensions.paddingSmall, horizontal = RadixTheme.dimensions.paddingDefault),
+                        .padding(
+                            vertical = RadixTheme.dimensions.paddingSmall,
+                            horizontal = RadixTheme.dimensions.paddingDefault
+                        ),
                     text = stringResource(id = R.string.accountRecoveryScan_olympiaSection_footnote)
                         .formattedSpans(
                             RadixTheme.typography.body1HighImportance.toSpanStyle()
@@ -204,6 +189,11 @@ private fun AccountRecoveryScanSelectionContent(
 @Composable
 fun AccountRecoveryScanSelectionPreview() {
     RadixWalletTheme {
-        AccountRecoveryScanSelectionContent(onBackClick = {}, onUseFactorSource = {}, isMainnet = true)
+        AccountRecoveryScanSelectionContent(
+            onBackClick = {},
+            onRecoverBabylonAccounts = {},
+            onRecoverOlympiaAccounts = {},
+            isMainnet = true
+        )
     }
 }

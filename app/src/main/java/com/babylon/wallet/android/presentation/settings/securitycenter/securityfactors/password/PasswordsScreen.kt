@@ -17,17 +17,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
@@ -38,7 +37,6 @@ fun PasswordsScreen(
     viewModel: PasswordsViewModel,
     onNavigateToPasswordFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToAddPassword: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -57,7 +55,6 @@ fun PasswordsScreen(
         passwordFactorSources = state.passwordFactorSources,
         onPasswordFactorSourceClick = viewModel::onPasswordFactorSourceClick,
         onAddPasswordClick = onNavigateToAddPassword,
-        onInfoClick = onInfoClick,
         onBackClick = onBackClick,
     )
 }
@@ -68,7 +65,6 @@ private fun PasswordsContent(
     passwordFactorSources: PersistentList<FactorSourceCard>,
     onPasswordFactorSourceClick: (FactorSourceId) -> Unit,
     onAddPasswordClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -89,14 +85,11 @@ private fun PasswordsContent(
             HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
-                mainFactorSource = null,
                 factorSources = passwordFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_passwordDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_passwordAdd,
-                factorSourceKind = FactorSourceKind.PASSWORD,
                 onFactorSourceClick = onPasswordFactorSourceClick,
-                onAddFactorSourceClick = onAddPasswordClick,
-                onInfoClick = onInfoClick
+                onAddFactorSourceClick = onAddPasswordClick
             )
         }
     }
@@ -109,59 +102,16 @@ private fun PasswordsScreenPreview() {
     RadixWalletTheme {
         PasswordsContent(
             passwordFactorSources = persistentListOf(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Panathinaikos",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.PASSWORD,
-                    messages = persistentListOf(),
+                PasswordFactorSource.sample().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
                 ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate 13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.PASSWORD,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.PASSWORD,
-                    messages = persistentListOf(),
+                PasswordFactorSource.sample.other().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
                 )
             ),
             onPasswordFactorSourceClick = {},
             onAddPasswordClick = {},
-            onBackClick = {},
-            onInfoClick = {}
+            onBackClick = {}
         )
     }
 }

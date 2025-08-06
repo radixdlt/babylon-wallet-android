@@ -5,16 +5,21 @@ import androidx.compose.runtime.CompositionLocalProvider
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.LocalActionableAddressViewEntryPoint
+import com.babylon.wallet.android.presentation.ui.composables.card.EventBusComposableEntryPoint
+import com.babylon.wallet.android.presentation.ui.composables.card.LocalEventBusComposableEntryPoint
 
 @Composable
 fun CustomCompositionProviders(
     isBalanceVisible: Boolean,
     actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint,
+    factorSourceCardViewEntryPoint: EventBusComposableEntryPoint,
     content: @Composable () -> Unit
 ) {
     CompositionLocalProvider(LocalBalanceVisibility provides isBalanceVisible) {
         CompositionLocalProvider(LocalActionableAddressViewEntryPoint provides actionableAddressViewEntryPoint) {
-            content()
+            CompositionLocalProvider(LocalEventBusComposableEntryPoint provides factorSourceCardViewEntryPoint) {
+                content()
+            }
         }
     }
 }

@@ -4,9 +4,12 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.DeviceMnemonicBuilder
-import com.radixdlt.sargon.DeviceMnemonicValidationOutcome
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicBuilder
+import com.radixdlt.sargon.MnemonicValidationOutcome
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -15,12 +18,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DeviceMnemonicBuilderClient @Inject constructor(
+class MnemonicBuilderClient @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    private var deviceMnemonicBuilder = DeviceMnemonicBuilder()
+    private var mnemonicBuilder = MnemonicBuilder()
 
     suspend fun generateMnemonicWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         executeMutating { generateNewMnemonic() }
@@ -44,12 +47,12 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         )
     }
 
-    suspend fun isFactorAlreadyInUse(): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
-        isFactorSourceAlreadyInUse(deviceMnemonicBuilder.getFactorSourceId())
+    suspend fun isFactorAlreadyInUse(kind: FactorSourceKind): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
+        isFactorSourceAlreadyInUse(mnemonicBuilder.getFactorSourceId(kind))
     }
 
     suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
-        val indices = deviceMnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
+        val indices = mnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()
         val lastWordIndex = indices.lastIndex
         indices.mapIndexed { i, index ->
             SeedPhraseWord(
@@ -59,16 +62,16 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         }
     }
 
-    suspend fun confirmWords(words: List<SeedPhraseWord>): DeviceMnemonicValidationOutcome = withContext(dispatcher) {
-        deviceMnemonicBuilder.validateWords(words.associate { it.index.toUShort() to it.value })
+    suspend fun confirmWords(words: List<SeedPhraseWord>): MnemonicValidationOutcome = withContext(dispatcher) {
+        mnemonicBuilder.validateWords(words.associate { it.index.toUShort() to it.value })
     }
 
     suspend fun getMnemonicWithPassphrase(): MnemonicWithPassphrase = withContext(dispatcher) {
-        deviceMnemonicBuilder.getMnemonicWithPassphrase()
+        mnemonicBuilder.getMnemonicWithPassphrase()
     }
 
     suspend fun getWords(state: SeedPhraseWord.State): List<SeedPhraseWord> = withContext(dispatcher) {
-        val bip39Words = deviceMnemonicBuilder.getWords()
+        val bip39Words = mnemonicBuilder.getWords()
         val lastWordIndex = bip39Words.lastIndex
         bip39Words.mapIndexed { index, bip39Word ->
             SeedPhraseWord(
@@ -80,7 +83,14 @@ class DeviceMnemonicBuilderClient @Inject constructor(
         }
     }
 
-    private suspend fun executeMutating(function: suspend DeviceMnemonicBuilder.() -> DeviceMnemonicBuilder) = withContext(dispatcher) {
-        deviceMnemonicBuilder = deviceMnemonicBuilder.function()
-    }
+    suspend fun getExistingFactorSource(kind: FactorSourceKind): Result<FactorSource?> =
+        sargonOsManager.callSafely(dispatcher) {
+            val id = mnemonicBuilder.getFactorSourceId(kind)
+            factorSources().firstOrNull { it.id == id }
+        }
+
+    private suspend fun executeMutating(function: suspend MnemonicBuilder.() -> MnemonicBuilder) =
+        withContext(dispatcher) {
+            mnemonicBuilder = mnemonicBuilder.function()
+        }
 }

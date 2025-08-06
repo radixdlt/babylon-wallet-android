@@ -32,7 +32,9 @@ import com.babylon.wallet.android.designsystem.composable.MnemonicTextFieldColor
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.seedphrase.NumberOfWordsTabView
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -41,13 +43,14 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
-import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputView
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.rememberSuggestionsVisibilityState
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
+import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -58,6 +61,7 @@ fun DeviceSeedPhraseScreen(
     modifier: Modifier = Modifier,
     viewModel: DeviceSeedPhraseViewModel,
     onDismiss: () -> Unit,
+    onDismissFlow: () -> Unit,
     onConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -70,6 +74,8 @@ fun DeviceSeedPhraseScreen(
         onWordChanged = viewModel::onWordChanged,
         onWordSelected = viewModel::onWordSelected,
         onEnterCustomSeedPhraseClick = viewModel::onEnterCustomSeedPhraseClick,
+        onNumberOfWordsChanged = viewModel::onNumberOfWordsChanged,
+        onPassphraseChanged = viewModel::onPassphraseChanged,
         onConfirmClick = viewModel::onConfirmClick
     )
 
@@ -78,6 +84,7 @@ fun DeviceSeedPhraseScreen(
             when (event) {
                 DeviceSeedPhraseViewModel.Event.Confirmed -> onConfirmed()
                 DeviceSeedPhraseViewModel.Event.Dismiss -> onDismiss()
+                DeviceSeedPhraseViewModel.Event.DismissFlow -> onDismissFlow()
             }
         }
     }
@@ -92,6 +99,8 @@ private fun DeviceSeedPhraseContent(
     onWordChanged: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
     onEnterCustomSeedPhraseClick: () -> Unit,
+    onNumberOfWordsChanged: (Bip39WordCount) -> Unit,
+    onPassphraseChanged: (String) -> Unit,
     onConfirmClick: () -> Unit
 ) {
     SecureScreen()
@@ -162,7 +171,10 @@ private fun DeviceSeedPhraseContent(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = stringResource(id = R.string.newBiometricFactor_seedPhrase_title),
+                text = when (state.context) {
+                    AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_title)
+                    is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.enterSeedPhrase_bip39Instruction)
+                },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
@@ -172,21 +184,36 @@ private fun DeviceSeedPhraseContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle),
+                text = when (state.context) {
+                    AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle)
+                    is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.newBiometricFactor_seedPhraseCustom_subtitle)
+                },
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
+            if (state.isOlympiaRecovery) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                NumberOfWordsTabView(
+                    selectedNumberOfWords = state.seedPhraseState.seedPhraseWords.size,
+                    onNumberOfWordsChanged = onNumberOfWordsChanged
+                )
+            }
+
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
 
-            SeedPhraseInputView(
+            SeedPhraseInputForm(
                 modifier = Modifier.fillMaxWidth(),
                 seedPhraseWords = state.seedPhraseState.seedPhraseWords,
+                bip39Passphrase = state.seedPhraseState.bip39Passphrase,
                 onWordChanged = onWordChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it },
+                onPassphraseChanged = onPassphraseChanged,
                 initiallyFocusedIndex = focusedWordIndex,
-                textFieldColors = MnemonicTextFieldColors.default()
+                textFieldColors = MnemonicTextFieldColors.default(),
+                showAdvancedMode = state.isOlympiaRecovery
             )
 
             val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
@@ -235,6 +262,8 @@ private fun DeviceSeedPhrasePreview(
             onDismissMessage = {},
             onWordChanged = { _, _ -> },
             onWordSelected = { _, _ -> },
+            onNumberOfWordsChanged = {},
+            onPassphraseChanged = {},
             onConfirmClick = {},
             onEnterCustomSeedPhraseClick = {},
         )
@@ -247,6 +276,7 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
     override val values: Sequence<DeviceSeedPhraseViewModel.State>
         get() = sequenceOf(
             DeviceSeedPhraseViewModel.State(
+                context = AddFactorSourceInput.Context.New,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
                         SeedPhraseWord(
@@ -258,6 +288,9 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                 )
             ),
             DeviceSeedPhraseViewModel.State(
+                context = AddFactorSourceInput.Context.Recovery(
+                    isOlympia = true
+                ),
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
                         SeedPhraseWord(
@@ -270,7 +303,12 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                 isEditingEnabled = true
             ),
             DeviceSeedPhraseViewModel.State(
-                errorMessage = UiMessage.ErrorMessage(RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse)
+                context = AddFactorSourceInput.Context.New,
+                errorMessage = UiMessage.ErrorMessage(
+                    RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+                        factorSourceName = "My Phone"
+                    )
+                )
             )
         )
 }

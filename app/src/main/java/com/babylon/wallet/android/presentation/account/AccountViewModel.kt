@@ -26,8 +26,8 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
-import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.extensions.orZero
@@ -165,7 +165,7 @@ class AccountViewModel @Inject constructor(
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is RefreshAssetsNeeded || event is RestoredMnemonic
+                event is RefreshAssetsNeeded || event is ImportedMnemonic
             }.collect { event ->
                 when (event) {
                     RefreshAssetsNeeded -> loadAccountDetails(
@@ -176,7 +176,7 @@ class AccountViewModel @Inject constructor(
                         )
                     )
 
-                    RestoredMnemonic -> loadAccountDetails(
+                    ImportedMnemonic -> loadAccountDetails(
                         refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = false)
                     )
 

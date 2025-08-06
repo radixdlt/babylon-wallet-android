@@ -70,6 +70,7 @@ class ConfirmSeedPhraseViewModel @Inject constructor(
                     _state.value.seedPhraseState.wordsToConfirm.all { entry -> mnemonicWords[entry.key].word == entry.value }
                 if (inputMatchesMnemonic) {
                     preferencesManager.markFactorSourceBackedUp(factorSource.value.id.asGeneral())
+                    appEventBus.sendEvent(AppEvent.FixSecurityIssue.WrittenDownSeedPhrase)
                     sendEvent(Event.MnemonicBackedUp)
                 } else {
                     _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }

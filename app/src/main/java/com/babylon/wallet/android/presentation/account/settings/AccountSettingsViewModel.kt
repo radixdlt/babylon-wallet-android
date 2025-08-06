@@ -6,6 +6,7 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,12 +14,16 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -29,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
@@ -43,6 +49,7 @@ class AccountSettingsViewModel @Inject constructor(
     private val renameAccountDisplayNameUseCase: RenameAccountDisplayNameUseCase,
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
+    private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
 ) : StateViewModel<AccountSettingsViewModel.State>(),
@@ -83,13 +90,22 @@ class AccountSettingsViewModel @Inject constructor(
     private fun loadAccount() {
         viewModelScope.launch {
             getProfileUseCase.flow.mapNotNull { profile ->
-                profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
-            }.collect { account ->
-                val thirdPartyDefaultDepositRule = account.onLedgerSettings.thirdPartyDeposits.depositRule
+                val account = profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
+                val factorSource = account?.unsecuredControllingFactorInstance?.let {
+                    profile.factorSourceById(it.factorSourceId.asGeneral())
+                }
+                account?.let {
+                    it to factorSource
+                }
+            }.collect { accountAndFactorSource ->
+                val thirdPartyDefaultDepositRule =
+                    accountAndFactorSource.first.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->
                     state.copy(
-                        renameAccountInput = state.renameAccountInput.copy(name = account.displayName.value),
-                        account = account,
+                        renameAccountInput = state.renameAccountInput.copy(
+                            name = accountAndFactorSource.first.displayName.value
+                        ),
+                        account = accountAndFactorSource.first,
                         settingsSections = state.settingsSections.mapWhen(
                             predicate = { it is AccountSettingsSection.AccountSection },
                             mutation = { section ->
@@ -103,7 +119,17 @@ class AccountSettingsViewModel @Inject constructor(
                                     )
                                 )
                             }
-                        ).toPersistentList()
+                        ).toPersistentList(),
+                        securedWith = accountAndFactorSource.second?.toFactorSourceCard(
+                            includeLastUsedOn = true,
+                            messages = accountAndFactorSource.second?.let { factorSource ->
+                                getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(
+                                    factorSource = factorSource,
+                                    includeNoIssuesStatus = false,
+                                    checkIntegrityOnlyIfAnyEntitiesLinked = false
+                                )
+                            }.orEmpty().toPersistentList()
+                        )
                     )
                 }
             }
@@ -213,7 +239,8 @@ class AccountSettingsViewModel @Inject constructor(
         val error: UiMessage? = null,
         val faucetState: FaucetState = FaucetState.Unavailable,
         val isAccountNameUpdated: Boolean = false,
-        val isFreeXRDLoading: Boolean = false
+        val isFreeXRDLoading: Boolean = false,
+        val securedWith: FactorSourceCard? = null
     ) : UiState {
 
         data class RenameAccountInput(

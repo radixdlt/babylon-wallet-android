@@ -150,7 +150,9 @@ class FactorSourceDetailsViewModel @Inject constructor(
                 sendEvent(Event.NavigateToSeedPhraseRestore)
             } else if (biometricsAuthenticateUseCase()) {
                 sendEvent(
-                    Event.NavigateToSeedPhrase(factorSourceId = deviceFactorSource.value.id.asGeneral())
+                    Event.NavigateToSeedPhrase(
+                        factorSourceId = deviceFactorSource.value.id.asGeneral()
+                    )
                 )
             }
         }

@@ -129,16 +129,6 @@ private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, Li
         }
     }
 
-val Profile.mainBabylonFactorSource: FactorSource.Device?
-    get() {
-        val babylonFactorSources = deviceFactorSources.filter { it.isBabylonDeviceFactorSource }
-        return if (babylonFactorSources.size == 1) {
-            babylonFactorSources.first()
-        } else {
-            babylonFactorSources.firstOrNull { it.value.common.flags.contains(FactorSourceFlag.MAIN) }
-        }
-    }
-
 val Profile.babylonFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
         entry.key.isBabylonDeviceFactorSource
@@ -463,8 +453,8 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
     )
 }
 
-fun Profile.addMainBabylonDeviceFactorSource(
-    mainBabylonFactorSource: FactorSource.Device
+fun Profile.addFirstBabylonDeviceFactorSource(
+    firstBabylonFactorSource: FactorSource.Device
 ): Profile {
     val existingBabylonDeviceFactorSources = factorSources.map { factorSource ->
         if (factorSource is FactorSource.Device && factorSource.supportsBabylon) {
@@ -480,7 +470,7 @@ fun Profile.addMainBabylonDeviceFactorSource(
         }
     }
 
-    return copy(factorSources = FactorSources(listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources).asList())
+    return copy(factorSources = FactorSources(listOf(firstBabylonFactorSource) + existingBabylonDeviceFactorSources).asList())
 }
 
 fun Profile.nextAppearanceId(forNetworkId: NetworkId): AppearanceId {

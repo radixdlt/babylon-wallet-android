@@ -10,20 +10,17 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import rdx.works.core.TimestampGenerator
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.olympia
 import rdx.works.profile.FakeProfileRepository
 import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
-import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -74,7 +71,7 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
 
         val profile = ensureBabylonFactorSourceExistUseCase().getOrThrow()
         assertEquals(2, profile.factorSources.size)
-        assertEquals(deviceFactorSource.id, profile.mainBabylonFactorSource?.id)
+        assertEquals(deviceFactorSource.id, profile.deviceFactorSources.first().id)
 
         // Run use case again, factor source is in place so no need to add it again
         val profileAgain = ensureBabylonFactorSourceExistUseCase().getOrThrow()

@@ -11,46 +11,51 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 
 private const val ARGS_FACTOR_SOURCE_ID = "factor_source_id"
-private const val ARGS_MNEMONIC_TYPE = "mnemonic_type"
-const val ROUTE_ADD_SINGLE_MNEMONIC =
-    "add_single_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}&${ARGS_MNEMONIC_TYPE}={$ARGS_MNEMONIC_TYPE}"
+private const val ARGS_CONTEXT = "context"
+private const val ROUTE_IMPORT_SINGLE_MNEMONIC =
+    "import_single_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}&${ARGS_CONTEXT}={$ARGS_CONTEXT}"
 
-fun NavController.addSingleMnemonic(
-    id: String? = null,
-    mnemonicType: MnemonicType = MnemonicType.Babylon
+fun NavController.importSingleMnemonic(
+    context: Context,
+    factorSourceId: FactorSourceId? = null
 ) {
-    navigate(route = "add_single_mnemonic?$ARGS_FACTOR_SOURCE_ID=$id&${ARGS_MNEMONIC_TYPE}=$mnemonicType")
-}
-
-internal class AddSingleMnemonicNavArgs(
-    val factorSourceId: String?,
-    val mnemonicType: MnemonicType = MnemonicType.Babylon
-) {
-    constructor(savedStateHandle: SavedStateHandle) : this(
-        savedStateHandle.get<String>(
-            ARGS_FACTOR_SOURCE_ID
-        ),
-        checkNotNull(
-            savedStateHandle.get<MnemonicType>(
-                ARGS_MNEMONIC_TYPE
-            )
-        ),
+    navigate(
+        route = "import_single_mnemonic?" +
+            "$ARGS_FACTOR_SOURCE_ID=${factorSourceId?.toJson()}" +
+            "&${ARGS_CONTEXT}=$context"
     )
 }
 
-enum class MnemonicType {
-    Babylon, Olympia, BabylonMain
+internal class ImportSingleMnemonicNavArgs(
+    val factorSourceId: FactorSourceId?,
+    val context: Context
+) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        savedStateHandle.get<String>(ARGS_FACTOR_SOURCE_ID)?.let {
+            FactorSourceId.fromJson(it)
+        },
+        checkNotNull(savedStateHandle.get<Context>(ARGS_CONTEXT)),
+    )
 }
 
-fun NavGraphBuilder.addSingleMnemonic(
+enum class Context {
+
+    ImportMainSeedPhrase,
+    ImportSeedPhrase
+}
+
+fun NavGraphBuilder.importSingleMnemonic(
     onBackClick: () -> Unit,
     onStartRecovery: () -> Unit
 ) {
-    markAsHighPriority(ROUTE_ADD_SINGLE_MNEMONIC)
+    markAsHighPriority(ROUTE_IMPORT_SINGLE_MNEMONIC)
     composable(
-        route = ROUTE_ADD_SINGLE_MNEMONIC,
+        route = ROUTE_IMPORT_SINGLE_MNEMONIC,
         arguments = listOf(
             navArgument(
                 name = ARGS_FACTOR_SOURCE_ID,
@@ -58,9 +63,9 @@ fun NavGraphBuilder.addSingleMnemonic(
                 nullable = true
                 type = NavType.StringType
             },
-            navArgument(name = ARGS_MNEMONIC_TYPE) {
-                defaultValue = MnemonicType.Babylon
-                type = NavType.EnumType(MnemonicType::class.java)
+            navArgument(name = ARGS_CONTEXT) {
+                defaultValue = Context.ImportSeedPhrase
+                type = NavType.EnumType(Context::class.java)
             }
         ),
         enterTransition = {
@@ -76,7 +81,7 @@ fun NavGraphBuilder.addSingleMnemonic(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        AddSingleMnemonicScreen(
+        ImportSingleMnemonicScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onStartRecovery = onStartRecovery

@@ -17,7 +17,6 @@ import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREAT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
@@ -28,6 +27,8 @@ import com.babylon.wallet.android.presentation.account.settings.devsettings.devS
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
+import com.babylon.wallet.android.presentation.addfactorsource.identify.identifyFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorName
 import com.babylon.wallet.android.presentation.boot.bootError
 import com.babylon.wallet.android.presentation.boot.navigateToBootError
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
@@ -60,18 +61,21 @@ import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonicsScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.add.addLinkConnector
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.LINK_CONNECTOR_INTR_ROUTE
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.linkConnectorIntro
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
@@ -84,6 +88,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personadetail.p
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
@@ -176,10 +181,10 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onRestoreConfirmed = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
+                navController.importMnemonics(
+                    args = ImportMnemonicsArgs(
                         backupType = it,
-                        requestSource = RestoreMnemonicsRequestSource.Onboarding
+                        requestSource = ImportMnemonicsRequestSource.Onboarding
                     )
                 )
             },
@@ -187,7 +192,7 @@ fun NavigationHost(
                 navController.restoreWithoutBackupScreen()
             }
         )
-        restoreMnemonicsScreen(
+        importMnemonicsScreen(
             onCloseApp = onCloseApp,
             onDismiss = { isMovingToMain ->
                 if (isMovingToMain) {
@@ -197,7 +202,7 @@ fun NavigationHost(
                 }
             }
         )
-        addSingleMnemonic(
+        importSingleMnemonic(
             onBackClick = {
                 navController.popBackStack()
             },
@@ -208,7 +213,7 @@ fun NavigationHost(
         restoreWithoutBackupScreen(
             onBack = { navController.popBackStack() },
             onRestoreConfirmed = {
-                navController.addSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
+                navController.importSingleMnemonic(context = Context.ImportMainSeedPhrase)
             },
             onNewUserConfirmClick = {
                 navController.popBackStack(Screen.OnboardingDestination.route, inclusive = false)
@@ -355,29 +360,8 @@ fun NavigationHost(
             onContinueClick = { accountId, requestSource ->
                 navController.createAccountConfirmationScreen(
                     accountId = accountId,
-                    requestSource = requestSource
-                        ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
+                    requestSource = requestSource ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
                 )
-            },
-            onAddLedgerDevice = {
-                navController.chooseLedger()
-            }
-        )
-        chooseLedger(
-            onBackClick = {
-                navController.navigateUp()
-            },
-            onFinish = {
-                navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
-            },
-            onStartRecovery = { factorSourceId, isOlympia ->
-                navController.accountRecoveryScan(
-                    factorSourceId = factorSourceId,
-                    isOlympia = isOlympia
-                )
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         createAccountConfirmationScreen(
@@ -434,11 +418,16 @@ fun NavigationHost(
             },
             onDAppClick = {
                 navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress)
+            },
+            onFactorSourceCardClick = { factorSourceId ->
+                navController.factorSourceDetails(factorSourceId)
             }
         )
-        personaEditScreen(onBackClick = {
-            navController.navigateUp()
-        })
+        personaEditScreen(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        )
         transactionReviewScreen(
             onBackClick = {
                 navController.popBackStack()
@@ -545,6 +534,9 @@ fun NavigationHost(
             },
             onDeleteAccountClick = {
                 navController.deleteAccount(accountAddress = it)
+            },
+            onFactorSourceCardClick = { factorSourceId ->
+                navController.factorSourceDetails(factorSourceId)
             }
         )
         deleteAccount(
@@ -715,6 +707,20 @@ fun NavigationHost(
         )
         blogPostsScreen(
             onBackClick = { navController.popBackStack() }
+        )
+        linkConnectorIntro(
+            onDismiss = navController::popBackStack,
+            onLinkConnectorClick = navController::addLinkConnector
+        )
+        addLinkConnector(
+            onDismiss = { navController.popBackStack(LINK_CONNECTOR_INTR_ROUTE, true) },
+            onInfoClick = navController::infoDialog
+        )
+        identifyFactorSource(
+            onDismiss = navController::popBackStack,
+            onSetLedgerName = { factorSourceId, ledgerModel ->
+                navController.setFactorName(factorSourceId, ledgerModel)
+            }
         )
     }
 }

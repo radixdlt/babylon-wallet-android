@@ -7,14 +7,10 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.accountRecoveryScanSelection
-import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.troubleshooting.reset.resetWalletScreen
@@ -90,30 +86,10 @@ fun NavGraphBuilder.troubleshootingNavGraph(
             onBack = {
                 navController.popBackStack()
             },
-            onChooseSeedPhrase = {
-                navController.chooseSeedPhrase(it)
-            },
-            onChooseLedger = { isOlympia ->
-                navController.chooseLedger(
-                    ledgerSelectionPurpose = if (isOlympia) {
-                        LedgerSelectionPurpose.RecoveryScanOlympia
-                    } else {
-                        LedgerSelectionPurpose.RecoveryScanBabylon
-                    }
-                )
-            }
-        )
-        chooseSeedPhrase(
-            onBack = {
-                navController.popBackStack()
-            },
-            onAddSeedPhrase = {
-                navController.addSingleMnemonic(mnemonicType = it)
-            },
-            onRecoveryScanWithFactorSource = { factorSourceId, isOlympia ->
+            onFactorSourceSelected = { factorSourceId, isForOlympia ->
                 navController.accountRecoveryScan(
                     factorSourceId = factorSourceId,
-                    isOlympia = isOlympia
+                    isOlympia = isForOlympia
                 )
             }
         )

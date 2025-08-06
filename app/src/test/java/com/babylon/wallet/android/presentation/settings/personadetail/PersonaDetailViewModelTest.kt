@@ -4,11 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.PersonaDetailViewModel
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -31,6 +33,7 @@ import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
+import rdx.works.core.sargon.updateLastUsed
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -42,6 +45,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
+    private val getFactorSourceIntegrityStatusMessagesUseCase = mockk<GetFactorSourceIntegrityStatusMessagesUseCase>()
     private val eventBus = mockk<AppEventBus>()
 
     val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
@@ -53,7 +57,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             getProfileUseCase,
             getDAppsUseCase,
             savedStateHandle,
-            changeEntityVisibilityUseCase
+            changeEntityVisibilityUseCase,
+            getFactorSourceIntegrityStatusMessagesUseCase
         )
     }
 
@@ -67,6 +72,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
         val dAppOther = DApp.sampleMainnet.other()
         coEvery { getDAppsUseCase(dApp.dAppAddress, false) } returns Result.success(dApp)
         coEvery { getDAppsUseCase(dAppOther.dAppAddress, false) } returns Result.success(dAppOther)
+        coEvery { getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(any(), any(), any()) } returns emptyList()
     }
 
     @Test

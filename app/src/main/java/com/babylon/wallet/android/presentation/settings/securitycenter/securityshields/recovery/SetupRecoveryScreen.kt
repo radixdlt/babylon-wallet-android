@@ -59,18 +59,17 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityShieldBuilderStatusInvalidReason
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.values
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.PersistentList
@@ -604,111 +603,21 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
         get() = sequenceOf(
             SetupRecoveryViewModel.State(
                 startRecoveryFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Ledger ABC",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    ),
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Metal Jacket",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    LedgerHardwareWalletFactorSource.sample().asGeneral().toFactorSourceCard(),
+                    LedgerHardwareWalletFactorSource.sample.other().asGeneral().toFactorSourceCard()
                 ),
                 confirmationFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Metal Jacket",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    ),
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Ledger ABC",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    LedgerHardwareWalletFactorSource.sample().asGeneral().toFactorSourceCard(),
+                    LedgerHardwareWalletFactorSource.sample.other().asGeneral().toFactorSourceCard()
                 ),
                 fallbackPeriod = TimePeriod.sample()
             ),
             SetupRecoveryViewModel.State(
                 startRecoveryFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Ledger ABC",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    LedgerHardwareWalletFactorSource.sample().asGeneral().toFactorSourceCard(),
                 ),
                 confirmationFactors = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "Ledger ABC",
-                        includeDescription = true,
-                        lastUsedOn = null,
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = false,
-                        supportsBabylon = true,
-                        isEnabled = true
-                    )
+                    LedgerHardwareWalletFactorSource.sample.other().asGeneral().toFactorSourceCard()
                 ),
                 status = SecurityShieldBuilderStatus.Weak(
                     reason = SecurityShieldBuilderRuleViolation.RecoveryAndConfirmationFactorsOverlap()

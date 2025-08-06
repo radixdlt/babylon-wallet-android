@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,23 +36,26 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
 import com.babylon.wallet.android.presentation.ui.composables.card.title
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.FactorSourceCategoryHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.ArculusCardFactorSource
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
+import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
-import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SelectFactorsScreen(
@@ -162,12 +163,13 @@ private fun SelectFactorsContent(
 
             items(state.items) {
                 when (val item = it) {
-                    is SelectFactorsViewModel.State.UiItem.CategoryHeader -> CategoryHeaderView(
+                    is SelectFactorsViewModel.State.UiItem.CategoryHeader -> FactorSourceCategoryHeaderView(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXLarge),
-                        item = item,
+                        kind = item.kind,
                         message = stringResource(id = R.string.shieldSetupStatus_factorCannotBeUsedByItself)
                             .takeIf { state.cannotBeUsedByItself(item) }
                     )
+
                     is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
                         item = item.card,
@@ -190,39 +192,6 @@ private fun SelectFactorsContent(
 }
 
 @Composable
-private fun CategoryHeaderView(
-    item: SelectFactorsViewModel.State.UiItem.CategoryHeader,
-    message: String?,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = item.kind.title(),
-            style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.textSecondary
-        )
-
-        Text(
-            text = item.kind.subtitle(),
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.textSecondary
-        )
-
-        message?.let {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-
-            Text(
-                text = it,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.warning
-            )
-        }
-    }
-}
-
-@Composable
 private fun StatusView(
     modifier: Modifier = Modifier,
     status: SelectedPrimaryThresholdFactorsStatus,
@@ -236,6 +205,7 @@ private fun StatusView(
                 type = StatusMessage.Type.WARNING
             )
         )
+
         SelectedPrimaryThresholdFactorsStatus.Insufficient -> StatusMessageText(
             modifier = modifier,
             message = StatusMessage(
@@ -243,6 +213,7 @@ private fun StatusView(
                 type = StatusMessage.Type.ERROR
             )
         )
+
         is SelectedPrimaryThresholdFactorsStatus.Invalid -> StatusMessageText(
             modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
             message = StatusMessage(
@@ -256,6 +227,7 @@ private fun StatusView(
                 type = StatusMessage.Type.ERROR
             )
         )
+
         SelectedPrimaryThresholdFactorsStatus.Optimal -> return
     }
 }
@@ -285,131 +257,41 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "My Phone",
-                    kind = FactorSourceKind.DEVICE,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = false
             )
         ),
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.ARCULUS_CARD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "SecretSecret123",
-                    kind = FactorSourceKind.ARCULUS_CARD,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = false
             )
         ),
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Highly Secretive Stick",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = LedgerHardwareWalletFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = false
             )
         ),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "My Arc",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = LedgerHardwareWalletFactorSource.sample.other().asGeneral().toFactorSourceCard(),
                 selected = false
             )
         ),
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.PASSWORD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "My Password",
-                    kind = FactorSourceKind.PASSWORD,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = PasswordFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = true
             )
         ),
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.OFF_DEVICE_MNEMONIC),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "ShizzleWords",
-                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
+                data = OffDeviceMnemonicFactorSource.sample().asGeneral().toFactorSourceCard(),
                 selected = false
             )
         )

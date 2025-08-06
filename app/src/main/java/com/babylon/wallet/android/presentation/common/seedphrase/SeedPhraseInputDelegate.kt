@@ -34,7 +34,7 @@ class SeedPhraseInputDelegate(
             state.copy(
                 seedPhraseWords = (0 until size.value.toInt()).map {
                     SeedPhraseWord(
-                        it,
+                        index = it,
                         lastWord = it == size.value.toInt() - 1
                     )
                 }.toPersistentList()
@@ -69,7 +69,7 @@ class SeedPhraseInputDelegate(
                 it.copy(value = value.trim())
             }).toPersistentList()
             state.copy(
-                seedPhraseWords = updatedWords,
+                seedPhraseWords = updatedWords
             )
         }
         debounceJob?.cancel()

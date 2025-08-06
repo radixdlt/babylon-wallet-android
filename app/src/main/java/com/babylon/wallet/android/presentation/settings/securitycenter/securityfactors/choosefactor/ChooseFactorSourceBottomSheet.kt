@@ -31,13 +31,15 @@ import com.babylon.wallet.android.presentation.ui.composables.securityfactors.Se
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.SecurityFactorTypeUiItem
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
@@ -257,15 +259,7 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
     private val availableFactorSources = mapOf(
         FactorSourceKind.DEVICE to persistentListOf(
             Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Fotis Ioannidis",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.DEVICE,
+                DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
                     messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
                     accounts = persistentListOf(
                         Account.sampleMainnet()
@@ -273,22 +267,11 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     personas = persistentListOf(
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
-                    ),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
+                    )
                 )
             ),
             Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "666",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.DEVICE,
+                DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard(
                     messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
                     accounts = persistentListOf(
                         Account.sampleMainnet()
@@ -296,92 +279,40 @@ class ChooseFactorSourcePreviewProvider : PreviewParameterProvider<State> {
                     personas = persistentListOf(
                         Persona.sampleMainnet(),
                         Persona.sampleStokenet()
-                    ),
-                    hasHiddenEntities = true,
-                    supportsBabylon = true,
-                    isEnabled = true
+                    )
                 )
             ),
             Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "999",
-                    includeDescription = false,
-                    lastUsedOn = "Yesterday",
-                    kind = FactorSourceKind.DEVICE,
+                DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
                     messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.WriteDownSeedPhrase),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
                 )
             ),
             Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "XXX",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.DEVICE,
-                    messages = persistentListOf(),
+                DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(
                         Account.sampleMainnet()
                     ),
                     personas = persistentListOf(
                         Persona.sampleMainnet(),
-                    ),
-                    hasHiddenEntities = true,
-                    supportsBabylon = true,
-                    isEnabled = true
+                    )
                 )
             )
         ),
         FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET to persistentListOf(
             Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "ALFZ PSF",
-                    includeDescription = false,
-                    lastUsedOn = "every year",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                LedgerHardwareWalletFactorSource.sample().asGeneral().toFactorSourceCard(
                     messages = persistentListOf(FactorSourceStatusMessage.NoSecurityIssues),
                     accounts = persistentListOf(
                         Account.sampleMainnet()
                     ),
                     personas = persistentListOf(
                         Persona.sampleMainnet()
-                    ),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
+                    )
                 )
             ),
             Selectable(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "DPG7000",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = true,
-                    supportsBabylon = true,
-                    isEnabled = true
+                LedgerHardwareWalletFactorSource.sample.other().asGeneral().toFactorSourceCard(
+                    messages = persistentListOf(FactorSourceStatusMessage.SecurityPrompt.LostFactorSource)
                 )
             )
         )

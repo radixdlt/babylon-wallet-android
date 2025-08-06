@@ -26,3 +26,6 @@ class GetEntitiesLinkedToFactorSourceUseCase @Inject constructor(
         Timber.e("Failed to find linked entities: $error")
     }.getOrNull()
 }
+
+val EntitiesLinkedToFactorSource?.hasHiddenEntities
+    get() = this?.let { !it.hiddenAccounts.isNotEmpty() || hiddenPersonas.isNotEmpty() } ?: false

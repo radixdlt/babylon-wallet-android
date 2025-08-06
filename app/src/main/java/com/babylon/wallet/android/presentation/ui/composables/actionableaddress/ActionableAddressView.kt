@@ -142,7 +142,7 @@ private fun ActionableAddressView(
     address: ActionableAddress?,
     textStyle: TextStyle,
     textColor: Color,
-    iconColor: Color,
+    iconColor: Color
 ) {
     if (address != null) {
         Box(modifier = modifier) {
@@ -325,7 +325,8 @@ sealed interface ActionableAddress {
 
         override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
 
-        override fun dashboardUrl(): String = "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
+        override fun dashboardUrl(): String =
+            "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
 
         @Composable
         override fun icon() = when (icon) {
@@ -370,7 +371,8 @@ sealed interface ActionableAddress {
 
         override fun rawAddress(): String = hash.formatted(format = AddressFormat.RAW)
 
-        override fun dashboardUrl(): String = "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
+        override fun dashboardUrl(): String =
+            "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
 
         @Composable
         override fun icon() = when (icon) {

@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
 private const val ROUTE_ARCULUS_CARDS_SCREEN = "route_arculus_cards_screen"
@@ -21,7 +20,6 @@ fun NavController.arculusCards() {
 fun NavGraphBuilder.arculusCards(
     onNavigateToArculusFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToAddArculusCard: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -43,7 +41,6 @@ fun NavGraphBuilder.arculusCards(
             viewModel = hiltViewModel(),
             onNavigateToArculusFactorSourceDetails = onNavigateToArculusFactorSourceDetails,
             onNavigateToAddArculusCard = onNavigateToAddArculusCard,
-            onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )
     }
