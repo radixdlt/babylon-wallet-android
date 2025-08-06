@@ -243,7 +243,7 @@ private fun AccountSettingsContent(
             state.securedWith?.let { factorSourceCard ->
                 item {
                     SectionTitle(
-                        title = "Secured with" // TODO localise
+                        title = stringResource(id = R.string.common_securedWith)
                     )
 
                     FactorSourceCardView(

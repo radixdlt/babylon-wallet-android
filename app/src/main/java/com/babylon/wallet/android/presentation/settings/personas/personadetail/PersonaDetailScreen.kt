@@ -229,7 +229,7 @@ private fun PersonaDetailList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = "Secured with", // TODO localise
+                    text = stringResource(id = R.string.common_securedWith),
                     textStyle = RadixTheme.typography.body1Header
                 )
 

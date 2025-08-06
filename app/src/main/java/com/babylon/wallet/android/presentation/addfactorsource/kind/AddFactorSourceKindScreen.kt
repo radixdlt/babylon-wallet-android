@@ -77,7 +77,7 @@ private fun AddFactorSourceKindContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onAddClick,
-                text = "Add Security Factor", // TODO localise
+                text = stringResource(id = R.string.addFactorSource_selectKind_button),
                 enabled = state.isButtonEnabled
             )
         },

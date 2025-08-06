@@ -156,8 +156,8 @@ private fun SelectFactorSourceContent(
 
 @Composable
 private fun SelectFactorSourceInput.Context.description() = when (this) {
-    SelectFactorSourceInput.Context.CreateAccount -> "Choose the security factor you will use to create the new Account." // TODO localise
-    SelectFactorSourceInput.Context.CreatePersona -> "Choose the security factor you will use to create the new Persona." // TODO localise
+    SelectFactorSourceInput.Context.CreateAccount -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToCreateAccount)
+    SelectFactorSourceInput.Context.CreatePersona -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToCreatePersona)
     is SelectFactorSourceInput.Context.AccountRecovery -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToRecover)
 }
 
