@@ -341,7 +341,7 @@ fun ErrorAlertDialog(
                 )
             }
         },
-        title = title?.let {
+        title = (title ?: errorMessage.getTitle())?.let {
             {
                 Text(
                     text = it,
@@ -350,12 +350,14 @@ fun ErrorAlertDialog(
                 )
             }
         },
-        text = {
-            Text(
-                text = errorMessage.getMessage(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.text
-            )
+        text = errorMessage.getMessage().takeIf { it.isNotBlank() }?.let {
+            {
+                Text(
+                    text = it,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.text
+                )
+            }
         },
         shape = RadixTheme.shapes.roundedRectSmall,
         containerColor = RadixTheme.colors.background

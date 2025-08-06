@@ -22,15 +22,14 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
@@ -117,43 +116,15 @@ private fun BiometricsPinPreview() {
         BiometricsPinContent(
             state = State(
                 factorSources = persistentListOf(
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "My Phone",
-                        includeDescription = false,
-                        lastUsedOn = "Today",
-                        kind = FactorSourceKind.DEVICE,
+                    DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
                         messages = persistentListOf(SecurityPrompt.LostFactorSource),
                         accounts = persistentListOf(Account.sampleMainnet()),
                         personas = persistentListOf(
                             Persona.sampleMainnet(),
                             Persona.sampleStokenet()
                         ),
-                        hasHiddenEntities = true,
-                        supportsBabylon = true,
-                        supportsOlympia = false,
-                        isEnabled = true
                     ),
-                    FactorSourceCard(
-                        id = FactorSourceId.Hash.init(
-                            kind = FactorSourceKind.DEVICE,
-                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                        ),
-                        name = "XXX phone",
-                        includeDescription = false,
-                        lastUsedOn = "Last year",
-                        kind = FactorSourceKind.DEVICE,
-                        messages = persistentListOf(),
-                        accounts = persistentListOf(),
-                        personas = persistentListOf(),
-                        hasHiddenEntities = true,
-                        supportsBabylon = true,
-                        supportsOlympia = false,
-                        isEnabled = true
-                    )
+                    DeviceFactorSource.sample.other().asGeneral().toFactorSourceCard()
                 )
             ),
             onBackClick = {},

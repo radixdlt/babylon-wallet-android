@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
@@ -26,11 +27,15 @@ fun ImportSingleMnemonicScreen(
     onStartRecovery: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     ImportSingleMnemonicsContent(
         state = state,
         onBackClick = onBackClick,
-        onContinueClick = viewModel::onSubmitClick,
+        onContinueClick = {
+            keyboardController?.hide()
+            viewModel.onSubmitClick()
+        },
         onWordChanged = viewModel::onWordChanged,
         onWordSelected = viewModel::onWordSelected,
         onPassphraseChanged = viewModel::onPassphraseChanged,
@@ -40,7 +45,7 @@ fun ImportSingleMnemonicScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                ImportSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
+                ImportSingleMnemonicViewModel.Event.FactorSourceImported -> onBackClick()
                 ImportSingleMnemonicViewModel.Event.MainSeedPhraseCompleted -> onStartRecovery()
             }
         }

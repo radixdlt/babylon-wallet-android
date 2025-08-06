@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorListKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
@@ -17,10 +18,7 @@ import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatus
 import com.radixdlt.sargon.SelectedPrimaryThresholdFactorsStatusInvalidReason
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.name
-import com.radixdlt.sargon.extensions.supportsBabylon
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -108,20 +106,7 @@ class SelectFactorsViewModel @Inject constructor(
     private fun FactorSource.toUiItem(): State.UiItem.Factor {
         return State.UiItem.Factor(
             Selectable(
-                data = FactorSourceCard(
-                    id = id,
-                    name = name,
-                    includeDescription = false,
-                    lastUsedOn = null,
-                    kind = kind,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = supportsBabylon,
-                    supportsOlympia = false,
-                    isEnabled = true
-                ),
+                data = toFactorSourceCard(),
                 selected = false
             )
         )

@@ -61,6 +61,7 @@ fun DeviceSeedPhraseScreen(
     modifier: Modifier = Modifier,
     viewModel: DeviceSeedPhraseViewModel,
     onDismiss: () -> Unit,
+    onDismissFlow: () -> Unit,
     onConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -83,6 +84,7 @@ fun DeviceSeedPhraseScreen(
             when (event) {
                 DeviceSeedPhraseViewModel.Event.Confirmed -> onConfirmed()
                 DeviceSeedPhraseViewModel.Event.Dismiss -> onDismiss()
+                DeviceSeedPhraseViewModel.Event.DismissFlow -> onDismissFlow()
             }
         }
     }
@@ -304,7 +306,11 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
             ),
             DeviceSeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.New,
-                errorMessage = UiMessage.ErrorMessage(RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse)
+                errorMessage = UiMessage.ErrorMessage(
+                    RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+                        factorSourceName = "My Phone"
+                    )
+                )
             )
         )
 }

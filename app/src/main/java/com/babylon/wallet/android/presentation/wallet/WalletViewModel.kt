@@ -25,7 +25,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
 import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
+import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -275,7 +275,7 @@ class WalletViewModel @Inject constructor(
             appEventBus.events.collect { event ->
                 when (event) {
                     AppEvent.RefreshAssetsNeeded -> loadAssets(refreshType = RefreshType.WalletRefresh)
-                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
+                    ImportedMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
                     }

@@ -8,8 +8,6 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.supportsBabylon
-import com.radixdlt.sargon.extensions.supportsOlympia
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.lastUsedOn
@@ -24,8 +22,6 @@ data class FactorSourceCard(
     val accounts: PersistentList<Account>,
     val personas: PersistentList<Persona>,
     val hasHiddenEntities: Boolean,
-    val supportsBabylon: Boolean,
-    val supportsOlympia: Boolean,
     val isEnabled: Boolean
 )
 
@@ -59,8 +55,6 @@ fun FactorSource.toFactorSourceCard(
         accounts = accounts,
         personas = personas,
         hasHiddenEntities = hasHiddenEntities,
-        supportsBabylon = supportsBabylon,
-        supportsOlympia = supportsOlympia,
         isEnabled = isEnabled
     )
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.ArculusCsdkDriver
+import com.radixdlt.sargon.ArculusVerifyPinResponse
 import com.radixdlt.sargon.ArculusWalletPointer
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Bios
@@ -224,7 +225,7 @@ private class FakeArculusCsdkDriver : ArculusCsdkDriver {
     override fun verifyPinResponse(
         wallet: ArculusWalletPointer,
         response: BagOfBytes
-    ): Int {
+    ): ArculusVerifyPinResponse {
         TODO("Not yet implemented")
     }
 

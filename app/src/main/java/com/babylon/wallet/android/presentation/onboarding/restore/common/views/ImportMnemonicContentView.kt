@@ -163,10 +163,13 @@ fun ImportMnemonicContentView(
                 }
 
                 if (shouldDisplaySeedPhraseWarning) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
                     WarningText(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                top = RadixTheme.dimensions.paddingDefault,
+                                bottom = RadixTheme.dimensions.paddingLarge
+                            ),
                         text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
                     )
                 }

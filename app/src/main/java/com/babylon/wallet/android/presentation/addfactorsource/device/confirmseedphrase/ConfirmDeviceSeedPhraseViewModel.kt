@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.addfactorsource.device.confirmseedphrase
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.repository.factors.DeviceMnemonicBuilderClient
+import com.babylon.wallet.android.data.repository.factors.MnemonicBuilderClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
-    private val deviceMnemonicBuilderClient: DeviceMnemonicBuilderClient
+    private val mnemonicBuilderClient: MnemonicBuilderClient
 ) : StateViewModel<ConfirmDeviceSeedPhraseViewModel.State>(),
     OneOffEventHandler<ConfirmDeviceSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -30,7 +30,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { state ->
                 state.copy(
-                    words = deviceMnemonicBuilderClient.generateConfirmationWords().toPersistentList()
+                    words = mnemonicBuilderClient.generateConfirmationWords().toPersistentList()
                 )
             }
         }
@@ -62,9 +62,9 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
 
     fun onConfirmClick() {
         viewModelScope.launch {
-            when (val outcome = deviceMnemonicBuilderClient.confirmWords(state.value.words)) {
+            when (val outcome = mnemonicBuilderClient.confirmWords(state.value.words)) {
                 MnemonicValidationOutcome.Valid -> {
-                    sendEvent(Event.Confirmed(deviceMnemonicBuilderClient.getMnemonicWithPassphrase()))
+                    sendEvent(Event.Confirmed(mnemonicBuilderClient.getMnemonicWithPassphrase()))
                 }
                 is MnemonicValidationOutcome.Invalid -> {
                     val incorrectIndices = outcome.indicesInMnemonic.map { it.toInt() }
@@ -87,7 +87,7 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
             _state.update { state ->
                 val indicesToConfirm = state.words.map { it.index }
                 state.copy(
-                    words = deviceMnemonicBuilderClient.getWords(SeedPhraseWord.State.NotEmpty)
+                    words = mnemonicBuilderClient.getWords(SeedPhraseWord.State.NotEmpty)
                         .filter { it.index in indicesToConfirm }
                         .toPersistentList()
                 )

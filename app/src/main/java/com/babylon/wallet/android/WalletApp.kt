@@ -273,6 +273,9 @@ private fun HandleFixSecurityIssueEvents(
                         factorSourceId = event.factorSourceId
                     )
                 }
+
+                AppEvent.FixSecurityIssue.ImportedMnemonic,
+                AppEvent.FixSecurityIssue.WrittenDownSeedPhrase -> null
             }
         }
     }

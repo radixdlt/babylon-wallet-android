@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toMessage
+import com.babylon.wallet.android.domain.toUserFriendlyAlertTitle
 import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import com.radixdlt.sargon.CommonException
 import kotlinx.serialization.SerialName
@@ -15,6 +16,9 @@ import rdx.works.profile.domain.ProfileException
 
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
+
+    @Composable
+    open fun getTitle(): String? = null
 
     @Composable
     abstract fun getMessage(): String
@@ -77,6 +81,11 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     data class ErrorMessage(
         val error: Throwable?
     ) : UiMessage() {
+
+        @Composable
+        override fun getTitle(): String? {
+            return error?.asRadixWalletException()?.toUserFriendlyAlertTitle(LocalContext.current)
+        }
 
         @Composable
         override fun getMessage(): String {

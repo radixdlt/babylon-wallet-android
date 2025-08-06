@@ -25,6 +25,7 @@ import com.radixdlt.sargon.extensions.SharedConstants
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.mapError
+import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +77,6 @@ class SetFactorSourceNameViewModel @Inject constructor(
                         throwable is CommonException.SecureStorageAccessException &&
                             throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
 
-                        throwable is CommonException.FileAlreadyExists -> RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
                         else -> RadixWalletException.AddFactorSource.FactorSourceNotCreated
                     }
                 } else {
@@ -123,15 +123,13 @@ class SetFactorSourceNameViewModel @Inject constructor(
     }
 
     private suspend fun saveFactorSource(): Result<FactorSourceId> = when (args) {
-        is SetFactorNameArgs.ForLedger -> sargonOsManager.callSafely(dispatcher) {
+        is SetFactorNameArgs.ForLedger -> addFactorSource(
             FactorSource.Ledger.init(
                 id = args.factorSourceId,
                 model = args.ledgerModel,
                 name = state.value.name
-            ).also { factorSource ->
-                addFactorSource(factorSource)
-            }.id
-        }
+            )
+        )
 
         is SetFactorNameArgs.WithMnemonic -> when (args.factorSourceKind) {
             FactorSourceKind.DEVICE -> saveDeviceFactorSource(args)
@@ -173,16 +171,19 @@ class SetFactorSourceNameViewModel @Inject constructor(
             ProfileException.SecureStorageAccess
         }.then {
             preferencesManager.markFactorSourceBackedUp(factorSource.id.asGeneral())
+            addFactorSource(factorSource.asGeneral())
+        }
+    }
 
-            sargonOsManager.callSafely(dispatcher) {
-                addFactorSource(factorSource.asGeneral())
-            }.mapCatching { added ->
-                if (added) {
-                    factorSource.id.asGeneral()
-                } else {
-                    throw RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
-                }
-            }
+    private suspend fun addFactorSource(factorSource: FactorSource) = sargonOsManager.callSafely(dispatcher) {
+        addFactorSource(factorSource)
+    }.mapCatching { added ->
+        if (added) {
+            factorSource.id
+        } else {
+            throw RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+                factorSourceName = factorSource.name
+            )
         }
     }
 

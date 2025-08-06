@@ -13,18 +13,12 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
-import com.babylon.wallet.android.utils.relativeTimeFormatted
-import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.DeviceFactorSource
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.supportsBabylon
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -36,7 +30,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.supportsOlympia
 import javax.inject.Inject
 
 @HiltViewModel
@@ -67,7 +60,7 @@ class BiometricsPinViewModel @Inject constructor(
                                 includeNoIssuesStatus = true,
                                 checkIntegrityOnlyIfAnyEntitiesLinked = true
                             )
-                        deviceFactorSource.value.toFactorSourceCard(
+                        deviceFactorSource.value.asGeneral().toFactorSourceCard(
                             messages = securityMessages.toPersistentList(),
                             accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
                             personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
@@ -99,29 +92,6 @@ class BiometricsPinViewModel @Inject constructor(
                 )
             )
         }
-    }
-
-    private fun DeviceFactorSource.toFactorSourceCard(
-        includeDescription: Boolean = false,
-        messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
-        accounts: PersistentList<Account> = persistentListOf(),
-        personas: PersistentList<Persona> = persistentListOf(),
-        hasHiddenEntities: Boolean
-    ): FactorSourceCard {
-        return FactorSourceCard(
-            id = id.asGeneral(),
-            name = hint.label,
-            includeDescription = includeDescription,
-            lastUsedOn = common.lastUsedOn.relativeTimeFormatted(),
-            kind = kind,
-            messages = messages,
-            accounts = accounts,
-            personas = personas,
-            hasHiddenEntities = hasHiddenEntities,
-            supportsBabylon = asGeneral().supportsBabylon,
-            supportsOlympia = asGeneral().supportsOlympia,
-            isEnabled = true
-        )
     }
 
     data class State(

@@ -15,6 +15,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletModel
+import com.radixdlt.sargon.extensions.name
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -76,7 +77,9 @@ class IdentifyFactorSourceViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         errorMessage = UiMessage.ErrorMessage(
-                            error = RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse
+                            error = RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+                                factorSourceName = existingLedgerFactorSource.name
+                            )
                         )
                     )
                 }

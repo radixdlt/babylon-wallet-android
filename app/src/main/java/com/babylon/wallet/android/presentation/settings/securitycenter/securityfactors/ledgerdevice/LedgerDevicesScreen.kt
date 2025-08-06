@@ -27,13 +27,10 @@ import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
@@ -130,25 +127,9 @@ fun LedgerDevicesScreenPreview() {
                     hasHiddenEntities = true
                 ),
                 LedgerHardwareWalletFactorSource.sample.other().asGeneral().toFactorSourceCard(
+                    accounts = persistentListOf(Account.sampleMainnet()),
                     includeLastUsedOn = true,
                     hasHiddenEntities = false
-                ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
                 )
             ),
             onLedgerFactorSourceClick = {},

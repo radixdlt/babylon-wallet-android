@@ -16,6 +16,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.common.toUiItem
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.EntitiesLinkedToFactorSource
 import com.radixdlt.sargon.FactorSource
@@ -28,15 +30,21 @@ import com.radixdlt.sargon.extensions.supportsOlympia
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.lastUsedOn
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
+import kotlin.collections.filterIsInstance
 
 @HiltViewModel
 class SelectFactorSourceViewModel @Inject constructor(
@@ -45,53 +53,58 @@ class SelectFactorSourceViewModel @Inject constructor(
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     private val selectFactorSourceIOHandler: SelectFactorSourceIOHandler,
     private val addFactorSourceProxy: AddFactorSourceProxy,
+    private val appEventBus: AppEventBus,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SelectFactorSourceViewModel.State>(),
     OneOffEventHandler<SelectFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val input = selectFactorSourceIOHandler.getInput() as SelectFactorSourceInput.WithContext
 
+    private val refreshFlow = MutableSharedFlow<Unit>()
     private var observeDataJob: Job? = null
 
-    private val data = getProfileUseCase.flow.map { it.factorSources }
-        .map { allFactorSources ->
-            val eligibleFactorSources = allFactorSources.filter { factorSource ->
-                factorSource.kind in input.context.supportedKinds
-            }.filter { factorSource ->
-                when (val context = input.context) {
-                    SelectFactorSourceInput.Context.CreateAccount,
-                    SelectFactorSourceInput.Context.CreatePersona -> factorSource.supportsBabylon
+    private val data: StateFlow<Data> = combine(
+        refreshFlow.onStart { emit(Unit) },
+        getProfileUseCase.flow.map { it.factorSources }
+    ) { _, allFactorSources ->
+        allFactorSources
+    }.map { allFactorSources ->
+        val eligibleFactorSources = allFactorSources.filter { factorSource ->
+            factorSource.kind in input.context.supportedKinds
+        }.filter { factorSource ->
+            when (val context = input.context) {
+                SelectFactorSourceInput.Context.CreateAccount,
+                SelectFactorSourceInput.Context.CreatePersona -> factorSource.supportsBabylon
 
-                    is SelectFactorSourceInput.Context.AccountRecovery -> if (context.isOlympia) {
-                        factorSource.supportsOlympia
-                    } else {
-                        factorSource.supportsBabylon
-                    }
+                is SelectFactorSourceInput.Context.AccountRecovery -> if (context.isOlympia) {
+                    factorSource.supportsOlympia
+                } else {
+                    factorSource.supportsBabylon
                 }
             }
+        }
 
-            Data(
-                factorSources = eligibleFactorSources.groupBy { it.kind },
-                entitiesLinkedToFactorSourceById = eligibleFactorSources.mapNotNull { factorSource ->
-                    val entities = getEntitiesLinkedToFactorSourceUseCase(factorSource) ?: return@mapNotNull null
-                    factorSource.id to entities
-                }.toMap(),
-                statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
-                    deviceFactorSources = eligibleFactorSources.filterIsInstance<FactorSource.Device>(),
-                    includeNoIssuesMessage = true,
-                    checkIntegrityOnlyIfAnyEntitiesLinked = false
-                )
+        Data(
+            factorSources = eligibleFactorSources.groupBy { it.kind },
+            entitiesLinkedToFactorSourceById = eligibleFactorSources.mapNotNull { factorSource ->
+                val entities = getEntitiesLinkedToFactorSourceUseCase(factorSource) ?: return@mapNotNull null
+                factorSource.id to entities
+            }.toMap(),
+            statusMessagesByFactorSourceId = getFactorSourceIntegrityStatusMessagesUseCase.forDeviceFactorSources(
+                deviceFactorSources = eligibleFactorSources.filterIsInstance<FactorSource.Device>(),
+                includeNoIssuesMessage = true,
+                checkIntegrityOnlyIfAnyEntitiesLinked = false
             )
-        }.flowOn(defaultDispatcher).stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
-            initialValue = Data()
         )
+    }.flowOn(defaultDispatcher).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
+        initialValue = Data()
+    )
 
     init {
-        initData(
-            unusableFactorSources = emptyList()
-        )
+        observeData()
+        observeSecurityIssueEvents()
     }
 
     override fun initialState(): State = State(
@@ -144,7 +157,7 @@ class SelectFactorSourceViewModel @Inject constructor(
         }
     }
 
-    private fun initData(unusableFactorSources: List<FactorSourceId>) {
+    private fun observeData(unusableFactorSources: List<FactorSourceId> = emptyList()) {
         observeDataJob?.cancel()
         observeDataJob = viewModelScope.launch {
             data.collect { data ->
@@ -189,6 +202,20 @@ class SelectFactorSourceViewModel @Inject constructor(
                     }
                 }
             )
+        }
+    }
+
+    private fun observeSecurityIssueEvents() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.FixSecurityIssue>().collect {
+                when (it) {
+                    is AppEvent.FixSecurityIssue.ImportedMnemonic,
+                    is AppEvent.FixSecurityIssue.WrittenDownSeedPhrase -> refreshFlow.emit(Unit)
+
+                    is AppEvent.FixSecurityIssue.ImportMnemonic,
+                    is AppEvent.FixSecurityIssue.WriteDownSeedPhrase -> null
+                }
+            }
         }
     }
 

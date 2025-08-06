@@ -35,8 +35,6 @@ sealed interface AppEvent {
 
     data object RefreshAssetsNeeded : AppEvent
 
-    data object RestoredMnemonic : AppEvent
-
     data object BabylonFactorSourceDoesNotExist : AppEvent
 
     data object NPSSurveySubmitted : AppEvent
@@ -169,5 +167,9 @@ sealed interface AppEvent {
         data class WriteDownSeedPhrase(
             val factorSourceId: FactorSourceId
         ) : FixSecurityIssue
+
+        data object ImportedMnemonic : FixSecurityIssue
+
+        data object WrittenDownSeedPhrase : FixSecurityIssue
     }
 }

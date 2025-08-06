@@ -21,12 +21,12 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
@@ -102,56 +102,11 @@ private fun PasswordsScreenPreview() {
     RadixWalletTheme {
         PasswordsContent(
             passwordFactorSources = persistentListOf(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Panathinaikos",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.PASSWORD,
-                    messages = persistentListOf(),
+                PasswordFactorSource.sample().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
                 ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate 13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.PASSWORD,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
-                ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.PASSWORD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.PASSWORD,
-                    messages = persistentListOf(),
+                PasswordFactorSource.sample.other().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
                 )
             ),
             onPasswordFactorSourceClick = {},

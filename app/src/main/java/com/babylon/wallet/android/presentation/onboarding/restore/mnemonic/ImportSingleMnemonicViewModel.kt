@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.deviceFactorSources
-import rdx.works.core.sargon.supportsBabylon
 import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
@@ -101,7 +100,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
             if (!biometricsAuthenticateUseCase()) {
                 return@launch
             }
-            _state.update { it.copy(isButtonLoading = true) }
+            _state.update { state -> state.copy(isButtonLoading = true) }
 
             val mnemonic = _state.value.seedPhraseState.toMnemonicWithPassphrase()
 
@@ -109,17 +108,21 @@ class ImportSingleMnemonicViewModel @Inject constructor(
                 factorSourceId = factorSourceId,
                 mnemonicWithPassphrase = mnemonic
             ).onSuccess {
-                appEventBus.sendEvent(AppEvent.RestoredMnemonic)
-                sendEvent(Event.FactorSourceAdded)
+                appEventBus.sendEvent(AppEvent.FixSecurityIssue.ImportedMnemonic)
+                sendEvent(Event.FactorSourceImported)
+                _state.update { state -> state.copy(isButtonLoading = true) }
             }.onFailure { error ->
                 if (error is ProfileException.SecureStorageAccess) {
                     appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                 } else {
-                    _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                    _state.update { state ->
+                        state.copy(
+                            uiMessage = UiMessage.ErrorMessage(error),
+                            isButtonLoading = false
+                        )
+                    }
                 }
             }
-
-            _state.update { it.copy(isButtonLoading = true) }
         }
     }
 
@@ -162,7 +165,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
                         personas = linkedEntities?.personas.orEmpty().toPersistentList(),
                         hasHiddenEntities = linkedEntities.hasHiddenEntities
                     ),
-                    isOlympia = factorSource.supportsOlympia && !factorSource.supportsBabylon
+                    isOlympia = factorSource.supportsOlympia
                 )
             }
         }
@@ -181,7 +184,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data object FactorSourceAdded : Event
+        data object FactorSourceImported : Event
         data object MainSeedPhraseCompleted : Event
     }
 }

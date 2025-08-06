@@ -21,14 +21,12 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.radixdlt.sargon.Account
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
-import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -102,57 +100,8 @@ fun ArculusCardsScreenPreview() {
     RadixWalletTheme {
         ArculusCardsContent(
             arculusFactorSources = persistentListOf(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Panathinaikos",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.ARCULUS_CARD,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
-                ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate 13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.ARCULUS_CARD,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
-                ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.ARCULUS_CARD,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.ARCULUS_CARD,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    supportsOlympia = false,
-                    isEnabled = true
-                )
+                ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard(),
+                ArculusCardFactorSource.sample.other().asGeneral().toFactorSourceCard()
             ),
             onArculusFactorSourceClick = {},
             onAddArculusCardClick = {},

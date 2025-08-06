@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.deviceFactorSources
-import rdx.works.core.sargon.supportsBabylon
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
@@ -175,7 +174,7 @@ class ImportMnemonicsViewModel @Inject constructor(
             factorSourceId = factorSourceToRecover.value.id.asGeneral(),
             mnemonicWithPassphrase = _state.value.seedPhraseState.toMnemonicWithPassphrase()
         ).onSuccess {
-            appEventBus.sendEvent(AppEvent.RestoredMnemonic)
+            appEventBus.sendEvent(AppEvent.FixSecurityIssue.ImportedMnemonic)
             showNextRecoverableFactorSourceOrFinish()
         }.onFailure { error ->
             if (error is ProfileException.SecureStorageAccess) {
@@ -246,7 +245,7 @@ class ImportMnemonicsViewModel @Inject constructor(
             get() = seedPhraseState.isValidSeedPhrase() && !isSecondaryButtonLoading
 
         val isOlympia: Boolean
-            get() = recoverableFactorSource?.factorSource?.let { it.supportsOlympia && !it.supportsBabylon } == true
+            get() = recoverableFactorSource?.factorSource?.supportsOlympia == true
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1

@@ -9,19 +9,12 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.callSafely
-import com.babylon.wallet.android.utils.relativeTimeFormatted
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.PasswordFactorSource
-import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.supportsBabylon
-import com.radixdlt.sargon.extensions.supportsOlympia
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -59,7 +52,7 @@ class PasswordsViewModel @Inject constructor(
                             profileToCheck = ProfileToCheck.Current
                         )
                     }.onSuccess { entitiesLinkedToPasswordFactorSource ->
-                        val factorSourceCard = passwordFactorSource.value.toFactorSourceCard(
+                        val factorSourceCard = passwordFactorSource.value.asGeneral().toFactorSourceCard(
                             messages = persistentListOf(),
                             accounts = entitiesLinkedToPasswordFactorSource.accounts.toPersistentList(),
                             personas = entitiesLinkedToPasswordFactorSource.personas.toPersistentList(),
@@ -85,29 +78,6 @@ class PasswordsViewModel @Inject constructor(
 
     private fun resetPasswordFactorSourceList() {
         _state.update { state -> state.copy(passwordFactorSources = persistentListOf()) }
-    }
-
-    private fun PasswordFactorSource.toFactorSourceCard(
-        includeDescription: Boolean = false,
-        messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
-        accounts: PersistentList<Account> = persistentListOf(),
-        personas: PersistentList<Persona> = persistentListOf(),
-        hasHiddenEntities: Boolean
-    ): FactorSourceCard {
-        return FactorSourceCard(
-            id = id.asGeneral(),
-            name = hint.label,
-            includeDescription = includeDescription,
-            lastUsedOn = common.lastUsedOn.relativeTimeFormatted(),
-            kind = kind,
-            messages = messages,
-            accounts = accounts,
-            personas = personas,
-            hasHiddenEntities = hasHiddenEntities,
-            supportsBabylon = asGeneral().supportsBabylon,
-            supportsOlympia = asGeneral().supportsOlympia,
-            isEnabled = true
-        )
     }
 
     fun onPasswordFactorSourceClick(factorSourceId: FactorSourceId) {
