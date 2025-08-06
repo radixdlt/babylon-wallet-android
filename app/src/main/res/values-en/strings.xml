@@ -553,6 +553,8 @@
   <string name="common_hiddenAccountsOrPersonas">Hidden Accounts or Personas</string>
   <string name="common_all">All</string>
   <string name="common_searchHint">Search...</string>
+  <string name="common_securedWith">Secured with</string>
+  <string name="common_processingProfile">Processing Profile</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
@@ -819,7 +821,7 @@ Code: %s</string>
   <string name="addFactorSource_ledger_title">Add a New Ledger Nano</string>
   <string name="addFactorSource_ledger_description">Ledger Nanos are hardware signing devices you can connect to your Radix Wallet with a USB cable and computer.</string>
   <string name="addFactorSource_ledger_nameTitle">Name your New Ledger Nano</string>
-  <string name="addFactorSource_ledger_identifyingInstructions">Choose the Ledger Nano to use. Make sure it\'s connected to a computer with a linked Radix Connector browser extension.</string>
+  <string name="addFactorSource_ledger_identifyingInstructions">Choose the **Ledger Nano** to use. Make sure it\'s connected to a computer with a linked Radix Connector browser extension.</string>
   <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can restore access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).\n\n**For security, backups do not contain any seed phrases or private keys. You must write them down separately.**</string>
   <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
   <string name="profileBackup_manualBackups_title">Manual Backups</string>
@@ -1709,6 +1711,7 @@ Code: %s</string>
   <string name="newBiometricFactor_intro_subtitle">This factor is a seed phrase held by your phone and unlocked by your biometrics/PIN.</string>
   <string name="newBiometricFactor_seedPhrase_title">Write Down Seed Phrase</string>
   <string name="newBiometricFactor_seedPhrase_subtitle">Write down this BIP39 seed phrase and store safely for future use. Avoid storing electronically so no one can steal it online.</string>
+  <string name="newBiometricFactor_seedPhraseCustom_subtitle">Enter your BIP39 seed phrase. Make sure it\'s backed up securely and accessible only to you.</string>
   <string name="newBiometricFactor_seedPhrase_enterCustomButton">Clear and enter custom seed phrase</string>
   <string name="newBiometricFactor_seedPhrase_wordLabel">Word %d</string>
   <string name="newBiometricFactor_confirmSeedPhrase_title">Confirm Seed Phrase</string>
@@ -1724,14 +1727,17 @@ Code: %s</string>
   <string name="newFactor_success_subtitle">Security factor added successfully</string>
   <string name="addFactorSource_selectKind_title">Add Security Factor</string>
   <string name="addFactorSource_selectKind_description">Choose the Security Factor kind you want to add.</string>
+  <string name="addFactorSource_selectKind_button">Add Security Factor</string>
   <string name="addFactorSource_identifying_title">Identifying Factor</string>
   <string name="addFactorSource_arculus_title">Add a New Arculus Card</string>
   <string name="addFactorSource_arculus_description">Arculus Cards are hardware signing devices you tap to your phone to sign a transaction.</string>
   <string name="addFactorSource_arculus_nameTitle">Name your New Arculus Card</string>
-  <string name="addFactorSource_arculus_identifyingInstructions">Tap and hold the Arculus Card you want to use to your phone.</string>
+  <string name="addFactorSource_arculus_identifyingInstructions">Tap and hold the **Arculus Card** you want to use to your phone.</string>
   <string name="addFactorSource_addNewSecurityFactor">Add a new Security Factor</string>
   <string name="addFactorSource_selectSecurityFactor">Select Security Factor</string>
   <string name="addFactorSource_chooseSecurityFactorToRecover">Choose the security factor you will use to Recover Accounts</string>
+  <string name="addFactorSource_chooseSecurityFactorToCreateAccount">Choose the security factor you will use to create the new Account.</string>
+  <string name="addFactorSource_chooseSecurityFactorToCreatePersona">Choose the security factor you will use to create the new Persona.</string>
   <string name="dappDirectory_title">dApp Directory</string>
   <string name="dappDirectory_search_placeholder">Search for a dApp...</string>
   <string name="dappDirectory_filters_title">Tags</string>
