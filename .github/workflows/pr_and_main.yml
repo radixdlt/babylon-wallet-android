@@ -251,7 +251,7 @@ jobs:
           echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
 
       - name: Resolve CSDK
-        uses: radixdlt/arculus-android-csdk
+        uses: radixdlt/arculus-android-csdk@main
         with:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
