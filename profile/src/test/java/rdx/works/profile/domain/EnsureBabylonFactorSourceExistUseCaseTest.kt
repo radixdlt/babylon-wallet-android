@@ -8,12 +8,9 @@ import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
-import io.mockk.Runs
 import io.mockk.coEvery
-import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.deviceFactorSources
@@ -28,10 +25,9 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
     private val profileRepository = FakeProfileRepository()
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val hostInfoRepository = mockk<HostInfoRepository>()
-    private val preferenceManager = mockk<PreferencesManager>()
 
     private val ensureBabylonFactorSourceExistUseCase =
-        EnsureBabylonFactorSourceExistUseCase(mnemonicRepository, profileRepository, hostInfoRepository, preferenceManager)
+        EnsureBabylonFactorSourceExistUseCase(mnemonicRepository, profileRepository, hostInfoRepository)
 
     private val hostId = HostId.sample()
     private val hostInfo = HostInfo.sample.other()
@@ -64,7 +60,6 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
     @Test
     fun `babylon factor source is added to profile if it does not exist`() = runTest {
         profileRepository.saveProfile(profileWithoutMain)
-        coEvery { preferenceManager.markFactorSourceBackedUp(any()) } just Runs
         coEvery { hostInfoRepository.getHostId() } returns hostId
         coEvery { hostInfoRepository.getHostInfo() } returns hostInfo
         coEvery { mnemonicRepository.createNew() } returns Result.success(mnemonic)
