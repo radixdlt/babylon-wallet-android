@@ -43,3 +43,4 @@ app/src/main/res/values/strings.xml
 app/jacoco.exec
 # Fastlane report
 fastlane/report.xml
+.idea/vcs.xml

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.addfactorsource.device.confirmseedphrase
+package com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -7,32 +7,31 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorName
 
-private const val ROUTE_CONFIRM_DEVICE_SEED_PHRASE = "confirm_device_seed_phrase"
+private const val ROUTE_CREATE_ARCULUS_PIN = "create_arculus_pin"
 
-fun NavController.confirmDeviceSeedPhrase() {
-    navigate(ROUTE_CONFIRM_DEVICE_SEED_PHRASE)
+fun NavController.createArculusPin() {
+    navigate(ROUTE_CREATE_ARCULUS_PIN)
 }
 
-fun NavGraphBuilder.confirmDeviceSeedPhrase(
+fun NavGraphBuilder.createArculusPin(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_CONFIRM_DEVICE_SEED_PHRASE,
+        route = ROUTE_CREATE_ARCULUS_PIN,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        ConfirmDeviceSeedPhraseScreen(
+        CreateArculusPinScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onConfirmed = { factorSourceKind, mnemonicWithPassphrase ->
-                navController.setFactorName(
-                    factorSourceKind,
-                    mnemonicWithPassphrase
-                )
+            onConfirmed = {
+//                navController.setFactorName(
+//                    factorSourceKind,
+//                    mnemonicWithPassphrase
+//                )
             }
         )
     }

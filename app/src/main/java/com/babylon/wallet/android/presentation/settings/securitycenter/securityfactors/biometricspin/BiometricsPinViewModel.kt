@@ -18,7 +18,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.kind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -86,7 +85,7 @@ class BiometricsPinViewModel @Inject constructor(
     fun onAddBiometricsPinClick() {
         viewModelScope.launch {
             addFactorSourceProxy.addFactorSource(
-                input = AddFactorSourceInput.WithKindPreselected(
+                input = AddFactorSourceInput.WithKind(
                     kind = FactorSourceKind.DEVICE,
                     context = AddFactorSourceInput.Context.New
                 )

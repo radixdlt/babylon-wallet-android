@@ -18,7 +18,6 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -94,7 +93,7 @@ class LedgerDevicesViewModel @Inject constructor(
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             addFactorSourceProxy.addFactorSource(
-                AddFactorSourceInput.WithKindPreselected(
+                AddFactorSourceInput.WithKind(
                     kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                     context = AddFactorSourceInput.Context.New
                 )

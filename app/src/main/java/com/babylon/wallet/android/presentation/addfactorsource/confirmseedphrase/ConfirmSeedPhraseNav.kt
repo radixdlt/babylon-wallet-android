@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.addfactorsource.name
+package com.babylon.wallet.android.presentation.addfactorsource.confirmseedphrase
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -7,28 +7,30 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.addfactorsource.ROUTE_ADD_FACTOR_SOURCE_GRAPH
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
 
-const val ROUTE_SET_FACTOR_SOURCE_NAME = "set_factor_source_name"
+private const val ROUTE_CONFIRM_SEED_PHRASE = "confirm_seed_phrase"
 
-fun NavController.setFactorSourceName() {
-    navigate(ROUTE_SET_FACTOR_SOURCE_NAME)
+fun NavController.confirmSeedPhrase() {
+    navigate(ROUTE_CONFIRM_SEED_PHRASE)
 }
 
-fun NavGraphBuilder.setFactorSourceName(
+fun NavGraphBuilder.confirmSeedPhrase(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_SET_FACTOR_SOURCE_NAME,
+        route = ROUTE_CONFIRM_SEED_PHRASE,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        SetFactorSourceNameScreen(
+        ConfirmSeedPhraseScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onSaved = { navController.popBackStack(ROUTE_ADD_FACTOR_SOURCE_GRAPH, true) }
+            onDeviceSeedPhraseConfirmed = { navController.setFactorSourceName() },
+            onArculusSeedPhraseConfirmed = { navController.createArculusPin() }
         )
     }
 }

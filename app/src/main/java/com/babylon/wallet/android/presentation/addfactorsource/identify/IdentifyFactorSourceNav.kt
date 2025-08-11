@@ -17,7 +17,8 @@ fun NavController.identifyFactorSource() {
 
 fun NavGraphBuilder.identifyFactorSource(
     onDismiss: () -> Unit,
-    onSetLedgerName: (FactorSourceId.Hash, LedgerHardwareWalletModel) -> Unit
+    onLedgerIdentified: () -> Unit,
+    onArculusIdentified: () -> Unit
 ) {
     markAsHighPriority(route = ROUTE)
     dialog(
@@ -27,7 +28,8 @@ fun NavGraphBuilder.identifyFactorSource(
         IdentifyFactorSourceDialog(
             viewModel = hiltViewModel(),
             onDismiss = onDismiss,
-            onSetLedgerName = onSetLedgerName
+            onLedgerIdentified = onLedgerIdentified,
+            onArculusIdentified = onArculusIdentified
         )
     }
 }

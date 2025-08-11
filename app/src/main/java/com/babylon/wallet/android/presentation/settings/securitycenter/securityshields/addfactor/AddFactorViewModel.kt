@@ -48,7 +48,7 @@ class AddFactorViewModel @Inject constructor(
         val selectedKind = state.value.selected ?: error("No factor source selected")
         viewModelScope.launch {
             addFactorSourceProxy.addFactorSource(
-                AddFactorSourceInput.WithKindPreselected(
+                AddFactorSourceInput.WithKind(
                     kind = selectedKind,
                     context = AddFactorSourceInput.Context.New
                 )

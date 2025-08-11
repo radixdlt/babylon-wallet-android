@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.addfactorsource.device.confirmseedphrase
+package com.babylon.wallet.android.presentation.addfactorsource.confirmseedphrase
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,21 +40,20 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun ConfirmDeviceSeedPhraseScreen(
+fun ConfirmSeedPhraseScreen(
     modifier: Modifier = Modifier,
-    viewModel: ConfirmDeviceSeedPhraseViewModel,
+    viewModel: ConfirmSeedPhraseViewModel,
     onDismiss: () -> Unit,
-    onConfirmed: (FactorSourceKind, MnemonicWithPassphrase) -> Unit
+    onDeviceSeedPhraseConfirmed: () -> Unit,
+    onArculusSeedPhraseConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    ConfirmDeviceSeedPhraseContent(
+    ConfirmSeedPhraseContent(
         modifier = modifier,
         state = state,
         onConfirmClick = viewModel::onConfirmClick,
@@ -66,16 +65,22 @@ fun ConfirmDeviceSeedPhraseScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ConfirmDeviceSeedPhraseViewModel.Event.Confirmed -> onConfirmed(state.factorSourceKind, event.mnemonicWithPassphrase)
+                is ConfirmSeedPhraseViewModel.Event.DeviceSeedPhraseConfirmed -> {
+                    onDeviceSeedPhraseConfirmed()
+                }
+
+                ConfirmSeedPhraseViewModel.Event.ArculusSeedPhraseConfirmed -> {
+                    onArculusSeedPhraseConfirmed()
+                }
             }
         }
     }
 }
 
 @Composable
-private fun ConfirmDeviceSeedPhraseContent(
+private fun ConfirmSeedPhraseContent(
     modifier: Modifier = Modifier,
-    state: ConfirmDeviceSeedPhraseViewModel.State,
+    state: ConfirmSeedPhraseViewModel.State,
     onWordChanged: (Int, String) -> Unit,
     onConfirmClick: () -> Unit,
     onDebugFillWordsClick: () -> Unit,
@@ -184,10 +189,10 @@ private fun ConfirmDeviceSeedPhraseContent(
 @UsesSampleValues
 @Composable
 @Preview
-private fun ConfirmDeviceSeedPhrasePreview() {
+private fun ConfirmSeedPhrasePreview() {
     RadixWalletPreviewTheme {
-        ConfirmDeviceSeedPhraseContent(
-            state = ConfirmDeviceSeedPhraseViewModel.State(
+        ConfirmSeedPhraseContent(
+            state = ConfirmSeedPhraseViewModel.State(
                 words = persistentListOf(
                     SeedPhraseWord(
                         index = 2,

@@ -4,7 +4,8 @@ import com.radixdlt.sargon.FactorSourceKind
 
 private val supportedFactorSourceKinds = listOf(
     FactorSourceKind.DEVICE,
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+    FactorSourceKind.ARCULUS_CARD
 )
 
 val FactorSourceKind.isSupported

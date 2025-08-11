@@ -46,7 +46,8 @@ fun IdentifyFactorSourceDialog(
     modifier: Modifier = Modifier,
     viewModel: IdentifyFactorSourceViewModel,
     onDismiss: () -> Unit,
-    onSetLedgerName: (FactorSourceId.Hash, LedgerHardwareWalletModel) -> Unit
+    onLedgerIdentified: () -> Unit,
+    onArculusIdentified: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -71,10 +72,8 @@ fun IdentifyFactorSourceDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is IdentifyFactorSourceViewModel.Event.LedgerIdentified -> onSetLedgerName(
-                    event.factorSourceId,
-                    event.model
-                )
+                is IdentifyFactorSourceViewModel.Event.LedgerIdentified -> onLedgerIdentified()
+                IdentifyFactorSourceViewModel.Event.ArculusIdentified -> onArculusIdentified()
             }
         }
     }
@@ -84,10 +83,10 @@ fun IdentifyFactorSourceDialog(
 private fun FactorSourceKind.message() = when (this) {
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_identifyingInstructions)
         .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
-
+    FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_identifyingInstructions)
+        .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
     FactorSourceKind.DEVICE,
     FactorSourceKind.OFF_DEVICE_MNEMONIC,
-    FactorSourceKind.ARCULUS_CARD,
     FactorSourceKind.PASSWORD -> error("Not supported here")
 }
 

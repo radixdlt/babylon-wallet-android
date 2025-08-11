@@ -4,11 +4,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.addfactorsource.device.confirmseedphrase.confirmDeviceSeedPhrase
-import com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase.deviceSeedPhrase
-import com.babylon.wallet.android.presentation.addfactorsource.intro.ROUTE_ADD_FACTOR_INTRO
-import com.babylon.wallet.android.presentation.addfactorsource.intro.addFactorIntro
-import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorName
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
+import com.babylon.wallet.android.presentation.addfactorsource.confirmseedphrase.confirmSeedPhrase
+import com.babylon.wallet.android.presentation.addfactorsource.seedphrase.seedPhrase
+import com.babylon.wallet.android.presentation.addfactorsource.intro.ROUTE_ADD_FACTOR_SOURCE_INTRO
+import com.babylon.wallet.android.presentation.addfactorsource.intro.addFactorSourceIntro
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
 
 const val ROUTE_ADD_FACTOR_SOURCE_GRAPH = "add_factor_source_graph"
 
@@ -22,15 +23,17 @@ fun NavGraphBuilder.addFactorSource(
     navController: NavController
 ) {
     navigation(
-        startDestination = ROUTE_ADD_FACTOR_INTRO,
+        startDestination = ROUTE_ADD_FACTOR_SOURCE_INTRO,
         route = ROUTE_ADD_FACTOR_SOURCE_GRAPH
     ) {
-        addFactorIntro(navController)
+        addFactorSourceIntro(navController)
 
-        deviceSeedPhrase(navController)
+        seedPhrase(navController)
 
-        confirmDeviceSeedPhrase(navController)
+        confirmSeedPhrase(navController)
 
-        setFactorName(navController)
+        createArculusPin(navController)
+
+        setFactorSourceName(navController)
     }
 }

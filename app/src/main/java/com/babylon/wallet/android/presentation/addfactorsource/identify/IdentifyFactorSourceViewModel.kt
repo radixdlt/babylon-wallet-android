@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIntermediaryParams
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -26,13 +27,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class IdentifyFactorSourceViewModel @Inject constructor(
-    addFactorSourceIOHandler: AddFactorSourceIOHandler,
+    private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
     private val ledgerMessenger: LedgerMessenger,
     private val getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<IdentifyFactorSourceViewModel.State>(),
     OneOffEventHandler<IdentifyFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
 
     init {
         identifyFactorSource()
@@ -54,7 +55,13 @@ class IdentifyFactorSourceViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { state -> state.copy(isInProgress = true) }
 
-            identifyLedgerFactorSource()
+            when (input.kind) {
+                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> identifyLedgerFactorSource()
+                FactorSourceKind.ARCULUS_CARD -> identifyArculusFactorSource()
+                FactorSourceKind.DEVICE,
+                FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                FactorSourceKind.PASSWORD -> error("Shouldn't be here")
+            }
 
             _state.update { state -> state.copy(isInProgress = false) }
         }
@@ -67,12 +74,13 @@ class IdentifyFactorSourceViewModel @Inject constructor(
             val existingLedgerFactorSource = getProfileUseCase().factorSourceById(deviceInfoResponse.factorSourceId)
 
             if (existingLedgerFactorSource == null) {
-                sendEvent(
-                    Event.LedgerIdentified(
+                addFactorSourceIOHandler.setIntermediaryParams(
+                    AddFactorSourceIntermediaryParams.Ledger(
                         factorSourceId = deviceInfoResponse.factorSourceId,
                         model = deviceInfoResponse.model.toProfileLedgerDeviceModel()
                     )
                 )
+                sendEvent(Event.LedgerIdentified)
             } else {
                 _state.update { state ->
                     state.copy(
@@ -98,6 +106,13 @@ class IdentifyFactorSourceViewModel @Inject constructor(
         }
     }
 
+    private suspend fun identifyArculusFactorSource() {
+        viewModelScope.launch {
+            TODO()
+            sendEvent(Event.LedgerIdentified)
+        }
+    }
+
     data class State(
         val factorSourceKind: FactorSourceKind,
         val errorMessage: UiMessage.ErrorMessage? = null,
@@ -109,9 +124,8 @@ class IdentifyFactorSourceViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data class LedgerIdentified(
-            val factorSourceId: FactorSourceId.Hash,
-            val model: LedgerHardwareWalletModel
-        ) : Event
+        data object LedgerIdentified : Event
+
+        data object ArculusIdentified : Event
     }
 }

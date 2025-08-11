@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase
+package com.babylon.wallet.android.presentation.addfactorsource.seedphrase
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.factors.MnemonicBuilderClient
@@ -33,15 +33,15 @@ import rdx.works.core.sargon.olympia
 import javax.inject.Inject
 
 @HiltViewModel
-class DeviceSeedPhraseViewModel @Inject constructor(
+class SeedPhraseViewModel @Inject constructor(
     addFactorSourceIOHandler: AddFactorSourceIOHandler,
     private val mnemonicBuilderClient: MnemonicBuilderClient,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
-) : StateViewModel<DeviceSeedPhraseViewModel.State>(),
-    OneOffEventHandler<DeviceSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<SeedPhraseViewModel.State>(),
+    OneOffEventHandler<SeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
 
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 

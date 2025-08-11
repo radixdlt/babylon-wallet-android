@@ -34,10 +34,9 @@ class AddFactorSourceKindViewModel @Inject constructor(
                 isLoading = false,
                 items = FactorSourceKind.entries.filter {
                     when (input) {
-                        is AddFactorSourceInput.FromKinds -> it in input.kinds
-                        is AddFactorSourceInput.OfAnyKind -> it.isSupported
+                        is AddFactorSourceInput.SelectKind -> it in input.kinds
                         AddFactorSourceInput.Init,
-                        is AddFactorSourceInput.WithKindPreselected -> error("Shouldn't be here")
+                        is AddFactorSourceInput.WithKind -> error("Shouldn't be here")
                     }
                 }.map {
                     Selectable(
@@ -77,7 +76,7 @@ class AddFactorSourceKindViewModel @Inject constructor(
 
         viewModelScope.launch {
             val factorSourceId = addFactorSourceProxy.addFactorSource(
-                AddFactorSourceInput.WithKindPreselected(selectedItem.kind, input.context())
+                AddFactorSourceInput.WithKind(selectedItem.kind, input.context())
             )?.value ?: return@launch
 
             addFactorSourceIOHandler.setOutput(AddFactorSourceOutput.Id(factorSourceId))

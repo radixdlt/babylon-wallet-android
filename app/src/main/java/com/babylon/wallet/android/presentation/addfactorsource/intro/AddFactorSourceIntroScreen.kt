@@ -47,7 +47,8 @@ fun AddFactorSourceIntroScreen(
     onInfoClick: (GlossaryItem) -> Unit,
     onAddDeviceFactorSource: () -> Unit,
     onAddLedgerFactorSource: () -> Unit,
-    onAddLinkConnector: () -> Unit
+    onAddLinkConnector: () -> Unit,
+    onAddArculusFactorSource: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -66,6 +67,7 @@ fun AddFactorSourceIntroScreen(
                 is AddFactorSourceIntroViewModel.Event.AddDeviceFactorSource -> onAddDeviceFactorSource()
                 AddFactorSourceIntroViewModel.Event.AddLedgerFactorSource -> onAddLedgerFactorSource()
                 AddFactorSourceIntroViewModel.Event.AddLinkConnector -> onAddLinkConnector()
+                AddFactorSourceIntroViewModel.Event.AddArculusFactorSource -> onAddArculusFactorSource()
             }
         }
     }

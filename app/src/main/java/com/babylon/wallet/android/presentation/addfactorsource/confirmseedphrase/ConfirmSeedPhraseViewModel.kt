@@ -1,7 +1,10 @@
-package com.babylon.wallet.android.presentation.addfactorsource.device.confirmseedphrase
+package com.babylon.wallet.android.presentation.addfactorsource.confirmseedphrase
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.factors.MnemonicBuilderClient
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIntermediaryParams
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -10,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicValidationOutcome
-import com.radixdlt.sargon.MnemonicWithPassphrase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -21,10 +23,13 @@ import rdx.works.core.mapWhen
 import javax.inject.Inject
 
 @HiltViewModel
-class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
-    private val mnemonicBuilderClient: MnemonicBuilderClient
-) : StateViewModel<ConfirmDeviceSeedPhraseViewModel.State>(),
-    OneOffEventHandler<ConfirmDeviceSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
+class ConfirmSeedPhraseViewModel @Inject constructor(
+    private val mnemonicBuilderClient: MnemonicBuilderClient,
+    private val addFactorSourceIOHandler: AddFactorSourceIOHandler
+) : StateViewModel<ConfirmSeedPhraseViewModel.State>(),
+    OneOffEventHandler<ConfirmSeedPhraseViewModel.Event> by OneOffEventHandlerImpl() {
+
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
 
     init {
         viewModelScope.launch {
@@ -64,8 +69,32 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
         viewModelScope.launch {
             when (val outcome = mnemonicBuilderClient.confirmWords(state.value.words)) {
                 MnemonicValidationOutcome.Valid -> {
-                    sendEvent(Event.Confirmed(mnemonicBuilderClient.getMnemonicWithPassphrase()))
+                    when (input.kind) {
+                        FactorSourceKind.DEVICE -> {
+                            addFactorSourceIOHandler.setIntermediaryParams(
+                                AddFactorSourceIntermediaryParams.Device(
+                                    mnemonicWithPassphrase = mnemonicBuilderClient.getMnemonicWithPassphrase()
+                                )
+                            )
+                            sendEvent(Event.DeviceSeedPhraseConfirmed)
+                        }
+
+                        FactorSourceKind.ARCULUS_CARD -> {
+                            addFactorSourceIOHandler.setIntermediaryParams(
+                                AddFactorSourceIntermediaryParams.Arculus(
+                                    mnemonicWithPassphrase = mnemonicBuilderClient.getMnemonicWithPassphrase(),
+                                    pin = ""
+                                )
+                            )
+                            sendEvent(Event.ArculusSeedPhraseConfirmed)
+                        }
+
+                        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                        FactorSourceKind.PASSWORD -> error("")
+                    }
                 }
+
                 is MnemonicValidationOutcome.Invalid -> {
                     val incorrectIndices = outcome.indicesInMnemonic.map { it.toInt() }
 
@@ -97,9 +126,9 @@ class ConfirmDeviceSeedPhraseViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data class Confirmed(
-            val mnemonicWithPassphrase: MnemonicWithPassphrase
-        ) : Event
+        data object DeviceSeedPhraseConfirmed : Event
+
+        data object ArculusSeedPhraseConfirmed : Event
     }
 
     data class State(

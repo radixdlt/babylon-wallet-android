@@ -1,6 +1,8 @@
 package rdx.works.core.sargon
 
 import com.radixdlt.sargon.ArculusCardFactorSource
+import com.radixdlt.sargon.ArculusCardHint
+import com.radixdlt.sargon.ArculusCardModel
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DeviceFactorSourceHint
@@ -22,6 +24,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.newArculusCardFactorSourceFromMnemonicWithPassphrase
 import com.radixdlt.sargon.newDeviceFactorSourceBabylon
 import com.radixdlt.sargon.newDeviceFactorSourceOlympia
 import com.radixdlt.sargon.samples.Sample
@@ -93,6 +96,16 @@ fun LedgerHardwareWalletModel.displayName() = when (this) {
     LedgerHardwareWalletModel.NANO_S_PLUS -> "Ledger Nano S+"
     LedgerHardwareWalletModel.NANO_X -> "Ledger Nano X"
 }
+
+fun FactorSource.ArculusCard.Companion.init(
+    mnemonicWithPassphrase: MnemonicWithPassphrase
+): FactorSource.ArculusCard = newArculusCardFactorSourceFromMnemonicWithPassphrase(
+    mwp = mnemonicWithPassphrase,
+    hint = ArculusCardHint(
+        label = "",
+        model = ArculusCardModel.ARCULUS_COLD_STORAGE_WALLET
+    )
+).asGeneral()
 
 // TODO move to sargon
 fun ArculusCardFactorSource.asGeneral() = FactorSource.ArculusCard(value = this)

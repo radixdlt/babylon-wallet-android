@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.presentation.addfactorsource.name
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIntermediaryParams
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceOutput
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,6 +20,7 @@ import com.radixdlt.sargon.DeviceFactorSourceType
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.extensions.SharedConstants
 import com.radixdlt.sargon.extensions.asGeneral
@@ -32,6 +33,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.init
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -46,17 +48,16 @@ class SetFactorSourceNameViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val mnemonicRepository: MnemonicRepository,
     private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
-    savedStateHandle: SavedStateHandle
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<SetFactorSourceNameViewModel.State>(),
     OneOffEventHandler<SetFactorSourceNameViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val args = SetFactorNameArgs.from(savedStateHandle)
-    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKindPreselected
+    private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
+    private val params = addFactorSourceIOHandler.getIntermediaryParams()
 
     private lateinit var addedFactorSourceId: FactorSourceId
 
-    override fun initialState(): State = State(args.factorSourceKind)
+    override fun initialState(): State = State(factorSourceKind = input.kind)
 
     fun onSaveClick() {
         _state.update { state -> state.copy(saveInProgress = true) }
@@ -122,29 +123,31 @@ class SetFactorSourceNameViewModel @Inject constructor(
         }
     }
 
-    private suspend fun saveFactorSource(): Result<FactorSourceId> = when (args) {
-        is SetFactorNameArgs.ForLedger -> addFactorSource(
-            FactorSource.Ledger.init(
-                id = args.factorSourceId,
-                model = args.ledgerModel,
-                name = state.value.name
+    private suspend fun saveFactorSource(): Result<FactorSourceId> = withContext(dispatcher) {
+        when (params) {
+            is AddFactorSourceIntermediaryParams.Arculus -> saveFactorSource(
+                FactorSource.ArculusCard.init(
+                    mnemonicWithPassphrase = params.mnemonicWithPassphrase
+                )
             )
-        )
 
-        is SetFactorNameArgs.WithMnemonic -> when (args.factorSourceKind) {
-            FactorSourceKind.DEVICE -> saveDeviceFactorSource(args)
-            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> error("Shouldn't be here")
-            FactorSourceKind.OFF_DEVICE_MNEMONIC,
-            FactorSourceKind.ARCULUS_CARD,
-            FactorSourceKind.PASSWORD -> error("Not yet supported")
+            is AddFactorSourceIntermediaryParams.Device -> saveDeviceFactorSource(params)
+
+            is AddFactorSourceIntermediaryParams.Ledger -> saveFactorSource(
+                FactorSource.Ledger.init(
+                    id = params.factorSourceId,
+                    model = params.model,
+                    name = state.value.name
+                )
+            )
         }
     }
 
     private suspend fun saveDeviceFactorSource(
-        args: SetFactorNameArgs.WithMnemonic
+        params: AddFactorSourceIntermediaryParams.Device
     ): Result<FactorSourceId> {
         val factorSource = sargonOsManager.sargonOs.createDeviceFactorSource(
-            mnemonicWithPassphrase = args.mnemonicWithPassphrase,
+            mnemonicWithPassphrase = params.mnemonicWithPassphrase,
             factorType = when (input.context) {
                 AddFactorSourceInput.Context.New -> DeviceFactorSourceType.BABYLON
                 is AddFactorSourceInput.Context.Recovery -> if (input.context.isOlympia) {
@@ -164,18 +167,18 @@ class SetFactorSourceNameViewModel @Inject constructor(
         return biometricsAuthenticateUseCase.asResult().then {
             mnemonicRepository.saveMnemonic(
                 key = factorSource.id.asGeneral(),
-                mnemonicWithPassphrase = args.mnemonicWithPassphrase
+                mnemonicWithPassphrase = params.mnemonicWithPassphrase
             )
         }.mapError {
             Timber.d(it)
             ProfileException.SecureStorageAccess
         }.then {
             preferencesManager.markFactorSourceBackedUp(factorSource.id.asGeneral())
-            addFactorSource(factorSource.asGeneral())
+            saveFactorSource(factorSource.asGeneral())
         }
     }
 
-    private suspend fun addFactorSource(factorSource: FactorSource) = sargonOsManager.callSafely(dispatcher) {
+    private suspend fun saveFactorSource(factorSource: FactorSource) = sargonOsManager.callSafely(dispatcher) {
         addFactorSource(factorSource)
     }.mapCatching { added ->
         if (added) {

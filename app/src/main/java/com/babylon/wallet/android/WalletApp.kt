@@ -231,10 +231,9 @@ private fun HandleAddFactorSourceEvents(
     LaunchedEffect(Unit) {
         addFactorSourceEvents.collect { event ->
             when (event.input) {
-                is AddFactorSourceInput.FromKinds,
-                is AddFactorSourceInput.OfAnyKind -> navController.addFactorSourceKind()
+                is AddFactorSourceInput.SelectKind -> navController.addFactorSourceKind()
 
-                is AddFactorSourceInput.WithKindPreselected -> navController.addFactorSource()
+                is AddFactorSourceInput.WithKind -> navController.addFactorSource()
                 AddFactorSourceInput.Init -> null
             }
         }

@@ -119,7 +119,7 @@ class SelectFactorSourceViewModel @Inject constructor(
     fun onAddFactorSourceClick() {
         viewModelScope.launch {
             addFactorSourceProxy.addFactorSource(
-                AddFactorSourceInput.FromKinds(
+                AddFactorSourceInput.SelectKind(
                     kinds = input.context.supportedKinds,
                     context = when (input.context) {
                         is SelectFactorSourceInput.Context.AccountRecovery -> AddFactorSourceInput.Context.Recovery(

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.addfactorsource.device.seedphrase
+package com.babylon.wallet.android.presentation.addfactorsource.seedphrase
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -57,16 +57,16 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun DeviceSeedPhraseScreen(
+fun SeedPhraseScreen(
     modifier: Modifier = Modifier,
-    viewModel: DeviceSeedPhraseViewModel,
+    viewModel: SeedPhraseViewModel,
     onDismiss: () -> Unit,
     onDismissFlow: () -> Unit,
     onConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    DeviceSeedPhraseContent(
+    SeedPhraseContent(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
@@ -82,18 +82,18 @@ fun DeviceSeedPhraseScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                DeviceSeedPhraseViewModel.Event.Confirmed -> onConfirmed()
-                DeviceSeedPhraseViewModel.Event.Dismiss -> onDismiss()
-                DeviceSeedPhraseViewModel.Event.DismissFlow -> onDismissFlow()
+                SeedPhraseViewModel.Event.Confirmed -> onConfirmed()
+                SeedPhraseViewModel.Event.Dismiss -> onDismiss()
+                SeedPhraseViewModel.Event.DismissFlow -> onDismissFlow()
             }
         }
     }
 }
 
 @Composable
-private fun DeviceSeedPhraseContent(
+private fun SeedPhraseContent(
     modifier: Modifier = Modifier,
-    state: DeviceSeedPhraseViewModel.State,
+    state: SeedPhraseViewModel.State,
     onDismiss: () -> Unit,
     onDismissMessage: () -> Unit,
     onWordChanged: (Int, String) -> Unit,
@@ -252,11 +252,11 @@ private fun DeviceSeedPhraseContent(
 @UsesSampleValues
 @Composable
 @Preview
-private fun DeviceSeedPhrasePreview(
-    @PreviewParameter(DeviceSeedPhrasePreviewProvider::class) state: DeviceSeedPhraseViewModel.State
+private fun SeedPhrasePreview(
+    @PreviewParameter(SeedPhrasePreviewProvider::class) state: SeedPhraseViewModel.State
 ) {
     RadixWalletPreviewTheme {
-        DeviceSeedPhraseContent(
+        SeedPhraseContent(
             state = state,
             onDismiss = {},
             onDismissMessage = {},
@@ -271,11 +271,11 @@ private fun DeviceSeedPhrasePreview(
 }
 
 @UsesSampleValues
-class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhraseViewModel.State> {
+class SeedPhrasePreviewProvider : PreviewParameterProvider<SeedPhraseViewModel.State> {
 
-    override val values: Sequence<DeviceSeedPhraseViewModel.State>
+    override val values: Sequence<SeedPhraseViewModel.State>
         get() = sequenceOf(
-            DeviceSeedPhraseViewModel.State(
+            SeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.New,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
@@ -287,7 +287,7 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                     }.toPersistentList()
                 )
             ),
-            DeviceSeedPhraseViewModel.State(
+            SeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.Recovery(
                     isOlympia = true
                 ),
@@ -302,7 +302,7 @@ class DeviceSeedPhrasePreviewProvider : PreviewParameterProvider<DeviceSeedPhras
                 ),
                 isEditingEnabled = true
             ),
-            DeviceSeedPhraseViewModel.State(
+            SeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.New,
                 errorMessage = UiMessage.ErrorMessage(
                     RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
