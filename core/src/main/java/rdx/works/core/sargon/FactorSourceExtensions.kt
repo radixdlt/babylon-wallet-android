@@ -22,6 +22,8 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.newDeviceFactorSourceBabylon
+import com.radixdlt.sargon.newDeviceFactorSourceOlympia
 import com.radixdlt.sargon.samples.Sample
 import rdx.works.core.TimestampGenerator
 import java.time.OffsetDateTime
@@ -53,25 +55,19 @@ val FactorSource.lastUsedOn: OffsetDateTime
 
 fun FactorSource.Device.Companion.babylon(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    hostInfo: HostInfo,
-    createdAt: Timestamp = OffsetDateTime.now(),
-    isMain: Boolean = false
-): FactorSource.Device = FactorSource.Device.babylon(
+    hostInfo: HostInfo
+): FactorSource.Device = newDeviceFactorSourceBabylon(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
-    hostInfo = hostInfo,
-    createdAt = createdAt,
-    isMain = isMain
-)
+    hostInfo = hostInfo
+).asGeneral()
 
 fun FactorSource.Device.Companion.olympia(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
     hostInfo: HostInfo,
-    createdAt: Timestamp = OffsetDateTime.now()
-): FactorSource.Device = FactorSource.Device.olympia(
+): FactorSource.Device = newDeviceFactorSourceOlympia(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
-    hostInfo = hostInfo,
-    createdAt = createdAt
-)
+    hostInfo = hostInfo
+).asGeneral()
 
 fun FactorSource.Ledger.Companion.init(
     id: FactorSourceId.Hash,

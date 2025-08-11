@@ -51,8 +51,7 @@ class TransferBetweenOwnedAccountsTest {
     private val hostInfo = HostInfo.sample.other()
     private val babylonFactorSource = FactorSource.Device.babylon(
         mnemonicWithPassphrase = mnemonicWithPassphrase,
-        hostInfo = hostInfo,
-        isMain = true
+        hostInfo = hostInfo
     )
 
     var profile = Profile.init(
