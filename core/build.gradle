@@ -55,8 +55,6 @@ dependencies {
     implementation libs.kotlinxSerialization
     implementation libs.firebaseCrashlytics
     implementation libs.immutableCollections
-    implementation libs.guava
-    implementation libs.jna
 
     // Datastore
     implementation libs.datastorePreferences
