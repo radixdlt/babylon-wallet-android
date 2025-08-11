@@ -7,6 +7,9 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.factorSourceById
@@ -25,14 +28,17 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
     private val hostInfoRepository: HostInfoRepository,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Result<FactorSourceId.Hash> {
         val hostInfo = hostInfoRepository.getHostInfo()
-        val olympiaFactorSource = FactorSource.Device.olympia(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            hostInfo = hostInfo
-        )
+        val olympiaFactorSource = withContext(dispatcher) {
+            FactorSource.Device.olympia(
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
+                hostInfo = hostInfo
+            )
+        }
         val existingFactorSource = getProfileUseCase().factorSourceById(olympiaFactorSource.id) as? FactorSource.Device
         val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.value.id.asGeneral())
         return if (mnemonicExist) {

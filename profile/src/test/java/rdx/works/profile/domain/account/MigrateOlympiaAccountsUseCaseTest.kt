@@ -62,8 +62,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val hostInfo = HostInfo.sample.other()
         val factorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = babylonMnemonic,
-            hostInfo = hostInfo,
-            isMain = true
+            hostInfo = hostInfo
         )
         val derivationPath = AccountPath.init(
             networkId = NetworkId.MAINNET,

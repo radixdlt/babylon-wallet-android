@@ -38,7 +38,8 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         profileRepository = profileRepository,
         mnemonicRepository = mnemonicRepository,
         preferencesManager = preferencesManager,
-        hostInfoRepository = hostInfoRepository
+        hostInfoRepository = hostInfoRepository,
+        dispatcher = testDispatcher
     )
 
     @Test
@@ -55,8 +56,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         val profile = Profile.init(
             deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = babylonMnemonic,
-                hostInfo = hostInfo,
-                isMain = true
+                hostInfo = hostInfo
             ),
             hostId = hostId,
             hostInfo = hostInfo
