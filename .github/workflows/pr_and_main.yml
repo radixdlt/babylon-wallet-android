@@ -250,6 +250,12 @@ jobs:
           mkdir -p config/secrets/
           echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
 
+      - name: Resolve CSDK
+        uses: radixdlt/arculus-android-csdk
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+  
       - name: "Build"
         run: |
           ./gradlew assembleDebug
