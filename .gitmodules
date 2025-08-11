@@ -1,3 +1,3 @@
 [submodule "arculus-android-csdk"]
 	path = arculus-android-csdk
-	url = https://github.com/sergiupuhalschi-radix/arculus-android-csdk.git
+	url = https://github.com/radixdlt/arculus-android-csdk.git
