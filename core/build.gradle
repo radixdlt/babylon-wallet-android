@@ -48,11 +48,15 @@ android {
 
 dependencies {
     api libs.sargonAndroid
+    implementation project(path: ':arculus-android-csdk:csdknative')
+
     implementation libs.ktorCore
     implementation libs.zxing
     implementation libs.kotlinxSerialization
     implementation libs.firebaseCrashlytics
     implementation libs.immutableCollections
+    implementation libs.guava
+    implementation libs.jna
 
     // Datastore
     implementation libs.datastorePreferences
