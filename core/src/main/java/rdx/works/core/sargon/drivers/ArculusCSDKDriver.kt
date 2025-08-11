@@ -357,11 +357,11 @@ public class ArculusCSDKDriver: SargonArculusCSDKDriver {
     }
 }
 
-fun Pointer.asArculusWalletPointer(): ArculusWalletPointer {
+private fun Pointer.asArculusWalletPointer(): ArculusWalletPointer {
     val address = Pointer.nativeValue(this)
     return ArculusWalletPointer(address.toULong())
 }
 
-fun ArculusWalletPointer.asJnaPointer(): Pointer {
+private fun ArculusWalletPointer.asJnaPointer(): Pointer {
     return Pointer(this.pointer.toLong())
 }
