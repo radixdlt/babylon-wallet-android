@@ -109,6 +109,7 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun provideNfcTagDriver(
-        appEventBus: com.babylon.wallet.android.utils.AppEventBus
-    ): com.radixdlt.sargon.NfcTagDriver = NFCTagInteractor(appEventBus)
+        appEventBus: com.babylon.wallet.android.utils.AppEventBus,
+        sessionProxy: com.babylon.wallet.android.presentation.nfc.NfcSessionProxy
+    ): com.radixdlt.sargon.NfcTagDriver = NFCTagInteractor(appEventBus, sessionProxy)
 }

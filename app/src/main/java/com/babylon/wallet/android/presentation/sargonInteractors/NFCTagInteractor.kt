@@ -6,28 +6,29 @@ import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.NfcTagDriverPurpose
-import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.babylon.wallet.android.presentation.nfc.NfcSessionProxy
 import javax.inject.Inject
 
 class NFCTagInteractor @Inject constructor(
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val sessionProxy: NfcSessionProxy
 ) : NfcTagDriver {
     override suspend fun startSession(purpose: NfcTagDriverPurpose) {
         appEventBus.sendEvent(AppEvent.Nfc.StartSession(purpose))
+        sessionProxy.onSessionStarted()
     }
 
     override suspend fun endSession(withFailure: CommonException?) {
         appEventBus.sendEvent(AppEvent.Nfc.EndSession(withFailure))
+        sessionProxy.onSessionEnded(withFailure)
     }
 
     override suspend fun sendReceive(command: BagOfBytes): BagOfBytes {
-        // Scaffold only: echo back success SW
-        return byteArrayOf(0x90.toByte(), 0x00.toByte()).toBagOfBytes()
+        return sessionProxy.transceive(command)
     }
 
     override suspend fun sendReceiveCommandChain(commands: List<BagOfBytes>): BagOfBytes {
-        // Scaffold only: return success SW
-        return byteArrayOf(0x90.toByte(), 0x00.toByte()).toBagOfBytes()
+        return sessionProxy.transceiveChain(commands)
     }
 
     override suspend fun setMessage(message: String) {

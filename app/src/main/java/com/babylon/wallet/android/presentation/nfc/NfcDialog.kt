@@ -10,12 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
+import com.radixdlt.sargon.BagOfBytes
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,8 +63,13 @@ fun NfcDialog(
                     )
                 },
                 content = { _ ->
-                    // For scaffold phase we intentionally do not render real NFC content
-                    // Later we can show message/progress, tag state, etc.
+                    // Show a very basic stream processor: auto-respond 0x9000 to any request
+                    LaunchedEffect(Unit) {
+                        viewModel.transceiveRequests.collect { req ->
+                            // Return 0x9000 while we scaffold
+                            viewModel.respond(req, byteArrayOf(0x90.toByte(), 0x00.toByte()).toBagOfBytes())
+                        }
+                    }
                 }
             )
         }

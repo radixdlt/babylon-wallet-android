@@ -9,16 +9,20 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import com.radixdlt.sargon.BagOfBytes
 
 @HiltViewModel
 class NfcViewModel @Inject constructor(
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val sessionProxy: NfcSessionProxy
 ) : StateViewModel<NfcViewModel.State>(),
     OneOffEventHandler<NfcViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -35,6 +39,14 @@ class NfcViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    val transceiveRequests = sessionProxy.transceiveRequests
+
+    suspend fun respond(request: NfcSessionProxy.TransceiveRequest, response: BagOfBytes) {
+        withContext(Dispatchers.Default) {
+            request.response.complete(response)
+        }
     }
 
     fun onDismiss() {
