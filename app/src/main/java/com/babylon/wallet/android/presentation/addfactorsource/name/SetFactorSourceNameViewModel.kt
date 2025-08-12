@@ -20,7 +20,6 @@ import com.radixdlt.sargon.DeviceFactorSourceType
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.extensions.SharedConstants
 import com.radixdlt.sargon.extensions.asGeneral
@@ -53,7 +52,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
     OneOffEventHandler<SetFactorSourceNameViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val input = addFactorSourceIOHandler.getInput() as AddFactorSourceInput.WithKind
-    private val params = addFactorSourceIOHandler.getIntermediaryParams()
+    private val params = checkNotNull(addFactorSourceIOHandler.getIntermediaryParams())
 
     private lateinit var addedFactorSourceId: FactorSourceId
 
@@ -125,13 +124,12 @@ class SetFactorSourceNameViewModel @Inject constructor(
 
     private suspend fun saveFactorSource(): Result<FactorSourceId> = withContext(dispatcher) {
         when (params) {
-            is AddFactorSourceIntermediaryParams.Arculus -> saveFactorSource(
-                FactorSource.ArculusCard.init(
-                    mnemonicWithPassphrase = params.mnemonicWithPassphrase
-                )
-            )
+            is AddFactorSourceIntermediaryParams.Mnemonic -> when (input.kind) {
+                FactorSourceKind.DEVICE -> saveDeviceFactorSource(params)
+                FactorSourceKind.ARCULUS_CARD -> saveFactorSource(FactorSource.ArculusCard.init(params.value))
 
-            is AddFactorSourceIntermediaryParams.Device -> saveDeviceFactorSource(params)
+                else -> error("Not yet supported")
+            }
 
             is AddFactorSourceIntermediaryParams.Ledger -> saveFactorSource(
                 FactorSource.Ledger.init(
@@ -144,10 +142,10 @@ class SetFactorSourceNameViewModel @Inject constructor(
     }
 
     private suspend fun saveDeviceFactorSource(
-        params: AddFactorSourceIntermediaryParams.Device
+        params: AddFactorSourceIntermediaryParams.Mnemonic
     ): Result<FactorSourceId> {
         val factorSource = sargonOsManager.sargonOs.createDeviceFactorSource(
-            mnemonicWithPassphrase = params.mnemonicWithPassphrase,
+            mnemonicWithPassphrase = params.value,
             factorType = when (input.context) {
                 AddFactorSourceInput.Context.New -> DeviceFactorSourceType.BABYLON
                 is AddFactorSourceInput.Context.Recovery -> if (input.context.isOlympia) {
@@ -167,7 +165,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
         return biometricsAuthenticateUseCase.asResult().then {
             mnemonicRepository.saveMnemonic(
                 key = factorSource.id.asGeneral(),
-                mnemonicWithPassphrase = params.mnemonicWithPassphrase
+                mnemonicWithPassphrase = params.value
             )
         }.mapError {
             Timber.d(it)

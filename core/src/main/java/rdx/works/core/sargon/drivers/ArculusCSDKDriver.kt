@@ -1,20 +1,20 @@
 package rdx.works.core.sargon.drivers
 
-import android.util.Log
 import co.arculus.csdknative.CSDKLibraryDirect
 import co.arculus.csdknative.CSDKLibraryDirect.CSDK_OK
-import com.radixdlt.sargon.ArculusVerifyPinResponse
 import co.arculus.csdknative.SizeTByReference
 import com.google.common.primitives.UnsignedInts
-import com.radixdlt.sargon.extensions.toBagOfBytes
-import com.radixdlt.sargon.ArculusCsdkDriver as SargonArculusCSDKDriver
+import com.radixdlt.sargon.ArculusVerifyPinResponse
 import com.radixdlt.sargon.ArculusWalletPointer
 import com.radixdlt.sargon.BagOfBytes
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.PointerByReference
 import rdx.works.core.toByteArray
+import com.radixdlt.sargon.ArculusCsdkDriver as SargonArculusCSDKDriver
 
-public class ArculusCSDKDriver: SargonArculusCSDKDriver {
+@Suppress("TooManyFunctions")
+class ArculusCSDKDriver : SargonArculusCSDKDriver {
     override fun createWalletSeedRequest(
         wallet: ArculusWalletPointer,
         wordCount: Long
@@ -117,12 +117,12 @@ public class ArculusCSDKDriver: SargonArculusCSDKDriver {
     ): BagOfBytes? {
         val rLen = SizeTByReference()
         val keyPointer: Pointer = CSDKLibraryDirect.WalletGetPublicKeyFromPathRequest(
-                wallet.asJnaPointer(),
-                path.toByteArray(),
-                path.size,
-                curve.toShort(),
-                rLen
-            ) ?: return null
+            wallet.asJnaPointer(),
+            path.toByteArray(),
+            path.size,
+            curve.toShort(),
+            rLen
+        ) ?: return null
 
         val rPub = CSDKLibraryDirect.ExtendedKey_getPubKey(keyPointer, rLen)
         val bytes = rPub.getByteArray(0, UnsignedInts.checkedCast(rLen.value.toLong()))
@@ -181,7 +181,7 @@ public class ArculusCSDKDriver: SargonArculusCSDKDriver {
         wallet: ArculusWalletPointer,
         response: BagOfBytes
     ): Int {
-       return CSDKLibraryDirect.WalletInitRecoverWalletResponse(
+        return CSDKLibraryDirect.WalletInitRecoverWalletResponse(
             wallet.asJnaPointer(),
             response.toByteArray(),
             response.size
@@ -258,8 +258,8 @@ public class ArculusCSDKDriver: SargonArculusCSDKDriver {
 
         val bPath = path.toByteArray()
         val bHash = hash.toByteArray()
-        val bPathPtr: Pointer = CSDKLibraryDirect.CreateByteVector(bPath, bPath.size);
-        val hashPtr: Pointer = CSDKLibraryDirect.CreateByteVector(bHash, bHash.size);
+        val bPathPtr: Pointer = CSDKLibraryDirect.CreateByteVector(bPath, bPath.size)
+        val hashPtr: Pointer = CSDKLibraryDirect.CreateByteVector(bHash, bHash.size)
         val apduChainPtr: PointerByReference? = PointerByReference()
 
         val status: Int = CSDKLibraryDirect.WalletSignRequest(
@@ -349,7 +349,7 @@ public class ArculusCSDKDriver: SargonArculusCSDKDriver {
         return pointer.asArculusWalletPointer()
     }
 
-    private fun withParsingByteResult(op: (SizeTByReference) -> Pointer): BagOfBytes? {
+    private fun withParsingByteResult(op: (SizeTByReference) -> Pointer?): BagOfBytes? {
         val rLen = SizeTByReference()
         val ptr: Pointer = op(rLen) ?: return null
         val bytes = ptr.getByteArray(0, UnsignedInts.checkedCast(rLen.value.toLong()))

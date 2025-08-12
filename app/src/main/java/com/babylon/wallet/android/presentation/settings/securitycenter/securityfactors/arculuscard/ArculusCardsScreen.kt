@@ -34,7 +34,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun ArculusCardsScreen(
     viewModel: ArculusCardsViewModel,
     onNavigateToArculusFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddArculusCard: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -52,7 +51,7 @@ fun ArculusCardsScreen(
     ArculusCardsContent(
         arculusFactorSources = state.arculusFactorSources,
         onArculusFactorSourceClick = viewModel::onArculusFactorSourceClick,
-        onAddArculusCardClick = onNavigateToAddArculusCard,
+        onAddArculusCardClick = viewModel::onAddArculusCardClick,
         onBackClick = onBackClick
     )
 }

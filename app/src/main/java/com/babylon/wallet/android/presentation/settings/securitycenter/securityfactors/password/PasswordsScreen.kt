@@ -36,7 +36,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun PasswordsScreen(
     viewModel: PasswordsViewModel,
     onNavigateToPasswordFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddPassword: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -54,7 +53,7 @@ fun PasswordsScreen(
     PasswordsContent(
         passwordFactorSources = state.passwordFactorSources,
         onPasswordFactorSourceClick = viewModel::onPasswordFactorSourceClick,
-        onAddPasswordClick = onNavigateToAddPassword,
+        onAddPasswordClick = viewModel::onAddPasswordClick,
         onBackClick = onBackClick,
     )
 }

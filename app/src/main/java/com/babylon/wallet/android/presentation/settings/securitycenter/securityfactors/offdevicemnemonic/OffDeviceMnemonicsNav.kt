@@ -19,7 +19,6 @@ fun NavController.offDeviceMnemonics() {
 
 fun NavGraphBuilder.offDeviceMnemonics(
     onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddOffDeviceMnemonic: () -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -40,7 +39,6 @@ fun NavGraphBuilder.offDeviceMnemonics(
         OffDeviceMnemonicsScreen(
             viewModel = hiltViewModel(),
             onNavigateToOffDeviceMnemonicFactorSourceDetails = onNavigateToOffDeviceMnemonicFactorSourceDetails,
-            onNavigateToAddOffDeviceMnemonic = onNavigateToAddOffDeviceMnemonic,
             onBackClick = onBackClick
         )
     }

@@ -99,7 +99,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     FactorSourceKind.OFF_DEVICE_MNEMONIC -> navController.offDeviceMnemonics()
                     FactorSourceKind.ARCULUS_CARD -> navController.arculusCards()
                     FactorSourceKind.PASSWORD -> navController.passwords()
-                    else -> {}
                 }
             }
         )
@@ -121,17 +120,14 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         arculusCards(
             onNavigateToArculusFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddArculusCard = { },
             onBackClick = { navController.navigateUp() }
         )
         offDeviceMnemonics(
             onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddOffDeviceMnemonic = { },
             onBackClick = { navController.navigateUp() }
         )
         passwords(
             onNavigateToPasswordFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddPassword = { },
             onBackClick = { navController.navigateUp() }
         )
         factorSourceDetails(

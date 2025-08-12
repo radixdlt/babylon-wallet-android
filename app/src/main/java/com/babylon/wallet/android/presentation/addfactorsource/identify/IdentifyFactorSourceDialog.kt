@@ -35,9 +35,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.coroutines.launch
 

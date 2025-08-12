@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.addfactorsource
 
-import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletModel
@@ -19,7 +18,7 @@ interface AddFactorSourceIOHandler {
 
     fun setIntermediaryParams(params: AddFactorSourceIntermediaryParams)
 
-    fun getIntermediaryParams(): AddFactorSourceIntermediaryParams
+    fun getIntermediaryParams(): AddFactorSourceIntermediaryParams?
 }
 
 sealed interface AddFactorSourceInput {
@@ -61,17 +60,12 @@ sealed interface AddFactorSourceOutput {
 
 sealed interface AddFactorSourceIntermediaryParams {
 
-    data class Device(
-        val mnemonicWithPassphrase: MnemonicWithPassphrase
+    data class Mnemonic(
+        val value: MnemonicWithPassphrase
     ) : AddFactorSourceIntermediaryParams
 
     data class Ledger(
         val factorSourceId: FactorSourceId.Hash,
         val model: LedgerHardwareWalletModel
-    ) : AddFactorSourceIntermediaryParams
-
-    data class Arculus(
-        val mnemonicWithPassphrase: MnemonicWithPassphrase,
-        val pin: String
     ) : AddFactorSourceIntermediaryParams
 }

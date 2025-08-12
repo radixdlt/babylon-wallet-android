@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,6 +15,7 @@ import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCa
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.os.SargonOsManager
@@ -33,6 +36,7 @@ import javax.inject.Inject
 class ArculusCardsViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<ArculusCardsViewModel.State>(),
     OneOffEventHandler<ArculusCardsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -83,6 +87,17 @@ class ArculusCardsViewModel @Inject constructor(
     fun onArculusFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
             sendEvent(Event.NavigateToArculusFactorSourceDetails(factorSourceId))
+        }
+    }
+
+    fun onAddArculusCardClick() {
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKind(
+                    kind = FactorSourceKind.ARCULUS_CARD,
+                    context = AddFactorSourceInput.Context.New
+                )
+            )
         }
     }
 

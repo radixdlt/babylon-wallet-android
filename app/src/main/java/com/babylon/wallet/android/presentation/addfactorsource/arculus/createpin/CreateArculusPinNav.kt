@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
 
 private const val ROUTE_CREATE_ARCULUS_PIN = "create_arculus_pin"
 
@@ -27,12 +28,7 @@ fun NavGraphBuilder.createArculusPin(
         CreateArculusPinScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onConfirmed = {
-//                navController.setFactorName(
-//                    factorSourceKind,
-//                    mnemonicWithPassphrase
-//                )
-            }
+            onConfirmed = { navController.setFactorSourceName() }
         )
     }
 }

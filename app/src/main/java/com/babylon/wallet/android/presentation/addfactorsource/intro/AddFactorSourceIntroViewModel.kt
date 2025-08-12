@@ -38,8 +38,8 @@ class AddFactorSourceIntroViewModel @Inject constructor(
             when (factorSourceKind) {
                 FactorSourceKind.DEVICE -> sendEvent(Event.AddDeviceFactorSource)
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> addLedgerFactorSource()
+                FactorSourceKind.ARCULUS_CARD -> sendEvent(Event.AddArculusFactorSource)
                 FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                FactorSourceKind.ARCULUS_CARD,
                 FactorSourceKind.PASSWORD -> sendEvent(Event.Dismiss)
             }
         }

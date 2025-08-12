@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,6 +15,7 @@ import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCa
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.os.SargonOsManager
@@ -33,6 +36,7 @@ import javax.inject.Inject
 class PasswordsViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<PasswordsViewModel.State>(),
     OneOffEventHandler<PasswordsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -83,6 +87,17 @@ class PasswordsViewModel @Inject constructor(
     fun onPasswordFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
             sendEvent(Event.NavigateToPasswordFactorSourceDetails(factorSourceId))
+        }
+    }
+
+    fun onAddPasswordClick() {
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKind(
+                    kind = FactorSourceKind.PASSWORD,
+                    context = AddFactorSourceInput.Context.New
+                )
+            )
         }
     }
 
