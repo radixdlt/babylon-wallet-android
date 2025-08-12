@@ -41,6 +41,12 @@ class NfcViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    fun onTagReady() {
+        viewModelScope.launch {
+            sessionProxy.markReady()
+        }
+    }
+
     val transceiveRequests = sessionProxy.transceiveRequests
 
     suspend fun respond(request: NfcSessionProxy.TransceiveRequest, response: BagOfBytes) {
@@ -49,8 +55,15 @@ class NfcViewModel @Inject constructor(
         }
     }
 
+    suspend fun respondException(request: NfcSessionProxy.TransceiveRequest, throwable: Throwable) {
+        withContext(Dispatchers.Default) {
+            request.response.completeExceptionally(throwable)
+        }
+    }
+
     fun onDismiss() {
         viewModelScope.launch {
+            sessionProxy.onSessionEnded(com.radixdlt.sargon.CommonException.HostInteractionAborted())
             sendEvent(Event.Completed)
         }
     }

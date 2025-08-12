@@ -16,6 +16,8 @@ class NFCTagInteractor @Inject constructor(
     override suspend fun startSession(purpose: NfcTagDriverPurpose) {
         appEventBus.sendEvent(AppEvent.Nfc.StartSession(purpose))
         sessionProxy.onSessionStarted()
+        // Wait until UI reports tag discovered and ready
+        sessionProxy.awaitReady()
     }
 
     override suspend fun endSession(withFailure: CommonException?) {

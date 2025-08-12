@@ -21,7 +21,7 @@ class ArculusToolsViewModel @Inject constructor(
         viewModelScope.launch {
             // Call into Sargon OS; actual method name may differ; replace when available.
             val result = sargonOsManager.callSafely(dispatcher = defaultDispatcher) {
-                arculusCardReset()
+                arculusCardValidateMinFirmwareVersion()
             }
             result.onSuccess {
                 Timber.d("Arculus min firmware validation: success")

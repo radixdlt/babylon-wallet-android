@@ -14,13 +14,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import rdx.works.core.toByteArrayUnsafe
 import kotlinx.coroutines.launch
+import android.nfc.NfcAdapter
+import android.nfc.Tag
+import android.nfc.tech.IsoDep
+import android.app.Activity
+import androidx.compose.runtime.DisposableEffect
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.provider.Settings
+import com.babylon.wallet.android.utils.findActivity
+import rdx.works.core.toByteArray
+import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +65,48 @@ fun NfcDialog(
         scope.launch { sheetState.show() }
     }
 
+    val context = LocalContext.current
+    // NFC handling state
+    var isoDep = remember { mutableStateOf<IsoDep?>(null) }
+
+    // Enable Reader Mode on start
+    val activity: Activity? = remember(context) { context.findActivity() }
+    val isNfcEnabledState = remember { mutableStateOf(true) }
+    LaunchedEffect(activity) {
+        val adapter = NfcAdapter.getDefaultAdapter(context)
+        isNfcEnabledState.value = adapter?.isEnabled == true
+        if (!isNfcEnabledState.value) return@LaunchedEffect
+        activity?.let { act ->
+            adapter?.enableReaderMode(
+                act,
+                { tag: Tag? ->
+                    tag?.let {
+                        val dep = IsoDep.get(it)
+                        try {
+                            dep.connect()
+                            isoDep.value = dep
+                            viewModel.onTagReady()
+                        } catch (_: Throwable) {
+                            isoDep.value = null
+                        }
+                    }
+                },
+                NfcAdapter.FLAG_READER_NFC_A or
+                    NfcAdapter.FLAG_READER_NFC_B or
+                    NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+                null
+            )
+        }
+    }
+    DisposableEffect(activity) {
+        onDispose {
+            val adapter = NfcAdapter.getDefaultAdapter(context)
+            activity?.let { act -> adapter?.disableReaderMode(act) }
+            try { isoDep.value?.close() } catch (_: Throwable) {}
+            isoDep.value = null
+        }
+    }
+
     DefaultModalSheetLayout(
         modifier = Modifier.fillMaxSize(),
         sheetState = sheetState,
@@ -63,11 +122,46 @@ fun NfcDialog(
                     )
                 },
                 content = { _ ->
-                    // Show a very basic stream processor: auto-respond 0x9000 to any request
+                    if (!isNfcEnabledState.value) {
+                        AlertDialog(
+                            onDismissRequest = viewModel::onDismiss,
+                            title = { Text(text = "NFC is turned off") },
+                            text = { Text(text = "Please enable NFC in system settings to continue.") },
+                            confirmButton = {
+                                TextButton(onClick = viewModel::onDismiss) {
+                                    Text(text = "OK")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    try {
+                                        context.startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
+                                    } catch (_: Throwable) {}
+                                }) {
+                                    Text(text = "Open settings")
+                                }
+                            }
+                        )
+                        return@Scaffold
+                    }
+                    // Process transceive requests against IsoDep
                     LaunchedEffect(Unit) {
                         viewModel.transceiveRequests.collect { req ->
-                            // Return 0x9000 while we scaffold
-                            viewModel.respond(req, byteArrayOf(0x90.toByte(), 0x00.toByte()).toBagOfBytes())
+                            val dep = isoDep.value
+                            if (dep == null || !dep.isConnected) {
+                                viewModel.respondException(req, IllegalStateException("Tag not connected"))
+                                return@collect
+                            }
+                            try {
+                                val response = dep.transceive(req.command.toByteArray())
+                                if (response.size < 2 ||
+                                            (response[response.size-2] != 0x90.toByte() || response[response.size-1] != 0x00.toByte())) {
+                                    throw IOException("sendReceive bad status")
+                                }
+                                viewModel.respond(req, response.toBagOfBytes())
+                            } catch (t: Throwable) {
+                                viewModel.respondException(req, t)
+                            }
                         }
                     }
                 }

@@ -155,11 +155,11 @@ public class ArculusCSDKDriver: SargonArculusCSDKDriver {
         wallet: ArculusWalletPointer,
         response: BagOfBytes
     ): Int {
-        val ptr: Pointer = CSDKLibraryDirect.WalletInitSessionResponse(
+        CSDKLibraryDirect.WalletInitSessionResponse(
             wallet.asJnaPointer(),
             response.toByteArray(),
             response.size
-        ) ?: return -100
+        );
 
         return 0
     }

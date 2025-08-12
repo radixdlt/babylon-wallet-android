@@ -31,6 +31,11 @@ class NfcSessionProxy @Inject constructor() {
 
     fun onSessionStarted() {
         _isActiveValue(true)
+        synchronized(this) {
+            if (sessionReady == null || sessionReady?.isCompleted == true) {
+                sessionReady = CompletableDeferred()
+            }
+        }
     }
 
     fun onSessionEnded(withFailure: CommonException?) {
@@ -39,6 +44,21 @@ class NfcSessionProxy @Inject constructor() {
             // Cancel any pending requests with the provided failure
             // Note: requests are only created via sendReceive; we cannot iterate the channel buffer here.
             // Pending deferreds will be cancelled by their callers timeout logic if any.
+        }
+        synchronized(this) {
+            sessionReady?.cancel()
+            sessionReady = null
+        }
+    }
+
+    suspend fun awaitReady() {
+        val deferred = synchronized(this) { sessionReady }
+        deferred?.await()
+    }
+
+    fun markReady() {
+        synchronized(this) {
+            sessionReady?.complete(Unit)
         }
     }
 
@@ -67,6 +87,9 @@ class NfcSessionProxy @Inject constructor() {
             _isActive.value = value
         }
     }
+
+    @Volatile
+    private var sessionReady: CompletableDeferred<Unit>? = null
 }
 
 

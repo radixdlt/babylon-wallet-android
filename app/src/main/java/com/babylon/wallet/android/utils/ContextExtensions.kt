@@ -205,6 +205,15 @@ fun Context.findFragmentActivity(): FragmentActivity? {
     return null
 }
 
+fun Context.findActivity(): android.app.Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is android.app.Activity) return context
+        context = context.baseContext
+    }
+    return null
+}
+
 fun Context.setWindowSecure(enabled: Boolean) {
     findFragmentActivity()?.window?.apply {
         if (enabled) {
