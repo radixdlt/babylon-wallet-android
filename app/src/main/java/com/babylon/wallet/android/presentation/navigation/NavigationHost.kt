@@ -71,6 +71,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.impo
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
+import com.babylon.wallet.android.presentation.nfc.nfcDialog
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
@@ -335,6 +336,11 @@ fun NavigationHost(
             }
         )
         derivePublicKeysDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        nfcDialog(
             onDismiss = {
                 navController.popBackStack()
             }

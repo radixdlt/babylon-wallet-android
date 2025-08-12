@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.interactor
+package com.babylon.wallet.android.presentation.sargonInteractors
 
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput

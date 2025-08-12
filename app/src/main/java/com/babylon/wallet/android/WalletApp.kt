@@ -42,6 +42,7 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
+import com.babylon.wallet.android.presentation.nfc.nfcDialog
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
@@ -125,6 +126,10 @@ fun WalletApp(
         HandleAccessFactorSourcesEvents(
             navController = navController,
             accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
+        )
+        HandleNfcEvents(
+            navController = navController,
+            nfcEvents = mainViewModel.nfcEvents
         )
         HandleStatusEvents(
             navController = navController,
@@ -218,6 +223,22 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
                 AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
                 AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleNfcEvents(
+    navController: NavController,
+    nfcEvents: Flow<AppEvent.Nfc>
+) {
+    LaunchedEffect(Unit) {
+        nfcEvents.collect { event ->
+            when (event) {
+                is AppEvent.Nfc.StartSession -> navController.nfcDialog()
+                is AppEvent.Nfc.EndSession -> navController.popBackStack()
+                is AppEvent.Nfc.SetMessage -> { /* ViewModel consumes message via AppEventBus */ }
             }
         }
     }

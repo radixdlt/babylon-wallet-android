@@ -33,6 +33,14 @@ class AddFactorSourceProxyImpl @Inject constructor(
         reset()
     }
 
+    override fun setIntermediaryParams(params: AddFactorSourceIntermediaryParams) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getIntermediaryParams(): AddFactorSourceIntermediaryParams {
+        TODO("Not yet implemented")
+    }
+
     private suspend fun reset() {
         input = AddFactorSourceInput.Init
         _output.emit(AddFactorSourceOutput.Init)

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.interactor
+package com.babylon.wallet.android.presentation.sargonInteractors
 
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput

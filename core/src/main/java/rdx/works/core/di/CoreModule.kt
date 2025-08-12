@@ -68,6 +68,7 @@ object CoreProvider {
         @EncryptedPreferences encryptedPreferences: DataStore<Preferences>,
         @NonEncryptedPreferences preferences: DataStore<Preferences>,
         @HostInfoPreferences hostInfoPreferences: DataStore<Preferences>,
+        nfcTagDriver: NfcTagDriver,
     ): Bios = Bios.from(
         context = context,
         httpClient = httpClient,
@@ -78,7 +79,7 @@ object CoreProvider {
         eventBusDriver = eventBusDriver,
         profileStateChangeDriver = profileStateChangeDriver,
         arculusCsdkDriver = ArculusCSDKDriver(),
-        nfcTagDriver = NfcTagDriverImpl(NoPointer)
+        nfcTagDriver = nfcTagDriver
     )
 
     @Provides
