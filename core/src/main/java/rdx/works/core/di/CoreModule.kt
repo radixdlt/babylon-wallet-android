@@ -5,8 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.Bios
 import com.radixdlt.sargon.HostInteractor
-import com.radixdlt.sargon.NfcTagDriverImpl
-import com.radixdlt.sargon.NoPointer
+import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidEventBusDriver
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
@@ -61,6 +60,7 @@ object CoreProvider {
         @EncryptedPreferences encryptedPreferences: DataStore<Preferences>,
         @NonEncryptedPreferences preferences: DataStore<Preferences>,
         @HostInfoPreferences hostInfoPreferences: DataStore<Preferences>,
+        nfcTagDriver: NfcTagDriver,
     ): Bios = Bios.from(
         context = context,
         httpClient = httpClient,
@@ -71,7 +71,7 @@ object CoreProvider {
         eventBusDriver = eventBusDriver,
         profileStateChangeDriver = profileStateChangeDriver,
         arculusCsdkDriver = ArculusCSDKDriver(),
-        nfcTagDriver = NfcTagDriverImpl(NoPointer)
+        nfcTagDriver = nfcTagDriver
     )
 
     @Provides

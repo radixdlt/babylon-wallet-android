@@ -57,10 +57,14 @@ fun NavGraphBuilder.debugSettings(
                         SettingsItem.DebugSettingsItem.LinkConnectionStatusIndicator -> {}
                         SettingsItem.DebugSettingsItem.InspectCloudBackups -> navController.inspectGoogleBackups()
                         SettingsItem.DebugSettingsItem.SecurityFactorSamples -> navController.securityFactorSamples()
+                        SettingsItem.DebugSettingsItem.ArculusTools -> navController.arculusTools()
                     }
                 }
             )
         }
+        arculusTools(
+            onBackClick = { navController.popBackStack() }
+        )
         inspectProfile(
             onBackClick = {
                 navController.popBackStack()

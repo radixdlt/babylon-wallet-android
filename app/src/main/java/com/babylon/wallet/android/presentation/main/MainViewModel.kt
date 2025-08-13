@@ -97,6 +97,9 @@ class MainViewModel @Inject constructor(
     val fixSecurityIssueEvents = appEventBus.events
         .filterIsInstance<AppEvent.FixSecurityIssue>()
 
+    val nfcEvents = appEventBus.events
+        .filterIsInstance<AppEvent.Nfc>()
+
     val isDevBannerVisible = getProfileUseCase.state.map { profileState ->
         when (profileState) {
             is ProfileState.Loaded -> {

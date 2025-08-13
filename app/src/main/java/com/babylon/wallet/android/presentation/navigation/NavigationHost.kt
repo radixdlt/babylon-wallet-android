@@ -55,6 +55,7 @@ import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.nfc.nfcDialog
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
@@ -335,6 +336,11 @@ fun NavigationHost(
             }
         )
         derivePublicKeysDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        nfcDialog(
             onDismiss = {
                 navController.popBackStack()
             }
