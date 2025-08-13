@@ -98,11 +98,12 @@ fun LedgerHardwareWalletModel.displayName() = when (this) {
 }
 
 fun FactorSource.ArculusCard.Companion.init(
-    mnemonicWithPassphrase: MnemonicWithPassphrase
+    mnemonicWithPassphrase: MnemonicWithPassphrase,
+    name: String
 ): FactorSource.ArculusCard = newArculusCardFactorSourceFromMnemonicWithPassphrase(
     mwp = mnemonicWithPassphrase,
     hint = ArculusCardHint(
-        label = "",
+        label = name,
         model = ArculusCardModel.ARCULUS_COLD_STORAGE_WALLET
     )
 ).asGeneral()

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.addfactorsource.identify
 
-import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId
@@ -20,6 +19,7 @@ import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -58,7 +58,7 @@ class IdentifyFactorSourceViewModel @Inject constructor(
     }
 
     private fun identifyFactorSource() {
-        viewModelScope.launch {
+        CoroutineScope(dispatcher).launch {
             _state.update { state -> state.copy(isInProgress = true) }
 
             when (input.kind) {

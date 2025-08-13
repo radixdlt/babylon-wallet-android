@@ -126,7 +126,12 @@ class SetFactorSourceNameViewModel @Inject constructor(
         when (params) {
             is AddFactorSourceIntermediaryParams.Mnemonic -> when (input.kind) {
                 FactorSourceKind.DEVICE -> saveDeviceFactorSource(params)
-                FactorSourceKind.ARCULUS_CARD -> saveFactorSource(FactorSource.ArculusCard.init(params.value))
+                FactorSourceKind.ARCULUS_CARD -> saveFactorSource(
+                    FactorSource.ArculusCard.init(
+                        mnemonicWithPassphrase = params.value,
+                        name = state.value.name
+                    )
+                )
 
                 else -> error("Not yet supported")
             }

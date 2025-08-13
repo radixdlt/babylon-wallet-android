@@ -82,7 +82,7 @@ class CreateArculusPinViewModel @Inject constructor(
         val showPinsNotMatchingError = pin.length == PIN_LENGTH &&
             confirmedPin.length == PIN_LENGTH &&
             !pin.equals(confirmedPin, true)
-        val isCreateEnabled = !showPinsNotMatchingError
+        val isCreateEnabled = !showPinsNotMatchingError && !isCreateLoading
         val isConfirmedPinEnabled = pin.length == PIN_LENGTH
 
         companion object {

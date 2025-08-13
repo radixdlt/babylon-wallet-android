@@ -14,9 +14,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -35,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import kotlinx.coroutines.delay
 
 @Composable
 fun CreateArculusPinScreen(
@@ -74,10 +77,11 @@ private fun CreateArculusPinContent(
     onCreateClick: () -> Unit,
     onDismissMessage: () -> Unit
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        keyboardController?.show()
+        delay(300)
+        focusRequester.requestFocus()
     }
 
     Scaffold(
@@ -141,6 +145,7 @@ private fun CreateArculusPinContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                 PinEntryField(
+                    modifier = Modifier.focusRequester(focusRequester),
                     pinLength = CreateArculusPinViewModel.State.PIN_LENGTH,
                     onPinChange = onPinChange,
                     imeAction = ImeAction.Next
