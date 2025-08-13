@@ -82,6 +82,7 @@ fun NfcDialog(
                 { tag: Tag? ->
                     tag?.let {
                         val dep = IsoDep.get(it)
+                        dep.timeout = 60000
                         try {
                             dep.connect()
                             isoDep.value = dep

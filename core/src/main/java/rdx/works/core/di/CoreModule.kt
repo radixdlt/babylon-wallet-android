@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.Bios
 import com.radixdlt.sargon.HostInteractor
+import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.NfcTagDriverImpl
 import com.radixdlt.sargon.NoPointer
 import com.radixdlt.sargon.os.SargonOsManager

@@ -115,31 +115,31 @@ class ArculusCSDKDriver : SargonArculusCSDKDriver {
         path: BagOfBytes,
         curve: UShort
     ): BagOfBytes? {
-        val rLen = SizeTByReference()
-        val keyPointer: Pointer = CSDKLibraryDirect.WalletGetPublicKeyFromPathRequest(
-            wallet.asJnaPointer(),
-            path.toByteArray(),
-            path.size,
-            curve.toShort(),
-            rLen
-        ) ?: return null
-
-        val rPub = CSDKLibraryDirect.ExtendedKey_getPubKey(keyPointer, rLen)
-        val bytes = rPub.getByteArray(0, UnsignedInts.checkedCast(rLen.value.toLong()))
-        return bytes.toBagOfBytes()
+        return withParsingByteResult {
+            CSDKLibraryDirect.WalletGetPublicKeyFromPathRequest(
+                wallet.asJnaPointer(),
+                path.toByteArray(),
+                path.size,
+                curve.toShort(),
+                it
+            )
+        }
     }
 
     override fun getPublicKeyByPathResponse(
         wallet: ArculusWalletPointer,
         response: BagOfBytes
     ): BagOfBytes? {
-        return withParsingByteResult {
-            CSDKLibraryDirect.WalletGetPublicKeyFromPathResponse(
-                wallet.asJnaPointer(),
-                response.toByteArray(),
-                response.size
-            )
-        }
+        val rLen = SizeTByReference()
+        val keyPointer: Pointer = CSDKLibraryDirect.WalletGetPublicKeyFromPathResponse(
+            wallet.asJnaPointer(),
+            response.toByteArray(),
+            response.size
+        ) ?: return null
+
+        val rPub = CSDKLibraryDirect.ExtendedKey_getPubKey(keyPointer, rLen)
+        val bytes = rPub.getByteArray(0, UnsignedInts.checkedCast(rLen.value.toLong()))
+        return bytes.toBagOfBytes()
     }
 
     override fun initEncryptedSessionRequest(wallet: ArculusWalletPointer): BagOfBytes? {
