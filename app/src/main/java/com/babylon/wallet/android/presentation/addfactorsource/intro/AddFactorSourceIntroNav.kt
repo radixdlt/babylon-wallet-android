@@ -7,8 +7,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.addfactorsource.seedphrase.seedPhrase
 import com.babylon.wallet.android.presentation.addfactorsource.identify.identifyFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.seedphrase.seedPhrase
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.intro.linkConnectorIntro
 

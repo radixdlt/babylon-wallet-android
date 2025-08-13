@@ -13,15 +13,19 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.sargon.FactorSourceId
+import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.ArculusMinFirmwareVersionRequirement
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.extensions.name
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.sargon.factorSourceById
+import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -29,7 +33,9 @@ import javax.inject.Inject
 class IdentifyFactorSourceViewModel @Inject constructor(
     private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
     private val ledgerMessenger: LedgerMessenger,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<IdentifyFactorSourceViewModel.State>(),
     OneOffEventHandler<IdentifyFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -107,9 +113,22 @@ class IdentifyFactorSourceViewModel @Inject constructor(
     }
 
     private suspend fun identifyArculusFactorSource() {
-        viewModelScope.launch {
-            TODO()
-            sendEvent(Event.LedgerIdentified)
+        sargonOsManager.callSafely(dispatcher) {
+            arculusCardValidateMinFirmwareVersion()
+        }.then { requirement ->
+            if (requirement is ArculusMinFirmwareVersionRequirement.Invalid) {
+                Result.failure(
+                    RadixWalletException.AddFactorSource.ArculusMinimumFirmwareRequired(
+                        version = requirement.v1
+                    )
+                )
+            } else {
+                Result.success(Unit)
+            }
+        }.onSuccess {
+            sendEvent(Event.ArculusIdentified)
+        }.onFailure {
+            _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(it)) }
         }
     }
 

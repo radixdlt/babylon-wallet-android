@@ -15,6 +15,8 @@ class AddFactorSourceProxyImpl @Inject constructor(
     private var input: AddFactorSourceInput = AddFactorSourceInput.Init
     private val _output = MutableSharedFlow<AddFactorSourceOutput>()
 
+    private var intermediaryParams: AddFactorSourceIntermediaryParams? = null
+
     override suspend fun addFactorSource(input: AddFactorSourceInput): AddFactorSourceOutput.Id? {
         this.input = input
 
@@ -34,11 +36,11 @@ class AddFactorSourceProxyImpl @Inject constructor(
     }
 
     override fun setIntermediaryParams(params: AddFactorSourceIntermediaryParams) {
-        TODO("Not yet implemented")
+        intermediaryParams = params
     }
 
-    override fun getIntermediaryParams(): AddFactorSourceIntermediaryParams {
-        TODO("Not yet implemented")
+    override fun getIntermediaryParams(): AddFactorSourceIntermediaryParams? {
+        return intermediaryParams
     }
 
     private suspend fun reset() {

@@ -19,7 +19,6 @@ fun NavController.passwords() {
 
 fun NavGraphBuilder.passwords(
     onNavigateToPasswordFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddPassword: () -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -40,7 +39,6 @@ fun NavGraphBuilder.passwords(
         PasswordsScreen(
             viewModel = hiltViewModel(),
             onNavigateToPasswordFactorSourceDetails = onNavigateToPasswordFactorSourceDetails,
-            onNavigateToAddPassword = onNavigateToAddPassword,
             onBackClick = onBackClick
         )
     }

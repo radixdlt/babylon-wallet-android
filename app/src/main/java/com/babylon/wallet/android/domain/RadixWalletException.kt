@@ -235,6 +235,10 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         ) : AddFactorSource()
 
         data object FactorSourceNotCreated : AddFactorSource()
+
+        data class ArculusMinimumFirmwareRequired(
+            val version: String
+        ) : AddFactorSource()
     }
 }
 
@@ -439,11 +443,13 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
 fun RadixWalletException.AddFactorSource.toUserFriendlyMessage(context: Context): String = when (this) {
     is RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> factorSourceName ?: "Unknown"
     RadixWalletException.AddFactorSource.FactorSourceNotCreated -> context.getString(R.string.newFactor_error_notCreated)
+    is RadixWalletException.AddFactorSource.ArculusMinimumFirmwareRequired -> "Minimum Firmware Required ($version)" // TODO crowdin
 }
 
 fun RadixWalletException.AddFactorSource.toUserFriendlyAlertTitle(context: Context): String? = when (this) {
     is RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> context.getString(R.string.newFactor_error_alreadyInUse)
-    RadixWalletException.AddFactorSource.FactorSourceNotCreated -> null
+    RadixWalletException.AddFactorSource.FactorSourceNotCreated,
+    is RadixWalletException.AddFactorSource.ArculusMinimumFirmwareRequired -> null
 }
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
@@ -480,6 +486,7 @@ fun RadixWalletException.toUserFriendlyAlertTitle(context: Context): String? {
         is RadixWalletException.GatewayException,
         is RadixWalletException.LinkConnectionException,
         is RadixWalletException.CloudBackupException -> null
+
         is RadixWalletException.AddFactorSource -> toUserFriendlyAlertTitle(context)
     }
 }

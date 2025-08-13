@@ -36,7 +36,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun OffDeviceMnemonicsScreen(
     viewModel: OffDeviceMnemonicsViewModel,
     onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddOffDeviceMnemonic: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -54,7 +53,7 @@ fun OffDeviceMnemonicsScreen(
     OffDeviceMnemonicsContent(
         offDeviceMnemonicFactorSources = state.offDeviceMnemonicFactorSources,
         onOffDeviceMnemonicFactorSourceClick = viewModel::onOffDeviceMnemonicFactorSourceClick,
-        onAddOffDeviceMnemonicClick = onNavigateToAddOffDeviceMnemonic,
+        onAddOffDeviceMnemonicClick = viewModel::onAddOffDeviceMnemonicClick,
         onBackClick = onBackClick
     )
 }

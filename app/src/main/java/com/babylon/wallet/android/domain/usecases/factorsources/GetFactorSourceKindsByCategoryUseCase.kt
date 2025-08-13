@@ -14,7 +14,10 @@ class GetFactorSourceKindsByCategoryUseCase @Inject constructor() {
         ),
         FactorSourceKindsByCategory(
             category = FactorSourceCategory.Hardware,
-            kinds = listOf(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET)
+            kinds = listOf(
+                FactorSourceKind.ARCULUS_CARD,
+                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+            )
         )
     )
 }

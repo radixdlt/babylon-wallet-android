@@ -6,8 +6,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.LedgerHardwareWalletModel
 
 private const val ROUTE = "identify_factor_source_sheet"
 

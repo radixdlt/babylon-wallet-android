@@ -69,30 +69,21 @@ class ConfirmSeedPhraseViewModel @Inject constructor(
         viewModelScope.launch {
             when (val outcome = mnemonicBuilderClient.confirmWords(state.value.words)) {
                 MnemonicValidationOutcome.Valid -> {
-                    when (input.kind) {
-                        FactorSourceKind.DEVICE -> {
-                            addFactorSourceIOHandler.setIntermediaryParams(
-                                AddFactorSourceIntermediaryParams.Device(
-                                    mnemonicWithPassphrase = mnemonicBuilderClient.getMnemonicWithPassphrase()
-                                )
-                            )
-                            sendEvent(Event.DeviceSeedPhraseConfirmed)
-                        }
+                    addFactorSourceIOHandler.setIntermediaryParams(
+                        AddFactorSourceIntermediaryParams.Mnemonic(
+                            value = mnemonicBuilderClient.getMnemonicWithPassphrase()
+                        )
+                    )
 
-                        FactorSourceKind.ARCULUS_CARD -> {
-                            addFactorSourceIOHandler.setIntermediaryParams(
-                                AddFactorSourceIntermediaryParams.Arculus(
-                                    mnemonicWithPassphrase = mnemonicBuilderClient.getMnemonicWithPassphrase(),
-                                    pin = ""
-                                )
-                            )
-                            sendEvent(Event.ArculusSeedPhraseConfirmed)
+                    sendEvent(
+                        when (input.kind) {
+                            FactorSourceKind.DEVICE -> Event.DeviceSeedPhraseConfirmed
+                            FactorSourceKind.ARCULUS_CARD -> Event.ArculusSeedPhraseConfirmed
+                            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                            FactorSourceKind.PASSWORD -> error("")
                         }
-
-                        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                        FactorSourceKind.PASSWORD -> error("")
-                    }
+                    )
                 }
 
                 is MnemonicValidationOutcome.Invalid -> {

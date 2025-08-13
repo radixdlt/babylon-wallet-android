@@ -3,16 +3,9 @@ package rdx.works.core.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.radixdlt.sargon.ArculusCsdkDriver
-import com.radixdlt.sargon.ArculusVerifyPinResponse
-import com.radixdlt.sargon.ArculusWalletPointer
-import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Bios
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HostInteractor
-import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.NfcTagDriverImpl
-import com.radixdlt.sargon.NfcTagDriverPurpose
 import com.radixdlt.sargon.NoPointer
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidEventBusDriver

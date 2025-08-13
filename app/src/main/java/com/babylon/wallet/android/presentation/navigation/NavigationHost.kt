@@ -27,9 +27,9 @@ import com.babylon.wallet.android.presentation.account.settings.devsettings.devS
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
-import com.babylon.wallet.android.presentation.addfactorsource.seedphrase.seedPhrase
 import com.babylon.wallet.android.presentation.addfactorsource.identify.identifyFactorSource
 import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
+import com.babylon.wallet.android.presentation.addfactorsource.seedphrase.seedPhrase
 import com.babylon.wallet.android.presentation.boot.bootError
 import com.babylon.wallet.android.presentation.boot.navigateToBootError
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph

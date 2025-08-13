@@ -19,7 +19,6 @@ fun NavController.arculusCards() {
 
 fun NavGraphBuilder.arculusCards(
     onNavigateToArculusFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddArculusCard: () -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -40,7 +39,6 @@ fun NavGraphBuilder.arculusCards(
         ArculusCardsScreen(
             viewModel = hiltViewModel(),
             onNavigateToArculusFactorSourceDetails = onNavigateToArculusFactorSourceDetails,
-            onNavigateToAddArculusCard = onNavigateToAddArculusCard,
             onBackClick = onBackClick
         )
     }
