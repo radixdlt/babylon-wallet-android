@@ -9,8 +9,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.babylon.wallet.android.presentation.sargonInteractors.WalletInteractor
 import com.babylon.wallet.android.presentation.sargonInteractors.NFCTagInteractor
+import com.babylon.wallet.android.presentation.sargonInteractors.WalletInteractor
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.NetworkId

@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.callSafely
-import com.radixdlt.sargon.ArculusMinFirmwareVersionRequirement
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.os.SargonOsManager
@@ -116,15 +115,15 @@ class IdentifyFactorSourceViewModel @Inject constructor(
         sargonOsManager.callSafely(dispatcher) {
             arculusCardValidateMinFirmwareVersion()
         }.then { requirement ->
-            if (requirement is ArculusMinFirmwareVersionRequirement.Invalid) {
-                Result.failure(
-                    RadixWalletException.AddFactorSource.ArculusMinimumFirmwareRequired(
-                        version = requirement.v1
-                    )
-                )
-            } else {
-                Result.success(Unit)
-            }
+//            if (requirement is ArculusMinFirmwareVersionRequirement.Invalid) {
+//                Result.failure(
+//                    RadixWalletException.AddFactorSource.ArculusMinimumFirmwareRequired(
+//                        version = requirement.v1
+//                    )
+//                )
+//            } else {
+            Result.success(Unit)
+//            }
         }.onSuccess {
             sendEvent(Event.ArculusIdentified)
         }.onFailure {

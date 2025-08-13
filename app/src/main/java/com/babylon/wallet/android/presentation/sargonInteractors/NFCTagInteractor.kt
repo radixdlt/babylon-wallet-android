@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.presentation.sargonInteractors
 
+import com.babylon.wallet.android.presentation.nfc.NfcSessionProxy
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.NfcTagDriverPurpose
-import com.babylon.wallet.android.presentation.nfc.NfcSessionProxy
 import javax.inject.Inject
 
 class NFCTagInteractor @Inject constructor(

@@ -159,7 +159,7 @@ class ArculusCSDKDriver : SargonArculusCSDKDriver {
             wallet.asJnaPointer(),
             response.toByteArray(),
             response.size
-        );
+        )
 
         return 0
     }

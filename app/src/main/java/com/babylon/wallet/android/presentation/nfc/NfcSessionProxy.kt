@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.nfc
 
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.CommonException
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +29,7 @@ class NfcSessionProxy @Inject constructor() {
     val transceiveRequests: Flow<TransceiveRequest> = requestsChannel.receiveAsFlow()
 
     fun onSessionStarted() {
-        _isActiveValue(true)
+        isActiveValue(true)
         synchronized(this) {
             if (sessionReady == null || sessionReady?.isCompleted == true) {
                 sessionReady = CompletableDeferred()
@@ -39,7 +38,7 @@ class NfcSessionProxy @Inject constructor() {
     }
 
     fun onSessionEnded(withFailure: CommonException?) {
-        _isActiveValue(false)
+        isActiveValue(false)
         if (withFailure != null) {
             // Cancel any pending requests with the provided failure
             // Note: requests are only created via sendReceive; we cannot iterate the channel buffer here.
@@ -62,12 +61,13 @@ class NfcSessionProxy @Inject constructor() {
         }
     }
 
+    @Suppress("SwallowedException")
     suspend fun transceive(command: BagOfBytes): BagOfBytes {
         val deferred = CompletableDeferred<BagOfBytes>()
         requestsChannel.send(TransceiveRequest(command = command, response = deferred))
         return try {
             deferred.await()
-        } catch (c: CancellationException) {
+        } catch (c: Exception) {
             throw CommonException.HostInteractionAborted()
         }
     }
@@ -81,7 +81,7 @@ class NfcSessionProxy @Inject constructor() {
         return last as BagOfBytes
     }
 
-    private fun _isActiveValue(value: Boolean) {
+    private fun isActiveValue(value: Boolean) {
         // Avoid emitting duplicate values
         if ((_isActive.value) != value) {
             _isActive.value = value
@@ -91,5 +91,3 @@ class NfcSessionProxy @Inject constructor() {
     @Volatile
     private var sessionReady: CompletableDeferred<Unit>? = null
 }
-
-

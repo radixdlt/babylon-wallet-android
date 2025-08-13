@@ -1,41 +1,37 @@
 package com.babylon.wallet.android.presentation.nfc
 
+import android.app.Activity
+import android.content.Intent
+import android.nfc.NfcAdapter
+import android.nfc.Tag
+import android.nfc.tech.IsoDep
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
-import com.radixdlt.sargon.BagOfBytes
-import com.radixdlt.sargon.extensions.toBagOfBytes
-import rdx.works.core.toByteArrayUnsafe
-import kotlinx.coroutines.launch
-import android.nfc.NfcAdapter
-import android.nfc.Tag
-import android.nfc.tech.IsoDep
-import android.app.Activity
-import androidx.compose.runtime.DisposableEffect
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.Intent
-import android.provider.Settings
 import com.babylon.wallet.android.utils.findActivity
+import com.radixdlt.sargon.extensions.toBagOfBytes
+import kotlinx.coroutines.launch
 import rdx.works.core.toByteArray
 import java.io.IOException
 
@@ -156,7 +152,8 @@ fun NfcDialog(
                             try {
                                 val response = dep.transceive(req.command.toByteArray())
                                 if (response.size < 2 ||
-                                            (response[response.size-2] != 0x90.toByte() || response[response.size-1] != 0x00.toByte())) {
+                                    (response[response.size - 2] != 0x90.toByte() || response[response.size - 1] != 0x00.toByte())
+                                ) {
                                     throw IOException("sendReceive bad status")
                                 }
                                 viewModel.respond(req, response.toBagOfBytes())
@@ -170,5 +167,3 @@ fun NfcDialog(
         }
     )
 }
-
-

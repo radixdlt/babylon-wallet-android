@@ -41,8 +41,8 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
 import com.babylon.wallet.android.presentation.nfc.nfcDialog
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
