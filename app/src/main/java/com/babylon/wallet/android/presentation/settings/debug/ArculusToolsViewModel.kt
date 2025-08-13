@@ -33,4 +33,3 @@ class ArculusToolsViewModel @Inject constructor(
         }
     }
 }
-

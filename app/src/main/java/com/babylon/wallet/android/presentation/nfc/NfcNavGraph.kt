@@ -27,4 +27,3 @@ fun NavGraphBuilder.nfcDialog(
         )
     }
 }
-

@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.nfc
 
 import android.app.Activity
+import android.content.ContextWrapper
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
@@ -29,7 +30,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
-import com.babylon.wallet.android.utils.findActivity
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import kotlinx.coroutines.launch
 import rdx.works.core.toByteArray
@@ -39,7 +39,8 @@ import java.io.IOException
 @Composable
 fun NfcDialog(
     viewModel: NfcViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -105,7 +106,7 @@ fun NfcDialog(
     }
 
     DefaultModalSheetLayout(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         sheetState = sheetState,
         onDismissRequest = viewModel::onDismiss,
         sheetContent = {
@@ -166,4 +167,13 @@ fun NfcDialog(
             )
         }
     )
+}
+
+private tailrec fun android.content.Context.findActivity(): Activity? {
+    var context: android.content.Context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

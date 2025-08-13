@@ -18,7 +18,6 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.NavController
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.Browser
@@ -186,16 +185,6 @@ fun Context.shareText(value: String, title: String? = null) {
     startActivity(shareIntent)
 }
 
-@Suppress("SwallowedException")
-fun NavController.routeExist(route: String): Boolean {
-    return try {
-        getBackStackEntry(route)
-        true
-    } catch (e: Exception) {
-        false
-    }
-}
-
 fun Context.findFragmentActivity(): FragmentActivity? {
     var context = this
     while (context is ContextWrapper) {
@@ -204,16 +193,6 @@ fun Context.findFragmentActivity(): FragmentActivity? {
     }
     return null
 }
-
-fun Context.findActivity(): android.app.Activity? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is android.app.Activity) return context
-        context = context.baseContext
-    }
-    return null
-}
-
 fun Context.setWindowSecure(enabled: Boolean) {
     findFragmentActivity()?.window?.apply {
         if (enabled) {
