@@ -724,7 +724,7 @@ fun NavigationHost(
             onInfoClick = navController::infoDialog
         )
         identifyFactorSource(
-            onDismiss = navController::popBackStack,
+            onDismiss = { navController.popBackStack() },
             onLedgerIdentified = { navController.setFactorSourceName() },
             onArculusIdentified = { navController.seedPhrase() }
         )

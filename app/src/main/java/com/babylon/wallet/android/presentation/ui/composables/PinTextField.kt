@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
@@ -28,18 +29,23 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
-fun PinEntryField(
+fun PinTextField(
     modifier: Modifier = Modifier,
     onPinChange: ((String) -> Unit)? = null,
     onPinComplete: ((String) -> Unit)? = null,
     pinLength: Int = 6,
     imeAction: ImeAction = ImeAction.Done,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
 ) {
+    var isFocused by remember { mutableStateOf(false) }
     var pinValue by remember { mutableStateOf("") }
 
     BasicTextField(
-        modifier = modifier.horizontalScroll(rememberScrollState()),
+        modifier = modifier
+            .horizontalScroll(rememberScrollState())
+            .onFocusChanged {
+                isFocused = it.hasFocus
+            },
         value = pinValue,
         cursorBrush = SolidColor(Color.Transparent),
         onValueChange = { newValue ->
@@ -64,6 +70,10 @@ fun PinEntryField(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             repeat(pinLength) { index ->
+                val char = pinValue.getOrNull(index)
+                val isFilled = char != null
+                val isNext = isFocused && index == pinValue.length
+
                 Box(
                     modifier = Modifier
                         .size(
@@ -71,19 +81,22 @@ fun PinEntryField(
                             height = 62.dp
                         )
                         .background(
-                            color = RadixTheme.colors.backgroundSecondary,
+                            color = RadixTheme.colors.backgroundTertiary,
                             shape = RadixTheme.shapes.roundedRectSmall
                         )
                         .border(
                             width = 1.dp,
-                            color = RadixTheme.colors.backgroundTertiary,
+                            color = if (isNext) {
+                                RadixTheme.colors.text
+                            } else {
+                                RadixTheme.colors.backgroundSecondary
+                            },
                             shape = RadixTheme.shapes.roundedRectSmall
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    val char = pinValue.getOrNull(index)
                     Text(
-                        text = if (char != null) "*" else "",
+                        text = if (isFilled) "*" else "",
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.text
                     )
@@ -97,7 +110,7 @@ fun PinEntryField(
 @Preview
 private fun PinTextFieldPreview() {
     RadixWalletPreviewTheme {
-        PinEntryField(
+        PinTextField(
             onPinChange = {},
             onPinComplete = {}
         )

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -30,7 +31,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.PinEntryField
+import com.babylon.wallet.android.presentation.ui.composables.PinTextField
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
@@ -77,11 +78,18 @@ private fun CreateArculusPinContent(
     onCreateClick: () -> Unit,
     onDismissMessage: () -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
+    val pinFocusRequester = remember { FocusRequester() }
+    val confirmPinFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
         delay(300)
-        focusRequester.requestFocus()
+        pinFocusRequester.requestFocus()
+    }
+
+    LaunchedEffect(state.isConfirmedPinEnabled) {
+        if (state.isConfirmedPinEnabled) {
+            confirmPinFocusRequester.requestFocus()
+        }
     }
 
     Scaffold(
@@ -144,8 +152,8 @@ private fun CreateArculusPinContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                PinEntryField(
-                    modifier = Modifier.focusRequester(focusRequester),
+                PinTextField(
+                    modifier = Modifier.focusRequester(pinFocusRequester),
                     pinLength = CreateArculusPinViewModel.State.PIN_LENGTH,
                     onPinChange = onPinChange,
                     imeAction = ImeAction.Next
@@ -161,11 +169,15 @@ private fun CreateArculusPinContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                PinEntryField(
+                val focusManager = LocalFocusManager.current
+
+                PinTextField(
+                    modifier = Modifier.focusRequester(confirmPinFocusRequester),
                     pinLength = CreateArculusPinViewModel.State.PIN_LENGTH,
                     onPinChange = onConfirmPinChange,
                     imeAction = ImeAction.Done,
-                    isEnabled = state.isConfirmedPinEnabled
+                    isEnabled = state.isConfirmedPinEnabled,
+                    onPinComplete = { focusManager.clearFocus() },
                 )
 
                 if (state.showPinsNotMatchingError) {
