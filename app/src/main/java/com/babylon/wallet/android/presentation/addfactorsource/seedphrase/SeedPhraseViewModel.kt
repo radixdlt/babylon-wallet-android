@@ -73,7 +73,7 @@ class SeedPhraseViewModel @Inject constructor(
     fun onDismissMessage() {
         viewModelScope.launch {
             sendEvent(
-                if (state.value.errorMessage?.error is RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse) {
+                if (state.value.errorMessage?.error is RadixWalletException.FactorSource.FactorSourceAlreadyInUse) {
                     Event.DismissFlow
                 } else {
                     Event.Dismiss
@@ -140,7 +140,7 @@ class SeedPhraseViewModel @Inject constructor(
                         _state.update { state ->
                             state.copy(
                                 errorMessage = UiMessage.ErrorMessage(
-                                    error = RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+                                    error = RadixWalletException.FactorSource.FactorSourceAlreadyInUse(
                                         factorSourceName = existingFactorSource.name
                                     )
                                 )

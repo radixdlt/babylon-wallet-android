@@ -58,6 +58,10 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @SerialName("rename_successful")
         data object RenameSuccessful : InfoMessage()
 
+        @Serializable
+        @SerialName("success")
+        data object Success : InfoMessage()
+
         @Composable
         override fun getMessage(): String = when (this) {
             InvalidPayload -> stringResource(id = R.string.importOlympiaAccounts_invalidPayload)
@@ -75,6 +79,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
                 }
             )
             RenameSuccessful -> stringResource(R.string.renameLabel_success)
+            Success -> "Success" // TODO crowdin
         }
     }
 

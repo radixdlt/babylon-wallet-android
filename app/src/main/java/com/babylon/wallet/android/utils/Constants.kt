@@ -19,4 +19,6 @@ object Constants {
 
     const val EULA_LIGHT = "eula/eula-light.html"
     const val EULA_DARK = "eula/eula-dark.html"
+
+    const val ARCULUS_PIN_LENGTH = 6
 }

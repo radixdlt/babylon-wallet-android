@@ -1,29 +1,23 @@
 package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
-import com.babylon.wallet.android.utils.callSafely
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.ArculusCardClient
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
-import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
-import kotlinx.coroutines.CoroutineDispatcher
-import rdx.works.core.di.DefaultDispatcher
 import javax.inject.Inject
 
 class AccessArculusFactorSourceUseCase @Inject constructor(
-    private val sargonOsManager: SargonOsManager,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
+    private val arculusCardClient: ArculusCardClient
 ) : AccessFactorSource<FactorSource.ArculusCard> {
 
     override suspend fun derivePublicKeys(
         factorSource: FactorSource.ArculusCard,
         input: KeyDerivationRequestPerFactorSource
     ): Result<List<HierarchicalDeterministicFactorInstance>> {
-        return sargonOsManager.callSafely(dispatcher) {
-            arculusCardDerivePublicKeys(factorSource.value, input.derivationPaths)
-        }
+        return arculusCardClient.derivePublicKeys(factorSource, input.derivationPaths)
     }
 
     override suspend fun signMono(

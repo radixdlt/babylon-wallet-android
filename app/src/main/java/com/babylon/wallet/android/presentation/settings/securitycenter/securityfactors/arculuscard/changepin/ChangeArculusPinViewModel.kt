@@ -1,8 +1,7 @@
-package com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.changepin
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
-import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIntermediaryParams
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -11,17 +10,26 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.ArculusCardClient
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin.CreateArculusPinState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.FactorSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class CreateArculusPinViewModel @Inject constructor(
-    private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
-    private val arculusCardClient: ArculusCardClient
-) : StateViewModel<CreateArculusPinViewModel.State>(),
-    OneOffEventHandler<CreateArculusPinViewModel.Event> by OneOffEventHandlerImpl() {
+class ChangeArculusPinViewModel @Inject constructor(
+    private val getProfileUseCase: GetProfileUseCase,
+    private val arculusCardClient: ArculusCardClient,
+    private val appEventBus: AppEventBus,
+    savedStateHandle: SavedStateHandle
+) : StateViewModel<ChangeArculusPinViewModel.State>(),
+    OneOffEventHandler<ChangeArculusPinViewModel.Event> by OneOffEventHandlerImpl() {
+
+    private val args = ChangeArculusPinArgs(savedStateHandle)
 
     override fun initialState(): State = State()
 
@@ -33,19 +41,21 @@ class CreateArculusPinViewModel @Inject constructor(
         updateCreatePinState { state -> state.copy(confirmedPin = value) }
     }
 
-    fun onCreateClick() {
-        val params = addFactorSourceIOHandler.getIntermediaryParams()
-            as? AddFactorSourceIntermediaryParams.Mnemonic ?: error("Mnemonic is required")
-
+    fun onConfirmClick() {
         updateCreatePinState { state -> state.copy(isConfirmButtonLoading = true) }
 
         viewModelScope.launch {
-            arculusCardClient.configureCardWithMnemonic(
-                mnemonic = params.value.mnemonic,
-                pin = state.value.createPinState.pin
+            val factorSource = getProfileUseCase().factorSourceById(args.factorSourceId) as? FactorSource.ArculusCard
+                ?: error("Arculus factor source not found")
+
+            arculusCardClient.setPin(
+                factorSource = factorSource,
+                oldPin = args.oldPin,
+                newPin = state.value.createPinState.pin
             ).onSuccess {
                 updateCreatePinState { state -> state.copy(isConfirmButtonLoading = false) }
-                sendEvent(Event.PinCreated)
+                appEventBus.sendEvent(AppEvent.GenericSuccess)
+                sendEvent(Event.PinChanged)
             }.onFailure {
                 updateCreatePinState { state ->
                     state.copy(
@@ -71,10 +81,10 @@ class CreateArculusPinViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data object PinCreated : Event
+        data object PinChanged : Event
     }
 
     data class State(
-        val createPinState: CreateArculusPinState = CreateArculusPinState()
+        val createPinState: CreateArculusPinState = CreateArculusPinState(),
     ) : UiState
 }

@@ -305,7 +305,7 @@ class SeedPhrasePreviewProvider : PreviewParameterProvider<SeedPhraseViewModel.S
             SeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.New,
                 errorMessage = UiMessage.ErrorMessage(
-                    RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+                    RadixWalletException.FactorSource.FactorSourceAlreadyInUse(
                         factorSourceName = "My Phone"
                     )
                 )

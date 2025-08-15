@@ -279,6 +279,9 @@ class WalletViewModel @Inject constructor(
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
                     }
+                    AppEvent.GenericSuccess -> {
+                        _state.update { it.copy(uiMessage = UiMessage.InfoMessage.Success) }
+                    }
 
                     else -> {}
                 }

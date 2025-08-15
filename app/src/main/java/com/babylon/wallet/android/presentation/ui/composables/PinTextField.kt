@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 @Composable
 fun PinTextField(
     modifier: Modifier = Modifier,
+    pinValue: String = "",
     onPinChange: ((String) -> Unit)? = null,
     onPinComplete: ((String) -> Unit)? = null,
     pinLength: Int = 6,
@@ -38,7 +39,7 @@ fun PinTextField(
     isEnabled: Boolean = true,
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    var pinValue by remember { mutableStateOf("") }
+    var pinValue by remember(pinValue) { mutableStateOf(pinValue) }
 
     BasicTextField(
         modifier = modifier
@@ -81,7 +82,7 @@ fun PinTextField(
                             height = 62.dp
                         )
                         .background(
-                            color = RadixTheme.colors.backgroundTertiary,
+                            color = RadixTheme.colors.backgroundSecondary,
                             shape = RadixTheme.shapes.roundedRectSmall
                         )
                         .border(
@@ -89,7 +90,7 @@ fun PinTextField(
                             color = if (isNext) {
                                 RadixTheme.colors.text
                             } else {
-                                RadixTheme.colors.backgroundSecondary
+                                RadixTheme.colors.backgroundTertiary
                             },
                             shape = RadixTheme.shapes.roundedRectSmall
                         ),

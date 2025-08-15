@@ -34,7 +34,13 @@ class NfcViewModel @Inject constructor(
             .onEach { event ->
                 when (event) {
                     is AppEvent.Nfc.StartSession -> _state.update { it.copy(title = "NFC Session") }
-                    is AppEvent.Nfc.SetMessage -> _state.update { it.copy(message = event.message) }
+                    is AppEvent.Nfc.SetMessage -> _state.update {
+                        it.copy(
+                            title = "NFC Session",
+                            message = event.message
+                        )
+                    }
+
                     is AppEvent.Nfc.EndSession -> sendEvent(Event.Completed)
                 }
             }

@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -18,16 +17,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.ArculusCardFactorSource
@@ -36,6 +37,7 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.samples.sample
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,6 +46,8 @@ fun FactorSourceDetailsScreen(
     viewModel: FactorSourceDetailsViewModel,
     navigateToViewSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
     navigateToViewSeedPhraseRestore: () -> Unit,
+    toChangeArculusPin: (FactorSourceId) -> Unit,
+    toForgotArculusPin: (FactorSourceId) -> Unit,
     onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -77,8 +81,8 @@ fun FactorSourceDetailsScreen(
         state = state,
         onRenameFactorSourceClick = viewModel::onRenameFactorSourceClick,
         onViewSeedPhraseClick = viewModel::onViewSeedPhraseClick,
-        onArculusPinCheckedChange = viewModel::onArculusPinCheckedChange,
-        onChangeArculusPinClick = viewModel::onChangeArculusPinClick,
+        onChangeArculusPinClick = { toChangeArculusPin(requireNotNull(state.factorSource?.id)) },
+        onForgotArculusPinClick = { toForgotArculusPin(requireNotNull(state.factorSource?.id)) },
         onMessageShown = viewModel::onMessageShown,
         onSpotCheckClick = viewModel::onSpotCheckClick,
         onBackClick = onBackClick
@@ -105,8 +109,8 @@ private fun FactorSourceDetailsContent(
     state: FactorSourceDetailsViewModel.State,
     onRenameFactorSourceClick: () -> Unit,
     onViewSeedPhraseClick: () -> Unit,
-    onArculusPinCheckedChange: (Boolean) -> Unit,
     onChangeArculusPinClick: () -> Unit,
+    onForgotArculusPinClick: () -> Unit,
     @Suppress("UNUSED_PARAMETER")
     onSpotCheckClick: () -> Unit,
     onMessageShown: () -> Unit,
@@ -162,8 +166,8 @@ private fun FactorSourceDetailsContent(
             state.factorSourceKind.AdditionalSettingsItems(
                 state = state,
                 onViewSeedPhraseClick = onViewSeedPhraseClick,
-                onArculusPinCheckedChange = onArculusPinCheckedChange,
-                onChangeArculusPinClick = onChangeArculusPinClick
+                onChangeArculusPinClick = onChangeArculusPinClick,
+                onForgotArculusPinClick = onForgotArculusPinClick
             )
 
 //            Text(
@@ -188,8 +192,8 @@ private fun FactorSourceDetailsContent(
 private fun FactorSourceKind.AdditionalSettingsItems(
     state: FactorSourceDetailsViewModel.State,
     onViewSeedPhraseClick: () -> Unit,
-    onArculusPinCheckedChange: (Boolean) -> Unit,
-    onChangeArculusPinClick: () -> Unit
+    onChangeArculusPinClick: () -> Unit,
+    onForgotArculusPinClick: () -> Unit
 ) {
     when (this) {
         FactorSourceKind.DEVICE -> {
@@ -204,29 +208,17 @@ private fun FactorSourceKind.AdditionalSettingsItems(
                 } else {
                     stringResource(id = R.string.factorSources_detail_writeSeedPhrase)
                 },
-                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_show,
+                leadingIconRes = DSR.ic_show,
                 isErrorText = state.isDeviceFactorSourceMnemonicNotAvailable,
                 onClick = onViewSeedPhraseClick
             )
-//            DefaultSettingsItem(
-//                isErrorText = true,
-//                title = stringResource(id = R.string.factorSources_detail_seedPhraseLost),
-//                subtitle = stringResource(id = R.string.factorSources_detail_enterSeedPhrase),
-//                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_show, // TODO update icon
-//                onClick = onViewSeedPhraseClick
-//            )
         }
 
         FactorSourceKind.ARCULUS_CARD -> {
-            SwitchSettingsItem(
-                modifier = Modifier
-                    .background(RadixTheme.colors.card)
-                    .fillMaxWidth()
-                    .padding(all = RadixTheme.dimensions.paddingDefault),
-                titleRes = R.string.factorSources_detail_changePin,
-                iconResource = com.babylon.wallet.android.designsystem.R.drawable.ic_account_label,
-                checked = state.isArculusPinEnabled,
-                onCheckedChange = onArculusPinCheckedChange
+            DefaultSettingsItem(
+                title = stringResource(id = R.string.factorSources_detail_changePin),
+                leadingIconRes = DSR.ic_account_label,
+                onClick = onChangeArculusPinClick
             )
             HorizontalDivider(
                 modifier = Modifier
@@ -235,9 +227,9 @@ private fun FactorSourceKind.AdditionalSettingsItems(
                 color = RadixTheme.colors.divider
             )
             DefaultSettingsItem(
-                title = stringResource(id = R.string.factorSources_detail_changePin),
-                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_account_label, // TODO update icon
-                onClick = onChangeArculusPinClick
+                title = "Forgot PIN", // TODO crowdin
+                leadingIconRes = DSR.ic_account_label,
+                onClick = onForgotArculusPinClick
             )
         }
 
@@ -247,63 +239,38 @@ private fun FactorSourceKind.AdditionalSettingsItems(
 
 @Preview
 @Composable
-private fun DeviceFactorSourceDetailsPreview() {
+private fun FactorSourceDetailsPreview(
+    @PreviewParameter(FactorSourceDetailsPreviewProvider::class) state: FactorSourceDetailsViewModel.State
+) {
     RadixWalletPreviewTheme {
         FactorSourceDetailsContent(
-            state = FactorSourceDetailsViewModel.State(
+            state = state,
+            onRenameFactorSourceClick = {},
+            onViewSeedPhraseClick = {},
+            onChangeArculusPinClick = {},
+            onForgotArculusPinClick = {},
+            onMessageShown = {},
+            onSpotCheckClick = {},
+            onBackClick = {}
+        )
+    }
+}
+
+class FactorSourceDetailsPreviewProvider : PreviewParameterProvider<FactorSourceDetailsViewModel.State> {
+
+    override val values: Sequence<FactorSourceDetailsViewModel.State>
+        get() = sequenceOf(
+            FactorSourceDetailsViewModel.State(
                 factorSource = DeviceFactorSource.sample().asGeneral(),
-                uiMessage = null,
-                isArculusPinEnabled = true,
+                uiMessage = null
             ),
-            onRenameFactorSourceClick = {},
-            onViewSeedPhraseClick = {},
-            onArculusPinCheckedChange = {},
-            onChangeArculusPinClick = {},
-            onMessageShown = {},
-            onSpotCheckClick = {},
-            onBackClick = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LedgerFactorSourceDetailsPreview() {
-    RadixWalletPreviewTheme {
-        FactorSourceDetailsContent(
-            state = FactorSourceDetailsViewModel.State(
+            FactorSourceDetailsViewModel.State(
                 factorSource = LedgerHardwareWalletFactorSource.sample().asGeneral(),
-                uiMessage = null,
-                isArculusPinEnabled = true,
+                uiMessage = null
             ),
-            onRenameFactorSourceClick = {},
-            onViewSeedPhraseClick = {},
-            onArculusPinCheckedChange = {},
-            onChangeArculusPinClick = {},
-            onMessageShown = {},
-            onSpotCheckClick = {},
-            onBackClick = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun ArculusFactorSourceDetailsPreview() {
-    RadixWalletPreviewTheme {
-        FactorSourceDetailsContent(
-            state = FactorSourceDetailsViewModel.State(
+            FactorSourceDetailsViewModel.State(
                 factorSource = ArculusCardFactorSource.sample().asGeneral(),
-                uiMessage = null,
-                isArculusPinEnabled = true,
-            ),
-            onRenameFactorSourceClick = {},
-            onViewSeedPhraseClick = {},
-            onArculusPinCheckedChange = {},
-            onChangeArculusPinClick = {},
-            onMessageShown = {},
-            onSpotCheckClick = {},
-            onBackClick = {}
+                uiMessage = null
+            )
         )
-    }
 }

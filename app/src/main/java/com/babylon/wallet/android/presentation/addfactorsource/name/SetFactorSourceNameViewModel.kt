@@ -77,7 +77,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
                         throwable is CommonException.SecureStorageAccessException &&
                             throwable.errorKind == SecureStorageAccessErrorKind.USER_CANCELLED -> null
 
-                        else -> RadixWalletException.AddFactorSource.FactorSourceNotCreated
+                        else -> RadixWalletException.FactorSource.FactorSourceNotCreated
                     }
                 } else {
                     throwable
@@ -187,7 +187,7 @@ class SetFactorSourceNameViewModel @Inject constructor(
         if (added) {
             factorSource.id
         } else {
-            throw RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse(
+            throw RadixWalletException.FactorSource.FactorSourceAlreadyInUse(
                 factorSourceName = factorSource.name
             )
         }

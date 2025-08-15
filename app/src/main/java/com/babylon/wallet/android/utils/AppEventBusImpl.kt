@@ -175,6 +175,8 @@ sealed interface AppEvent {
         data object WrittenDownSeedPhrase : FixSecurityIssue
     }
 
+    data object GenericSuccess : AppEvent
+
     // NFC session events to drive the NFC sheet
     sealed interface Nfc : AppEvent {
         data class StartSession(val purpose: NfcTagDriverPurpose?) : Nfc
