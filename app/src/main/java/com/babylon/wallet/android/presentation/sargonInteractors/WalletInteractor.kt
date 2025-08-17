@@ -64,15 +64,14 @@ class WalletInteractor(
     override suspend fun signAuth(request: SignRequestOfAuthIntent): SignResponseOfAuthIntentHash {
         val perFactorOutcome = request.perFactorSource.mapIndexed { index, input ->
             val output = accessFactorSourcesProxy.sign(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
-                    purpose = AccessFactorSourcesInput.ToSign.Purpose.AuthIntents,
-                    kind = input.factorSourceId.kind,
-                    input = input.into()
+                input = AccessFactorSourcesInput.SignAuth(
+                    factorSourceId = input.factorSourceId,
+                    input = input
                 )
             )
 
             val outcome = when (output) {
-                is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
+                is AccessFactorSourcesOutput.SignAuth -> output.outcome
                 else -> throw CommonException.HostInteractionAborted()
             }
 
@@ -95,15 +94,14 @@ class WalletInteractor(
     override suspend fun signSubintents(request: SignRequestOfSubintent): SignResponseOfSubintentHash {
         val perFactorOutcome = request.perFactorSource.mapIndexed { index, input ->
             val output = accessFactorSourcesProxy.sign(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
-                    purpose = AccessFactorSourcesInput.ToSign.Purpose.SubIntents,
-                    kind = input.factorSourceId.kind,
-                    input = input.into()
+                input = AccessFactorSourcesInput.SignSubintent(
+                    factorSourceId = input.factorSourceId,
+                    input = input
                 )
             )
 
             val outcome = when (output) {
-                is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
+                is AccessFactorSourcesOutput.SignSubintent -> output.outcome
                 else -> throw CommonException.HostInteractionAborted()
             }
 
@@ -126,15 +124,14 @@ class WalletInteractor(
     override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignResponseOfTransactionIntentHash {
         val perFactorOutcome = request.perFactorSource.mapIndexed { index, input ->
             val output = accessFactorSourcesProxy.sign(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
-                    purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents,
-                    kind = input.factorSourceId.kind,
-                    input = input.into()
+                input = AccessFactorSourcesInput.SignTransaction(
+                    factorSourceId = input.factorSourceId,
+                    input = input
                 )
             )
 
             val outcome = when (output) {
-                is AccessFactorSourcesOutput.SignOutput.Completed -> output.outcome.intoSargon()
+                is AccessFactorSourcesOutput.SignTransaction -> output.outcome
                 else -> throw CommonException.HostInteractionAborted()
             }
 

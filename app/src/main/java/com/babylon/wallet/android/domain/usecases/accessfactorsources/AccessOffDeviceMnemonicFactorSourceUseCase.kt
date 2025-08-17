@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.common.seedphrase.toMnemonicWithPassphraseOrNull
 import com.radixdlt.sargon.FactorSource
@@ -63,19 +65,9 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
 
     override suspend fun signMono(
         factorSource: FactorSource.OffDeviceMnemonic,
-        input: PerFactorSourceInput<out Signable.Payload, out Signable.ID>
-    ): Result<PerFactorOutcome<Signable.ID>> {
-        val seedPhrase = seedPhraseChannel.receive()
-        val outcome = FactorOutcome.Signed(seedPhrase.signInteractorInput(input = input))
-
-        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
-
-        return Result.success(
-            PerFactorOutcome(
-                factorSourceId = input.factorSourceId,
-                outcome = outcome
-            )
-        )
+        input: AccessFactorSourcesInput.Sign
+    ): Result<AccessFactorSourcesOutput.Signing> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun spotCheck(factorSource: FactorSource.OffDeviceMnemonic): Result<Boolean> = runCatching {

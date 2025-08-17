@@ -9,7 +9,18 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
+import com.radixdlt.sargon.PerFactorSourceInputOfAuthIntent
+import com.radixdlt.sargon.PerFactorSourceInputOfSubintent
+import com.radixdlt.sargon.PerFactorSourceInputOfTransactionIntent
 import com.radixdlt.sargon.SpotCheckResponse
+import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
+import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
+import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
+import com.radixdlt.sargon.extensions.decompile
+import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorSourceInput
 import com.radixdlt.sargon.os.signing.Signable
@@ -32,9 +43,9 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
     ): AccessFactorSourcesOutput.DerivedPublicKeys
 
-    suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
-    ): AccessFactorSourcesOutput.SignOutput<ID>
+    suspend fun sign(
+        input: AccessFactorSourcesInput.Sign
+    ): AccessFactorSourcesOutput.Signing
 
     suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput
 
@@ -91,18 +102,24 @@ sealed interface AccessFactorSourcesInput {
         val request: KeyDerivationRequestPerFactorSource
     ) : AccessFactorSourcesInput
 
-    data class ToSign<SP : Signable.Payload, ID : Signable.ID>(
-        val purpose: Purpose,
-        val kind: FactorSourceKind,
-        val input: PerFactorSourceInput<SP, ID>
-    ) : AccessFactorSourcesInput {
-
-        enum class Purpose {
-            TransactionIntents,
-            SubIntents,
-            AuthIntents
-        }
+    sealed interface Sign: AccessFactorSourcesInput {
+        val factorSourceId: FactorSourceIdFromHash
     }
+
+    data class SignTransaction(
+        override val factorSourceId: FactorSourceIdFromHash,
+        val input: PerFactorSourceInputOfTransactionIntent
+    ): Sign
+
+    data class SignSubintent(
+        override val factorSourceId: FactorSourceIdFromHash,
+        val input: PerFactorSourceInputOfSubintent
+    ): Sign
+
+    data class SignAuth(
+        override val factorSourceId: FactorSourceIdFromHash,
+        val input: PerFactorSourceInputOfAuthIntent
+    ): Sign
 
     data class ToSpotCheck(
         val factorSource: FactorSource,
@@ -135,13 +152,21 @@ sealed interface AccessFactorSourcesOutput {
         data object Rejected : DerivedPublicKeys
     }
 
-    sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
-        data class Completed<ID : Signable.ID>(
-            val outcome: PerFactorOutcome<ID>
-        ) : SignOutput<ID>
+    sealed interface Signing : AccessFactorSourcesOutput
 
-        data object Rejected : SignOutput<Signable.ID>
-    }
+    data class SignTransaction(
+        val outcome: PerFactorOutcomeOfTransactionIntentHash
+    ) : Signing
+
+    data class SignSubintent(
+        val outcome: PerFactorOutcomeOfSubintentHash
+    ) : Signing
+
+    data class SignAuth(
+        val outcome: PerFactorOutcomeOfAuthIntentHash
+    ) : Signing
+
+    data object SigningRejected : Signing
 
     sealed interface SpotCheckOutput : AccessFactorSourcesOutput {
         data class Completed(
@@ -153,3 +178,7 @@ sealed interface AccessFactorSourcesOutput {
 
     data object Init : AccessFactorSourcesOutput
 }
+
+fun TransactionSignRequestInputOfTransactionIntent.payloadId() = payload.decompile().hash()
+fun TransactionSignRequestInputOfSubintent.payloadId() = payload.decompile().hash()
+fun TransactionSignRequestInputOfAuthIntent.payloadId() = payload.hash()

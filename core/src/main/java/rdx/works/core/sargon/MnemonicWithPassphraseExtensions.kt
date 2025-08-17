@@ -1,6 +1,7 @@
 package rdx.works.core.sargon
 
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.PerFactorSourceInputOfTransactionIntent
 import com.radixdlt.sargon.extensions.sign
 import com.radixdlt.sargon.os.signing.HdSignature
 import com.radixdlt.sargon.os.signing.HdSignatureInput

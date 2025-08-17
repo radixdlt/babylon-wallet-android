@@ -29,7 +29,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
@@ -224,17 +223,17 @@ private fun GetSignaturesBottomSheetContent(
     )
 }
 
-private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
-    Purpose.TransactionIntents,
-    Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
-    Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
+private fun GetSignaturesViewModel.Purpose.toAccessFactorSourcePurpose() = when (this) {
+    GetSignaturesViewModel.Purpose.TransactionIntents,
+    GetSignaturesViewModel.Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
+    GetSignaturesViewModel.Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
 }
 
 @UsesSampleValues
 @Preview
 @Composable
 private fun GetSignaturesPreviewLight(
-    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<GetSignaturesViewModel.Purpose, FactorSource>
 ) {
     RadixWalletPreviewTheme {
         GetSignaturesBottomSheetContent(
@@ -263,7 +262,7 @@ private fun GetSignaturesPreviewLight(
 @Preview
 @Composable
 private fun GetSignaturesPreviewDark(
-    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<GetSignaturesViewModel.Purpose, FactorSource>
 ) {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
         GetSignaturesBottomSheetContent(
@@ -289,9 +288,9 @@ private fun GetSignaturesPreviewDark(
 }
 
 @UsesSampleValues
-private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<Purpose, FactorSource>> {
+private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<GetSignaturesViewModel.Purpose, FactorSource>> {
 
-    private val samples: List<Pair<Purpose, FactorSource>>
+    private val samples: List<Pair<GetSignaturesViewModel.Purpose, FactorSource>>
 
     init {
         val factorSources = listOf(
@@ -302,13 +301,13 @@ private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<P
             PasswordFactorSource.sample().asGeneral()
         )
 
-        samples = Purpose.entries.flatMap { purpose ->
+        samples = GetSignaturesViewModel.Purpose.entries.flatMap { purpose ->
             factorSources.map { factorSource ->
                 purpose to factorSource
             }
         }
     }
 
-    override val values: Sequence<Pair<Purpose, FactorSource>>
+    override val values: Sequence<Pair<GetSignaturesViewModel.Purpose, FactorSource>>
         get() = samples.asSequence()
 }

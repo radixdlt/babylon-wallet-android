@@ -41,15 +41,12 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         return result as AccessFactorSourcesOutput.DerivedPublicKeys
     }
 
-    override suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
-    ): AccessFactorSourcesOutput.SignOutput<ID> {
-        input = accessFactorSourcesInput
+    override suspend fun sign(input: AccessFactorSourcesInput.Sign): AccessFactorSourcesOutput.Signing {
+        this.input = input
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.GetSignatures)
-        val result = _output.first()
 
-        @Suppress("UNCHECKED_CAST")
-        return result as AccessFactorSourcesOutput.SignOutput<ID>
+        val result = _output.first()
+        return result as AccessFactorSourcesOutput.Signing
     }
 
     override suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput {

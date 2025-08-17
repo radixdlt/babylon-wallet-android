@@ -17,9 +17,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
+import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.os.signing.FactorOutcome
 import com.radixdlt.sargon.os.signing.PerFactorOutcome
@@ -46,12 +52,23 @@ class GetSignaturesViewModel @Inject constructor(
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val proxyInput = accessFactorSourcesIOHandler.getInput()
-        as AccessFactorSourcesInput.ToSign<out Signable.Payload, out Signable.ID>
+    enum class Purpose {
+        TransactionIntents,
+        SubIntents,
+        AuthIntents
+    }
+
+    private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.Sign
+    private val purpose: Purpose = when (proxyInput) {
+        is AccessFactorSourcesInput.SignTransaction -> Purpose.TransactionIntents
+        is AccessFactorSourcesInput.SignSubintent -> Purpose.SubIntents
+        is AccessFactorSourcesInput.SignAuth -> Purpose.AuthIntents
+    }
+
 
     private val accessDelegate = AccessFactorSourceDelegate(
         viewModelScope = viewModelScope,
-        id = proxyInput.input.factorSourceId.asGeneral(),
+        id = proxyInput.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         defaultDispatcher = defaultDispatcher,
@@ -61,7 +78,7 @@ class GetSignaturesViewModel @Inject constructor(
     )
 
     override fun initialState(): State = State(
-        signPurpose = proxyInput.purpose,
+        signPurpose = purpose,
         accessState = accessDelegate.state.value,
     )
 
@@ -77,26 +94,26 @@ class GetSignaturesViewModel @Inject constructor(
     private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
         is FactorSource.Device -> accessDeviceFactorSource.signMono(
             factorSource = factorSource,
-            input = proxyInput.input
+            input = proxyInput
         )
 
         is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
             factorSource = factorSource,
-            input = proxyInput.input
+            input = proxyInput
         )
 
         is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.signMono(
             factorSource = factorSource,
-            input = proxyInput.input
+            input = proxyInput
         )
         is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
             factorSource = factorSource,
-            input = proxyInput.input
+            input = proxyInput
         )
 
         is FactorSource.Password -> accessPasswordFactorSourceUseCase.signMono(
             factorSource = factorSource,
-            input = proxyInput.input
+            input = proxyInput
         )
     }.map { perFactorOutcome ->
         finishWithSuccess(perFactorOutcome)
@@ -105,24 +122,48 @@ class GetSignaturesViewModel @Inject constructor(
     private suspend fun onDismissCallback() {
         // end the signing process and return the output (reject)
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Rejected)
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SigningRejected)
     }
 
     private suspend fun onFailCallback() {
         // end the signing process and return the output (error)
+        completeWithNeglectedFactorOutput(
+            NeglectedFactor(
+                reason = NeglectFactorReason.FAILURE,
+                factor = proxyInput.factorSourceId
+            )
+        )
+    }
+
+    private suspend fun completeWithNeglectedFactorOutput(neglectedFactor: NeglectedFactor) {
         sendEvent(event = Event.Completed)
         accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.SignOutput.Completed(
-                outcome = PerFactorOutcome(
-                    factorSourceId = proxyInput.input.factorSourceId,
-                    outcome = FactorOutcome.Neglected(
-                        factor = NeglectedFactor(
-                            reason = NeglectFactorReason.FAILURE,
-                            factor = proxyInput.input.factorSourceId
+            when (proxyInput) {
+                is AccessFactorSourcesInput.SignTransaction -> AccessFactorSourcesOutput.SignTransaction(
+                    PerFactorOutcomeOfTransactionIntentHash(
+                        factorSourceId = proxyInput.factorSourceId,
+                        outcome = FactorOutcomeOfTransactionIntentHash.Neglected(
+                            neglectedFactor
                         )
                     )
                 )
-            )
+                is AccessFactorSourcesInput.SignSubintent -> AccessFactorSourcesOutput.SignSubintent(
+                    PerFactorOutcomeOfSubintentHash(
+                        factorSourceId = proxyInput.factorSourceId,
+                        outcome = FactorOutcomeOfSubintentHash.Neglected(
+                            neglectedFactor
+                        )
+                    )
+                )
+                is AccessFactorSourcesInput.SignAuth -> AccessFactorSourcesOutput.SignAuth(
+                    PerFactorOutcomeOfAuthIntentHash(
+                        factorSourceId = proxyInput.factorSourceId,
+                        outcome = FactorOutcomeOfAuthIntentHash.Neglected(
+                            neglectedFactor
+                        )
+                    )
+                )
+            }
         )
     }
 
@@ -142,30 +183,21 @@ class GetSignaturesViewModel @Inject constructor(
         accessDelegate.onCancelAccess()
 
         // end the signing process and return the output (error)
-        sendEvent(event = Event.Completed)
-        val outcome = FactorOutcome.Neglected<Signable.ID>(
-            factor = NeglectedFactor(
-                reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED,
-                factor = proxyInput.input.factorSourceId
-            )
+        completeWithNeglectedFactorOutput(
+            NeglectedFactor(
+            reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED,
+            factor = proxyInput.factorSourceId
         )
-        accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.SignOutput.Completed(
-                outcome = PerFactorOutcome(
-                    factorSourceId = proxyInput.input.factorSourceId,
-                    outcome = outcome
-                )
-            )
         )
     }
 
-    private suspend fun finishWithSuccess(outcome: PerFactorOutcome<Signable.ID>) {
+    private suspend fun finishWithSuccess(outcome: AccessFactorSourcesOutput.Signing) {
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput.Completed(outcome = outcome))
+        accessFactorSourcesIOHandler.setOutput(outcome)
     }
 
     data class State(
-        val signPurpose: AccessFactorSourcesInput.ToSign.Purpose,
+        val signPurpose: Purpose,
         val accessState: AccessFactorSourceDelegate.State
     ) : UiState {
 
