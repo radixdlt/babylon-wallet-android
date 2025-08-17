@@ -5,9 +5,6 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
 
 interface AccessFactorSource<F : FactorSource> {
 
@@ -19,7 +16,7 @@ interface AccessFactorSource<F : FactorSource> {
     suspend fun signMono(
         factorSource: F,
         input: AccessFactorSourcesInput.Sign
-    ): Result<AccessFactorSourcesOutput.Signing>
+    ): Result<AccessFactorSourcesOutput.Sign>
 
     suspend fun spotCheck(
         factorSource: F

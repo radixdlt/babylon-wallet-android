@@ -3,9 +3,14 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.radixdlt.sargon.AuthorizationPurpose
 import com.radixdlt.sargon.AuthorizationResponse
 import com.radixdlt.sargon.DerivationPurpose
+import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HdSignatureOfAuthIntentHash
+import com.radixdlt.sargon.HdSignatureOfSubintentHash
+import com.radixdlt.sargon.HdSignatureOfTransactionIntentHash
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -21,9 +26,6 @@ import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
 import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
 import com.radixdlt.sargon.extensions.decompile
 import com.radixdlt.sargon.extensions.hash
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
 
 /**
  * Interface for the callers (ViewModels or UseCases) that need access to factor sources.
@@ -45,7 +47,7 @@ interface AccessFactorSourcesProxy {
 
     suspend fun sign(
         input: AccessFactorSourcesInput.Sign
-    ): AccessFactorSourcesOutput.Signing
+    ): AccessFactorSourcesOutput.Sign
 
     suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput
 
@@ -102,24 +104,24 @@ sealed interface AccessFactorSourcesInput {
         val request: KeyDerivationRequestPerFactorSource
     ) : AccessFactorSourcesInput
 
-    sealed interface Sign: AccessFactorSourcesInput {
+    sealed interface Sign : AccessFactorSourcesInput {
         val factorSourceId: FactorSourceIdFromHash
     }
 
     data class SignTransaction(
         override val factorSourceId: FactorSourceIdFromHash,
         val input: PerFactorSourceInputOfTransactionIntent
-    ): Sign
+    ) : Sign
 
     data class SignSubintent(
         override val factorSourceId: FactorSourceIdFromHash,
         val input: PerFactorSourceInputOfSubintent
-    ): Sign
+    ) : Sign
 
     data class SignAuth(
         override val factorSourceId: FactorSourceIdFromHash,
         val input: PerFactorSourceInputOfAuthIntent
-    ): Sign
+    ) : Sign
 
     data class ToSpotCheck(
         val factorSource: FactorSource,
@@ -152,21 +154,23 @@ sealed interface AccessFactorSourcesOutput {
         data object Rejected : DerivedPublicKeys
     }
 
-    sealed interface Signing : AccessFactorSourcesOutput
+    sealed interface Sign : AccessFactorSourcesOutput {
+        companion object
+    }
 
     data class SignTransaction(
         val outcome: PerFactorOutcomeOfTransactionIntentHash
-    ) : Signing
+    ) : Sign
 
     data class SignSubintent(
         val outcome: PerFactorOutcomeOfSubintentHash
-    ) : Signing
+    ) : Sign
 
     data class SignAuth(
         val outcome: PerFactorOutcomeOfAuthIntentHash
-    ) : Signing
+    ) : Sign
 
-    data object SigningRejected : Signing
+    data object SignRejected : Sign
 
     sealed interface SpotCheckOutput : AccessFactorSourcesOutput {
         data class Completed(
@@ -178,6 +182,27 @@ sealed interface AccessFactorSourcesOutput {
 
     data object Init : AccessFactorSourcesOutput
 }
+
+fun AccessFactorSourcesOutput.Sign.Companion.signedAuth(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfAuthIntentHash>) = AccessFactorSourcesOutput.SignAuth(
+    outcome = PerFactorOutcomeOfAuthIntentHash(
+        factorSourceId = factorSourceId,
+        outcome = FactorOutcomeOfAuthIntentHash.Signed(producedSignatures = signatures)
+    )
+)
+
+fun AccessFactorSourcesOutput.Sign.Companion.signedTransaction(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfTransactionIntentHash>) = AccessFactorSourcesOutput.SignTransaction(
+    outcome = PerFactorOutcomeOfTransactionIntentHash(
+        factorSourceId = factorSourceId,
+        outcome = FactorOutcomeOfTransactionIntentHash.Signed(producedSignatures = signatures)
+    )
+)
+
+fun AccessFactorSourcesOutput.Sign.Companion.signedSubintent(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfSubintentHash>) = AccessFactorSourcesOutput.SignSubintent(
+    outcome = PerFactorOutcomeOfSubintentHash(
+        factorSourceId = factorSourceId,
+        outcome = FactorOutcomeOfSubintentHash.Signed(producedSignatures = signatures)
+    )
+)
 
 fun TransactionSignRequestInputOfTransactionIntent.payloadId() = payload.decompile().hash()
 fun TransactionSignRequestInputOfSubintent.payloadId() = payload.decompile().hash()

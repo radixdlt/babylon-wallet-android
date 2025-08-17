@@ -5,9 +5,6 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
 import javax.inject.Inject
 
 class AccessPasswordFactorSourceUseCase @Inject constructor() : AccessFactorSource<FactorSource.Password> {
@@ -22,7 +19,7 @@ class AccessPasswordFactorSourceUseCase @Inject constructor() : AccessFactorSour
     override suspend fun signMono(
         factorSource: FactorSource.Password,
         input: AccessFactorSourcesInput.Sign
-    ): Result<AccessFactorSourcesOutput.Signing> {
+    ): Result<AccessFactorSourcesOutput.Sign> {
         TODO("Not yet implemented")
     }
 

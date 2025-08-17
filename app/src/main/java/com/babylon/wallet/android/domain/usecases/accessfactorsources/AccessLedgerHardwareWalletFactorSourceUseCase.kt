@@ -9,9 +9,9 @@ import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.payloadId
-import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
-import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
-import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
+import com.babylon.wallet.android.presentation.accessfactorsources.signedAuth
+import com.babylon.wallet.android.presentation.accessfactorsources.signedSubintent
+import com.babylon.wallet.android.presentation.accessfactorsources.signedTransaction
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HdSignatureInputOfAuthIntentHash
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
@@ -22,10 +22,6 @@ import com.radixdlt.sargon.HdSignatureOfTransactionIntentHash
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
-import com.radixdlt.sargon.OwnedFactorInstance
-import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
-import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
-import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.PerFactorSourceInputOfAuthIntent
 import com.radixdlt.sargon.PerFactorSourceInputOfSubintent
 import com.radixdlt.sargon.PerFactorSourceInputOfTransactionIntent
@@ -33,26 +29,14 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.SpotCheckInput
-import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
-import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
-import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
 import com.radixdlt.sargon.extensions.bip32String
 import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.decompile
-import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.os.signing.FactorOutcome
-import com.radixdlt.sargon.os.signing.HdSignature
-import com.radixdlt.sargon.os.signing.HdSignatureInput
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
-import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.init
@@ -98,7 +82,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
     override suspend fun signMono(
         factorSource: FactorSource.Ledger,
         input: AccessFactorSourcesInput.Sign
-    ): Result<AccessFactorSourcesOutput.Signing> {
+    ): Result<AccessFactorSourcesOutput.Sign> {
         return when (input) {
             is AccessFactorSourcesInput.SignTransaction -> signTransactionN(
                 input = input.input,
@@ -144,6 +128,14 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
                         }
                             ?: error("No derivation path from ledger, matched the input ownedFactorInstances.")
 
+                        Pair(ownedFactorInstance, signature.toSignatureWithPublicKey())
+                    }
+                    response.signatures.map { signature ->
+                        val ownedFactorInstance = transaction.ownedFactorInstances.find {
+                            it.factorInstance.publicKey.derivationPath.bip32String == signature.derivedPublicKey.derivationPath
+                        }
+                            ?: error("No derivation path from ledger, matched the input ownedFactorInstances.")
+
                         HdSignatureOfTransactionIntentHash(
                             input = HdSignatureInputOfTransactionIntentHash(
                                 payloadId = payloadId,
@@ -164,13 +156,9 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         }.flatten()
 
         return Result.success(
-            AccessFactorSourcesOutput.SignTransaction(
-            PerFactorOutcomeOfTransactionIntentHash(
+            AccessFactorSourcesOutput.Sign.signedTransaction(
                 factorSourceId = input.factorSourceId,
-                outcome = FactorOutcomeOfTransactionIntentHash.Signed(
-                    producedSignatures = signatures
-                )
-            )
+                signatures = signatures
             )
         )
     }
@@ -209,7 +197,6 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
                         reason = LedgerErrorCode.Generic,
                         message = it.message
                     )
-
                 }
             }.getOrElse { error ->
                 return Result.failure(error)
@@ -217,13 +204,9 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         }.flatten()
 
         return Result.success(
-            AccessFactorSourcesOutput.SignSubintent(
-            PerFactorOutcomeOfSubintentHash(
-            factorSourceId = input.factorSourceId,
-            outcome = FactorOutcomeOfSubintentHash.Signed(
-                producedSignatures = signatures
-            )
-        )
+            AccessFactorSourcesOutput.Sign.signedSubintent(
+                factorSourceId = input.factorSourceId,
+                signatures = signatures
             )
         )
     }
@@ -264,7 +247,6 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
                         reason = LedgerErrorCode.Generic,
                         message = it.message
                     )
-
                 }
             }.getOrElse { error ->
                 return Result.failure(error)
@@ -272,13 +254,9 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         }.flatten()
 
         return Result.success(
-            AccessFactorSourcesOutput.SignAuth(
-            PerFactorOutcomeOfAuthIntentHash(
-            factorSourceId = input.factorSourceId,
-            outcome = FactorOutcomeOfAuthIntentHash.Signed(
-                producedSignatures = signatures
-            )
-        )
+            AccessFactorSourcesOutput.Sign.signedAuth(
+                factorSourceId = input.factorSourceId,
+                signatures = signatures
             )
         )
     }

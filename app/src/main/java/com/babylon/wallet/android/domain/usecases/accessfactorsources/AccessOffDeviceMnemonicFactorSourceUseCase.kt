@@ -15,12 +15,7 @@ import com.radixdlt.sargon.extensions.derivePublicKeys
 import com.radixdlt.sargon.extensions.factorSourceId
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.spotCheck
-import com.radixdlt.sargon.os.signing.FactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
 import kotlinx.coroutines.channels.Channel
-import rdx.works.core.sargon.signInteractorInput
 import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 
@@ -66,7 +61,7 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
     override suspend fun signMono(
         factorSource: FactorSource.OffDeviceMnemonic,
         input: AccessFactorSourcesInput.Sign
-    ): Result<AccessFactorSourcesOutput.Signing> {
+    ): Result<AccessFactorSourcesOutput.Sign> {
         TODO("Not yet implemented")
     }
 

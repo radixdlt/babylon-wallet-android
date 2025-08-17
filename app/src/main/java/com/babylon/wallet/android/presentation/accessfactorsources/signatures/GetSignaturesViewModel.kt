@@ -27,9 +27,6 @@ import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.os.signing.FactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.Signable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
@@ -64,7 +61,6 @@ class GetSignaturesViewModel @Inject constructor(
         is AccessFactorSourcesInput.SignSubintent -> Purpose.SubIntents
         is AccessFactorSourcesInput.SignAuth -> Purpose.AuthIntents
     }
-
 
     private val accessDelegate = AccessFactorSourceDelegate(
         viewModelScope = viewModelScope,
@@ -122,7 +118,7 @@ class GetSignaturesViewModel @Inject constructor(
     private suspend fun onDismissCallback() {
         // end the signing process and return the output (reject)
         sendEvent(event = Event.Completed)
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SigningRejected)
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignRejected)
     }
 
     private suspend fun onFailCallback() {
@@ -185,13 +181,13 @@ class GetSignaturesViewModel @Inject constructor(
         // end the signing process and return the output (error)
         completeWithNeglectedFactorOutput(
             NeglectedFactor(
-            reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED,
-            factor = proxyInput.factorSourceId
-        )
+                reason = NeglectFactorReason.USER_EXPLICITLY_SKIPPED,
+                factor = proxyInput.factorSourceId
+            )
         )
     }
 
-    private suspend fun finishWithSuccess(outcome: AccessFactorSourcesOutput.Signing) {
+    private suspend fun finishWithSuccess(outcome: AccessFactorSourcesOutput.Sign) {
         sendEvent(event = Event.Completed)
         accessFactorSourcesIOHandler.setOutput(outcome)
     }
