@@ -3,6 +3,7 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +23,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,11 +53,13 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.PinTextField
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.utils.Constants.ARCULUS_PIN_LENGTH
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
@@ -65,6 +71,7 @@ import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
+import kotlinx.coroutines.delay
 
 @Composable
 fun AccessDeviceFactorSourceContent(
@@ -133,8 +140,12 @@ fun AccessArculusCardFactorSourceContent(
     modifier: Modifier = Modifier,
     purpose: AccessFactorSourcePurpose,
     factorSource: ArculusCardFactorSource?,
+    pinState: AccessFactorSourceDelegate.State.ArculusPinState,
+    onPinChange: (String) -> Unit,
     skipOption: AccessFactorSourceSkipOption,
-    onSkipClick: () -> Unit
+    onRetryClick: () -> Unit,
+    onSkipClick: () -> Unit,
+    onConfirmClick: () -> Unit
 ) {
     AccessFactorSourceContent(
         modifier = modifier,
@@ -142,6 +153,52 @@ fun AccessArculusCardFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.ARCULUS_CARD,
         factorActions = {
+            val isPinRequired = remember(purpose) {
+                purpose == AccessFactorSourcePurpose.SignatureRequest ||
+                    purpose == AccessFactorSourcePurpose.ProvingOwnership
+            }
+
+            if (isPinRequired) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val focusRequester = remember { FocusRequester() }
+
+                    LaunchedEffect(Unit) {
+                        delay(300)
+                        focusRequester.requestFocus()
+                    }
+
+                    PinTextField(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        textFieldModifier = Modifier.focusRequester(focusRequester),
+                        title = "Enter card PIN", // TODO crowdin
+                        pinValue = pinState.input,
+                        pinLength = ARCULUS_PIN_LENGTH,
+                        onPinChange = onPinChange
+                    )
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+
+                    RadixPrimaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(R.string.common_confirm),
+                        enabled = pinState.isConfirmButtonEnabled,
+                        onClick = onConfirmClick
+                    )
+                }
+            }
+
+            AccessContentRetryButton(
+                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
+                isEnabled = true,
+                onClick = onRetryClick
+            )
+
             SkipOption(
                 skipOption = skipOption,
                 onClick = onSkipClick
@@ -409,6 +466,7 @@ private fun SkipOption(
             text = stringResource(R.string.factorSourceActions_useDifferentFactor),
             onClick = onClick
         )
+
         AccessFactorSourceSkipOption.CanIgnoreFactor -> RadixTextButton(
             modifier = modifier
                 .fillMaxWidth()
@@ -417,6 +475,7 @@ private fun SkipOption(
             text = stringResource(R.string.factorSourceActions_ignore),
             onClick = onClick
         )
+
         AccessFactorSourceSkipOption.None -> {}
     }
 }
@@ -518,8 +577,12 @@ private fun PreviewContent(
         is FactorSource.ArculusCard -> AccessArculusCardFactorSourceContent(
             purpose = purpose,
             factorSource = factorSource.value,
+            pinState = AccessFactorSourceDelegate.State.ArculusPinState(),
             skipOption = skipOption,
+            onPinChange = {},
             onSkipClick = {},
+            onRetryClick = {},
+            onConfirmClick = {}
         )
 
         is FactorSource.Password -> {
@@ -566,7 +629,8 @@ private fun PreviewContent(
 }
 
 @UsesSampleValues
-class AccessFactorSourcePreviewParameterProvider : PreviewParameterProvider<Pair<AccessFactorSourcePurpose, FactorSource>> {
+class AccessFactorSourcePreviewParameterProvider :
+    PreviewParameterProvider<Pair<AccessFactorSourcePurpose, FactorSource>> {
 
     private val samples: List<Pair<AccessFactorSourcePurpose, FactorSource>>
 
@@ -579,8 +643,8 @@ class AccessFactorSourcePreviewParameterProvider : PreviewParameterProvider<Pair
             PasswordFactorSource.sample().asGeneral()
         )
 
-        samples = AccessFactorSourcePurpose.entries.flatMap { purpose ->
-            factorSources.map { factorSource ->
+        samples = factorSources.flatMap { factorSource ->
+            AccessFactorSourcePurpose.entries.map { purpose ->
                 purpose to factorSource
             }
         }

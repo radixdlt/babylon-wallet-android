@@ -59,7 +59,6 @@ class AccessDeviceFactorSourceUseCaseTest {
 
     @Test
     fun derivePublicKeysFailsDueToNoBiometrics() = runTest {
-        ArculusCardFactorSource.sample().
         mockMnemonicAccess(
             id = device.id,
             keyExists = true,

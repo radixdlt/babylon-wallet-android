@@ -90,6 +90,7 @@ fun GetSignaturesDialog(
         onDismiss = viewModel::onDismiss,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onArculusPinChange = viewModel::onArculusPinChange,
         onRetryClick = viewModel::onRetry,
         onSkipClick = viewModel::onSkip
     )
@@ -102,6 +103,7 @@ private fun GetSignaturesBottomSheetContent(
     state: GetSignaturesViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
+    onArculusPinChange: (String) -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
@@ -204,8 +206,12 @@ private fun GetSignaturesBottomSheetContent(
                             modifier = contentModifier,
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            pinState = accessFactorSourceState.arculusPinState,
+                            onPinChange = onArculusPinChange,
                             skipOption = state.skipOption,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onSkipClick,
+                            onRetryClick = onRetryClick,
+                            onConfirmClick = onInputConfirmed
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
@@ -252,6 +258,7 @@ private fun GetSignaturesPreviewLight(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}
@@ -281,6 +288,7 @@ private fun GetSignaturesPreviewDark(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}

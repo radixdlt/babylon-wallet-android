@@ -132,6 +132,8 @@ class GetSignaturesViewModel @Inject constructor(
 
     fun onPasswordTyped(password: String) = accessDelegate.onPasswordTyped(password)
 
+    fun onArculusPinChange(pin: String) = accessDelegate.onArculusPinChange(pin)
+
     fun onRetry() = accessDelegate.onRetry()
 
     fun onMessageShown() = accessDelegate.onMessageShown()

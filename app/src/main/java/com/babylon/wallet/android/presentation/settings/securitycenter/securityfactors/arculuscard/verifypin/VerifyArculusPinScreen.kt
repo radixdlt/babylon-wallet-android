@@ -122,25 +122,16 @@ private fun VerifyArculusPinContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
 
-            Column {
-                Text(
-                    text = "Enter PIN", // TODO crowdin
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.text
-                )
+            val focusManager = LocalFocusManager.current
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
-                val focusManager = LocalFocusManager.current
-
-                PinTextField(
-                    modifier = Modifier.focusRequester(pinFocusRequester),
-                    pinValue = state.pin,
-                    pinLength = ARCULUS_PIN_LENGTH,
-                    onPinChange = onPinChange,
-                    onPinComplete = { focusManager.clearFocus() }
-                )
-            }
+            PinTextField(
+                textFieldModifier = Modifier.focusRequester(pinFocusRequester),
+                title = "Enter PIN", // TODO crowdin
+                pinValue = state.pin,
+                pinLength = ARCULUS_PIN_LENGTH,
+                onPinChange = onPinChange,
+                onPinComplete = { focusManager.clearFocus() }
+            )
         }
     }
 

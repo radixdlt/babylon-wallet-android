@@ -130,16 +130,9 @@ fun SetArculusPinScreen(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
 
             Column {
-                Text(
-                    text = pinInputTitle,
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.text
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
                 PinTextField(
-                    modifier = Modifier.focusRequester(pinFocusRequester),
+                    textFieldModifier = Modifier.focusRequester(pinFocusRequester),
+                    title = pinInputTitle,
                     pinValue = state.pin,
                     pinLength = ARCULUS_PIN_LENGTH,
                     onPinChange = onPinChange,
@@ -148,18 +141,11 @@ fun SetArculusPinScreen(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
 
-                Text(
-                    text = confirmPinInputTitle,
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.text
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
                 val focusManager = LocalFocusManager.current
 
                 PinTextField(
-                    modifier = Modifier.focusRequester(confirmPinFocusRequester),
+                    textFieldModifier = Modifier.focusRequester(confirmPinFocusRequester),
+                    title = confirmPinInputTitle,
                     pinValue = state.confirmedPin,
                     pinLength = ARCULUS_PIN_LENGTH,
                     onPinChange = onConfirmPinChange,

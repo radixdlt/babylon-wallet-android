@@ -5,7 +5,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -30,13 +33,48 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun PinTextField(
+    title: String,
+    modifier: Modifier = Modifier,
+    textFieldModifier: Modifier = Modifier,
+    pinValue: String = "",
+    onPinChange: ((String) -> Unit)? = null,
+    onPinComplete: ((String) -> Unit)? = null,
+    pinLength: Int = 6,
+    imeAction: ImeAction = ImeAction.Done,
+    isEnabled: Boolean = true
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Text(
+            text = title,
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.text
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        PinTextField(
+            modifier = textFieldModifier,
+            pinValue = pinValue,
+            onPinChange = onPinChange,
+            onPinComplete = onPinComplete,
+            pinLength = pinLength,
+            imeAction = imeAction,
+            isEnabled = isEnabled
+        )
+    }
+}
+
+@Composable
+fun PinTextField(
     modifier: Modifier = Modifier,
     pinValue: String = "",
     onPinChange: ((String) -> Unit)? = null,
     onPinComplete: ((String) -> Unit)? = null,
     pinLength: Int = 6,
     imeAction: ImeAction = ImeAction.Done,
-    isEnabled: Boolean = true,
+    isEnabled: Boolean = true
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var pinValue by remember(pinValue) { mutableStateOf(pinValue) }

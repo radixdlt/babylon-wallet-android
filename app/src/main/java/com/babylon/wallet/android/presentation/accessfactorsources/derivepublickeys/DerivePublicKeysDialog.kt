@@ -85,6 +85,7 @@ fun DerivePublicKeysDialog(
         state = state,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onArculusPinChange = viewModel::onArculusPinChange,
         onInputConfirmed = viewModel::onInputConfirmed,
         onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry
@@ -98,6 +99,7 @@ private fun DerivePublicKeysSheetContent(
     state: DerivePublicKeysViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
+    onArculusPinChange: (String) -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
@@ -193,8 +195,12 @@ private fun DerivePublicKeysSheetContent(
                             modifier = contentModifier,
                             purpose = state.purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            pinState = accessFactorSourceState.arculusPinState,
                             skipOption = AccessFactorSourceSkipOption.None,
-                            onSkipClick = {}
+                            onPinChange = onArculusPinChange,
+                            onRetryClick = onRetryClick,
+                            onSkipClick = {},
+                            onConfirmClick = onInputConfirmed
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
@@ -232,6 +238,7 @@ private fun DerivePublicKeyPreview(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
             onRetryClick = {},
             onInputConfirmed = {}
         )
@@ -257,6 +264,7 @@ private fun DerivePublicKeyPreviewDark(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
             onRetryClick = {},
             onInputConfirmed = {}
         )

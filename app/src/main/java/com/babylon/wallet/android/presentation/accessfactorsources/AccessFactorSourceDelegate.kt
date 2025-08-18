@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.babylon.wallet.android.utils.Constants.ARCULUS_PIN_LENGTH
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class AccessFactorSourceDelegate private constructor(
     private val viewModelScope: CoroutineScope,
     private val input: DelegateInput,
@@ -127,6 +128,10 @@ class AccessFactorSourceDelegate private constructor(
         _state.update { it.copy(passwordState = it.passwordState.copy(input = password)) }
     }
 
+    fun onArculusPinChange(pin: String) {
+        _state.update { it.copy(arculusPinState = it.arculusPinState.copy(input = pin)) }
+    }
+
     fun onRetry() {
         val factorSource = _state.value.factorSource ?: return
 
@@ -199,13 +204,14 @@ class AccessFactorSourceDelegate private constructor(
             .onSuccess {
                 _state.update { state -> state.copy(isAccessInProgress = false) }
             }.onFailure { error ->
-                val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
-                    null
-                } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
-                    null
-                } else {
-                    UiMessage.ErrorMessage(error)
-                }
+                val errorMessageToShow =
+                    if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
+                        null
+                    } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
+                        null
+                    } else {
+                        UiMessage.ErrorMessage(error)
+                    }
 
                 _state.update { it.copy(isAccessInProgress = false, errorMessage = errorMessageToShow) }
             }
@@ -250,7 +256,8 @@ class AccessFactorSourceDelegate private constructor(
         private val isAccessInProgress: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null,
         val seedPhraseInputState: SeedPhraseInputState = SeedPhraseInputState(),
-        val passwordState: PasswordState = PasswordState()
+        val passwordState: PasswordState = PasswordState(),
+        val arculusPinState: ArculusPinState = ArculusPinState()
     ) : UiState {
 
         private val allowRetryWhenAccessInProgress = when (factorSourceToAccess.kind) {
@@ -302,5 +309,13 @@ class AccessFactorSourceDelegate private constructor(
             val input: String = "",
             val isPasswordInvalidErrorVisible: Boolean = false
         )
+
+        data class ArculusPinState(
+            val input: String = "",
+            val errorMessage: UiMessage.ErrorMessage? = null
+        ) {
+
+            val isConfirmButtonEnabled: Boolean = input.length == ARCULUS_PIN_LENGTH
+        }
     }
 }

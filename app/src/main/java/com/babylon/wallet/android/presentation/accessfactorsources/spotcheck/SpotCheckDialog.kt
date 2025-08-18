@@ -84,6 +84,7 @@ fun SpotCheckDialog(
         state = state,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onArculusPinChange = viewModel::onArculusPinChange,
         onInputConfirmed = viewModel::onInputConfirmed,
         onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry,
@@ -98,6 +99,7 @@ private fun SpotCheckBottomSheetContent(
     state: SpotCheckViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
+    onArculusPinChange: (String) -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
@@ -198,8 +200,12 @@ private fun SpotCheckBottomSheetContent(
                             modifier = contentModifier,
                             purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            pinState = accessFactorSourceState.arculusPinState,
                             skipOption = state.skipOption,
-                            onSkipClick = onIgnoreClick
+                            onPinChange = onArculusPinChange,
+                            onSkipClick = onIgnoreClick,
+                            onRetryClick = onRetryClick,
+                            onConfirmClick = onInputConfirmed
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
@@ -238,6 +244,7 @@ private fun SpotCheckPreviewLight(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onIgnoreClick = {}
@@ -265,6 +272,7 @@ private fun SpotCheckPreviewDark(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onIgnoreClick = {}
