@@ -16,6 +16,8 @@ import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSo
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.changepin.changeArculusPin
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.createpin.createForgottenArculusPin
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.forgotArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.verifypin.verifyArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.confirm.confirmSeedPhrase
@@ -139,6 +141,14 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onDismiss = navController::popBackStack,
             onComplete = navController::popBackStack
         )
+        forgotArculusPin(
+            onDismiss = navController::popBackStack,
+            onComplete = navController::createForgottenArculusPin
+        )
+        createForgottenArculusPin(
+            onDismiss = navController::popBackStack,
+            onConfirmed = { navController.popBackStack(ROUTE_FACTOR_SOURCE_DETAILS, false) }
+        )
         offDeviceMnemonics(
             onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },
             onBackClick = { navController.navigateUp() }
@@ -159,9 +169,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 )
             },
             toChangeArculusPin = navController::verifyArculusPin,
-            toForgotArculusPin = {
-                // TODO sergiu
-            },
+            toForgotArculusPin = navController::forgotArculusPin,
             onBackClick = { navController.navigateUp() }
         )
         revealSeedPhrase(

@@ -5,6 +5,7 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicBuilder
 import com.radixdlt.sargon.MnemonicValidationOutcome
@@ -50,6 +51,8 @@ class MnemonicBuilderClient @Inject constructor(
     suspend fun isFactorAlreadyInUse(kind: FactorSourceKind): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {
         isFactorSourceAlreadyInUse(mnemonicBuilder.getFactorSourceId(kind))
     }
+
+    fun getFactorSourceId(kind: FactorSourceKind): FactorSourceId = mnemonicBuilder.getFactorSourceId(kind)
 
     suspend fun generateConfirmationWords(): List<SeedPhraseWord> = withContext(dispatcher) {
         val indices = mnemonicBuilder.getIndicesInMnemonicOfWordsToConfirm()

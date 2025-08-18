@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin.CreateArculusPinScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin.SetArculusPinScreen
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
@@ -53,7 +53,7 @@ private fun CreateArculusPinContent(
     onCreateClick: () -> Unit,
     onDismissMessage: () -> Unit
 ) {
-    CreateArculusPinScreen(
+    SetArculusPinScreen(
         modifier = modifier,
         state = state.createPinState,
         topBarTitle = stringResource(id = R.string.empty),

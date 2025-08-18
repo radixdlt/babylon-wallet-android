@@ -9,7 +9,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.ArculusCardClient
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin.CreateArculusPinState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin.ConfigureArculusPinState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.FactorSource
@@ -71,7 +71,7 @@ class ChangeArculusPinViewModel @Inject constructor(
         updateCreatePinState { state -> state.copy(uiMessage = null) }
     }
 
-    fun updateCreatePinState(update: (CreateArculusPinState) -> CreateArculusPinState) {
+    fun updateCreatePinState(update: (ConfigureArculusPinState) -> ConfigureArculusPinState) {
         _state.update { state ->
             state.copy(
                 createPinState = update(state.createPinState)
@@ -85,6 +85,6 @@ class ChangeArculusPinViewModel @Inject constructor(
     }
 
     data class State(
-        val createPinState: CreateArculusPinState = CreateArculusPinState(),
+        val createPinState: ConfigureArculusPinState = ConfigureArculusPinState(),
     ) : UiState
 }

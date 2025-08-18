@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,9 +40,9 @@ import com.babylon.wallet.android.utils.Constants.ARCULUS_PIN_LENGTH
 import kotlinx.coroutines.delay
 
 @Composable
-fun CreateArculusPinScreen(
+fun SetArculusPinScreen(
     modifier: Modifier = Modifier,
-    state: CreateArculusPinState,
+    state: ConfigureArculusPinState,
     topBarTitle: String,
     contentTitle: (@Composable () -> Unit)?,
     description: String,

@@ -39,7 +39,7 @@ fun NavGraphBuilder.seedPhrase(
                 }
                 navController.popBackStack(popUpToRoute, true)
             },
-            onConfirmed = { navController.confirmSeedPhrase() }
+            onConfirm = { navController.confirmSeedPhrase() }
         )
     }
 }

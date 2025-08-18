@@ -32,7 +32,10 @@ fun NavGraphBuilder.addFactorSource(
 
         confirmSeedPhrase(navController)
 
-        createArculusPin(navController)
+        createArculusPin(
+            onDismiss = { navController.popBackStack() },
+            onConfirmed = { navController.setFactorSourceName() }
+        )
 
         setFactorSourceName(navController)
     }

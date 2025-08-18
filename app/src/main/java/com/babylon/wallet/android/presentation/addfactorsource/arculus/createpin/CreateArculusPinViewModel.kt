@@ -1,8 +1,7 @@
 package com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
-import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIntermediaryParams
+import com.babylon.wallet.android.data.repository.factors.MnemonicBuilderClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -10,7 +9,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.ArculusCardClient
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin.CreateArculusPinState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin.ConfigureArculusPinState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateArculusPinViewModel @Inject constructor(
-    private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
+    private val mnemonicBuilderClient: MnemonicBuilderClient,
     private val arculusCardClient: ArculusCardClient
 ) : StateViewModel<CreateArculusPinViewModel.State>(),
     OneOffEventHandler<CreateArculusPinViewModel.Event> by OneOffEventHandlerImpl() {
@@ -34,14 +33,11 @@ class CreateArculusPinViewModel @Inject constructor(
     }
 
     fun onCreateClick() {
-        val params = addFactorSourceIOHandler.getIntermediaryParams()
-            as? AddFactorSourceIntermediaryParams.Mnemonic ?: error("Mnemonic is required")
-
         updateCreatePinState { state -> state.copy(isConfirmButtonLoading = true) }
 
         viewModelScope.launch {
             arculusCardClient.configureCardWithMnemonic(
-                mnemonic = params.value.mnemonic,
+                mnemonic = mnemonicBuilderClient.getMnemonicWithPassphrase().mnemonic,
                 pin = state.value.createPinState.pin
             ).onSuccess {
                 updateCreatePinState { state -> state.copy(isConfirmButtonLoading = false) }
@@ -61,7 +57,7 @@ class CreateArculusPinViewModel @Inject constructor(
         updateCreatePinState { state -> state.copy(uiMessage = null) }
     }
 
-    fun updateCreatePinState(update: (CreateArculusPinState) -> CreateArculusPinState) {
+    fun updateCreatePinState(update: (ConfigureArculusPinState) -> ConfigureArculusPinState) {
         _state.update { state ->
             state.copy(
                 createPinState = update(state.createPinState)
@@ -75,6 +71,6 @@ class CreateArculusPinViewModel @Inject constructor(
     }
 
     data class State(
-        val createPinState: CreateArculusPinState = CreateArculusPinState()
+        val createPinState: ConfigureArculusPinState = ConfigureArculusPinState()
     ) : UiState
 }

@@ -57,7 +57,9 @@ class SeedPhraseViewModel @Inject constructor(
                     _state.update { state -> state.copy(isEditingEnabled = true) }
                 }
             }
+        }
 
+        viewModelScope.launch {
             seedPhraseInputDelegate.state.collect { delegateState ->
                 _state.update { state ->
                     state.copy(

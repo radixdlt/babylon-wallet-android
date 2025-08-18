@@ -26,20 +26,22 @@ import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.radixdlt.sargon.Bip39WordCount
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun NumberOfWordsTabView(
-    selectedNumberOfWords: Int,
+    options: ImmutableList<Bip39WordCount>,
+    currentNumberOfWords: Int,
     onNumberOfWordsChanged: (Bip39WordCount) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tabs = remember {
-        Bip39WordCount.entries.sortedByDescending { it.value }
+    val tabs = remember(options) {
+        options.sortedByDescending { it.value }
     }
-    var tabIndex by remember(selectedNumberOfWords) {
+    var tabIndex by remember(currentNumberOfWords) {
         mutableIntStateOf(
-            Bip39WordCount.entries.indexOfFirst {
-                it.value == selectedNumberOfWords.toUByte()
+            options.indexOfFirst {
+                it.value == currentNumberOfWords.toUByte()
             }.takeIf { it != -1 } ?: 0
         )
     }

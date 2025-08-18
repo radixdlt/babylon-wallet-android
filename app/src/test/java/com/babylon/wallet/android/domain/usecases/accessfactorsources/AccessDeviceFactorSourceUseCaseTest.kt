@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.usecases.accessfactorsources
 import androidx.biometric.BiometricPrompt
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.FactorSourceIdFromHash
@@ -58,6 +59,7 @@ class AccessDeviceFactorSourceUseCaseTest {
 
     @Test
     fun derivePublicKeysFailsDueToNoBiometrics() = runTest {
+        ArculusCardFactorSource.sample().
         mockMnemonicAccess(
             id = device.id,
             keyExists = true,

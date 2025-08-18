@@ -8,8 +8,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin.CreateArculusPinScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin.CreateArculusPinState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin.ConfigureArculusPinState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin.SetArculusPinScreen
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
@@ -51,7 +51,7 @@ private fun ChangeArculusPinContent(
     onCreateClick: () -> Unit,
     onDismissMessage: () -> Unit
 ) {
-    CreateArculusPinScreen(
+    SetArculusPinScreen(
         modifier = modifier,
         state = state.createPinState,
         topBarTitle = "Change PIN", // TODO crowdin
@@ -75,7 +75,7 @@ private fun ChangeArculusPinPreview() {
     RadixWalletPreviewTheme {
         ChangeArculusPinContent(
             state = ChangeArculusPinViewModel.State(
-                createPinState = CreateArculusPinState(
+                createPinState = ConfigureArculusPinState(
                     pin = "123456",
                     confirmedPin = "123454"
                 )

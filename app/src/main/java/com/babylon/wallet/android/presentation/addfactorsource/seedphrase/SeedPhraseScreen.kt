@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.addfactorsource.seedphrase
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -54,6 +55,7 @@ import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -62,7 +64,7 @@ fun SeedPhraseScreen(
     viewModel: SeedPhraseViewModel,
     onDismiss: () -> Unit,
     onDismissFlow: () -> Unit,
-    onConfirmed: () -> Unit
+    onConfirm: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -82,7 +84,7 @@ fun SeedPhraseScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                SeedPhraseViewModel.Event.Confirmed -> onConfirmed()
+                SeedPhraseViewModel.Event.Confirmed -> onConfirm()
                 SeedPhraseViewModel.Event.Dismiss -> onDismiss()
                 SeedPhraseViewModel.Event.DismissFlow -> onDismissFlow()
             }
@@ -103,20 +105,75 @@ private fun SeedPhraseContent(
     onPassphraseChanged: (String) -> Unit,
     onConfirmClick: () -> Unit
 ) {
-    SecureScreen()
-
     val scrollState = rememberScrollState()
     var focusedWordIndex by remember { mutableStateOf<Int?>(null) }
-    val isSuggestionsVisible = state.seedPhraseState.rememberSuggestionsVisibilityState()
-
-    HideKeyboardOnFullScroll(scrollState)
-
     LaunchedEffect(state.isEditingEnabled) {
         if (state.isEditingEnabled) {
             scrollState.animateScrollTo(0)
             focusedWordIndex = 0
         }
     }
+
+    SeedPhraseScreen(
+        modifier = modifier,
+        state = state.seedPhraseState,
+        scrollState = scrollState,
+        title = when (state.context) {
+            AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_title)
+            is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.enterSeedPhrase_bip39Instruction)
+        },
+        description = when (state.context) {
+            AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle)
+            is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.newBiometricFactor_seedPhraseCustom_subtitle)
+        },
+        isConfirmButtonEnabled = state.isConfirmButtonEnabled,
+        focusedWordIndex = focusedWordIndex,
+        numberOfWordsOptions = Bip39WordCount.entries.toPersistentList(),
+        showNumberOfWordsPicker = state.isOlympiaRecovery,
+        showAdvancedMode = state.isOlympiaRecovery,
+        isEditingEnabled = state.isEditingEnabled,
+        errorMessage = state.errorMessage,
+        onDismiss = onDismiss,
+        onDismissMessage = onDismissMessage,
+        onFocusedWordIndexChanged = { focusedWordIndex = it },
+        onWordChanged = onWordChanged,
+        onWordSelected = onWordSelected,
+        onEnterCustomSeedPhraseClick = onEnterCustomSeedPhraseClick,
+        onNumberOfWordsChanged = onNumberOfWordsChanged,
+        onPassphraseChanged = onPassphraseChanged,
+        onConfirmClick = onConfirmClick
+    )
+}
+
+@Composable
+fun SeedPhraseScreen(
+    state: SeedPhraseInputDelegate.State,
+    title: String,
+    description: String,
+    isConfirmButtonEnabled: Boolean,
+    focusedWordIndex: Int?,
+    numberOfWordsOptions: ImmutableList<Bip39WordCount>,
+    showNumberOfWordsPicker: Boolean,
+    showAdvancedMode: Boolean,
+    isEditingEnabled: Boolean,
+    errorMessage: UiMessage.ErrorMessage?,
+    onDismiss: () -> Unit,
+    onDismissMessage: () -> Unit,
+    onFocusedWordIndexChanged: (Int) -> Unit,
+    onWordChanged: (Int, String) -> Unit,
+    onWordSelected: (Int, String) -> Unit,
+    onNumberOfWordsChanged: (Bip39WordCount) -> Unit,
+    onConfirmClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
+    onEnterCustomSeedPhraseClick: (() -> Unit)? = null,
+    onPassphraseChanged: ((String) -> Unit)? = null
+) {
+    SecureScreen()
+
+    val isSuggestionsVisible = state.rememberSuggestionsVisibilityState()
+
+    HideKeyboardOnFullScroll(scrollState)
 
     Scaffold(
         modifier = modifier,
@@ -137,7 +194,7 @@ private fun SeedPhraseContent(
                         .fillMaxWidth()
                         .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                         .padding(RadixTheme.dimensions.paddingSmall),
-                    wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
+                    wordAutocompleteCandidates = state.wordAutocompleteCandidates,
                     onCandidateClick = { candidate ->
                         focusedWordIndex?.let {
                             onWordSelected(it, candidate)
@@ -148,7 +205,7 @@ private fun SeedPhraseContent(
                 RadixBottomBar(
                     onClick = onConfirmClick,
                     text = stringResource(id = R.string.common_confirm),
-                    enabled = state.isConfirmButtonEnabled
+                    enabled = isConfirmButtonEnabled
                 )
             }
         }
@@ -171,10 +228,7 @@ private fun SeedPhraseContent(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = when (state.context) {
-                    AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_title)
-                    is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.enterSeedPhrase_bip39Instruction)
-                },
+                text = title,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
@@ -184,20 +238,18 @@ private fun SeedPhraseContent(
 
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = when (state.context) {
-                    AddFactorSourceInput.Context.New -> stringResource(id = R.string.newBiometricFactor_seedPhrase_subtitle)
-                    is AddFactorSourceInput.Context.Recovery -> stringResource(id = R.string.newBiometricFactor_seedPhraseCustom_subtitle)
-                },
+                text = description,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
 
-            if (state.isOlympiaRecovery) {
+            if (showNumberOfWordsPicker) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                 NumberOfWordsTabView(
-                    selectedNumberOfWords = state.seedPhraseState.seedPhraseWords.size,
+                    options = numberOfWordsOptions,
+                    currentNumberOfWords = state.seedPhraseWords.size,
                     onNumberOfWordsChanged = onNumberOfWordsChanged
                 )
             }
@@ -206,18 +258,18 @@ private fun SeedPhraseContent(
 
             SeedPhraseInputForm(
                 modifier = Modifier.fillMaxWidth(),
-                seedPhraseWords = state.seedPhraseState.seedPhraseWords,
-                bip39Passphrase = state.seedPhraseState.bip39Passphrase,
+                seedPhraseWords = state.seedPhraseWords,
+                bip39Passphrase = state.bip39Passphrase,
                 onWordChanged = onWordChanged,
-                onFocusedWordIndexChanged = { focusedWordIndex = it },
-                onPassphraseChanged = onPassphraseChanged,
+                onFocusedWordIndexChanged = onFocusedWordIndexChanged,
+                onPassphraseChanged = { onPassphraseChanged?.invoke(it) },
                 initiallyFocusedIndex = focusedWordIndex,
                 textFieldColors = MnemonicTextFieldColors.default(),
-                showAdvancedMode = state.isOlympiaRecovery
+                showAdvancedMode = showAdvancedMode
             )
 
-            val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
-                state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+            val shouldDisplaySeedPhraseWarning = remember(state) {
+                state.shouldDisplayInvalidSeedPhraseWarning()
             }
 
             if (shouldDisplaySeedPhraseWarning) {
@@ -229,10 +281,10 @@ private fun SeedPhraseContent(
                 )
             }
 
-            if (!state.isEditingEnabled) {
+            if (!isEditingEnabled) {
                 RadixTextButton(
                     text = stringResource(id = R.string.newBiometricFactor_seedPhrase_enterCustomButton),
-                    onClick = onEnterCustomSeedPhraseClick
+                    onClick = { onEnterCustomSeedPhraseClick?.invoke() }
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -240,7 +292,7 @@ private fun SeedPhraseContent(
         }
     }
 
-    state.errorMessage?.let { error ->
+    errorMessage?.let { error ->
         ErrorAlertDialog(
             cancel = onDismissMessage,
             errorMessage = error,

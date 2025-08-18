@@ -1,10 +1,10 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.createpin
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.configurepin
 
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants.ARCULUS_PIN_LENGTH
 
-data class CreateArculusPinState(
+data class ConfigureArculusPinState(
     val pin: String = "",
     val confirmedPin: String = "",
     val isConfirmButtonLoading: Boolean = false,
