@@ -183,21 +183,30 @@ sealed interface AccessFactorSourcesOutput {
     data object Init : AccessFactorSourcesOutput
 }
 
-fun AccessFactorSourcesOutput.Sign.Companion.signedAuth(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfAuthIntentHash>) = AccessFactorSourcesOutput.SignAuth(
+fun AccessFactorSourcesOutput.Sign.Companion.signedAuth(
+    factorSourceId: FactorSourceIdFromHash,
+    signatures: List<HdSignatureOfAuthIntentHash>
+) = AccessFactorSourcesOutput.SignAuth(
     outcome = PerFactorOutcomeOfAuthIntentHash(
         factorSourceId = factorSourceId,
         outcome = FactorOutcomeOfAuthIntentHash.Signed(producedSignatures = signatures)
     )
 )
 
-fun AccessFactorSourcesOutput.Sign.Companion.signedTransaction(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfTransactionIntentHash>) = AccessFactorSourcesOutput.SignTransaction(
+fun AccessFactorSourcesOutput.Sign.Companion.signedTransaction(
+    factorSourceId: FactorSourceIdFromHash,
+    signatures: List<HdSignatureOfTransactionIntentHash>
+) = AccessFactorSourcesOutput.SignTransaction(
     outcome = PerFactorOutcomeOfTransactionIntentHash(
         factorSourceId = factorSourceId,
         outcome = FactorOutcomeOfTransactionIntentHash.Signed(producedSignatures = signatures)
     )
 )
 
-fun AccessFactorSourcesOutput.Sign.Companion.signedSubintent(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfSubintentHash>) = AccessFactorSourcesOutput.SignSubintent(
+fun AccessFactorSourcesOutput.Sign.Companion.signedSubintent(
+    factorSourceId: FactorSourceIdFromHash,
+    signatures: List<HdSignatureOfSubintentHash>
+) = AccessFactorSourcesOutput.SignSubintent(
     outcome = PerFactorOutcomeOfSubintentHash(
         factorSourceId = factorSourceId,
         outcome = FactorOutcomeOfSubintentHash.Signed(producedSignatures = signatures)

@@ -67,6 +67,7 @@ class GetSignaturesViewModel @Inject constructor(
         id = proxyInput.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,

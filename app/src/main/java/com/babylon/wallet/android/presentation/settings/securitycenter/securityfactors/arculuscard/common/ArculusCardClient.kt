@@ -90,7 +90,8 @@ class ArculusCardClient @Inject constructor(
 
     suspend fun sign(
         factorSource: FactorSource.ArculusCard,
-        input: AccessFactorSourcesInput.Sign
+        input: AccessFactorSourcesInput.Sign,
+        pin: String
     ): Result<AccessFactorSourcesOutput.Sign> {
         return sargonOsManager.callSafely(dispatcher) {
             when (input) {
@@ -99,7 +100,7 @@ class ArculusCardClient @Inject constructor(
                         factorSourceId = input.factorSourceId,
                         signatures = arculusCardSignAuth(
                             factorSource.value,
-                            "123456",
+                            pin,
                             input.input.perTransaction
                         )
                     )
@@ -110,7 +111,7 @@ class ArculusCardClient @Inject constructor(
                         factorSourceId = input.factorSourceId,
                         signatures = arculusCardSignSubintent(
                             factorSource.value,
-                            "123456",
+                            pin,
                             input.input.perTransaction
                         )
                     )
@@ -121,7 +122,7 @@ class ArculusCardClient @Inject constructor(
                         factorSourceId = input.factorSourceId,
                         signatures = arculusCardSignTransaction(
                             factorSource.value,
-                            "123456",
+                            pin,
                             input.input.perTransaction
                         )
                     )

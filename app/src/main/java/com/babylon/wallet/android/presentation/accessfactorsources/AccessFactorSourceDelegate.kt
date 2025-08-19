@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.State.FactorSourcesToAccess
@@ -39,6 +40,7 @@ class AccessFactorSourceDelegate private constructor(
     private val input: DelegateInput,
     private val getProfileUseCase: GetProfileUseCase,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+    private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
     private val defaultDispatcher: CoroutineDispatcher,
     private val onAccessCallback: suspend (FactorSource) -> Result<Unit>,
     private val onDismissCallback: suspend () -> Unit,
@@ -50,6 +52,7 @@ class AccessFactorSourceDelegate private constructor(
         id: FactorSourceId,
         getProfileUseCase: GetProfileUseCase,
         accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+        accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
         defaultDispatcher: CoroutineDispatcher,
         onAccessCallback: suspend (FactorSource) -> Result<Unit>,
         onDismissCallback: suspend () -> Unit,
@@ -59,6 +62,7 @@ class AccessFactorSourceDelegate private constructor(
         input = DelegateInput.WithFactorSourceId(factorSourceId = id),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = onAccessCallback,
         onDismissCallback = onDismissCallback,
@@ -70,6 +74,7 @@ class AccessFactorSourceDelegate private constructor(
         factorSource: FactorSource,
         getProfileUseCase: GetProfileUseCase,
         accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
+        accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
         defaultDispatcher: CoroutineDispatcher,
         onAccessCallback: suspend (FactorSource) -> Result<Unit>,
         onDismissCallback: suspend () -> Unit,
@@ -79,6 +84,7 @@ class AccessFactorSourceDelegate private constructor(
         input = DelegateInput.WithFactorSource(factorSource = factorSource),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = onAccessCallback,
         onDismissCallback = onDismissCallback,
@@ -164,6 +170,11 @@ class AccessFactorSourceDelegate private constructor(
                 }
             }
 
+            is FactorSource.ArculusCard -> {
+                accessArculusFactorSourceUseCase.onPinForSigningConfirmed(_state.value.arculusPinState.input)
+                access(factorSource)
+            }
+
             is FactorSource.Password -> TODO("Future implementation")
             else -> {
                 // The rest of the factor sources require no manual input
@@ -213,7 +224,15 @@ class AccessFactorSourceDelegate private constructor(
                         UiMessage.ErrorMessage(error)
                     }
 
-                _state.update { it.copy(isAccessInProgress = false, errorMessage = errorMessageToShow) }
+                _state.update {
+                    it.copy(
+                        isAccessInProgress = false,
+                        errorMessage = errorMessageToShow,
+                        arculusPinState = it.arculusPinState.copy(
+                            input = ""
+                        )
+                    )
+                }
             }
     }
 
@@ -311,8 +330,7 @@ class AccessFactorSourceDelegate private constructor(
         )
 
         data class ArculusPinState(
-            val input: String = "",
-            val errorMessage: UiMessage.ErrorMessage? = null
+            val input: String = ""
         ) {
 
             val isConfirmButtonEnabled: Boolean = input.length == ARCULUS_PIN_LENGTH

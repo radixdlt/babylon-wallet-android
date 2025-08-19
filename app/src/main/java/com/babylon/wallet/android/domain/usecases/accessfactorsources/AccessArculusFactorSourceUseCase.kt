@@ -6,11 +6,14 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
+import kotlinx.coroutines.channels.Channel
 import javax.inject.Inject
 
 class AccessArculusFactorSourceUseCase @Inject constructor(
     private val arculusCardClient: ArculusCardClient
 ) : AccessFactorSource<FactorSource.ArculusCard> {
+
+    private val pinChannel = Channel<String>()
 
     override suspend fun derivePublicKeys(
         factorSource: FactorSource.ArculusCard,
@@ -23,10 +26,15 @@ class AccessArculusFactorSourceUseCase @Inject constructor(
         factorSource: FactorSource.ArculusCard,
         input: AccessFactorSourcesInput.Sign
     ): Result<AccessFactorSourcesOutput.Sign> {
-        return arculusCardClient.sign(factorSource, input)
+        val pin = pinChannel.receive()
+        return arculusCardClient.sign(factorSource, input, pin)
     }
 
     override suspend fun spotCheck(factorSource: FactorSource.ArculusCard): Result<Boolean> {
         TODO("Future implementation")
+    }
+
+    suspend fun onPinForSigningConfirmed(pin: String) {
+        pinChannel.send(pin)
     }
 }

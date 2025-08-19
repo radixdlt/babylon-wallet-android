@@ -209,7 +209,6 @@ private fun GetSignaturesBottomSheetContent(
                             onPinChange = onArculusPinChange,
                             skipOption = state.skipOption,
                             onSkipClick = onSkipClick,
-                            onRetryClick = onRetryClick,
                             onConfirmClick = onInputConfirmed
                         )
 

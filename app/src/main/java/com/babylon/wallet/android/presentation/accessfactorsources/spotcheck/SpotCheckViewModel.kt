@@ -55,6 +55,7 @@ class SpotCheckViewModel @Inject constructor(
         factorSource = proxyInput.factorSource,
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,

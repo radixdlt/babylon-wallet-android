@@ -198,7 +198,6 @@ private fun DerivePublicKeysSheetContent(
                             pinState = accessFactorSourceState.arculusPinState,
                             skipOption = AccessFactorSourceSkipOption.None,
                             onPinChange = onArculusPinChange,
-                            onRetryClick = onRetryClick,
                             onSkipClick = {},
                             onConfirmClick = onInputConfirmed
                         )

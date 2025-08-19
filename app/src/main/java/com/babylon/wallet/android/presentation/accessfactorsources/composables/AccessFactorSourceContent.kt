@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -143,7 +144,6 @@ fun AccessArculusCardFactorSourceContent(
     pinState: AccessFactorSourceDelegate.State.ArculusPinState,
     onPinChange: (String) -> Unit,
     skipOption: AccessFactorSourceSkipOption,
-    onRetryClick: () -> Unit,
     onSkipClick: () -> Unit,
     onConfirmClick: () -> Unit
 ) {
@@ -164,6 +164,7 @@ fun AccessArculusCardFactorSourceContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val focusRequester = remember { FocusRequester() }
+                    val focusManager = LocalFocusManager.current
 
                     LaunchedEffect(Unit) {
                         delay(300)
@@ -188,16 +189,13 @@ fun AccessArculusCardFactorSourceContent(
                             .padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_confirm),
                         enabled = pinState.isConfirmButtonEnabled,
-                        onClick = onConfirmClick
+                        onClick = {
+                            focusManager.clearFocus()
+                            onConfirmClick()
+                        }
                     )
                 }
             }
-
-            AccessContentRetryButton(
-                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
-                isEnabled = true,
-                onClick = onRetryClick
-            )
 
             SkipOption(
                 skipOption = skipOption,
@@ -581,7 +579,6 @@ private fun PreviewContent(
             skipOption = skipOption,
             onPinChange = {},
             onSkipClick = {},
-            onRetryClick = {},
             onConfirmClick = {}
         )
 

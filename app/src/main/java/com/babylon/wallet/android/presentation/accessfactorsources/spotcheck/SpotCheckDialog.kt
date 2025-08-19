@@ -204,7 +204,6 @@ private fun SpotCheckBottomSheetContent(
                             skipOption = state.skipOption,
                             onPinChange = onArculusPinChange,
                             onSkipClick = onIgnoreClick,
-                            onRetryClick = onRetryClick,
                             onConfirmClick = onInputConfirmed
                         )
 

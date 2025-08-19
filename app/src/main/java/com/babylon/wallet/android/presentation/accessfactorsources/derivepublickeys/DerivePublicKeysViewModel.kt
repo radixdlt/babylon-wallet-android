@@ -51,6 +51,7 @@ class DerivePublicKeysViewModel @Inject constructor(
         id = proxyInput.request.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,

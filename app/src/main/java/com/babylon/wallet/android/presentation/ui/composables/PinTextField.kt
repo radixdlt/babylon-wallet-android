@@ -77,7 +77,7 @@ fun PinTextField(
     isEnabled: Boolean = true
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    var pinValue by remember(pinValue) { mutableStateOf(pinValue) }
+    var pinValueState by remember(pinValue) { mutableStateOf(pinValue) }
 
     BasicTextField(
         modifier = modifier
@@ -85,11 +85,11 @@ fun PinTextField(
             .onFocusChanged {
                 isFocused = it.hasFocus
             },
-        value = pinValue,
+        value = pinValueState,
         cursorBrush = SolidColor(Color.Transparent),
         onValueChange = { newValue ->
             if (newValue.length <= pinLength && newValue.all { it.isDigit() }) {
-                pinValue = newValue
+                pinValueState = newValue
                 onPinChange?.invoke(newValue)
 
                 if (newValue.length == pinLength) {
