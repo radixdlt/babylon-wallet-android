@@ -9,11 +9,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxy
 import com.babylon.wallet.android.presentation.sargonInteractors.NFCTagInteractor
 import com.babylon.wallet.android.presentation.sargonInteractors.WalletInteractor
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.driver.BiometricsHandler
@@ -109,7 +112,7 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun provideNfcTagDriver(
-        appEventBus: com.babylon.wallet.android.utils.AppEventBus,
-        sessionProxy: com.babylon.wallet.android.presentation.nfc.NfcSessionProxy
-    ): com.radixdlt.sargon.NfcTagDriver = NFCTagInteractor(appEventBus, sessionProxy)
+        appEventBus: AppEventBus,
+        sessionProxy: NfcSessionProxy
+    ): NfcTagDriver = NFCTagInteractor(appEventBus, sessionProxy)
 }

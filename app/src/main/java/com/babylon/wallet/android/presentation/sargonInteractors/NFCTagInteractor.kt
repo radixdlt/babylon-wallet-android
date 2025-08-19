@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.sargonInteractors
 
-import com.babylon.wallet.android.presentation.nfc.NfcSessionProxy
+import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxy
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.BagOfBytes
@@ -13,16 +13,15 @@ class NFCTagInteractor @Inject constructor(
     private val appEventBus: AppEventBus,
     private val sessionProxy: NfcSessionProxy
 ) : NfcTagDriver {
+
     override suspend fun startSession(purpose: NfcTagDriverPurpose) {
         appEventBus.sendEvent(AppEvent.Nfc.StartSession(purpose))
-        sessionProxy.onSessionStarted()
         // Wait until UI reports tag discovered and ready
-        sessionProxy.awaitReady()
+        sessionProxy.awaitSessionReady()
     }
 
     override suspend fun endSession(withFailure: CommonException?) {
-        appEventBus.sendEvent(AppEvent.Nfc.EndSession(withFailure))
-        sessionProxy.onSessionEnded(withFailure)
+        sessionProxy.sendEvent(NfcSessionProxy.Event.EndSession(withFailure))
     }
 
     override suspend fun sendReceive(command: BagOfBytes): BagOfBytes {
@@ -34,6 +33,6 @@ class NFCTagInteractor @Inject constructor(
     }
 
     override suspend fun setMessage(message: String) {
-        appEventBus.sendEvent(AppEvent.Nfc.SetMessage(message))
+        sessionProxy.sendEvent(NfcSessionProxy.Event.SetMessage(message))
     }
 }

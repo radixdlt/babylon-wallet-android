@@ -237,8 +237,6 @@ private fun HandleNfcEvents(
         nfcEvents.collect { event ->
             when (event) {
                 is AppEvent.Nfc.StartSession -> navController.nfcDialog()
-                is AppEvent.Nfc.EndSession,
-                is AppEvent.Nfc.SetMessage -> null // ViewModel consumes message via AppEventBus
             }
         }
     }

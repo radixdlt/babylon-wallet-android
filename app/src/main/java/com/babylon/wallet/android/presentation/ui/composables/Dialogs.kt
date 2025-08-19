@@ -314,6 +314,10 @@ fun ErrorAlertDialog(
         errorMessage.error as? CommonException
     }
 
+    if (commonException is CommonException.HostInteractionAborted) {
+        return
+    }
+
     val context = LocalContext.current
     AlertDialog(
         modifier = modifier,

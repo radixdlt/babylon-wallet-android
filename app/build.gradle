@@ -207,6 +207,7 @@ dependencies {
     implementation libs.material
     implementation libs.composeMaterial3
     implementation libs.material3WindowSizeClass
+    implementation libs.materialIconsExtended
     implementation libs.splash
     implementation libs.palette
     implementation libs.browser

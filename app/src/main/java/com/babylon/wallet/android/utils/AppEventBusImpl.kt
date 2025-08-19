@@ -3,7 +3,6 @@ package com.babylon.wallet.android.utils
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.NfcTagDriverPurpose
@@ -177,10 +176,8 @@ sealed interface AppEvent {
 
     data object GenericSuccess : AppEvent
 
-    // NFC session events to drive the NFC sheet
     sealed interface Nfc : AppEvent {
+
         data class StartSession(val purpose: NfcTagDriverPurpose?) : Nfc
-        data class SetMessage(val message: String) : Nfc
-        data class EndSession(val withFailure: CommonException?) : Nfc
     }
 }
