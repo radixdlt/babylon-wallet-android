@@ -3,16 +3,29 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.radixdlt.sargon.AuthorizationPurpose
 import com.radixdlt.sargon.AuthorizationResponse
 import com.radixdlt.sargon.DerivationPurpose
+import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HdSignatureOfAuthIntentHash
+import com.radixdlt.sargon.HdSignatureOfSubintentHash
+import com.radixdlt.sargon.HdSignatureOfTransactionIntentHash
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
+import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
+import com.radixdlt.sargon.PerFactorSourceInputOfAuthIntent
+import com.radixdlt.sargon.PerFactorSourceInputOfSubintent
+import com.radixdlt.sargon.PerFactorSourceInputOfTransactionIntent
 import com.radixdlt.sargon.SpotCheckResponse
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
+import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
+import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
+import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
+import com.radixdlt.sargon.extensions.decompile
+import com.radixdlt.sargon.extensions.hash
 
 /**
  * Interface for the callers (ViewModels or UseCases) that need access to factor sources.
@@ -32,9 +45,9 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
     ): AccessFactorSourcesOutput.DerivedPublicKeys
 
-    suspend fun <SP : Signable.Payload, ID : Signable.ID> sign(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<SP, ID>
-    ): AccessFactorSourcesOutput.SignOutput<ID>
+    suspend fun sign(
+        input: AccessFactorSourcesInput.Sign
+    ): AccessFactorSourcesOutput.Sign
 
     suspend fun spotCheck(factorSource: FactorSource, allowSkip: Boolean): AccessFactorSourcesOutput.SpotCheckOutput
 
@@ -91,18 +104,24 @@ sealed interface AccessFactorSourcesInput {
         val request: KeyDerivationRequestPerFactorSource
     ) : AccessFactorSourcesInput
 
-    data class ToSign<SP : Signable.Payload, ID : Signable.ID>(
-        val purpose: Purpose,
-        val kind: FactorSourceKind,
-        val input: PerFactorSourceInput<SP, ID>
-    ) : AccessFactorSourcesInput {
-
-        enum class Purpose {
-            TransactionIntents,
-            SubIntents,
-            AuthIntents
-        }
+    sealed interface Sign : AccessFactorSourcesInput {
+        val factorSourceId: FactorSourceIdFromHash
     }
+
+    data class SignTransaction(
+        override val factorSourceId: FactorSourceIdFromHash,
+        val input: PerFactorSourceInputOfTransactionIntent
+    ) : Sign
+
+    data class SignSubintent(
+        override val factorSourceId: FactorSourceIdFromHash,
+        val input: PerFactorSourceInputOfSubintent
+    ) : Sign
+
+    data class SignAuth(
+        override val factorSourceId: FactorSourceIdFromHash,
+        val input: PerFactorSourceInputOfAuthIntent
+    ) : Sign
 
     data class ToSpotCheck(
         val factorSource: FactorSource,
@@ -135,13 +154,23 @@ sealed interface AccessFactorSourcesOutput {
         data object Rejected : DerivedPublicKeys
     }
 
-    sealed interface SignOutput<ID : Signable.ID> : AccessFactorSourcesOutput {
-        data class Completed<ID : Signable.ID>(
-            val outcome: PerFactorOutcome<ID>
-        ) : SignOutput<ID>
-
-        data object Rejected : SignOutput<Signable.ID>
+    sealed interface Sign : AccessFactorSourcesOutput {
+        companion object
     }
+
+    data class SignTransaction(
+        val outcome: PerFactorOutcomeOfTransactionIntentHash
+    ) : Sign
+
+    data class SignSubintent(
+        val outcome: PerFactorOutcomeOfSubintentHash
+    ) : Sign
+
+    data class SignAuth(
+        val outcome: PerFactorOutcomeOfAuthIntentHash
+    ) : Sign
+
+    data object SignRejected : Sign
 
     sealed interface SpotCheckOutput : AccessFactorSourcesOutput {
         data class Completed(
@@ -153,3 +182,28 @@ sealed interface AccessFactorSourcesOutput {
 
     data object Init : AccessFactorSourcesOutput
 }
+
+fun AccessFactorSourcesOutput.Sign.Companion.signedAuth(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfAuthIntentHash>) = AccessFactorSourcesOutput.SignAuth(
+    outcome = PerFactorOutcomeOfAuthIntentHash(
+        factorSourceId = factorSourceId,
+        outcome = FactorOutcomeOfAuthIntentHash.Signed(producedSignatures = signatures)
+    )
+)
+
+fun AccessFactorSourcesOutput.Sign.Companion.signedTransaction(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfTransactionIntentHash>) = AccessFactorSourcesOutput.SignTransaction(
+    outcome = PerFactorOutcomeOfTransactionIntentHash(
+        factorSourceId = factorSourceId,
+        outcome = FactorOutcomeOfTransactionIntentHash.Signed(producedSignatures = signatures)
+    )
+)
+
+fun AccessFactorSourcesOutput.Sign.Companion.signedSubintent(factorSourceId: FactorSourceIdFromHash, signatures: List<HdSignatureOfSubintentHash>) = AccessFactorSourcesOutput.SignSubintent(
+    outcome = PerFactorOutcomeOfSubintentHash(
+        factorSourceId = factorSourceId,
+        outcome = FactorOutcomeOfSubintentHash.Signed(producedSignatures = signatures)
+    )
+)
+
+fun TransactionSignRequestInputOfTransactionIntent.payloadId() = payload.decompile().hash()
+fun TransactionSignRequestInputOfSubintent.payloadId() = payload.decompile().hash()
+fun TransactionSignRequestInputOfAuthIntent.payloadId() = payload.hash()

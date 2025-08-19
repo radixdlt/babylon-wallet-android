@@ -2,6 +2,11 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.signedAuth
+import com.babylon.wallet.android.presentation.accessfactorsources.signedSubintent
+import com.babylon.wallet.android.presentation.accessfactorsources.signedTransaction
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.ArculusMinFirmwareVersionRequirement
 import com.radixdlt.sargon.CommonException
@@ -81,5 +86,47 @@ class ArculusCardClient @Inject constructor(
             oldPin = oldPin,
             newPin = newPin
         )
+    }
+
+    suspend fun sign(
+        factorSource: FactorSource.ArculusCard,
+        input: AccessFactorSourcesInput.Sign
+    ): Result<AccessFactorSourcesOutput.Sign> {
+        return sargonOsManager.callSafely(dispatcher) {
+            when (input) {
+                is AccessFactorSourcesInput.SignAuth -> {
+                    AccessFactorSourcesOutput.Sign.signedAuth(
+                        factorSourceId = input.factorSourceId,
+                        signatures = arculusCardSignAuth(
+                            factorSource.value,
+                            "123456",
+                            input.input.perTransaction
+                        )
+                    )
+                }
+
+                is AccessFactorSourcesInput.SignSubintent -> {
+                    AccessFactorSourcesOutput.Sign.signedSubintent(
+                        factorSourceId = input.factorSourceId,
+                        signatures = arculusCardSignSubintent(
+                            factorSource.value,
+                            "123456",
+                            input.input.perTransaction
+                        )
+                    )
+                }
+
+                is AccessFactorSourcesInput.SignTransaction -> {
+                    AccessFactorSourcesOutput.Sign.signedTransaction(
+                        factorSourceId = input.factorSourceId,
+                        signatures = arculusCardSignTransaction(
+                            factorSource.value,
+                            "123456",
+                            input.input.perTransaction
+                        )
+                    )
+                }
+            }
+        }
     }
 }
