@@ -84,7 +84,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         input: AccessFactorSourcesInput.Sign
     ): Result<AccessFactorSourcesOutput.Sign> {
         return when (input) {
-            is AccessFactorSourcesInput.SignTransaction -> signTransactionN(
+            is AccessFactorSourcesInput.SignTransaction -> signTransaction(
                 input = input.input,
                 ledgerFactorSource = factorSource
             )
@@ -97,6 +97,9 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
                 ledgerFactorSource = factorSource
             )
         }
+            .onSuccess {
+                updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+            }
     }
 
     override suspend fun spotCheck(factorSource: FactorSource.Ledger): Result<Boolean> = ledgerMessenger.sendDeviceInfoRequest(
@@ -107,7 +110,7 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
     }
 
-    private suspend fun signTransactionN(
+    private suspend fun signTransaction(
         input: PerFactorSourceInputOfTransactionIntent,
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<AccessFactorSourcesOutput.SignTransaction> {

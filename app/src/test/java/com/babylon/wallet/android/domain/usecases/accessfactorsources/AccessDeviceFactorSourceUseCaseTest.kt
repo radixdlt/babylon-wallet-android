@@ -2,6 +2,8 @@ package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import androidx.biometric.BiometricPrompt
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DerivationPath
@@ -11,7 +13,9 @@ import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OwnedFactorInstance
+import com.radixdlt.sargon.PerFactorSourceInputOfTransactionIntent
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
@@ -85,10 +89,13 @@ class AccessDeviceFactorSourceUseCaseTest {
 
         val result = sut.signMono(
             factorSource = device.asGeneral(),
-            input = PerFactorSourceInput(
+            input = AccessFactorSourcesInput.SignTransaction(
                 factorSourceId = device.id,
-                perTransaction = emptyList(),
-                invalidTransactionsIfNeglected = emptyList()
+                input = PerFactorSourceInputOfTransactionIntent(
+                    factorSourceId = device.id,
+                    perTransaction = emptyList(),
+                    invalidTransactionsIfNeglected = emptyList()
+                ),
             )
         )
 
@@ -136,10 +143,13 @@ class AccessDeviceFactorSourceUseCaseTest {
 
         val result = sut.signMono(
             factorSource = device.asGeneral(),
-            input = PerFactorSourceInput(
+            input = AccessFactorSourcesInput.SignTransaction(
                 factorSourceId = device.id,
-                perTransaction = emptyList(),
-                invalidTransactionsIfNeglected = emptyList()
+                input = PerFactorSourceInputOfTransactionIntent(
+                    factorSourceId = device.id,
+                    perTransaction = emptyList(),
+                    invalidTransactionsIfNeglected = emptyList()
+                ),
             )
         )
 
@@ -186,10 +196,13 @@ class AccessDeviceFactorSourceUseCaseTest {
 
         val result = sut.signMono(
             factorSource = device.asGeneral(),
-            input = PerFactorSourceInput(
+            input = AccessFactorSourcesInput.SignTransaction(
                 factorSourceId = device.id,
-                perTransaction = emptyList(),
-                invalidTransactionsIfNeglected = emptyList()
+                input = PerFactorSourceInputOfTransactionIntent(
+                    factorSourceId = device.id,
+                    perTransaction = emptyList(),
+                    invalidTransactionsIfNeglected = emptyList()
+                ),
             )
         )
 
@@ -237,10 +250,13 @@ class AccessDeviceFactorSourceUseCaseTest {
 
         val result = sut.signMono(
             factorSource = device.asGeneral(),
-            input = PerFactorSourceInput(
+            input = AccessFactorSourcesInput.SignTransaction(
                 factorSourceId = device.id,
-                perTransaction = emptyList(),
-                invalidTransactionsIfNeglected = emptyList()
+                input = PerFactorSourceInputOfTransactionIntent(
+                    factorSourceId = device.id,
+                    perTransaction = emptyList(),
+                    invalidTransactionsIfNeglected = emptyList()
+                ),
             )
         )
 
@@ -297,34 +313,33 @@ class AccessDeviceFactorSourceUseCaseTest {
             mnemonicInRepository = mnemonicWithPassphrase
         )
 
-        val input = PerFactorSourceInput<Signable.Payload.Transaction, Signable.ID.Transaction>(
+        val input = AccessFactorSourcesInput.SignTransaction(
             factorSourceId = device.id,
-            perTransaction = listOf(
-                TransactionSignRequestInput(
-                    payload = Signable.Payload.Transaction(TransactionIntent.sample().compile()),
-                    factorSourceId = device.id,
-                    ownedFactorInstances = listOf(
-                        OwnedFactorInstance(
-                            owner = AddressOfAccountOrPersona.sampleMainnet(),
-                            factorInstance = HierarchicalDeterministicFactorInstance.sample()
+            input = PerFactorSourceInputOfTransactionIntent(
+                factorSourceId = device.id,
+                perTransaction = listOf(
+                    TransactionSignRequestInputOfTransactionIntent(
+                        payload = TransactionIntent.sample().compile(),
+                        factorSourceId = device.id,
+                        ownedFactorInstances = listOf(
+                            OwnedFactorInstance(
+                                owner = AddressOfAccountOrPersona.sampleMainnet(),
+                                factorInstance = HierarchicalDeterministicFactorInstance.sample()
+                            )
                         )
-                    )
-                )
-            ),
-            invalidTransactionsIfNeglected = emptyList()
+                    ),
+                ),
+                invalidTransactionsIfNeglected = emptyList()
+            )
         )
+
         val result = sut.signMono(
             factorSource = device.asGeneral(),
             input = input
         )
 
         assertEquals(
-            PerFactorOutcome(
-                factorSourceId = device.id,
-                outcome = FactorOutcome.Signed(
-                    producedSignatures = mnemonicWithPassphrase.signInteractorInput(input = input)
-                )
-            ),
+            mnemonicWithPassphrase.signTransaction(input.input),
             result.getOrNull()
         )
         coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral()) }

@@ -110,91 +110,92 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
                 }
             }
     }
+}
 
-    fun MnemonicWithPassphrase.signTransaction(
-        input: PerFactorSourceInputOfTransactionIntent
-    ): AccessFactorSourcesOutput.Sign {
-        val signatures = input.perTransaction.map { transaction ->
-            val payloadId = transaction.payloadId()
+// To be moved to sargon
+fun MnemonicWithPassphrase.signTransaction(
+    input: PerFactorSourceInputOfTransactionIntent
+): AccessFactorSourcesOutput.Sign {
+    val signatures = input.perTransaction.map { transaction ->
+        val payloadId = transaction.payloadId()
 
-            transaction.ownedFactorInstances.map { instance ->
-                val signatureWithPublicKey = sign(
-                    hash = payloadId.hash,
-                    path = instance.factorInstance.publicKey.derivationPath
-                )
+        transaction.ownedFactorInstances.map { instance ->
+            val signatureWithPublicKey = sign(
+                hash = payloadId.hash,
+                path = instance.factorInstance.publicKey.derivationPath
+            )
 
-                HdSignatureOfTransactionIntentHash(
-                    input = HdSignatureInputOfTransactionIntentHash(
-                        payloadId = payloadId,
-                        ownedFactorInstance = instance
-                    ),
-                    signature = signatureWithPublicKey
-                )
-            }
+            HdSignatureOfTransactionIntentHash(
+                input = HdSignatureInputOfTransactionIntentHash(
+                    payloadId = payloadId,
+                    ownedFactorInstance = instance
+                ),
+                signature = signatureWithPublicKey
+            )
         }
-            .flatten()
-
-        return AccessFactorSourcesOutput.Sign.signedTransaction(
-            factorSourceId = input.factorSourceId,
-            signatures = signatures
-        )
     }
+        .flatten()
 
-    fun MnemonicWithPassphrase.signSubintent(
-        input: PerFactorSourceInputOfSubintent
-    ): AccessFactorSourcesOutput.Sign {
-        val signatures = input.perTransaction.map { transaction ->
-            val payloadId = transaction.payloadId()
+    return AccessFactorSourcesOutput.Sign.signedTransaction(
+        factorSourceId = input.factorSourceId,
+        signatures = signatures
+    )
+}
 
-            transaction.ownedFactorInstances.map { instance ->
-                val signatureWithPublicKey = sign(
-                    hash = payloadId.hash,
-                    path = instance.factorInstance.publicKey.derivationPath
-                )
+fun MnemonicWithPassphrase.signSubintent(
+    input: PerFactorSourceInputOfSubintent
+): AccessFactorSourcesOutput.Sign {
+    val signatures = input.perTransaction.map { transaction ->
+        val payloadId = transaction.payloadId()
 
-                HdSignatureOfSubintentHash(
-                    input = HdSignatureInputOfSubintentHash(
-                        payloadId = payloadId,
-                        ownedFactorInstance = instance
-                    ),
-                    signature = signatureWithPublicKey
-                )
-            }
+        transaction.ownedFactorInstances.map { instance ->
+            val signatureWithPublicKey = sign(
+                hash = payloadId.hash,
+                path = instance.factorInstance.publicKey.derivationPath
+            )
+
+            HdSignatureOfSubintentHash(
+                input = HdSignatureInputOfSubintentHash(
+                    payloadId = payloadId,
+                    ownedFactorInstance = instance
+                ),
+                signature = signatureWithPublicKey
+            )
         }
-            .flatten()
-
-        return AccessFactorSourcesOutput.Sign.signedSubintent(
-            factorSourceId = input.factorSourceId,
-            signatures = signatures
-        )
     }
+        .flatten()
 
-    fun MnemonicWithPassphrase.signAuth(
-        input: PerFactorSourceInputOfAuthIntent
-    ): AccessFactorSourcesOutput.Sign {
-        val signatures = input.perTransaction.map { transaction ->
-            val payloadId = transaction.payloadId()
+    return AccessFactorSourcesOutput.Sign.signedSubintent(
+        factorSourceId = input.factorSourceId,
+        signatures = signatures
+    )
+}
 
-            transaction.ownedFactorInstances.map { instance ->
-                val signatureWithPublicKey = sign(
-                    hash = payloadId.payload.hash(),
-                    path = instance.factorInstance.publicKey.derivationPath
-                )
+fun MnemonicWithPassphrase.signAuth(
+    input: PerFactorSourceInputOfAuthIntent
+): AccessFactorSourcesOutput.Sign {
+    val signatures = input.perTransaction.map { transaction ->
+        val payloadId = transaction.payloadId()
 
-                HdSignatureOfAuthIntentHash(
-                    input = HdSignatureInputOfAuthIntentHash(
-                        payloadId = payloadId,
-                        ownedFactorInstance = instance
-                    ),
-                    signature = signatureWithPublicKey
-                )
-            }
+        transaction.ownedFactorInstances.map { instance ->
+            val signatureWithPublicKey = sign(
+                hash = payloadId.payload.hash(),
+                path = instance.factorInstance.publicKey.derivationPath
+            )
+
+            HdSignatureOfAuthIntentHash(
+                input = HdSignatureInputOfAuthIntentHash(
+                    payloadId = payloadId,
+                    ownedFactorInstance = instance
+                ),
+                signature = signatureWithPublicKey
+            )
         }
-            .flatten()
-
-        return AccessFactorSourcesOutput.Sign.signedAuth(
-            factorSourceId = input.factorSourceId,
-            signatures = signatures
-        )
     }
+        .flatten()
+
+    return AccessFactorSourcesOutput.Sign.signedAuth(
+        factorSourceId = input.factorSourceId,
+        signatures = signatures
+    )
 }

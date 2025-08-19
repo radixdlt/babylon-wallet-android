@@ -92,9 +92,9 @@ class ArculusCardClient @Inject constructor(
         factorSource: FactorSource.ArculusCard,
         input: AccessFactorSourcesInput.Sign
     ): Result<AccessFactorSourcesOutput.Sign> {
-        when (input) {
-            is AccessFactorSourcesInput.SignAuth -> {
-                return sargonOsManager.callSafely(dispatcher) {
+        return sargonOsManager.callSafely(dispatcher) {
+            when (input) {
+                is AccessFactorSourcesInput.SignAuth -> {
                     AccessFactorSourcesOutput.Sign.signedAuth(
                         factorSourceId = input.factorSourceId,
                         signatures = arculusCardSignAuth(
@@ -104,10 +104,8 @@ class ArculusCardClient @Inject constructor(
                         )
                     )
                 }
-            }
 
-            is AccessFactorSourcesInput.SignSubintent -> {
-                return sargonOsManager.callSafely(dispatcher) {
+                is AccessFactorSourcesInput.SignSubintent -> {
                     AccessFactorSourcesOutput.Sign.signedSubintent(
                         factorSourceId = input.factorSourceId,
                         signatures = arculusCardSignSubintent(
@@ -117,10 +115,8 @@ class ArculusCardClient @Inject constructor(
                         )
                     )
                 }
-            }
 
-            is AccessFactorSourcesInput.SignTransaction -> {
-                return sargonOsManager.callSafely(dispatcher) {
+                is AccessFactorSourcesInput.SignTransaction -> {
                     AccessFactorSourcesOutput.Sign.signedTransaction(
                         factorSourceId = input.factorSourceId,
                         signatures = arculusCardSignTransaction(
