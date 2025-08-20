@@ -13,14 +13,11 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.nfc.common.NfcSessionIOHandler
 import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxy
-import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NfcTagDriverPurpose
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -34,13 +31,13 @@ private const val NFC_READER_TIMEOUT = 60000
 
 @HiltViewModel
 class NfcViewModel @Inject constructor(
-    private val appEventBus: AppEventBus,
     private val nfcSessionIOHandler: NfcSessionIOHandler,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<NfcViewModel.State>(),
     OneOffEventHandler<NfcViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var isoDep: IsoDep? = null
+    private var transceiveRequestsJob: Job? = null
 
     override fun initialState(): State = State()
 
@@ -51,6 +48,12 @@ class NfcViewModel @Inject constructor(
     }
 
     fun enableNfcReaderMode(perform: suspend () -> Unit) {
+        viewModelScope.launch(ioDispatcher) {
+            perform()
+        }
+    }
+
+    fun disableNfcReaderMode(perform: suspend () -> Unit) {
         viewModelScope.launch(ioDispatcher) {
             perform()
         }
@@ -92,16 +95,10 @@ class NfcViewModel @Inject constructor(
     }
 
     private fun initPurpose() {
-        viewModelScope.launch {
-            val purpose = appEventBus.events.filterIsInstance<AppEvent.Nfc.StartSession>()
-                .firstOrNull()
-                ?.purpose ?: return@launch
-
-            _state.update { state ->
-                state.copy(
-                    purpose = purpose
-                )
-            }
+        _state.update { state ->
+            state.copy(
+                purpose = nfcSessionIOHandler.purpose
+            )
         }
     }
 
@@ -120,7 +117,8 @@ class NfcViewModel @Inject constructor(
     }
 
     private fun observeTransceiveRequests() {
-        nfcSessionIOHandler.transceiveRequests
+        transceiveRequestsJob?.cancel()
+        transceiveRequestsJob = nfcSessionIOHandler.transceiveRequests
             .onEach { command ->
                 val isoDep = isoDep
 
@@ -166,6 +164,7 @@ class NfcViewModel @Inject constructor(
 
     private fun endSession() {
         viewModelScope.launch(ioDispatcher) {
+            transceiveRequestsJob?.cancel()
             nfcSessionIOHandler.onSessionClosed()
             sendEvent(Event.Completed)
             closeIsoDep()

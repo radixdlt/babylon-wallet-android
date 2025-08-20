@@ -5,7 +5,6 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.NfcTagDriverPurpose
 import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.delay
@@ -178,6 +177,6 @@ sealed interface AppEvent {
 
     sealed interface Nfc : AppEvent {
 
-        data class StartSession(val purpose: NfcTagDriverPurpose?) : Nfc
+        data object StartSession : Nfc
     }
 }

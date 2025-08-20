@@ -196,8 +196,9 @@ private fun DerivePublicKeysSheetContent(
                             purpose = state.purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                             pinState = accessFactorSourceState.arculusPinState,
-                            skipOption = AccessFactorSourceSkipOption.None,
                             onPinChange = onArculusPinChange,
+                            onRetryClick = onRetryClick,
+                            skipOption = AccessFactorSourceSkipOption.None,
                             onSkipClick = {},
                             onConfirmClick = onInputConfirmed
                         )

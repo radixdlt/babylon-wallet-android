@@ -201,8 +201,9 @@ private fun SpotCheckBottomSheetContent(
                             purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                             pinState = accessFactorSourceState.arculusPinState,
-                            skipOption = state.skipOption,
                             onPinChange = onArculusPinChange,
+                            onRetryClick = onRetryClick,
+                            skipOption = state.skipOption,
                             onSkipClick = onIgnoreClick,
                             onConfirmClick = onInputConfirmed
                         )

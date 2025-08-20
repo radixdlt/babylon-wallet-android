@@ -236,7 +236,7 @@ private fun HandleNfcEvents(
     LaunchedEffect(Unit) {
         nfcEvents.collect { event ->
             when (event) {
-                is AppEvent.Nfc.StartSession -> navController.nfcDialog()
+                AppEvent.Nfc.StartSession -> navController.nfcDialog()
             }
         }
     }

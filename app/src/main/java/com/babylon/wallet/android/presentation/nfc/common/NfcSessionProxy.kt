@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.nfc.common
 
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.NfcTagDriverPurpose
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -9,6 +10,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface NfcSessionIOHandler {
+
+    val purpose: NfcTagDriverPurpose?
 
     val transceiveRequests: Flow<BagOfBytes>
     val events: Flow<NfcSessionProxy.Event>
@@ -22,7 +25,7 @@ interface NfcSessionIOHandler {
 
 interface NfcSessionProxy {
 
-    suspend fun awaitSessionReady()
+    suspend fun awaitSessionReady(purpose: NfcTagDriverPurpose)
 
     suspend fun transceive(command: BagOfBytes): BagOfBytes
 
@@ -48,18 +51,22 @@ interface NfcSessionProxy {
 @Singleton
 class NfcSessionProxyImpl @Inject constructor() : NfcSessionProxy, NfcSessionIOHandler {
 
-    private val sessionReadyChannel = Channel<Unit>()
+    private val sessionReadyChannel = Channel<Result<Unit>>()
 
     private val transceiveRequestsChannel = Channel<BagOfBytes>()
     private val transceiveResultsChannel = Channel<Result<BagOfBytes>>()
 
     private val eventsChannel = Channel<NfcSessionProxy.Event>()
+    private var _purpose: NfcTagDriverPurpose? = null
 
+    override val purpose: NfcTagDriverPurpose?
+        get() = _purpose
     override val transceiveRequests: Flow<BagOfBytes> = transceiveRequestsChannel.receiveAsFlow()
     override val events: Flow<NfcSessionProxy.Event> = eventsChannel.receiveAsFlow()
 
-    override suspend fun awaitSessionReady() {
-        sessionReadyChannel.receive()
+    override suspend fun awaitSessionReady(purpose: NfcTagDriverPurpose) {
+        _purpose = purpose
+        sessionReadyChannel.receive().getOrThrow()
     }
 
     override suspend fun transceive(command: BagOfBytes): BagOfBytes {
@@ -80,7 +87,7 @@ class NfcSessionProxyImpl @Inject constructor() : NfcSessionProxy, NfcSessionIOH
     }
 
     override suspend fun onSessionReady() {
-        sessionReadyChannel.send(Unit)
+        sessionReadyChannel.send(Result.success(Unit))
     }
 
     override suspend fun onTransceiveResult(result: Result<BagOfBytes>) {
@@ -88,7 +95,7 @@ class NfcSessionProxyImpl @Inject constructor() : NfcSessionProxy, NfcSessionIOH
     }
 
     override suspend fun onSessionClosed() {
-        sessionReadyChannel.send(Unit)
-        transceiveResultsChannel.send(Result.failure(CommonException.HostInteractionAborted()))
+        sessionReadyChannel.trySend(Result.failure(CommonException.HostInteractionAborted()))
+        transceiveResultsChannel.trySend(Result.failure(CommonException.HostInteractionAborted()))
     }
 }

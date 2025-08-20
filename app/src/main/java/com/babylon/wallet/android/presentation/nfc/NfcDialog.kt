@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -69,15 +70,19 @@ fun NfcDialog(
     val context = LocalContext.current
     val activity: Activity? = remember { context.findFragmentActivity() }
 
+    BackHandler {
+        viewModel.onDismiss()
+    }
+
     LaunchedEffect(Unit) {
-        val nfcAdapter = NfcAdapter.getDefaultAdapter(context)
-
-        if (nfcAdapter?.isEnabled != true) {
-            viewModel.onNfcDisabled()
-            return@LaunchedEffect
-        }
-
         viewModel.enableNfcReaderMode {
+            val nfcAdapter = NfcAdapter.getDefaultAdapter(context)
+
+            if (nfcAdapter?.isEnabled != true) {
+                viewModel.onNfcDisabled()
+                return@enableNfcReaderMode
+            }
+
             nfcAdapter.enableReaderMode(
                 activity,
                 viewModel::onNfcTagDiscovered,
@@ -90,10 +95,6 @@ fun NfcDialog(
                 }
             )
         }
-    }
-
-    BackHandler {
-        viewModel.onDismiss()
     }
 
     NfcContent(
@@ -114,9 +115,11 @@ fun NfcDialog(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 NfcViewModel.Event.Completed -> {
-                    val nfcAdapter = NfcAdapter.getDefaultAdapter(context)
-                    nfcAdapter?.disableReaderMode(activity)
                     onDismiss()
+                    viewModel.disableNfcReaderMode {
+                        val nfcAdapter = NfcAdapter.getDefaultAdapter(context)
+                        nfcAdapter?.disableReaderMode(activity)
+                    }
                 }
             }
         }
@@ -201,22 +204,12 @@ private fun NfcContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
                     Text(
-                        text = "Hold your card flat against the back of the phone. Don’t move.", // TODO crowdin
+                        text = "Hold your card flat against the back of the phone. Don’t move.\n" +
+                            "This may take up to a minute.", // TODO crowdin
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
                     )
-
-                    state.purpose?.let {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-                        Text(
-                            text = "Card: ${it.cardType()}", // TODO crowdin
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.text,
-                            textAlign = TextAlign.Center
-                        )
-                    }
 
                     Box(
                         modifier = Modifier
@@ -276,13 +269,6 @@ private fun NfcTagDriverPurpose.title(): String {
             is NfcTagArculusInteractonPurpose.SignTransaction -> "Signing Transaction"
             is NfcTagArculusInteractonPurpose.VerifyingPin -> "Verifying Card PIN"
         }
-    }
-}
-
-@Composable
-private fun NfcTagDriverPurpose.cardType(): String {
-    return when (this) {
-        is NfcTagDriverPurpose.Arculus -> "Arculus" // TODO crowdin
     }
 }
 

@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.common.ArculusCardClient
 import com.babylon.wallet.android.utils.Constants.ARCULUS_PIN_LENGTH
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -57,7 +58,11 @@ class VerifyArculusPinViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         isContinueLoading = false,
-                        pin = "",
+                        pin = if (it is CommonException.HostInteractionAborted) {
+                            state.pin
+                        } else {
+                            ""
+                        },
                         errorMessage = UiMessage.ErrorMessage(it)
                     )
                 }

@@ -16,6 +16,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -143,6 +144,7 @@ fun AccessArculusCardFactorSourceContent(
     factorSource: ArculusCardFactorSource?,
     pinState: AccessFactorSourceDelegate.State.ArculusPinState,
     onPinChange: (String) -> Unit,
+    onRetryClick: () -> Unit,
     skipOption: AccessFactorSourceSkipOption,
     onSkipClick: () -> Unit,
     onConfirmClick: () -> Unit
@@ -157,6 +159,7 @@ fun AccessArculusCardFactorSourceContent(
                 purpose == AccessFactorSourcePurpose.SignatureRequest ||
                     purpose == AccessFactorSourcePurpose.ProvingOwnership
             }
+            val isRetryVisible by remember { derivedStateOf { !isPinRequired } }
 
             if (isPinRequired) {
                 Column(
@@ -195,6 +198,15 @@ fun AccessArculusCardFactorSourceContent(
                         }
                     )
                 }
+            }
+
+            if (isRetryVisible) {
+                AccessContentRetryButton(
+                    modifier = Modifier
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    isEnabled = true,
+                    onClick = onRetryClick
+                )
             }
 
             SkipOption(
@@ -576,8 +588,9 @@ private fun PreviewContent(
             purpose = purpose,
             factorSource = factorSource.value,
             pinState = AccessFactorSourceDelegate.State.ArculusPinState(),
-            skipOption = skipOption,
             onPinChange = {},
+            onRetryClick = {},
+            skipOption = skipOption,
             onSkipClick = {},
             onConfirmClick = {}
         )

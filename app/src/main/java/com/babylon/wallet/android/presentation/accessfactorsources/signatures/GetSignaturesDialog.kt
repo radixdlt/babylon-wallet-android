@@ -207,6 +207,7 @@ private fun GetSignaturesBottomSheetContent(
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                             pinState = accessFactorSourceState.arculusPinState,
                             onPinChange = onArculusPinChange,
+                            onRetryClick = onRetryClick,
                             skipOption = state.skipOption,
                             onSkipClick = onSkipClick,
                             onConfirmClick = onInputConfirmed
