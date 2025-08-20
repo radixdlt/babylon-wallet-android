@@ -58,6 +58,18 @@ class ArculusCardClient @Inject constructor(
         )
     }
 
+    suspend fun restoreCardPin(
+        factorSource: FactorSource.ArculusCard,
+        mnemonic: Mnemonic,
+        pin: String
+    ): Result<Unit> = sargonOsManager.callSafely(dispatcher) {
+        arculusCardRestorePin(
+            factorSource = factorSource.value,
+            mnemonic = mnemonic,
+            pin = pin
+        )
+    }
+
     suspend fun verifyPin(
         factorSource: FactorSource.ArculusCard,
         pin: String

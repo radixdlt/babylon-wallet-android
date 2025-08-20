@@ -4,7 +4,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
 import com.babylon.wallet.android.presentation.addfactorsource.confirmseedphrase.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.addfactorsource.intro.ROUTE_ADD_FACTOR_SOURCE_INTRO
 import com.babylon.wallet.android.presentation.addfactorsource.intro.addFactorSourceIntro
@@ -31,11 +30,6 @@ fun NavGraphBuilder.addFactorSource(
         seedPhrase(navController)
 
         confirmSeedPhrase(navController)
-
-        createArculusPin(
-            onDismiss = { navController.popBackStack() },
-            onConfirmed = { navController.setFactorSourceName() }
-        )
 
         setFactorSourceName(navController)
     }

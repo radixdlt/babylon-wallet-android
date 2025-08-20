@@ -58,7 +58,7 @@ class VerifyArculusPinViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         isContinueLoading = false,
-                        pin = if (it is CommonException.HostInteractionAborted) {
+                        pin = if (it is CommonException.NfcSessionCancelled) {
                             state.pin
                         } else {
                             ""

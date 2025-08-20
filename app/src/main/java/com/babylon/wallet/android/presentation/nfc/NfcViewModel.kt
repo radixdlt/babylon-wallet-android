@@ -13,8 +13,11 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.nfc.common.NfcSessionIOHandler
 import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxy
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NfcTagDriverPurpose
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -106,13 +109,14 @@ class NfcViewModel @Inject constructor(
         nfcSessionIOHandler.events
             .onEach { event ->
                 when (event) {
-                    is NfcSessionProxy.Event.SetMessage -> _state.update { state ->
-                        state.copy(message = event.message)
+                    is NfcSessionProxy.Event.SetProgress -> _state.update { state ->
+                        state.copy(progress = event.progress.toDecimal192().formatted())
                     }
 
                     is NfcSessionProxy.Event.EndSession -> endSession()
                 }
             }
+            .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
     }
 
@@ -138,15 +142,21 @@ class NfcViewModel @Inject constructor(
 
                     if (isBadStatusResponse) {
                         nfcSessionIOHandler.onTransceiveResult(
-                            Result.failure(IllegalArgumentException("Transceive response bad status"))
+                            Result.failure(CommonException.NfcSessionUnknownTag())
                         )
                     } else {
                         nfcSessionIOHandler.onTransceiveResult(Result.success(response.toBagOfBytes()))
                     }
                 }.onFailure { throwable ->
-                    nfcSessionIOHandler.onTransceiveResult(Result.failure(throwable))
+                    val error = if (throwable is TagLostException) {
+                        CommonException.NfcSessionLostTagConnection()
+                    } else {
+                        throwable
+                    }
 
-                    if (throwable is TagLostException) {
+                    nfcSessionIOHandler.onTransceiveResult(Result.failure(error))
+
+                    if (error is CommonException.NfcSessionLostTagConnection) {
                         endSession()
                     }
                 }
@@ -183,7 +193,7 @@ class NfcViewModel @Inject constructor(
     data class State(
         val purpose: NfcTagDriverPurpose? = null,
         val showNfcDisabled: Boolean = false,
-        val message: String? = null,
+        val progress: String? = null,
         val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState
 

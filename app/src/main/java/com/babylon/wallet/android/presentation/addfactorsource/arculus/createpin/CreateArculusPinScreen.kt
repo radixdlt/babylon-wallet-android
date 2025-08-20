@@ -20,7 +20,7 @@ fun CreateArculusPinScreen(
     modifier: Modifier = Modifier,
     viewModel: CreateArculusPinViewModel,
     onDismiss: () -> Unit,
-    onConfirmed: () -> Unit
+    onConfirmed: (CreateArculusPinContext) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -37,7 +37,7 @@ fun CreateArculusPinScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                CreateArculusPinViewModel.Event.PinCreated -> onConfirmed()
+                is CreateArculusPinViewModel.Event.PinCreated -> onConfirmed(event.context)
             }
         }
     }

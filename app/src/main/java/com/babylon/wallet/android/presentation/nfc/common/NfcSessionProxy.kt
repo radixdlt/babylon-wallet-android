@@ -35,8 +35,8 @@ interface NfcSessionProxy {
 
     sealed interface Event {
 
-        data class SetMessage(
-            val message: String
+        data class SetProgress(
+            val progress: Float
         ) : Event
 
         data class EndSession(
@@ -95,7 +95,7 @@ class NfcSessionProxyImpl @Inject constructor() : NfcSessionProxy, NfcSessionIOH
     }
 
     override suspend fun onSessionClosed() {
-        sessionReadyChannel.trySend(Result.failure(CommonException.HostInteractionAborted()))
-        transceiveResultsChannel.trySend(Result.failure(CommonException.HostInteractionAborted()))
+        sessionReadyChannel.trySend(Result.failure(CommonException.NfcSessionCancelled()))
+        transceiveResultsChannel.trySend(Result.failure(CommonException.NfcSessionCancelled()))
     }
 }

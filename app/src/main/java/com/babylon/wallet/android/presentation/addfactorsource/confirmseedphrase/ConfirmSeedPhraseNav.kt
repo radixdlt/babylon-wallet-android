@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.CreateArculusPinContext
 import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
 import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
 
@@ -30,7 +31,7 @@ fun NavGraphBuilder.confirmSeedPhrase(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onDeviceSeedPhraseConfirmed = { navController.setFactorSourceName() },
-            onArculusSeedPhraseConfirmed = { navController.createArculusPin() }
+            onArculusSeedPhraseConfirmed = { navController.createArculusPin(CreateArculusPinContext.New) }
         )
     }
 }

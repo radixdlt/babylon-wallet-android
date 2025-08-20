@@ -190,11 +190,11 @@ private fun NfcContent(
                         )
                     }
 
-                    state.message?.let {
+                    state.progress?.let {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
                         Text(
-                            text = it,
+                            text = "Progress: $it%", // TODO crowdin
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.text,
                             textAlign = TextAlign.Center
@@ -268,6 +268,7 @@ private fun NfcTagDriverPurpose.title(): String {
             is NfcTagArculusInteractonPurpose.SignPreAuth -> "Signing Transaction"
             is NfcTagArculusInteractonPurpose.SignTransaction -> "Signing Transaction"
             is NfcTagArculusInteractonPurpose.VerifyingPin -> "Verifying Card PIN"
+            is NfcTagArculusInteractonPurpose.RestoringCardPin -> "Restoring Card PIN"
         }
     }
 }
@@ -294,7 +295,7 @@ class NfcPreviewProvider : PreviewParameterProvider<NfcViewModel.State> {
     override val values: Sequence<NfcViewModel.State>
         get() = sequenceOf(
             NfcViewModel.State(
-                message = "Deriving public keys, progress 38%",
+                progress = "38%",
                 purpose = NfcTagDriverPurpose.Arculus(
                     v1 = NfcTagArculusInteractonPurpose.DerivingPublicKeys(
                         v1 = ArculusCardFactorSource.sample()

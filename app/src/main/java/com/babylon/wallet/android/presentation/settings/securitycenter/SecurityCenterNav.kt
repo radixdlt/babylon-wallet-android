@@ -8,7 +8,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.CreateArculusPinContext
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
 import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
@@ -16,7 +19,6 @@ import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSo
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.changepin.changeArculusPin
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.createpin.createForgottenArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.forgotArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.verifypin.verifyArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
@@ -143,11 +145,19 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         forgotArculusPin(
             onDismiss = navController::popBackStack,
-            onComplete = navController::createForgottenArculusPin
+            onComplete = { navController.createArculusPin(CreateArculusPinContext.Restore) }
         )
-        createForgottenArculusPin(
-            onDismiss = navController::popBackStack,
-            onConfirmed = { navController.popBackStack(ROUTE_FACTOR_SOURCE_DETAILS, false) }
+        createArculusPin(
+            onDismiss = { navController.popBackStack() },
+            onConfirmed = { context ->
+                when (context) {
+                    CreateArculusPinContext.New -> navController.setFactorSourceName()
+                    CreateArculusPinContext.Restore -> navController.popBackStack(
+                        route = ROUTE_FACTOR_SOURCE_DETAILS,
+                        inclusive = false
+                    )
+                }
+            }
         )
         offDeviceMnemonics(
             onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },

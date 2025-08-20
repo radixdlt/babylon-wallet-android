@@ -32,7 +32,7 @@ class NFCTagInteractor @Inject constructor(
         return sessionProxy.transceiveChain(commands)
     }
 
-    override suspend fun setMessage(message: String) {
-        sessionProxy.sendEvent(NfcSessionProxy.Event.SetMessage(message))
+    override suspend fun setProgress(progress: UByte) {
+        sessionProxy.sendEvent(NfcSessionProxy.Event.SetProgress(progress.toFloat()))
     }
 }
