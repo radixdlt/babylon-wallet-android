@@ -98,11 +98,13 @@ class NfcViewModel @Inject constructor(
     }
 
     private fun initPurpose() {
-        _state.update { state ->
-            state.copy(
-                purpose = nfcSessionIOHandler.purpose
-            )
-        }
+        nfcSessionIOHandler.purpose.onEach { purpose ->
+            _state.update { state ->
+                state.copy(
+                    purpose = purpose
+                )
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun observeNfcSessionEvents() {

@@ -7,18 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,15 +40,19 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.transaction.FailureDialogContent
 import com.babylon.wallet.android.presentation.dialogs.transaction.SuccessContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.ui.none
 import com.babylon.wallet.android.utils.TimeFormatter
 import com.babylon.wallet.android.utils.copyToClipboard
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -84,6 +92,7 @@ fun PreAuthorizationStatusDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PreAuthorizationStatusContent(
     modifier: Modifier = Modifier,
@@ -91,32 +100,60 @@ private fun PreAuthorizationStatusContent(
     onPreAuthorizationIdClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    BottomSheetDialogWrapper(
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { false }
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
+        }
+    }
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
+
+    DefaultModalSheetLayout(
         modifier = modifier,
-        onDismiss = onDismiss,
-        dragToDismissEnabled = true,
+        sheetState = sheetState,
+        onDismissRequest = onDismissRequest,
+        wrapContent = true,
         showDragHandle = true,
-        isDismissible = false,
-        content = {
-            when (state.status) {
-                is PreAuthorizationStatusViewModel.State.Status.Sent -> SentContent(
-                    status = state.status,
-                    onPreAuthorizationIdClick = onPreAuthorizationIdClick
+        sheetContent = {
+            Column {
+                RadixCenteredTopAppBar(
+                    windowInsets = WindowInsets.none,
+                    title = "",
+                    onBackClick = onDismissRequest,
+                    backIconType = BackIconType.Close
                 )
-                is PreAuthorizationStatusViewModel.State.Status.Success -> SuccessContent(
-                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
-                    transactionId = state.status.transactionId,
-                    isMobileConnect = state.status.isMobileConnect,
-                    title = stringResource(id = R.string.transactionStatus_success_title),
-                    subtitle = stringResource(R.string.transactionStatus_success_text)
-                )
-                is PreAuthorizationStatusViewModel.State.Status.Expired -> FailureDialogContent(
-                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
-                    title = stringResource(id = R.string.preAuthorizationReview_expiredStatus_title),
-                    subtitle = stringResource(id = R.string.preAuthorizationReview_expiredStatus_subtitle),
-                    transactionId = null,
-                    isMobileConnect = state.status.isMobileConnect
-                )
+
+                when (state.status) {
+                    is PreAuthorizationStatusViewModel.State.Status.Sent -> SentContent(
+                        status = state.status,
+                        onPreAuthorizationIdClick = onPreAuthorizationIdClick
+                    )
+
+                    is PreAuthorizationStatusViewModel.State.Status.Success -> SuccessContent(
+                        modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
+                        transactionId = state.status.transactionId,
+                        isMobileConnect = state.status.isMobileConnect,
+                        title = stringResource(id = R.string.transactionStatus_success_title),
+                        subtitle = stringResource(R.string.transactionStatus_success_text)
+                    )
+
+                    is PreAuthorizationStatusViewModel.State.Status.Expired -> FailureDialogContent(
+                        modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
+                        title = stringResource(id = R.string.preAuthorizationReview_expiredStatus_title),
+                        subtitle = stringResource(id = R.string.preAuthorizationReview_expiredStatus_subtitle),
+                        transactionId = null,
+                        isMobileConnect = state.status.isMobileConnect
+                    )
+                }
             }
         }
     )
