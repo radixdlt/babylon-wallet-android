@@ -235,14 +235,21 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         ) : FactorSource()
 
         data object FactorSourceNotCreated : FactorSource()
+    }
 
-        data class ArculusMinimumFirmwareRequired(
+    sealed class Arculus : RadixWalletException() {
+
+        data class MinimumFirmwareRequired(
             val version: String
-        ) : FactorSource()
+        ) : Arculus()
 
-        data class ArculusWrongPin(
+        data class WrongPin(
             val numberOfTries: Int
-        ) : FactorSource()
+        ) : Arculus()
+
+        data object NfcSessionLostTagConnection : Arculus()
+
+        data object NfcSessionUnknownTag : Arculus()
     }
 }
 
@@ -447,15 +454,20 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
 fun RadixWalletException.FactorSource.toUserFriendlyMessage(context: Context): String = when (this) {
     is RadixWalletException.FactorSource.FactorSourceAlreadyInUse -> factorSourceName ?: "Unknown"
     RadixWalletException.FactorSource.FactorSourceNotCreated -> context.getString(R.string.newFactor_error_notCreated)
-    is RadixWalletException.FactorSource.ArculusMinimumFirmwareRequired -> "Minimum Firmware Required ($version)" // TODO crowdin
-    is RadixWalletException.FactorSource.ArculusWrongPin -> "Wrong PIN. Number of remaining tries: $numberOfTries" // TODO crowdin
 }
 
 fun RadixWalletException.FactorSource.toUserFriendlyAlertTitle(context: Context): String? = when (this) {
     is RadixWalletException.FactorSource.FactorSourceAlreadyInUse -> context.getString(R.string.newFactor_error_alreadyInUse)
-    RadixWalletException.FactorSource.FactorSourceNotCreated,
-    is RadixWalletException.FactorSource.ArculusMinimumFirmwareRequired,
-    is RadixWalletException.FactorSource.ArculusWrongPin -> null
+    RadixWalletException.FactorSource.FactorSourceNotCreated -> null
+}
+
+// TODO crowdin
+@Suppress("UnusedParameter")
+fun RadixWalletException.Arculus.toUserFriendlyMessage(context: Context): String = when (this) {
+    is RadixWalletException.Arculus.MinimumFirmwareRequired -> "Minimum Firmware Required ($version)"
+    RadixWalletException.Arculus.NfcSessionLostTagConnection -> "NFC Session lost the connection with the tag.\nPlease retry."
+    RadixWalletException.Arculus.NfcSessionUnknownTag -> "NFC Session detected an unknown tag.\nPlease retry."
+    is RadixWalletException.Arculus.WrongPin -> "Wrong PIN. Number of remaining tries: $numberOfTries"
 }
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
@@ -473,6 +485,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
         is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
         is RadixWalletException.FactorSource -> toUserFriendlyMessage(context)
+        is RadixWalletException.Arculus -> toUserFriendlyMessage(context)
     }
 }
 
@@ -491,7 +504,8 @@ fun RadixWalletException.toUserFriendlyAlertTitle(context: Context): String? {
         is RadixWalletException.TransactionSubmitException,
         is RadixWalletException.GatewayException,
         is RadixWalletException.LinkConnectionException,
-        is RadixWalletException.CloudBackupException -> null
+        is RadixWalletException.CloudBackupException,
+        is RadixWalletException.Arculus -> null
 
         is RadixWalletException.FactorSource -> toUserFriendlyAlertTitle(context)
     }

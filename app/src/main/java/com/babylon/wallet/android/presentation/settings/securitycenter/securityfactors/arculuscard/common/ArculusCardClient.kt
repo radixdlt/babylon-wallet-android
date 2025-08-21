@@ -39,7 +39,7 @@ class ArculusCardClient @Inject constructor(
     }.then { requirement ->
         if (requirement is ArculusMinFirmwareVersionRequirement.Invalid) {
             Result.failure(
-                RadixWalletException.FactorSource.ArculusMinimumFirmwareRequired(
+                RadixWalletException.Arculus.MinimumFirmwareRequired(
                     version = requirement.v1
                 )
             )
@@ -78,15 +78,7 @@ class ArculusCardClient @Inject constructor(
             factorSource = factorSource.value,
             pin = pin
         )
-    }.mapError {
-        if (it is CommonException.ArculusCardWrongPin) {
-            RadixWalletException.FactorSource.ArculusWrongPin(
-                numberOfTries = it.numberOfRemainingTries.toInt()
-            )
-        } else {
-            it
-        }
-    }
+    }.mapArculusError()
 
     suspend fun setPin(
         factorSource: FactorSource.ArculusCard,
@@ -140,6 +132,18 @@ class ArculusCardClient @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun <T> Result<T>.mapArculusError(): Result<T> = mapError {
+        when (it) {
+            is CommonException.ArculusCardWrongPin -> RadixWalletException.Arculus.WrongPin(
+                numberOfTries = it.numberOfRemainingTries.toInt()
+            )
+
+            is CommonException.NfcSessionLostTagConnection -> RadixWalletException.Arculus.NfcSessionLostTagConnection
+            is CommonException.NfcSessionUnknownTag -> RadixWalletException.Arculus.NfcSessionUnknownTag
+            else -> it
         }
     }
 }

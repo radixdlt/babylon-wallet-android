@@ -146,6 +146,7 @@ class NfcViewModel @Inject constructor(
                         nfcSessionIOHandler.onTransceiveResult(
                             Result.failure(CommonException.NfcSessionUnknownTag())
                         )
+                        endSession()
                     } else {
                         nfcSessionIOHandler.onTransceiveResult(Result.success(response.toBagOfBytes()))
                     }

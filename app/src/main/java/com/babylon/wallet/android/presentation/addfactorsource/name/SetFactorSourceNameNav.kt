@@ -7,7 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.addfactorsource.ROUTE_ADD_FACTOR_SOURCE_GRAPH
+import com.babylon.wallet.android.presentation.addfactorsource.intro.ROUTE_ADD_FACTOR_SOURCE_INTRO
 
 const val ROUTE_SET_FACTOR_SOURCE_NAME = "set_factor_source_name"
 
@@ -28,7 +28,7 @@ fun NavGraphBuilder.setFactorSourceName(
         SetFactorSourceNameScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onSaved = { navController.popBackStack(ROUTE_ADD_FACTOR_SOURCE_GRAPH, true) }
+            onSaved = { navController.popBackStack(ROUTE_ADD_FACTOR_SOURCE_INTRO, true) }
         )
     }
 }

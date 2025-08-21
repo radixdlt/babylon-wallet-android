@@ -5,13 +5,15 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NfcTagDriverPurpose
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface NfcSessionIOHandler {
 
-    val purpose: NfcTagDriverPurpose?
+    val purpose: Flow<NfcTagDriverPurpose?>
 
     val transceiveRequests: Flow<BagOfBytes>
     val events: Flow<NfcSessionProxy.Event>
@@ -57,15 +59,15 @@ class NfcSessionProxyImpl @Inject constructor() : NfcSessionProxy, NfcSessionIOH
     private val transceiveResultsChannel = Channel<Result<BagOfBytes>>()
 
     private val eventsChannel = Channel<NfcSessionProxy.Event>()
-    private var _purpose: NfcTagDriverPurpose? = null
+    private val _purpose = MutableStateFlow<NfcTagDriverPurpose?>(null)
 
-    override val purpose: NfcTagDriverPurpose?
+    override val purpose: Flow<NfcTagDriverPurpose?>
         get() = _purpose
     override val transceiveRequests: Flow<BagOfBytes> = transceiveRequestsChannel.receiveAsFlow()
     override val events: Flow<NfcSessionProxy.Event> = eventsChannel.receiveAsFlow()
 
     override suspend fun awaitSessionReady(purpose: NfcTagDriverPurpose) {
-        _purpose = purpose
+        _purpose.update { purpose }
         sessionReadyChannel.receive().getOrThrow()
     }
 
@@ -97,5 +99,6 @@ class NfcSessionProxyImpl @Inject constructor() : NfcSessionProxy, NfcSessionIOH
     override suspend fun onSessionClosed() {
         sessionReadyChannel.trySend(Result.failure(CommonException.NfcSessionCancelled()))
         transceiveResultsChannel.trySend(Result.failure(CommonException.NfcSessionCancelled()))
+        _purpose.update { null }
     }
 }

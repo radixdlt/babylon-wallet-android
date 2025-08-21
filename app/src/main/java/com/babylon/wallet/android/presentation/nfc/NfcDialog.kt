@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -51,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
 import com.babylon.wallet.android.utils.findFragmentActivity
+import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.NfcTagArculusInteractonPurpose
 import com.radixdlt.sargon.NfcTagDriverPurpose
@@ -190,16 +193,16 @@ private fun NfcContent(
                         )
                     }
 
-                    state.progress?.let {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
-                        Text(
-                            text = "Progress: $it%", // TODO crowdin
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.text,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Text(
+                        text = "Progress: **${state.progress}%**".takeIf { state.progress != null } // TODO crowdin
+                            .orEmpty()
+                            .formattedSpans(SpanStyle(fontWeight = FontWeight.SemiBold)),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.text,
+                        textAlign = TextAlign.Center
+                    )
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
