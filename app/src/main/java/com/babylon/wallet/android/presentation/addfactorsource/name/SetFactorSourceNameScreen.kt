@@ -264,7 +264,8 @@ private fun SuccessSheetContent(
 
         RadixBottomBar(
             onClick = onCloseClick,
-            text = stringResource(id = R.string.common_close)
+            text = stringResource(id = R.string.common_close),
+            insets = WindowInsets.none
         )
     }
 }

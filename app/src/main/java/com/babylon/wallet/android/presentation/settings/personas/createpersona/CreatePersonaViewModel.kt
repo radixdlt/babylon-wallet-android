@@ -120,12 +120,12 @@ class CreatePersonaViewModel @Inject constructor(
         val anyFieldSelected: Boolean = false,
         val isAddFieldBottomSheetVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val isPersonaCreating: Boolean = false,
+        val isPersonaCreating: Boolean = false
     ) : UiState {
+
         val isContinueButtonEnabled: Boolean
             get() {
-                val valid = currentFields.all { it.isValid == true } && personaDisplayName.isValid
-                return valid
+                return !isPersonaCreating && currentFields.all { it.isValid == true } && personaDisplayName.isValid
             }
     }
 
