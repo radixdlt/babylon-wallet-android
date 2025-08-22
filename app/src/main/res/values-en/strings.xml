@@ -555,6 +555,7 @@
   <string name="common_searchHint">Search...</string>
   <string name="common_securedWith">Secured with</string>
   <string name="common_processingProfile">Processing Profile</string>
+  <string name="common_success">Success</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
@@ -965,6 +966,7 @@ Code: %s</string>
   <string name="factorSources_detail_seedPhraseLost">Seed Phrase Lost</string>
   <string name="factorSources_detail_enterSeedPhrase">Enter seed phrase to recover use of this factor</string>
   <string name="factorSources_detail_changePin">Change PIN</string>
+  <string name="factorSources_detail_forgotPin">Forgot PIN</string>
   <string name="factorSources_detail_spotCheckSuccess">Factor access spot check was successful.</string>
   <string name="factorSources_detail_spotCheckFailure">Factor access spot check failed! Please try again if you want to verify that you are able to use this factor.</string>
   <string name="factorSources_changeMain_title">Change Default Biometrics/PIN</string>
@@ -1140,6 +1142,7 @@ Code: %s</string>
   <string name="factorSourceActions_offDeviceMnemonic_invalid">Invalid mnemonic</string>
   <string name="factorSourceActions_useDifferentFactor">Use a different factor</string>
   <string name="factorSourceActions_ignore">Ignore</string>
+  <string name="factorSourceActions_arculusEnterPin_heading">Enter card PIN</string>
   <string name="securityCenter_title">Security Center</string>
   <string name="securityCenter_subtitle">Decentralized security settings that give you total control over your wallet’s protection.</string>
   <string name="securityCenter_goodState_heading">Your wallet is recoverable</string>
@@ -1729,10 +1732,6 @@ Code: %s</string>
   <string name="addFactorSource_selectKind_description">Choose the Security Factor kind you want to add.</string>
   <string name="addFactorSource_selectKind_button">Add Security Factor</string>
   <string name="addFactorSource_identifying_title">Identifying Factor</string>
-  <string name="addFactorSource_arculus_title">Add a New Arculus Card</string>
-  <string name="addFactorSource_arculus_description">Arculus Cards are hardware signing devices you tap to your phone to sign a transaction.</string>
-  <string name="addFactorSource_arculus_nameTitle">Name your New Arculus Card</string>
-  <string name="addFactorSource_arculus_identifyingInstructions">Tap and hold the **Arculus Card** you want to use to your phone.</string>
   <string name="addFactorSource_addNewSecurityFactor">Add a new Security Factor</string>
   <string name="addFactorSource_selectSecurityFactor">Select Security Factor</string>
   <string name="addFactorSource_chooseSecurityFactorToRecover">Choose the security factor you will use to Recover Accounts</string>
@@ -1771,4 +1770,45 @@ Code: %s</string>
   <string name="discover_socialLinks_telegram_subtitle">Join the Radix Telegram to chat, ask questions, and get updates.</string>
   <string name="discover_socialLinks_discord_title">Radix Discord Official</string>
   <string name="discover_socialLinks_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
+  <string name="addFactorSource_arculus_title">Add a New Arculus Card</string>
+  <string name="addFactorSource_arculus_description">Arculus Cards are hardware signing devices you tap to your phone to sign a transaction.</string>
+  <string name="addFactorSource_arculus_nameTitle">Name your New Arculus Card</string>
+  <string name="addFactorSource_arculus_identifyingInstructions">Tap and hold the **Arculus Card** you want to use to your phone.</string>
+  <string name="addArculus_createPin_title">Create New PIN</string>
+  <string name="addArculus_createPin_description">Choose a 6-digit PIN for your Arculus Card. You’ll keep this PIN if you use this card with another wallet.</string>
+  <string name="addArculus_createPin_pinInputLabel">Enter PIN</string>
+  <string name="addArculus_createPin_confirmPinInputLabel">Confirm PIN</string>
+  <string name="addArculus_createPin_button">Create</string>
+  <string name="addArculus_firmwareVersionError_message">Minimum Firmware Required (%s)</string>
+  <string name="arculusDetails_verifyPin_title">Change PIN</string>
+  <string name="arculusDetails_verifyPin_description">Enter your current Arculus PIN</string>
+  <string name="arculusDetails_verifyPin_inputLabel">Enter PIN</string>
+  <string name="arculusDetails_verifyPin_errorMessage">Wrong PIN. Number of remaining tries: %d</string>
+  <string name="arculusDetails_changePin_title">Change PIN</string>
+  <string name="arculusDetails_changePin_description">Enter your new Arculus PIN</string>
+  <string name="arculusDetails_changePin_newPinInputLabel">Enter new PIN</string>
+  <string name="arculusDetails_changePin_confirmPinInputLabel">Confirm PIN</string>
+  <string name="arculusDetails_forgotPin_title">Enter Seed Phrase</string>
+  <string name="arculusDetails_forgotPin_description">Enter your Arculus seed phrase</string>
+  <string name="arculusScan_heading">Ready to Scan</string>
+  <string name="arculusScan_purposeConfiguringMnemonic_label">Configuring your Arculus Card</string>
+  <string name="arculusScan_purposeConfiguringPin_label">Configuring new Card PIN</string>
+  <string name="arculusScan_purposeDerivingKeys_label">Updating Factor Config</string>
+  <string name="arculusScan_purposeIdentifying_label">Identifying Card</string>
+  <string name="arculusScan_purposeProvingOwnership_label">Signing Transaction</string>
+  <string name="arculusScan_purposeSigningPreAuth_label">Signing Transaction</string>
+  <string name="arculusScan_purposeSigningTx_label">Signing Transaction</string>
+  <string name="arculusScan_purposeVerifyingPin_label">Verifying Card PIN</string>
+  <string name="arculusScan_purposeRestoringPin_label">Restoring Card PIN</string>
+  <string name="arculusScan_progress_label">Progress: **%s**</string>
+  <string name="arculusScan_instruction_label">Hold your card flat against the back of the phone. Don’t move.
+This may take up to a minute.</string>
+  <string name="arculusScan_nfcDisabled_title">NFC is turned off</string>
+  <string name="arculusScan_nfcDisabled_message">Please enable NFC in system settings to continue.</string>
+  <string name="arculusScan_nfcDisabled_positiveButton">Open Settings</string>
+  <string name="arculusScan_lostTagError_message">NFC Session lost the connection with the tag.
+Please retry.</string>
+  <string name="arculusScan_unknownTagError_message">NFC Session detected an unknown tag.
+Please retry.</string>
+  <string name="arculusScan_cardBlockedError_message">Your card is blocked, to set a new PIN got through Forgot PIN recovery flow for your arculus.</string>
 </resources>
