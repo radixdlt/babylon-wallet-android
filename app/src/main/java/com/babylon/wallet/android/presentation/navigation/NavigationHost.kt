@@ -90,7 +90,6 @@ import com.babylon.wallet.android.presentation.settings.personas.personadetail.p
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.forgotArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
@@ -337,8 +336,7 @@ fun NavigationHost(
             }
         )
         derivePublicKeysDialog(
-            onDismiss = { navController.popBackStack() },
-            onArculusForgotPinClick = { navController.forgotArculusPin(it) }
+            onDismiss = { navController.popBackStack() }
         )
         nfcDialog(
             onDismiss = {
@@ -346,12 +344,10 @@ fun NavigationHost(
             }
         )
         getSignatures(
-            onDismiss = { navController.popBackStack() },
-            onArculusForgotPinClick = { navController.forgotArculusPin(it) }
+            onDismiss = { navController.popBackStack() }
         )
         spotCheckDialog(
-            onDismiss = { navController.popBackStack() },
-            onArculusForgotPinClick = { navController.forgotArculusPin(it) }
+            onDismiss = { navController.popBackStack() }
         )
         history(
             onBackClick = {
