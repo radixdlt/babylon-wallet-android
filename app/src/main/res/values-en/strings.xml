@@ -1142,7 +1142,9 @@ Code: %s</string>
   <string name="factorSourceActions_offDeviceMnemonic_invalid">Invalid mnemonic</string>
   <string name="factorSourceActions_useDifferentFactor">Use a different factor</string>
   <string name="factorSourceActions_ignore">Ignore</string>
-  <string name="factorSourceActions_arculusEnterPin_heading">Enter card PIN</string>
+  <string name="factorSourceActions_arculusEnterPin_heading">Enter PIN</string>
+  <string name="factorSourceActions_arculusForgotPin_button">Forgot PIN</string>
+  <string name="factorSourceActions_arculusForgotPinInfo_message">Go to your Arculus card security factor settings to reset the PIN</string>
   <string name="securityCenter_title">Security Center</string>
   <string name="securityCenter_subtitle">Decentralized security settings that give you total control over your wallet’s protection.</string>
   <string name="securityCenter_goodState_heading">Your wallet is recoverable</string>
@@ -1801,7 +1803,7 @@ Code: %s</string>
   <string name="arculusScan_purposeSigningTx_label">Signing Transaction</string>
   <string name="arculusScan_purposeVerifyingPin_label">Verifying Card PIN</string>
   <string name="arculusScan_purposeRestoringPin_label">Restoring Card PIN</string>
-  <string name="arculusScan_progress_label">Progress: **%s**</string>
+  <string name="arculusScan_progress_label">Progress: **%s%**</string>
   <string name="arculusScan_instruction_label">Hold your card flat against the back of the phone. Don’t move.
 This may take up to a minute.</string>
   <string name="arculusScan_nfcDisabled_title">NFC is turned off</string>
