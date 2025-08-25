@@ -30,6 +30,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -57,6 +58,14 @@ fun IdentifyFactorSourceDialog(
         ErrorAlertDialog(
             cancel = { viewModel.onMessageShown() },
             errorMessage = errorMessage
+        )
+    }
+
+    if (state.showArculusInfoMessage) {
+        BasicPromptAlertDialog(
+            messageText = stringResource(id = R.string.addArculus_seedPhraseInstructions_message),
+            confirmText = stringResource(id = R.string.common_ok),
+            finish = viewModel::onArculusInfoMessageDismiss
         )
     }
 

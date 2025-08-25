@@ -177,7 +177,7 @@ fun AccessArculusCardFactorSourceContent(
                     PinTextField(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         textFieldModifier = Modifier.focusRequester(focusRequester),
-                        title = "Enter card PIN", // TODO crowdin
+                        title = stringResource(id = R.string.factorSourceActions_arculusEnterPin_heading),
                         pinValue = pinState.input,
                         pinLength = ARCULUS_PIN_LENGTH,
                         onPinChange = onPinChange

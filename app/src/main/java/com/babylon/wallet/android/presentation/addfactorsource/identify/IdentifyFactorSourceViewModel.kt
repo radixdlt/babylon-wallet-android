@@ -51,6 +51,16 @@ class IdentifyFactorSourceViewModel @Inject constructor(
         _state.update { state -> state.copy(errorMessage = null) }
     }
 
+    fun onArculusInfoMessageDismiss(accepted: Boolean) {
+        viewModelScope.launch {
+            _state.update { state -> state.copy(showArculusInfoMessage = false) }
+
+            if (accepted) {
+                sendEvent(Event.ArculusIdentified)
+            }
+        }
+    }
+
     private fun identifyFactorSource() {
         viewModelScope.launch {
             _state.update { state -> state.copy(isInProgress = true) }
@@ -108,7 +118,7 @@ class IdentifyFactorSourceViewModel @Inject constructor(
 
     private suspend fun identifyArculusFactorSource() {
         arculusCardClient.validateMinFirmwareVersion().onSuccess {
-            sendEvent(Event.ArculusIdentified)
+            _state.update { state -> state.copy(showArculusInfoMessage = true) }
         }.onFailure {
             _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(it)) }
         }
@@ -117,7 +127,8 @@ class IdentifyFactorSourceViewModel @Inject constructor(
     data class State(
         val factorSourceKind: FactorSourceKind,
         val errorMessage: UiMessage.ErrorMessage? = null,
-        val isInProgress: Boolean = false
+        val isInProgress: Boolean = false,
+        val showArculusInfoMessage: Boolean = false
     ) : UiState {
 
         val isRetryEnabled = !isInProgress
