@@ -13,10 +13,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -32,11 +30,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
+import com.babylon.wallet.android.presentation.ui.none
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -53,8 +52,8 @@ fun NPSSurveySheet(
 ) {
     Column(
         modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .background(RadixTheme.colors.background),
+            .background(RadixTheme.colors.background)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
@@ -130,22 +129,17 @@ fun NPSSurveySheet(
                 hint = stringResource(id = R.string.survey_reason_fieldHint),
                 singleLine = true
             )
+
+            Spacer(modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge))
         }
-        HorizontalDivider(
-            modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingMedium),
-            color = RadixTheme.colors.divider
-        )
-        RadixPrimaryButton(
+
+        RadixBottomBar(
             text = stringResource(id = R.string.survey_submitButton),
             onClick = onSubmitClick,
-            modifier = Modifier
-                .padding(RadixTheme.dimensions.paddingDefault)
-                .fillMaxWidth(),
             enabled = isSubmitButtonEnabled,
-            isLoading = isLoading
+            isLoading = isLoading,
+            insets = WindowInsets.none
         )
-        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.ime))
     }
 }
 

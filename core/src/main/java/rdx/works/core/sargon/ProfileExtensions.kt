@@ -108,6 +108,11 @@ fun Profile.activePersonaOnCurrentNetwork(withAddress: IdentityAddress): Persona
         persona.address == withAddress
     }
 
+val Profile.babylonFactorSources: List<FactorSource.Device>
+    get() = deviceFactorSources.filter { factorSource ->
+        factorSource.isBabylonDeviceFactorSource
+    }
+
 val Profile.deviceFactorSources: List<FactorSource.Device>
     get() = factorSources.filterIsInstance<FactorSource.Device>()
 
@@ -126,16 +131,6 @@ private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, Li
             activeAccountsOnCurrentNetwork.filter {
                 it.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral() == deviceFactorSource.id
             }
-        }
-    }
-
-val Profile.mainBabylonFactorSource: FactorSource.Device?
-    get() {
-        val babylonFactorSources = deviceFactorSources.filter { it.isBabylonDeviceFactorSource }
-        return if (babylonFactorSources.size == 1) {
-            babylonFactorSources.first()
-        } else {
-            babylonFactorSources.firstOrNull { it.value.common.flags.contains(FactorSourceFlag.MAIN) }
         }
     }
 
@@ -242,9 +237,10 @@ fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: 
             authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(identityAddress) != null
         }, mutation = { authorizedDapp ->
             authorizedDapp.copy(
-                referencesToAuthorizedPersonas = authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().removeBy(
-                    identityAddress
-                ).asList()
+                referencesToAuthorizedPersonas = authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable()
+                    .removeBy(
+                        identityAddress
+                    ).asList()
             )
         })
         network.copy(
@@ -354,7 +350,8 @@ fun Profile.changeGateway(
 fun Profile.addGateway(
     gateway: Gateway
 ): Profile {
-    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.asIdentifiable().append(gateway).asList())
+    val gateways =
+        appPreferences.gateways.copy(other = appPreferences.gateways.other.asIdentifiable().append(gateway).asList())
     val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
 }
@@ -362,7 +359,8 @@ fun Profile.addGateway(
 fun Profile.deleteGateway(
     gateway: Gateway
 ): Profile {
-    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.asIdentifiable().remove(gateway).asList())
+    val gateways =
+        appPreferences.gateways.copy(other = appPreferences.gateways.other.asIdentifiable().remove(gateway).asList())
     val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
 }
@@ -463,8 +461,8 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
     )
 }
 
-fun Profile.addMainBabylonDeviceFactorSource(
-    mainBabylonFactorSource: FactorSource.Device
+fun Profile.addFirstBabylonDeviceFactorSource(
+    firstBabylonFactorSource: FactorSource.Device
 ): Profile {
     val existingBabylonDeviceFactorSources = factorSources.map { factorSource ->
         if (factorSource is FactorSource.Device && factorSource.supportsBabylon) {
@@ -480,7 +478,7 @@ fun Profile.addMainBabylonDeviceFactorSource(
         }
     }
 
-    return copy(factorSources = FactorSources(listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources).asList())
+    return copy(factorSources = FactorSources(listOf(firstBabylonFactorSource) + existingBabylonDeviceFactorSources).asList())
 }
 
 fun Profile.nextAppearanceId(forNetworkId: NetworkId): AppearanceId {
@@ -524,7 +522,10 @@ fun Profile.deleteAuthorizedDApp(
     val updatedNetwork = networks.mapWhen(
         predicate = { it.id == dApp.networkId },
         mutation = { network ->
-            network.copy(authorizedDapps = network.authorizedDApps().asIdentifiable().removeBy(dApp.dappDefinitionAddress).asList())
+            network.copy(
+                authorizedDapps = network.authorizedDApps().asIdentifiable().removeBy(dApp.dappDefinitionAddress)
+                    .asList()
+            )
         }
     )
 
@@ -581,8 +582,10 @@ private fun Profile.withUpdatedContentHint() = copy(
     header = header.copy(
         contentHint = ContentHint(
             numberOfNetworks = networks.size.toUShort(),
-            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.active().size }.toUShort(),
-            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.active().size }.toUShort()
+            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.active().size }
+                .toUShort(),
+            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.active().size }
+                .toUShort()
         )
     )
 )

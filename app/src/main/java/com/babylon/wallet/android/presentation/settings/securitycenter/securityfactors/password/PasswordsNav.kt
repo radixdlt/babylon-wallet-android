@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
 private const val ROUTE_PASSWORDS_SCREEN = "route_passwords_screen"
@@ -20,8 +19,6 @@ fun NavController.passwords() {
 
 fun NavGraphBuilder.passwords(
     onNavigateToPasswordFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddPassword: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -42,8 +39,6 @@ fun NavGraphBuilder.passwords(
         PasswordsScreen(
             viewModel = hiltViewModel(),
             onNavigateToPasswordFactorSourceDetails = onNavigateToPasswordFactorSourceDetails,
-            onNavigateToAddPassword = onNavigateToAddPassword,
-            onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )
     }

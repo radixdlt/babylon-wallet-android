@@ -27,7 +27,9 @@ import com.babylon.wallet.android.presentation.accessfactorsources.derivepublick
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.accessfactorsources.spotcheck.spotCheck
 import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
+import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -39,7 +41,12 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
+import com.babylon.wallet.android.presentation.nfc.nfcDialog
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Context
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.importSingleMnemonic
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
+import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.FullScreen
@@ -120,6 +127,10 @@ fun WalletApp(
             navController = navController,
             accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
         )
+        HandleNfcEvents(
+            navController = navController,
+            nfcEvents = mainViewModel.nfcEvents
+        )
         HandleStatusEvents(
             navController = navController,
             statusEvents = mainViewModel.statusEvents
@@ -138,6 +149,14 @@ fun WalletApp(
         HandleAddFactorSourceEvents(
             navController = navController,
             addFactorSourceEvents = mainViewModel.addFactorSourceEvents
+        )
+        HandleSelectFactorSourceEvents(
+            navController = navController,
+            selectFactorSourceEvents = mainViewModel.selectFactorSourceEvents
+        )
+        HandleFixSecurityIssueEvents(
+            navController = navController,
+            events = mainViewModel.fixSecurityIssueEvents
         )
         ObserveHighPriorityScreens(
             navController = navController,
@@ -204,7 +223,20 @@ private fun HandleAccessFactorSourcesEvents(
                 AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
                 AppEvent.AccessFactorSources.RequestAuthorization -> navController.requestAuthorization()
                 AppEvent.AccessFactorSources.SpotCheck -> navController.spotCheck()
-                is AppEvent.AccessFactorSources.SelectLedgerOutcome -> {}
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleNfcEvents(
+    navController: NavController,
+    nfcEvents: Flow<AppEvent.Nfc>
+) {
+    LaunchedEffect(Unit) {
+        nfcEvents.collect { event ->
+            when (event) {
+                AppEvent.Nfc.StartSession -> navController.nfcDialog()
             }
         }
     }
@@ -216,8 +248,53 @@ private fun HandleAddFactorSourceEvents(
     addFactorSourceEvents: Flow<AppEvent.AddFactorSource>
 ) {
     LaunchedEffect(Unit) {
-        addFactorSourceEvents.collect { _ ->
-            navController.addFactorSource()
+        addFactorSourceEvents.collect { event ->
+            when (event.input) {
+                is AddFactorSourceInput.SelectKind -> navController.addFactorSourceKind()
+
+                is AddFactorSourceInput.WithKind -> navController.addFactorSource()
+                AddFactorSourceInput.Init -> null
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleSelectFactorSourceEvents(
+    navController: NavController,
+    selectFactorSourceEvents: Flow<AppEvent.SelectFactorSource>
+) {
+    LaunchedEffect(Unit) {
+        selectFactorSourceEvents.collect { _ ->
+            navController.selectFactorSource()
+        }
+    }
+}
+
+@Composable
+private fun HandleFixSecurityIssueEvents(
+    navController: NavController,
+    events: Flow<AppEvent.FixSecurityIssue>
+) {
+    LaunchedEffect(Unit) {
+        events.collect { event ->
+            when (event) {
+                is AppEvent.FixSecurityIssue.ImportMnemonic -> {
+                    navController.importSingleMnemonic(
+                        factorSourceId = event.factorSourceId,
+                        context = Context.ImportSeedPhrase
+                    )
+                }
+
+                is AppEvent.FixSecurityIssue.WriteDownSeedPhrase -> {
+                    navController.revealSeedPhrase(
+                        factorSourceId = event.factorSourceId
+                    )
+                }
+
+                AppEvent.FixSecurityIssue.ImportedMnemonic,
+                AppEvent.FixSecurityIssue.WrittenDownSeedPhrase -> null
+            }
         }
     }
 }

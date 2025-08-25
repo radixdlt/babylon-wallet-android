@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -118,7 +119,8 @@ fun PersonaDataStringInput(
     onDeleteField: (() -> Unit)? = null,
     onFocusChanged: ((FocusState) -> Unit)? = null,
     phoneInput: Boolean = false,
-    error: String? = null
+    error: String? = null,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.Unspecified
 ) {
     val focusManager = LocalFocusManager.current
     val showRightLabel = required || onDeleteField != null
@@ -137,7 +139,8 @@ fun PersonaDataStringInput(
                 KeyboardType.Phone
             } else {
                 KeyboardOptions.Default.keyboardType
-            }
+            },
+            capitalization = capitalization
         ),
         rightLabel = if (!showRightLabel) {
             null
@@ -263,7 +266,8 @@ fun PersonaNameInput(
                             },
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
-                            error = error
+                            error = error,
+                            capitalization = KeyboardCapitalization.Words
                         )
                         PersonaDataStringInput(
                             label = stringResource(id = R.string.authorizedDapps_personaDetails_nickname),
@@ -274,7 +278,8 @@ fun PersonaNameInput(
                             },
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
-                            error = error
+                            error = error,
+                            capitalization = KeyboardCapitalization.Words
                         )
                     }
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -287,7 +292,8 @@ fun PersonaNameInput(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         onFocusChanged = onFocusChanged,
-                        error = error
+                        error = error,
+                        capitalization = KeyboardCapitalization.Words
                     )
                 }
 
@@ -301,7 +307,8 @@ fun PersonaNameInput(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         onFocusChanged = onFocusChanged,
-                        error = error
+                        error = error,
+                        capitalization = KeyboardCapitalization.Words
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Row(
@@ -318,7 +325,8 @@ fun PersonaNameInput(
                             },
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
-                            error = error
+                            error = error,
+                            capitalization = KeyboardCapitalization.Words
                         )
                         PersonaDataStringInput(
                             label = stringResource(id = R.string.authorizedDapps_personaDetails_nickname),
@@ -329,7 +337,8 @@ fun PersonaNameInput(
                             },
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
-                            error = error
+                            error = error,
+                            capitalization = KeyboardCapitalization.Words
                         )
                     }
                 }

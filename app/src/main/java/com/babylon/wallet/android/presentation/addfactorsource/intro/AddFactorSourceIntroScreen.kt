@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +28,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoButtonTitle
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.utils.infoGlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
@@ -41,7 +45,10 @@ fun AddFactorSourceIntroScreen(
     viewModel: AddFactorSourceIntroViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onContinueClick: (FactorSourceKind) -> Unit
+    onAddDeviceFactorSource: () -> Unit,
+    onAddLedgerFactorSource: () -> Unit,
+    onAddLinkConnector: () -> Unit,
+    onAddArculusFactorSource: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -50,8 +57,20 @@ fun AddFactorSourceIntroScreen(
         state = state,
         onDismiss = onDismiss,
         onInfoClick = onInfoClick,
-        onContinueClick = { onContinueClick(state.factorSourceKind) }
+        onContinueClick = viewModel::onContinueClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                AddFactorSourceIntroViewModel.Event.Dismiss -> onDismiss()
+                is AddFactorSourceIntroViewModel.Event.AddDeviceFactorSource -> onAddDeviceFactorSource()
+                AddFactorSourceIntroViewModel.Event.AddLedgerFactorSource -> onAddLedgerFactorSource()
+                AddFactorSourceIntroViewModel.Event.AddLinkConnector -> onAddLinkConnector()
+                AddFactorSourceIntroViewModel.Event.AddArculusFactorSource -> onAddArculusFactorSource()
+            }
+        }
+    }
 }
 
 @Composable
@@ -59,7 +78,6 @@ private fun AddFactorSourceIntroContent(
     modifier: Modifier = Modifier,
     state: AddFactorSourceIntroViewModel.State,
     onDismiss: () -> Unit,
-    @Suppress("UNUSED_PARAMETER")
     onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit
 ) {
@@ -116,10 +134,10 @@ private fun AddFactorSourceIntroContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-//            InfoButton(
-//                text = state.factorSourceKind.infoButtonTitle(),
-//                onClick = { onInfoClick(state.factorSourceKind.infoGlossaryItem()) }
-//            )
+            InfoButton(
+                text = state.factorSourceKind.infoButtonTitle(),
+                onClick = { onInfoClick(state.factorSourceKind.infoGlossaryItem()) }
+            )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         }
@@ -128,21 +146,21 @@ private fun AddFactorSourceIntroContent(
 
 @Composable
 private fun FactorSourceKind.addTitle() = when (this) {
-    FactorSourceKind.DEVICE -> "Add a New Biometrics/PIN Seed Phrase"
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Add a New Ledger Nano"
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Add a New Mnemonic Seed Phrase"
-    FactorSourceKind.ARCULUS_CARD -> "Add a New Arculus Card"
-    FactorSourceKind.PASSWORD -> "Add a New Password"
+    FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_title)
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_title)
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Add a New Mnemonic Seed Phrase" // TODO crowdin
+    FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_title)
+    FactorSourceKind.PASSWORD -> "Add a New Password" // TODO crowdin
 }
 
 @Suppress("MaxLineLength")
 @Composable
 private fun FactorSourceKind.addSubtitle() = when (this) {
-    FactorSourceKind.DEVICE -> "This factor is a seed phrase held by your phone and unlocked by your biometrics/PIN."
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Ledger Nanos are hardware signing devices you can connect to your Radix Wallet with a USB cable and computer."
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Mnemonics are 12 to 24-word BIP39 seed phrases that you’ll need to enter in full every time you use this factor."
-    FactorSourceKind.ARCULUS_CARD -> "Arculus Cards are hardware signing devices you tap to your phone to sign a transaction."
-    FactorSourceKind.PASSWORD -> "Passwords on Radix are decentralized and aren’t known or stored by anyone but you."
+    FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_subtitle)
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_description)
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Mnemonics are 12 to 24-word BIP39 seed phrases that you’ll need to enter in full every time you use this factor." // TODO crowdin
+    FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_description)
+    FactorSourceKind.PASSWORD -> "Passwords on Radix are decentralized and aren’t known or stored by anyone but you." // TODO crowdin
 }
 
 @Composable

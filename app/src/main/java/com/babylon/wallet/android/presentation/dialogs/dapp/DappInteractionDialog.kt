@@ -5,13 +5,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -23,8 +27,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.themedColorFilter
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.none
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DappInteractionDialog(
     modifier: Modifier = Modifier,
@@ -41,28 +50,56 @@ fun DappInteractionDialog(
         }
     }
 
-    val dismissHandler = {
-        viewModel.onDismiss()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
+        }
     }
-    BackHandler(onBack = dismissHandler)
-    BottomSheetDialogWrapper(
-        onDismiss = dismissHandler
-    ) {
-        DappInteractionDialogContent(
-            modifier = modifier,
-            state = state
-        )
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            viewModel.onDismiss()
+        }
     }
+
+    BackHandler(onBack = onDismissRequest)
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        wrapContent = true,
+        showDragHandle = true,
+        sheetContent = {
+            DappInteractionDialogContent(
+                state = state,
+                onDismissRequest = onDismissRequest
+            )
+        }
+    )
 }
 
 @Composable
 private fun DappInteractionDialogContent(
     modifier: Modifier = Modifier,
-    state: DappInteractionDialogViewModel.State
+    state: DappInteractionDialogViewModel.State,
+    onDismissRequest: () -> Unit
 ) {
-    Column {
+    Column(
+        modifier = modifier
+    ) {
+        RadixCenteredTopAppBar(
+            windowInsets = WindowInsets.none,
+            title = "",
+            onBackClick = onDismissRequest,
+            backIconType = BackIconType.Close
+        )
+
         Column(
-            modifier
+            Modifier
                 .fillMaxWidth()
                 .background(color = RadixTheme.colors.background)
                 .padding(RadixTheme.dimensions.paddingLarge),
@@ -94,7 +131,10 @@ private fun DappInteractionDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = RadixTheme.colors.backgroundSecondary)
-                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(
+                        vertical = RadixTheme.dimensions.paddingLarge,
+                        horizontal = RadixTheme.dimensions.paddingXLarge
+                    ),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.text,
@@ -112,8 +152,9 @@ fun DappInteractionDialogPreviewLight() {
             state = DappInteractionDialogViewModel.State(
                 requestId = "abc",
                 dAppName = "dApp",
-                isMobileConnect = true
-            )
+                isMobileConnect = false
+            ),
+            onDismissRequest = {}
         )
     }
 }
@@ -127,7 +168,8 @@ fun DappInteractionDialogPreviewDark() {
                 requestId = "abc",
                 dAppName = "dApp",
                 isMobileConnect = true
-            )
+            ),
+            onDismissRequest = {}
         )
     }
 }

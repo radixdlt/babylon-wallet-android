@@ -3,24 +3,21 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourcesOfTypeUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.callSafely
-import com.babylon.wallet.android.utils.relativeTimeFormatted
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
-import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.supportsBabylon
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -39,6 +36,7 @@ import javax.inject.Inject
 class OffDeviceMnemonicsViewModel @Inject constructor(
     getFactorSourcesOfTypeUseCase: GetFactorSourcesOfTypeUseCase,
     private val sargonOsManager: SargonOsManager,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<OffDeviceMnemonicsViewModel.State>(),
     OneOffEventHandler<OffDeviceMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -58,7 +56,7 @@ class OffDeviceMnemonicsViewModel @Inject constructor(
                             profileToCheck = ProfileToCheck.Current
                         )
                     }.onSuccess { entitiesLinkedToOffDeviceMnemonicFactorSource ->
-                        val factorSourceCard = offDeviceMnemonic.value.toFactorSourceCard(
+                        val factorSourceCard = offDeviceMnemonic.value.asGeneral().toFactorSourceCard(
                             messages = persistentListOf(),
                             accounts = entitiesLinkedToOffDeviceMnemonicFactorSource.accounts.toPersistentList(),
                             personas = entitiesLinkedToOffDeviceMnemonicFactorSource.personas.toPersistentList(),
@@ -86,31 +84,20 @@ class OffDeviceMnemonicsViewModel @Inject constructor(
         _state.update { state -> state.copy(offDeviceMnemonicFactorSources = persistentListOf()) }
     }
 
-    private fun OffDeviceMnemonicFactorSource.toFactorSourceCard(
-        includeDescription: Boolean = false,
-        messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
-        accounts: PersistentList<Account> = persistentListOf(),
-        personas: PersistentList<Persona> = persistentListOf(),
-        hasHiddenEntities: Boolean
-    ): FactorSourceCard {
-        return FactorSourceCard(
-            id = id.asGeneral(),
-            name = hint.label.value,
-            includeDescription = includeDescription,
-            lastUsedOn = common.lastUsedOn.relativeTimeFormatted(),
-            kind = kind,
-            messages = messages,
-            accounts = accounts,
-            personas = personas,
-            hasHiddenEntities = hasHiddenEntities,
-            supportsBabylon = this.asGeneral().supportsBabylon,
-            isEnabled = true
-        )
-    }
-
     fun onOffDeviceMnemonicFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
             sendEvent(Event.NavigateToOffDeviceMnemonicFactorSourceDetails(factorSourceId))
+        }
+    }
+
+    fun onAddOffDeviceMnemonicClick() {
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKind(
+                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                    context = AddFactorSourceInput.Context.New
+                )
+            )
         }
     }
 

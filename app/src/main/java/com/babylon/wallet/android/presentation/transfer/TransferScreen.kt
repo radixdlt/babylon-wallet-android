@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -361,14 +360,14 @@ fun TransferContent(
             addScrim = true,
             showDragHandle = true,
             onDismiss = onSheetClosed,
-            showDefaultTopBar = false
+            showDefaultTopBar = false,
+            heightFraction = 0.9f
         ) {
             when (val sheetState = state.sheet) {
                 is State.Sheet.ChooseAccounts -> {
                     ChooseAccountSheet(
                         modifier = Modifier
-                            .background(RadixTheme.colors.backgroundSecondary)
-                            .fillMaxHeight(0.9f),
+                            .background(RadixTheme.colors.backgroundSecondary),
                         onCloseClick = onSheetClosed,
                         state = sheetState,
                         onOwnedAccountSelected = onOwnedAccountSelected,
@@ -385,7 +384,6 @@ fun TransferContent(
                     ChooseAssetsSheet(
                         modifier = Modifier
                             .background(RadixTheme.colors.background)
-                            .fillMaxHeight(0.9f)
                             .imePadding(),
                         state = sheetState,
                         onTabClick = onChooseAssetTabClick,

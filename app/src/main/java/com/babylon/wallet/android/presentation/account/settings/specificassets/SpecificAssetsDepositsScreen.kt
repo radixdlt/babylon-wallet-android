@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -52,7 +54,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -187,7 +188,6 @@ fun SpecificAssetsDepositsScreen(
                 sharedViewModel.onAddAssetException()
             },
             modifier = Modifier
-                .imePadding()
                 .fillMaxWidth()
                 .clip(RadixTheme.shapes.roundedRectTopDefault),
             onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
@@ -217,9 +217,7 @@ private fun AddAssetSheet(
         showDefaultTopBar = true
     ) {
         Column(
-            modifier = modifier
-                .verticalScroll(rememberScrollState())
-                .imePadding(),
+            modifier = modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
         ) {
             Column(
@@ -282,17 +280,15 @@ private fun AddAssetSheet(
                         }
                     )
                 }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                RadixPrimaryButton(
-                    text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
-                    onClick = {
-                        onAddAsset()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = asset.addressValid,
-                    isLoading = false
-                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
+
+            RadixBottomBar(
+                onClick = onAddAsset,
+                text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
+                enabled = asset.addressValid,
+                insets = WindowInsets.navigationBars.union(WindowInsets.ime)
+            )
         }
     }
 }

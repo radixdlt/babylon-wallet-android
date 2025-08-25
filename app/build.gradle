@@ -78,7 +78,7 @@ android {
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
         versionCode 71
-        versionName "1.16.3"
+        versionName "1.17.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
@@ -207,6 +207,7 @@ dependencies {
     implementation libs.material
     implementation libs.composeMaterial3
     implementation libs.material3WindowSizeClass
+    implementation libs.materialIconsExtended
     implementation libs.splash
     implementation libs.palette
     implementation libs.browser

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,11 +27,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,8 +60,11 @@ import com.babylon.wallet.android.designsystem.theme.Green3
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.address.AddressDetailsDialogViewModel.State.Section
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.none
 import com.babylon.wallet.android.utils.openUrl
 import com.babylon.wallet.android.utils.shareText
 import com.radixdlt.sargon.AccountAddress
@@ -71,6 +77,7 @@ import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import rdx.works.core.qr.QRCodeGenerator
 
 @Composable
@@ -129,43 +136,73 @@ private fun AddressDetailsDialogContent(
 ) {
     BackHandler(onBack = onDismiss)
 
-    BottomSheetDialogWrapper(
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
+        }
+    }
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
+
+    DefaultModalSheetLayout(
         modifier = modifier,
-        onDismiss = onDismiss,
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
         showDragHandle = true,
-        content = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                if (state.title != null) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                        text = state.title,
-                        textAlign = TextAlign.Center,
-                        style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.text
-                    )
-                }
+        wrapContent = true,
+        sheetContent = {
+            Column {
+                RadixCenteredTopAppBar(
+                    windowInsets = WindowInsets.none,
+                    title = "",
+                    onBackClick = onDismissRequest,
+                    backIconType = BackIconType.Close
+                )
 
-                state.sections.forEach { section ->
-                    when (section) {
-                        is Section.AccountAddressQRCode -> AccountAddressQRCode(accountAddress = section.accountAddress)
-                        is Section.FullAddress -> FullAddress(
-                            fullAddress = section.rawAddress,
-                            boldRanges = section.boldRanges,
-                            onCopy = onCopy,
-                            onEnlarge = onEnlarge,
-                            onShare = onShare
-                        )
-
-                        is Section.VisitDashboard -> VisitDashboard(onClick = onVisitDashboard)
-                        is Section.VerifyAddressOnLedger -> VerifyAddressOnLedger(
-                            isVerifying = section.isVerifying,
-                            onClick = onVerifyAddressOnLedger
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
+                    if (state.title != null) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+                            text = state.title,
+                            textAlign = TextAlign.Center,
+                            style = RadixTheme.typography.title,
+                            color = RadixTheme.colors.text
                         )
                     }
+
+                    state.sections.forEach { section ->
+                        when (section) {
+                            is Section.AccountAddressQRCode -> AccountAddressQRCode(accountAddress = section.accountAddress)
+                            is Section.FullAddress -> FullAddress(
+                                fullAddress = section.rawAddress,
+                                boldRanges = section.boldRanges,
+                                onCopy = onCopy,
+                                onEnlarge = onEnlarge,
+                                onShare = onShare
+                            )
+
+                            is Section.VisitDashboard -> VisitDashboard(onClick = onVisitDashboard)
+                            is Section.VerifyAddressOnLedger -> VerifyAddressOnLedger(
+                                isVerifying = section.isVerifying,
+                                onClick = onVerifyAddressOnLedger
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault))
                 }
-                Spacer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault))
             }
         }
     )

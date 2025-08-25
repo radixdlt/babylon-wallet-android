@@ -85,6 +85,9 @@ fun DerivePublicKeysDialog(
         state = state,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onArculusPinChange = viewModel::onArculusPinChange,
+        onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
+        onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
         onInputConfirmed = viewModel::onInputConfirmed,
         onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry
@@ -98,6 +101,9 @@ private fun DerivePublicKeysSheetContent(
     state: DerivePublicKeysViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
+    onArculusPinChange: (String) -> Unit,
+    onForgotArculusPinClick: () -> Unit,
+    onArculusInfoMessageDismiss: () -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
@@ -193,8 +199,14 @@ private fun DerivePublicKeysSheetContent(
                             modifier = contentModifier,
                             purpose = state.purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            pinState = accessFactorSourceState.arculusPinState,
+                            onPinChange = onArculusPinChange,
+                            onForgotPinClick = onForgotArculusPinClick,
+                            onInfoMessageDismiss = onArculusInfoMessageDismiss,
+                            onRetryClick = onRetryClick,
                             skipOption = AccessFactorSourceSkipOption.None,
-                            onSkipClick = {}
+                            onSkipClick = {},
+                            onConfirmClick = onInputConfirmed
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
@@ -232,6 +244,9 @@ private fun DerivePublicKeyPreview(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {}
         )
@@ -257,6 +272,9 @@ private fun DerivePublicKeyPreviewDark(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {}
         )

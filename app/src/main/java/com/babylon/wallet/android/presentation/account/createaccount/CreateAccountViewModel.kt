@@ -12,6 +12,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceInput
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
@@ -25,12 +27,11 @@ import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
@@ -43,7 +44,7 @@ import javax.inject.Inject
 @HiltViewModel
 @Suppress("LongParameterList", "TooManyFunctions")
 class CreateAccountViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val firstAccountCreationStatusManager: FirstAccountCreationStatusManager,
     private val syncAccountThirdPartyDepositsWithLedger: SyncAccountThirdPartyDepositsWithLedger,
     private val getProfileUseCase: GetProfileUseCase,
@@ -54,7 +55,8 @@ class CreateAccountViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
     private val sargonOsManager: SargonOsManager,
-    private val keystoreManager: KeystoreManager
+    private val keystoreManager: KeystoreManager,
+    private val selectFactorSourceProxy: SelectFactorSourceProxy
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -68,7 +70,7 @@ class CreateAccountViewModel @Inject constructor(
         _state.update { it.copy(accountName = accountName) }
     }
 
-    fun onAccountCreateClick(isWithLedger: Boolean) {
+    fun onAccountCreateClick() {
         viewModelScope.launch {
             _state.update { it.copy(isCreatingAccount = true) }
 
@@ -77,7 +79,9 @@ class CreateAccountViewModel @Inject constructor(
                 if (!walletCreated) return@launch
             }
 
-            val factorSourceToCreateAccount = resolveFactorSource(isWithLedger = isWithLedger) ?: run {
+            val isFirstTime = args.requestSource?.isFirstTime() == true
+
+            val factorSourceToCreateAccount = resolveFactorSource() ?: run {
                 _state.update { it.copy(isCreatingAccount = false) }
                 return@launch
             }
@@ -85,32 +89,23 @@ class CreateAccountViewModel @Inject constructor(
             val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
             val name = DisplayName.init(state.value.accountName.trim())
 
-            if (args.requestSource?.isFirstTime() == true) {
+            if (isFirstTime) {
                 firstAccountCreationStatusManager.onFirstAccountCreationInProgress()
             }
 
-            when (factorSourceToCreateAccount) {
-                is FactorSourceToCreateAccount.Ledger -> runCatching {
-                    sargonOsManager.sargonOs.createAndSaveNewAccountWithFactorSource(
-                        factorSource = factorSourceToCreateAccount.factorSource,
-                        networkId = networkId,
-                        name = name
-                    )
-                }
-
-                is FactorSourceToCreateAccount.MainBabylon -> runCatching {
-                    sargonOsManager.sargonOs.createAndSaveNewAccountWithMainBdfs(
-                        networkId = networkId,
-                        name = name
-                    )
-                }
+            runCatching {
+                sargonOsManager.sargonOs.createAndSaveNewAccountWithFactorSource(
+                    factorSource = factorSourceToCreateAccount,
+                    networkId = networkId,
+                    name = name
+                )
             }.onSuccess { account ->
                 onAccountCreated(account = account)
             }.onFailure { error ->
                 Timber.w(error)
                 _state.update { it.copy(isCreatingAccount = false) }
 
-                if (args.requestSource?.isFirstTime() == true) {
+                if (isFirstTime) {
                     firstAccountCreationStatusManager.onFirstAccountCreationAborted()
                 }
             }
@@ -119,10 +114,6 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onBackClick() = viewModelScope.launch {
         sendEvent(CreateAccountEvent.Dismiss)
-    }
-
-    fun onUseLedgerSelectionChanged(selected: Boolean) {
-        _state.update { it.copy(isWithLedger = selected) }
     }
 
     fun onUiMessageShown() {
@@ -150,7 +141,7 @@ class CreateAccountViewModel @Inject constructor(
         keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
         return runCatching {
-            sargonOs.newWallet(shouldPreDeriveInstances = false)
+            sargonOs.newWallet()
         }.onSuccess {
             // Since we choose to create a new profile, this is the time
             // we discard the data copied from the cloud backup, since they represent
@@ -187,19 +178,11 @@ class CreateAccountViewModel @Inject constructor(
         }
     }
 
-    private suspend fun resolveFactorSource(isWithLedger: Boolean): FactorSourceToCreateAccount? = if (isWithLedger) {
-        sendEvent(CreateAccountEvent.AddLedgerDevice)
-        val event = appEventBus.events
-            .filterIsInstance<AppEvent.AccessFactorSources.SelectLedgerOutcome>()
-            .first()
-
-        when (event) {
-            is AppEvent.AccessFactorSources.SelectLedgerOutcome.Rejected -> null
-            is AppEvent.AccessFactorSources.SelectLedgerOutcome.Selected -> FactorSourceToCreateAccount.Ledger(event.ledgerFactorSource)
-        }
-    } else {
-        FactorSourceToCreateAccount.MainBabylon
-    }
+    private suspend fun resolveFactorSource(): FactorSource? =
+        selectFactorSourceProxy.selectFactorSource(SelectFactorSourceInput.Context.CreateAccount)
+            ?.let { factorSourceId ->
+                getProfileUseCase().factorSourceById(factorSourceId.value)
+            }
 
     private suspend fun onAccountCreated(account: Account) {
         if (args.networkIdToSwitch != null) {
@@ -226,18 +209,11 @@ class CreateAccountViewModel @Inject constructor(
         firstAccountCreationStatusManager.onFirstAccountCreationConfirmed()
     }
 
-    private sealed interface FactorSourceToCreateAccount {
-        data object MainBabylon : FactorSourceToCreateAccount
-
-        data class Ledger(val factorSource: FactorSource.Ledger) : FactorSourceToCreateAccount
-    }
-
     data class CreateAccountUiState(
         val isCreatingAccount: Boolean = false,
         val isFirstAccount: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
-        val isWithLedger: Boolean = false,
         val uiMessage: UiMessage? = null,
         val shouldShowNoMnemonicError: Boolean = false
     ) : UiState {
@@ -249,16 +225,16 @@ class CreateAccountViewModel @Inject constructor(
             get() = accountNameTrimmed.isNotEmpty() && accountNameTrimmed.count() > entityNameMaxLength
 
         val isSubmitEnabled: Boolean
-            get() = accountNameTrimmed.isNotEmpty() && accountNameTrimmed.count() <= entityNameMaxLength
+            get() = accountNameTrimmed.isNotEmpty() && accountNameTrimmed.count() <= entityNameMaxLength && !isCreatingAccount
     }
 }
 
 internal sealed interface CreateAccountEvent : OneOffEvent {
+
     data class Complete(
         val accountId: AccountAddress,
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
 
-    data object AddLedgerDevice : CreateAccountEvent
     data object Dismiss : CreateAccountEvent
 }

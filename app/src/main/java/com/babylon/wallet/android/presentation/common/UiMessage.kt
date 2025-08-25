@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toMessage
+import com.babylon.wallet.android.domain.toUserFriendlyAlertTitle
 import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import com.radixdlt.sargon.CommonException
 import kotlinx.serialization.SerialName
@@ -15,6 +16,9 @@ import rdx.works.profile.domain.ProfileException
 
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
+
+    @Composable
+    open fun getTitle(): String? = null
 
     @Composable
     abstract fun getMessage(): String
@@ -54,6 +58,10 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @SerialName("rename_successful")
         data object RenameSuccessful : InfoMessage()
 
+        @Serializable
+        @SerialName("success")
+        data object Success : InfoMessage()
+
         @Composable
         override fun getMessage(): String = when (this) {
             InvalidPayload -> stringResource(id = R.string.importOlympiaAccounts_invalidPayload)
@@ -70,13 +78,20 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
                     R.string.factorSources_detail_spotCheckFailure
                 }
             )
+
             RenameSuccessful -> stringResource(R.string.renameLabel_success)
+            Success -> stringResource(id = R.string.common_success)
         }
     }
 
     data class ErrorMessage(
         val error: Throwable?
     ) : UiMessage() {
+
+        @Composable
+        override fun getTitle(): String? {
+            return error?.asRadixWalletException()?.toUserFriendlyAlertTitle(LocalContext.current)
+        }
 
         @Composable
         override fun getMessage(): String {
@@ -99,7 +114,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             is ProfileException.InvalidSnapshot -> stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel)
             is ProfileException.InvalidPassword -> stringResource(id = R.string.recoverProfileBackup_passwordWrong)
             is ProfileException.NoMnemonic -> "Please restore your Seed Phrase and try again"
-            is ProfileException.SecureStorageAccess -> "There was issue tying to access mnemonic secure storage"
+            is ProfileException.SecureStorageAccess -> "There was an issue tying to access mnemonic secure storage"
             is ProfileException.AuthenticationSigningAlreadyExist -> "Signing Entity $entity already has authenticationSigning"
             ProfileException.InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
         }

@@ -102,6 +102,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is BuildTransactionHeader,
                 is ConvertManifest,
                 is RequestNotFound -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+
                 is PrepareNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
                 is SubmitNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION
                 is FailedToFindAccountWithEnoughFundsToLockFee -> {
@@ -180,7 +181,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object FailedToDerivePublicKeys : LedgerCommunicationException()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
         data object FailedToSignAuthChallenge : LedgerCommunicationException()
-        data class FailedToSignTransaction(val reason: LedgerErrorCode, override val message: String?) : LedgerCommunicationException()
+        data class FailedToSignTransaction(val reason: LedgerErrorCode, override val message: String?) :
+            LedgerCommunicationException()
 
         override val dappWalletInteractionErrorType: DappWalletInteractionErrorType
             get() = when (this) {
@@ -226,11 +228,28 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         )
     }
 
-    sealed class AddFactorSource : RadixWalletException() {
+    sealed class FactorSource : RadixWalletException() {
 
-        data object FactorSourceAlreadyInUse : AddFactorSource()
+        data class FactorSourceAlreadyInUse(
+            val factorSourceName: String?
+        ) : FactorSource()
 
-        data object FactorSourceNotCreated : AddFactorSource()
+        data object FactorSourceNotCreated : FactorSource()
+    }
+
+    sealed class Arculus : RadixWalletException() {
+
+        data class MinimumFirmwareRequired(
+            val version: String
+        ) : Arculus()
+
+        data class WrongPin(
+            val numberOfTries: Int
+        ) : Arculus()
+
+        data object NfcSessionLostTagConnection : Arculus()
+
+        data object NfcSessionUnknownTag : Arculus()
     }
 }
 
@@ -317,13 +336,16 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically -> context.getString(
             R.string.common_somethingWentWrong
         )
+
         is RadixWalletException.DappRequestException.PreviewError -> context.getString(R.string.error_transactionFailure_reviewFailure)
         is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose -> context.getString(
             R.string.dAppRequest_validationOutcome_preAuthorizationExpirationTooClose
         )
+
         is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired -> context.getString(
             R.string.dAppRequest_validationOutcome_preAuthorizationExpired
         )
+
         RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(
             R.string.dAppRequest_validationOutcome_invalidPersonaOrAccoubts
         )
@@ -415,6 +437,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
             is RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
+
             RadixWalletException.PrepareTransactionException.RequestNotFound -> R.string.error_transactionFailure_prepare
         }
     )
@@ -428,12 +451,22 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
     is BackupServiceException.Unknown -> "Unknown error occurred cause: ${cause?.message}"
 }
 
-fun RadixWalletException.AddFactorSource.toUserFriendlyMessage(context: Context): String = context.getString(
-    when (this) {
-        RadixWalletException.AddFactorSource.FactorSourceAlreadyInUse -> R.string.newFactor_error_alreadyInUse
-        RadixWalletException.AddFactorSource.FactorSourceNotCreated -> R.string.newFactor_error_notCreated
-    }
-)
+fun RadixWalletException.FactorSource.toUserFriendlyMessage(context: Context): String = when (this) {
+    is RadixWalletException.FactorSource.FactorSourceAlreadyInUse -> factorSourceName ?: "Unknown"
+    RadixWalletException.FactorSource.FactorSourceNotCreated -> context.getString(R.string.newFactor_error_notCreated)
+}
+
+fun RadixWalletException.FactorSource.toUserFriendlyAlertTitle(context: Context): String? = when (this) {
+    is RadixWalletException.FactorSource.FactorSourceAlreadyInUse -> context.getString(R.string.newFactor_error_alreadyInUse)
+    RadixWalletException.FactorSource.FactorSourceNotCreated -> null
+}
+
+fun RadixWalletException.Arculus.toUserFriendlyMessage(context: Context): String = when (this) {
+    is RadixWalletException.Arculus.MinimumFirmwareRequired -> context.getString(R.string.addArculus_firmwareVersionError_message, version)
+    RadixWalletException.Arculus.NfcSessionLostTagConnection -> context.getString(R.string.arculusScan_lostTagError_message)
+    RadixWalletException.Arculus.NfcSessionUnknownTag -> context.getString(R.string.arculusScan_unknownTagError_message)
+    is RadixWalletException.Arculus.WrongPin -> context.getString(R.string.arculusDetails_verifyPin_errorMessage, numberOfTries)
+}
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
@@ -449,13 +482,31 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
         is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
-        is RadixWalletException.AddFactorSource -> toUserFriendlyMessage(context)
+        is RadixWalletException.FactorSource -> toUserFriendlyMessage(context)
+        is RadixWalletException.Arculus -> toUserFriendlyMessage(context)
     }
 }
 
 @Composable
 fun RadixWalletException.userFriendlyMessage(): String {
     return toUserFriendlyMessage(LocalContext.current)
+}
+
+fun RadixWalletException.toUserFriendlyAlertTitle(context: Context): String? {
+    return when (this) {
+        is RadixWalletException.ResourceCouldNotBeResolvedInTransaction,
+        is RadixWalletException.DappRequestException,
+        is RadixWalletException.DappVerificationException,
+        is RadixWalletException.LedgerCommunicationException,
+        is RadixWalletException.PrepareTransactionException,
+        is RadixWalletException.TransactionSubmitException,
+        is RadixWalletException.GatewayException,
+        is RadixWalletException.LinkConnectionException,
+        is RadixWalletException.CloudBackupException,
+        is RadixWalletException.Arculus -> null
+
+        is RadixWalletException.FactorSource -> toUserFriendlyAlertTitle(context)
+    }
 }
 
 fun Throwable.getDappMessage(): String? {

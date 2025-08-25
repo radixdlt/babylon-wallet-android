@@ -8,9 +8,9 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.extensions.supportsBabylon
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.sargon.lastUsedOn
 
 data class FactorSourceCard(
     val id: FactorSourceId,
@@ -22,7 +22,6 @@ data class FactorSourceCard(
     val accounts: PersistentList<Account>,
     val personas: PersistentList<Persona>,
     val hasHiddenEntities: Boolean,
-    val supportsBabylon: Boolean,
     val isEnabled: Boolean
 )
 
@@ -44,18 +43,10 @@ fun FactorSource.toFactorSourceCard(
             is FactorSource.Ledger -> this.value.hint.label
             is FactorSource.OffDeviceMnemonic -> this.value.hint.label.value
             is FactorSource.Password -> this.value.hint.label
-            else -> ""
         },
         includeDescription = includeDescription,
         lastUsedOn = if (includeLastUsedOn) {
-            when (this) {
-                is FactorSource.ArculusCard -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.Device -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.Ledger -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.OffDeviceMnemonic -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                is FactorSource.Password -> this.value.common.lastUsedOn.relativeTimeFormatted()
-                else -> ""
-            }
+            lastUsedOn.relativeTimeFormatted()
         } else {
             null
         },
@@ -64,7 +55,6 @@ fun FactorSource.toFactorSourceCard(
         accounts = accounts,
         personas = personas,
         hasHiddenEntities = hasHiddenEntities,
-        supportsBabylon = supportsBabylon,
         isEnabled = isEnabled
     )
 }

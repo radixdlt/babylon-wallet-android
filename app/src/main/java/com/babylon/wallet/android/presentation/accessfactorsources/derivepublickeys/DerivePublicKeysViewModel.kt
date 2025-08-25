@@ -51,6 +51,7 @@ class DerivePublicKeysViewModel @Inject constructor(
         id = proxyInput.request.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
+        accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
         defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,
@@ -81,6 +82,12 @@ class DerivePublicKeysViewModel @Inject constructor(
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) = accessDelegate.onSeedPhraseWordChanged(wordIndex, word)
 
     fun onPasswordTyped(password: String) = accessDelegate.onPasswordTyped(password)
+
+    fun onArculusPinChange(pin: String) = accessDelegate.onArculusPinChange(pin)
+
+    fun onForgotArculusPinClick() = accessDelegate.onForgotArculusPinClick()
+
+    fun onArculusInfoMessageDismiss() = accessDelegate.onArculusInfoMessageDismiss()
 
     fun onRetry() = accessDelegate.onRetry()
 

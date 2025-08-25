@@ -8,6 +8,12 @@ import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourcePr
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxyImpl
 import com.babylon.wallet.android.presentation.alerts.AlertHandler
 import com.babylon.wallet.android.presentation.alerts.AlertHandlerImpl
+import com.babylon.wallet.android.presentation.nfc.common.NfcSessionIOHandler
+import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxy
+import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxyImpl
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceIOHandler
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxyImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -41,4 +47,24 @@ interface UiModule {
     fun bindAlertHandler(
         alertHandlerImpl: AlertHandlerImpl
     ): AlertHandler
+
+    @Binds
+    fun bindSelectFactorSourceIOHandler(
+        impl: SelectFactorSourceProxyImpl
+    ): SelectFactorSourceIOHandler
+
+    @Binds
+    fun bindSelectFactorSourcesProxy(
+        impl: SelectFactorSourceProxyImpl
+    ): SelectFactorSourceProxy
+
+    @Binds
+    fun bindNfcSessionIOHandler(
+        impl: NfcSessionProxyImpl
+    ): NfcSessionIOHandler
+
+    @Binds
+    fun bindNfcSessionProxy(
+        impl: NfcSessionProxyImpl
+    ): NfcSessionProxy
 }

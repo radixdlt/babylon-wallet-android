@@ -17,17 +17,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
@@ -37,8 +36,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun OffDeviceMnemonicsScreen(
     viewModel: OffDeviceMnemonicsViewModel,
     onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddOffDeviceMnemonic: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -56,8 +53,7 @@ fun OffDeviceMnemonicsScreen(
     OffDeviceMnemonicsContent(
         offDeviceMnemonicFactorSources = state.offDeviceMnemonicFactorSources,
         onOffDeviceMnemonicFactorSourceClick = viewModel::onOffDeviceMnemonicFactorSourceClick,
-        onAddOffDeviceMnemonicClick = onNavigateToAddOffDeviceMnemonic,
-        onInfoClick = onInfoClick,
+        onAddOffDeviceMnemonicClick = viewModel::onAddOffDeviceMnemonicClick,
         onBackClick = onBackClick
     )
 }
@@ -68,7 +64,6 @@ private fun OffDeviceMnemonicsContent(
     offDeviceMnemonicFactorSources: PersistentList<FactorSourceCard>,
     onOffDeviceMnemonicFactorSourceClick: (FactorSourceId) -> Unit,
     onAddOffDeviceMnemonicClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -89,14 +84,11 @@ private fun OffDeviceMnemonicsContent(
             HorizontalDivider(color = RadixTheme.colors.divider)
 
             FactorSourcesList(
-                mainFactorSource = null,
                 factorSources = offDeviceMnemonicFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_offDeviceMnemonicDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_offDeviceMnemonicAdd,
-                factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 onFactorSourceClick = onOffDeviceMnemonicFactorSourceClick,
-                onAddFactorSourceClick = onAddOffDeviceMnemonicClick,
-                onInfoClick = onInfoClick
+                onAddFactorSourceClick = onAddOffDeviceMnemonicClick
             )
         }
     }
@@ -109,59 +101,16 @@ private fun OffDeviceMnemonicsPreview() {
     RadixWalletTheme {
         OffDeviceMnemonicsContent(
             offDeviceMnemonicFactorSources = persistentListOf(
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Panathinaikos",
-                    includeDescription = false,
-                    lastUsedOn = "Today",
-                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                    messages = persistentListOf(),
+                OffDeviceMnemonicFactorSource.sample().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
                 ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate 13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
-                ),
-                FactorSourceCard(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "Gate13",
-                    includeDescription = false,
-                    lastUsedOn = "Last year",
-                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                    messages = persistentListOf(),
+                OffDeviceMnemonicFactorSource.sample.other().asGeneral().toFactorSourceCard(
                     accounts = persistentListOf(Account.sampleMainnet()),
-                    personas = persistentListOf(),
-                    hasHiddenEntities = false,
-                    supportsBabylon = true,
-                    isEnabled = true
                 )
             ),
             onOffDeviceMnemonicFactorSourceClick = {},
             onAddOffDeviceMnemonicClick = {},
-            onBackClick = {},
-            onInfoClick = {}
+            onBackClick = {}
         )
     }
 }

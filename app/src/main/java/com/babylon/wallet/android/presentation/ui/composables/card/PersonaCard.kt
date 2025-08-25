@@ -14,6 +14,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,12 +34,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.composables.HandleSecurityPrompt
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -153,13 +159,24 @@ fun PersonaCard(
                 )
             }
         }
+
+        val factorSourceId = remember(persona) {
+            persona.unsecuredControllingFactorInstance?.factorSourceId?.asGeneral()
+        }
+        val securityPromptClickEvent = remember { mutableStateOf<SecurityPromptType?>(null) }
+
+        HandleSecurityPrompt(
+            factorSourceId = factorSourceId,
+            clickEvent = securityPromptClickEvent,
+            onConsumeUpstream = { onNavigateToSecurityCenter?.invoke() },
+            onConsumed = { securityPromptClickEvent.value = null }
+        )
+
         securityPrompts?.forEach {
             PromptLabel(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .throttleClickable(
-                        enabled = onNavigateToSecurityCenter != null
-                    ) { onNavigateToSecurityCenter?.invoke() },
+                    .throttleClickable { securityPromptClickEvent.value = it },
                 text = it.toText()
             )
         }

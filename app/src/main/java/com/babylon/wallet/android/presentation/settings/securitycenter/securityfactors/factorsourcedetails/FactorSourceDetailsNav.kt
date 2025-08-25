@@ -14,7 +14,7 @@ import com.radixdlt.sargon.extensions.toJson
 
 internal const val ARG_FACTOR_SOURCE_ID = "arg_factor_source_id"
 
-private const val ROUTE_FACTOR_SOURCE_DETAILS = "route_factor_source_details/{$ARG_FACTOR_SOURCE_ID}"
+internal const val ROUTE_FACTOR_SOURCE_DETAILS = "route_factor_source_details/{$ARG_FACTOR_SOURCE_ID}"
 
 internal class FactorSourceDetailsArgs(val factorSourceId: FactorSourceId) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -29,7 +29,9 @@ fun NavController.factorSourceDetails(factorSourceId: FactorSourceId) {
 fun NavGraphBuilder.factorSourceDetails(
     navigateToViewSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
     navigateToViewSeedPhraseRestore: () -> Unit,
-    onBackClick: () -> Unit,
+    toChangeArculusPin: (FactorSourceId) -> Unit,
+    toForgotArculusPin: (FactorSourceId) -> Unit,
+    onBackClick: () -> Unit
 ) {
     composable(
         route = ROUTE_FACTOR_SOURCE_DETAILS,
@@ -50,6 +52,8 @@ fun NavGraphBuilder.factorSourceDetails(
             viewModel = hiltViewModel(),
             navigateToViewSeedPhrase = navigateToViewSeedPhrase,
             navigateToViewSeedPhraseRestore = navigateToViewSeedPhraseRestore,
+            toChangeArculusPin = toChangeArculusPin,
+            toForgotArculusPin = toForgotArculusPin,
             onBackClick = onBackClick
         )
     }

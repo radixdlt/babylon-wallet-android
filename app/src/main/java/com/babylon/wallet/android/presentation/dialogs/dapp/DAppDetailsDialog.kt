@@ -1,25 +1,33 @@
 package com.babylon.wallet.android.presentation.dialogs.dapp
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DappDetails
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.presentation.ui.none
+import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
 
 @Composable
@@ -48,6 +56,7 @@ fun DAppDetailsDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DAppDetailsDialogContent(
     modifier: Modifier = Modifier,
@@ -86,34 +95,60 @@ private fun DAppDetailsDialogContent(
             confirmTextColor = RadixTheme.colors.error
         )
     }
-    BottomSheetDialogWrapper(
-        modifier = modifier,
-        title = state.dAppWithResources?.dApp.displayName(),
-        showDragHandle = true,
-        onDismiss = onDismiss
-    ) {
-        Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
-            DappDetails(
-                modifier = Modifier.fillMaxSize(),
-                dAppWithResources = state.dAppWithResources,
-                isValidatingWebsite = state.isWebsiteValidating,
-                validatedWebsite = state.validatedWebsite,
-                personaList = state.authorizedPersonas,
-                isShowLockerDepositsChecked = state.isShowLockerDepositsChecked,
-                isReadOnly = state.isReadOnly,
-                onFungibleTokenClick = onFungibleClick,
-                onNonFungibleClick = onNonFungibleClick,
-                onDeleteDapp = {
-                    showDeleteDappPrompt = true
-                },
-                onPersonaClick = null,
-                onShowLockerDepositsCheckedChange = onShowLockerDepositsCheckedChange
-            )
-
-            SnackbarUiMessageHandler(
-                message = state.uiMessage,
-                onMessageShown = onMessageShown
-            )
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
         }
     }
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
+
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = sheetState,
+        showDragHandle = true,
+        onDismissRequest = onDismissRequest,
+        sheetContent = {
+            Column {
+                RadixCenteredTopAppBar(
+                    windowInsets = WindowInsets.none,
+                    title = state.dAppWithResources?.dApp.displayName(),
+                    onBackClick = onDismissRequest,
+                    backIconType = BackIconType.Close
+                )
+
+                Box {
+                    DappDetails(
+                        modifier = Modifier.fillMaxSize(),
+                        dAppWithResources = state.dAppWithResources,
+                        isValidatingWebsite = state.isWebsiteValidating,
+                        validatedWebsite = state.validatedWebsite,
+                        personaList = state.authorizedPersonas,
+                        isShowLockerDepositsChecked = state.isShowLockerDepositsChecked,
+                        isReadOnly = state.isReadOnly,
+                        onFungibleTokenClick = onFungibleClick,
+                        onNonFungibleClick = onNonFungibleClick,
+                        onDeleteDapp = {
+                            showDeleteDappPrompt = true
+                        },
+                        onPersonaClick = null,
+                        onShowLockerDepositsCheckedChange = onShowLockerDepositsCheckedChange
+                    )
+
+                    SnackbarUiMessageHandler(
+                        message = state.uiMessage,
+                        onMessageShown = onMessageShown
+                    )
+                }
+            }
+        }
+    )
 }

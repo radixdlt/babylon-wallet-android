@@ -29,7 +29,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessArculusCardFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessDeviceFactorSourceContent
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.AccessLedgerHardwareWalletFactorSourceContent
@@ -90,6 +89,9 @@ fun GetSignaturesDialog(
         onDismiss = viewModel::onDismiss,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onArculusPinChange = viewModel::onArculusPinChange,
+        onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
+        onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
         onRetryClick = viewModel::onRetry,
         onSkipClick = viewModel::onSkip
     )
@@ -102,6 +104,9 @@ private fun GetSignaturesBottomSheetContent(
     state: GetSignaturesViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
+    onArculusPinChange: (String) -> Unit,
+    onForgotArculusPinClick: () -> Unit,
+    onArculusInfoMessageDismiss: () -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
@@ -204,8 +209,14 @@ private fun GetSignaturesBottomSheetContent(
                             modifier = contentModifier,
                             purpose = purpose,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            pinState = accessFactorSourceState.arculusPinState,
+                            onPinChange = onArculusPinChange,
+                            onForgotPinClick = onForgotArculusPinClick,
+                            onInfoMessageDismiss = onArculusInfoMessageDismiss,
+                            onRetryClick = onRetryClick,
                             skipOption = state.skipOption,
-                            onSkipClick = onSkipClick
+                            onSkipClick = onSkipClick,
+                            onConfirmClick = onInputConfirmed
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
@@ -224,17 +235,17 @@ private fun GetSignaturesBottomSheetContent(
     )
 }
 
-private fun Purpose.toAccessFactorSourcePurpose() = when (this) {
-    Purpose.TransactionIntents,
-    Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
-    Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
+private fun GetSignaturesViewModel.Purpose.toAccessFactorSourcePurpose() = when (this) {
+    GetSignaturesViewModel.Purpose.TransactionIntents,
+    GetSignaturesViewModel.Purpose.SubIntents -> AccessFactorSourcePurpose.SignatureRequest
+    GetSignaturesViewModel.Purpose.AuthIntents -> AccessFactorSourcePurpose.ProvingOwnership
 }
 
 @UsesSampleValues
 @Preview
 @Composable
 private fun GetSignaturesPreviewLight(
-    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<GetSignaturesViewModel.Purpose, FactorSource>
 ) {
     RadixWalletPreviewTheme {
         GetSignaturesBottomSheetContent(
@@ -252,6 +263,9 @@ private fun GetSignaturesPreviewLight(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}
@@ -263,7 +277,7 @@ private fun GetSignaturesPreviewLight(
 @Preview
 @Composable
 private fun GetSignaturesPreviewDark(
-    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<Purpose, FactorSource>
+    @PreviewParameter(provider = GetSignaturesPreviewParameterProvider::class) sample: Pair<GetSignaturesViewModel.Purpose, FactorSource>
 ) {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
         GetSignaturesBottomSheetContent(
@@ -281,6 +295,9 @@ private fun GetSignaturesPreviewDark(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}
@@ -289,9 +306,9 @@ private fun GetSignaturesPreviewDark(
 }
 
 @UsesSampleValues
-private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<Purpose, FactorSource>> {
+private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<Pair<GetSignaturesViewModel.Purpose, FactorSource>> {
 
-    private val samples: List<Pair<Purpose, FactorSource>>
+    private val samples: List<Pair<GetSignaturesViewModel.Purpose, FactorSource>>
 
     init {
         val factorSources = listOf(
@@ -302,13 +319,13 @@ private class GetSignaturesPreviewParameterProvider : PreviewParameterProvider<P
             PasswordFactorSource.sample().asGeneral()
         )
 
-        samples = Purpose.entries.flatMap { purpose ->
+        samples = GetSignaturesViewModel.Purpose.entries.flatMap { purpose ->
             factorSources.map { factorSource ->
                 purpose to factorSource
             }
         }
     }
 
-    override val values: Sequence<Pair<Purpose, FactorSource>>
+    override val values: Sequence<Pair<GetSignaturesViewModel.Purpose, FactorSource>>
         get() = samples.asSequence()
 }

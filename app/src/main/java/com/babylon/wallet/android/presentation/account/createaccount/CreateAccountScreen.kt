@@ -1,9 +1,7 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -54,8 +51,7 @@ fun CreateAccountScreen(
     onContinueClick: (
         accountId: AccountAddress,
         requestSource: CreateAccountRequestSource?,
-    ) -> Unit = { _: AccountAddress, _: CreateAccountRequestSource? -> },
-    onAddLedgerDevice: () -> Unit
+    ) -> Unit = { _: AccountAddress, _: CreateAccountRequestSource? -> }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -63,14 +59,11 @@ fun CreateAccountScreen(
 
     CreateAccountContent(
         onAccountNameChange = viewModel::onAccountNameChange,
-        onAccountCreateClick = {
-            viewModel.onAccountCreateClick(isWithLedger = it)
-        },
+        onAccountCreateClick = viewModel::onAccountCreateClick,
         onBackClick = viewModel::onBackClick,
         modifier = modifier,
         state = state,
         uiMessage = state.uiMessage,
-        onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown
     )
 
@@ -81,7 +74,7 @@ fun CreateAccountScreen(
                     event.accountId,
                     event.requestSource
                 )
-                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
+
                 is CreateAccountEvent.Dismiss -> onBackClick()
             }
         }
@@ -96,11 +89,10 @@ fun CreateAccountScreen(
 @Composable
 fun CreateAccountContent(
     onAccountNameChange: (String) -> Unit,
-    onAccountCreateClick: (Boolean) -> Unit,
+    onAccountCreateClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier,
     state: CreateAccountViewModel.CreateAccountUiState,
-    onUseLedgerSelectionChanged: (Boolean) -> Unit,
     uiMessage: UiMessage? = null,
     onUiMessageShown: () -> Unit = {}
 ) {
@@ -126,7 +118,7 @@ fun CreateAccountContent(
             RadixBottomBar(
                 onClick = {
                     keyboardController?.hide()
-                    onAccountCreateClick(state.isWithLedger)
+                    onAccountCreateClick()
                 },
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 isLoading = state.isCreatingAccount,
@@ -190,43 +182,7 @@ fun CreateAccountContent(
                     capitalization = KeyboardCapitalization.Sentences
                 )
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            CreateWithLedgerSwitch(
-                isChecked = state.isWithLedger,
-                onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
-    }
-}
-
-@Composable
-private fun CreateWithLedgerSwitch(
-    isChecked: Boolean,
-    onUseLedgerSelectionChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerTitle),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.text
-            )
-            Text(
-                text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.textSecondary
-            )
-        }
-        RadixSwitch(
-            checked = isChecked,
-            onCheckedChange = onUseLedgerSelectionChanged
-        )
     }
 }
 
@@ -242,8 +198,7 @@ fun CreateAccountContentPreview() {
             modifier = Modifier,
             state = CreateAccountViewModel.CreateAccountUiState(
                 accountName = "Main"
-            ),
-            onUseLedgerSelectionChanged = {}
+            )
         )
     }
 }

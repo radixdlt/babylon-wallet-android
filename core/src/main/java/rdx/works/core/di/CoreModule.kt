@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.Bios
 import com.radixdlt.sargon.HostInteractor
+import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidEventBusDriver
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
@@ -19,6 +20,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
+import rdx.works.core.sargon.drivers.ArculusCSDKDriver
 import rdx.works.core.storage.FileRepository
 import rdx.works.core.storage.FileRepositoryImpl
 import javax.inject.Singleton
@@ -58,6 +60,7 @@ object CoreProvider {
         @EncryptedPreferences encryptedPreferences: DataStore<Preferences>,
         @NonEncryptedPreferences preferences: DataStore<Preferences>,
         @HostInfoPreferences hostInfoPreferences: DataStore<Preferences>,
+        nfcTagDriver: NfcTagDriver,
     ): Bios = Bios.from(
         context = context,
         httpClient = httpClient,
@@ -66,7 +69,9 @@ object CoreProvider {
         preferencesDatastore = preferences,
         deviceInfoDatastore = hostInfoPreferences,
         eventBusDriver = eventBusDriver,
-        profileStateChangeDriver = profileStateChangeDriver
+        profileStateChangeDriver = profileStateChangeDriver,
+        arculusCsdkDriver = ArculusCSDKDriver(),
+        nfcTagDriver = nfcTagDriver
     )
 
     @Provides

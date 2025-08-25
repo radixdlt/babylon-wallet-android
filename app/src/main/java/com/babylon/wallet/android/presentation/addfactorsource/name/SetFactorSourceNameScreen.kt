@@ -216,10 +216,10 @@ private fun SetFactorSourceNameContent(
 @Composable
 private fun FactorSourceKind.nameTitle() = when (this) {
     FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_title)
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Name your New Ledger Nano" // TODO crowdin
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Name your New Mnemonic Seed Phrase"
-    FactorSourceKind.ARCULUS_CARD -> "Name your New Arculus Card"
-    FactorSourceKind.PASSWORD -> "Name your New Password"
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_nameTitle)
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Name your New Mnemonic Seed Phrase" // TODO crowdin
+    FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_nameTitle)
+    FactorSourceKind.PASSWORD -> "Name your New Password" // TODO crowdin
 }
 
 @Composable
@@ -264,7 +264,8 @@ private fun SuccessSheetContent(
 
         RadixBottomBar(
             onClick = onCloseClick,
-            text = stringResource(id = R.string.common_close)
+            text = stringResource(id = R.string.common_close),
+            insets = WindowInsets.none
         )
     }
 }

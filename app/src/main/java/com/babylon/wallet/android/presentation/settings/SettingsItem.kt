@@ -183,6 +183,8 @@ sealed interface SettingsItem {
 
         data object SecurityFactorSamples : DebugSettingsItem
 
+        data object ArculusTools : DebugSettingsItem
+
         @StringRes
         fun titleRes(): Int {
             return when (this) {
@@ -190,6 +192,7 @@ sealed interface SettingsItem {
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
                 InspectCloudBackups -> R.string.settings_debugSettings_inspectCloudBackups
                 SecurityFactorSamples -> R.string.settings_debugSettings_securityFactorSamples
+                ArculusTools -> R.string.settings_debugSettings_arculusTools
             }
         }
 
@@ -200,6 +203,7 @@ sealed interface SettingsItem {
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 InspectCloudBackups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 SecurityFactorSamples -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
+                ArculusTools -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
             }
         }
 
@@ -208,7 +212,8 @@ sealed interface SettingsItem {
                 InspectProfile,
                 LinkConnectionStatusIndicator,
                 InspectCloudBackups,
-                SecurityFactorSamples
+                SecurityFactorSamples,
+                ArculusTools
             )
         }
     }

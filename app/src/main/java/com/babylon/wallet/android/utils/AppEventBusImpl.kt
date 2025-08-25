@@ -1,9 +1,10 @@
 package com.babylon.wallet.android.utils
 
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
-import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.delay
@@ -34,8 +35,6 @@ sealed interface AppEvent {
 
     data object RefreshAssetsNeeded : AppEvent
 
-    data object RestoredMnemonic : AppEvent
-
     data object BabylonFactorSourceDoesNotExist : AppEvent
 
     data object NPSSurveySubmitted : AppEvent
@@ -62,13 +61,6 @@ sealed interface AppEvent {
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {
 
-        sealed interface SelectLedgerOutcome : AccessFactorSources {
-
-            data class Selected(val ledgerFactorSource: FactorSource.Ledger) : SelectLedgerOutcome
-
-            data object Rejected : SelectLedgerOutcome
-        }
-
         data object RequestAuthorization : AccessFactorSources
 
         data object DerivePublicKeys : AccessFactorSources
@@ -78,7 +70,9 @@ sealed interface AppEvent {
         data object SpotCheck : AccessFactorSources
     }
 
-    data object AddFactorSource : AppEvent
+    data class AddFactorSource(val input: AddFactorSourceInput) : AppEvent
+
+    data object SelectFactorSource : AppEvent
 
     sealed class Status : AppEvent {
 
@@ -160,5 +154,29 @@ sealed interface AppEvent {
             val encodedPreAuthorizationId: String
                 get() = preAuthorizationId.bech32EncodedTxId
         }
+    }
+
+    data object ConnectorLinked : AppEvent
+
+    sealed interface FixSecurityIssue : AppEvent {
+
+        data class ImportMnemonic(
+            val factorSourceId: FactorSourceId
+        ) : FixSecurityIssue
+
+        data class WriteDownSeedPhrase(
+            val factorSourceId: FactorSourceId
+        ) : FixSecurityIssue
+
+        data object ImportedMnemonic : FixSecurityIssue
+
+        data object WrittenDownSeedPhrase : FixSecurityIssue
+    }
+
+    data object GenericSuccess : AppEvent
+
+    sealed interface Nfc : AppEvent {
+
+        data object StartSession : Nfc
     }
 }

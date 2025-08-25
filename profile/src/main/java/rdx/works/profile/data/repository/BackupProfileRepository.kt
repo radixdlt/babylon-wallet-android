@@ -8,7 +8,7 @@ import com.radixdlt.sargon.extensions.fromEncryptedJson
 import com.radixdlt.sargon.extensions.toEncryptedJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
@@ -104,7 +104,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
      */
     override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
         val profile = profileRepository.profile.firstOrNull()
-        if (profile == null || profile.mainBabylonFactorSource == null) return null
+        if (profile == null || profile.deviceFactorSources.isEmpty()) return null
         return when (backupType) {
             is BackupType.DeprecatedCloud, is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
                 profile.toJson()

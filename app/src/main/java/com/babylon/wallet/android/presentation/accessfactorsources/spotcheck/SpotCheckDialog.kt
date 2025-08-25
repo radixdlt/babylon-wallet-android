@@ -84,6 +84,9 @@ fun SpotCheckDialog(
         state = state,
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
+        onArculusPinChange = viewModel::onArculusPinChange,
+        onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
+        onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
         onInputConfirmed = viewModel::onInputConfirmed,
         onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry,
@@ -98,6 +101,9 @@ private fun SpotCheckBottomSheetContent(
     state: SpotCheckViewModel.State,
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
+    onArculusPinChange: (String) -> Unit,
+    onForgotArculusPinClick: () -> Unit,
+    onArculusInfoMessageDismiss: () -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
@@ -198,8 +204,14 @@ private fun SpotCheckBottomSheetContent(
                             modifier = contentModifier,
                             purpose = AccessFactorSourcePurpose.SpotCheck,
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
+                            pinState = accessFactorSourceState.arculusPinState,
+                            onPinChange = onArculusPinChange,
+                            onForgotPinClick = onForgotArculusPinClick,
+                            onInfoMessageDismiss = onArculusInfoMessageDismiss,
+                            onRetryClick = onRetryClick,
                             skipOption = state.skipOption,
-                            onSkipClick = onIgnoreClick
+                            onSkipClick = onIgnoreClick,
+                            onConfirmClick = onInputConfirmed
                         )
 
                         FactorSourceKind.PASSWORD -> AccessPasswordFactorSourceContent(
@@ -238,6 +250,9 @@ private fun SpotCheckPreviewLight(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onIgnoreClick = {}
@@ -265,6 +280,9 @@ private fun SpotCheckPreviewDark(
             onDismiss = {},
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
+            onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onIgnoreClick = {}

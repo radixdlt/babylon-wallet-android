@@ -43,6 +43,7 @@ jobs:
 
       - uses: RDXWorks-actions/checkout@main
         with:
+          submodules: recursive
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Dump context
@@ -147,6 +148,7 @@ jobs:
 
       - uses: RDXWorks-actions/checkout@main
         with:
+          submodules: recursive
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Dump context
@@ -282,6 +284,7 @@ jobs:
 
       - uses: RDXWorks-actions/checkout@main
         with:
+          submodules: recursive
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Fetch GPR credentials
@@ -343,6 +346,7 @@ jobs:
 
       - uses: RDXWorks-actions/checkout@main
         with:
+          submodules: recursive
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Fetch GPR credentials

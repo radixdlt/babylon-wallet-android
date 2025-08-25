@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.FactorSourceId
 
 private const val ROUTE_OFF_DEVICE_MNEMONICS_SCREEN = "route_off_device_mnemonics_screen"
@@ -20,8 +19,6 @@ fun NavController.offDeviceMnemonics() {
 
 fun NavGraphBuilder.offDeviceMnemonics(
     onNavigateToOffDeviceMnemonicFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit,
-    onNavigateToAddOffDeviceMnemonic: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -42,8 +39,6 @@ fun NavGraphBuilder.offDeviceMnemonics(
         OffDeviceMnemonicsScreen(
             viewModel = hiltViewModel(),
             onNavigateToOffDeviceMnemonicFactorSourceDetails = onNavigateToOffDeviceMnemonicFactorSourceDetails,
-            onNavigateToAddOffDeviceMnemonic = onNavigateToAddOffDeviceMnemonic,
-            onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )
     }

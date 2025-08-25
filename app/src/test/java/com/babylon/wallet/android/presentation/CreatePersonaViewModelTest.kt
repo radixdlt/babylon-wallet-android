@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.presentation
 
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
+import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaViewModel
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.SargonOs
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -34,6 +37,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     private val sargonOsManager = mockk<SargonOsManager>().also {
         every { it.sargonOs } returns sargonOs
     }
+    private val selectFactorSourceProxy = mockk<SelectFactorSourceProxy>()
 
     private val persona = Persona.sampleMainnet()
 
@@ -44,7 +48,8 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
         coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
         coEvery {
-            sargonOs.createAndSaveNewPersonaWithMainBdfs(
+            sargonOs.createAndSaveNewPersonaWithFactorSource(
+                factorSource = DeviceFactorSource.sample().asGeneral(),
                 networkId = any(),
                 name = any(),
                 personaData = any()
@@ -63,6 +68,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(getProfileUseCase, sargonOsManager, preferencesManager)
+        return CreatePersonaViewModel(getProfileUseCase, sargonOsManager, preferencesManager, selectFactorSourceProxy)
     }
 }

@@ -46,16 +46,15 @@ class FactorSourceDetailsViewModel @Inject constructor(
 ) : StateViewModel<FactorSourceDetailsViewModel.State>(),
     OneOffEventHandler<FactorSourceDetailsViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private val args = FactorSourceDetailsArgs(savedStateHandle = savedStateHandle)
+
     override fun initialState(): State = State()
 
     init {
-        val factorSourceId =
-            FactorSourceDetailsArgs(savedStateHandle = savedStateHandle).factorSourceId
-
         combine(
             getProfileUseCase.flow.mapNotNull { profile ->
                 profile.factorSources.firstOrNull { factorSource ->
-                    factorSource.id == factorSourceId
+                    factorSource.id == args.factorSourceId
                 }
             },
             preferencesManager.getBackedUpFactorSourceIds()
@@ -150,19 +149,12 @@ class FactorSourceDetailsViewModel @Inject constructor(
                 sendEvent(Event.NavigateToSeedPhraseRestore)
             } else if (biometricsAuthenticateUseCase()) {
                 sendEvent(
-                    Event.NavigateToSeedPhrase(factorSourceId = deviceFactorSource.value.id.asGeneral())
+                    Event.NavigateToSeedPhrase(
+                        factorSourceId = deviceFactorSource.value.id.asGeneral()
+                    )
                 )
             }
         }
-    }
-
-    @Suppress("UnusedParameter")
-    fun onArculusPinCheckedChange(isChecked: Boolean) {
-        // TODO
-    }
-
-    fun onChangeArculusPinClick() {
-        // TODO
     }
 
     fun onMessageShown() {
@@ -174,7 +166,6 @@ class FactorSourceDetailsViewModel @Inject constructor(
         val renameFactorSourceInput: RenameFactorSourceInput = RenameFactorSourceInput(),
         val isFactorSourceNameUpdated: Boolean = false,
         val isRenameBottomSheetVisible: Boolean = false,
-        val isArculusPinEnabled: Boolean = false,
         val isDeviceFactorSourceMnemonicNotAvailable: Boolean = false,
         val uiMessage: UiMessage? = null
     ) : UiState {

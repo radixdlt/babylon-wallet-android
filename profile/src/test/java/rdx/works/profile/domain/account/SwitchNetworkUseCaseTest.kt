@@ -35,8 +35,7 @@ internal class SwitchNetworkUseCaseTest {
         Profile.init(
             deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                hostInfo = HostInfo.sample.other(),
-                isMain = true
+                hostInfo = HostInfo.sample.other()
             ),
             hostId = HostId.sample(),
             hostInfo = HostInfo.sample.other()

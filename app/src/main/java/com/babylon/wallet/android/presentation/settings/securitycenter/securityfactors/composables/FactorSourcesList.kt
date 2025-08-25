@@ -4,9 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,32 +18,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage.SecurityPrompt
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceKind
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
 fun FactorSourcesList(
     modifier: Modifier = Modifier,
-    @Suppress("UNUSED_PARAMETER")
-    factorSourceKind: FactorSourceKind,
-    mainFactorSource: FactorSourceCard?,
     factorSources: PersistentList<FactorSourceCard>,
     @StringRes factorSourceDescriptionText: Int,
     @StringRes addFactorSourceButtonTitle: Int? = null,
     addFactorSourceButtonContent: @Composable (() -> Unit)? = null,
     onFactorSourceClick: (FactorSourceId) -> Unit,
-    onSecurityPromptMessageClick: ((FactorSourceId, SecurityPrompt) -> Unit)? = null,
-    onAddFactorSourceClick: (() -> Unit)? = null,
-    onChangeMainFactorSourceClick: () -> Unit = {},
-    @Suppress("UNUSED_PARAMETER")
-    onInfoClick: (GlossaryItem) -> Unit,
+    onAddFactorSourceClick: (() -> Unit)? = null
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -56,66 +43,11 @@ fun FactorSourcesList(
             Text(
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingDefault,
-                    bottom = RadixTheme.dimensions.paddingSemiLarge
                 ),
                 text = stringResource(id = factorSourceDescriptionText),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.textSecondary
             )
-        }
-        mainFactorSource?.let {
-            item {
-                if (factorSources.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.factorSources_list_default),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.textSecondary
-                        )
-                        Spacer(
-                            Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        )
-                        RadixTextButton(
-                            text = stringResource(R.string.factorSources_list_change),
-                            onClick = onChangeMainFactorSourceClick
-                        )
-                    }
-                } else {
-                    Text(
-                        modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.factorSources_list_default),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.textSecondary
-                    )
-                }
-
-                FactorSourceCardView(
-                    modifier = Modifier
-                        .padding(bottom = RadixTheme.dimensions.paddingMedium)
-                        .clickable { onFactorSourceClick(it.id) },
-                    item = it,
-                    onSecurityPromptMessageClicked = if (onSecurityPromptMessageClick != null) {
-                        { message -> onSecurityPromptMessageClick(it.id, message) }
-                    } else {
-                        null
-                    }
-                )
-            }
-        }
-
-        if (mainFactorSource != null || (factorSources.isNotEmpty() && factorSources.first().kind == FactorSourceKind.DEVICE)) {
-            item {
-                Text(
-                    text = stringResource(id = R.string.factorSources_list_others),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.textSecondary
-                )
-            }
         }
 
         items(factorSources) {
@@ -141,18 +73,6 @@ fun FactorSourcesList(
                         throttleClicks = true
                     )
                 }
-
-//            InfoButton(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .wrapContentWidth(align = Alignment.CenterHorizontally)
-//                    .padding(
-//                        horizontal = RadixTheme.dimensions.paddingDefault,
-//                        vertical = RadixTheme.dimensions.paddingLarge
-//                    ),
-//                text = factorSourceKind.infoButtonTitle(),
-//                onClick = { onInfoClick(factorSourceKind.infoGlossaryItem()) }
-//            )
         }
     }
 }

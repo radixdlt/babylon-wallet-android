@@ -5,7 +5,7 @@ import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.UseLedgerDelegate.UseLedgerDelegateState.AddLedgerContent
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.map
@@ -46,7 +46,7 @@ class UseLedgerDelegate(
                 if (existingLedgerFactorSource == null) {
                     _state.update { state ->
                         state.copy(
-                            addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
+                            addLedgerSheetState = AddLedgerContent.NameLedgerDevice,
                             waitingForLedgerResponse = false,
                             recentlyConnectedLedgerDevice = LedgerDeviceUiModel(
                                 id = deviceInfoResponse.deviceId,
@@ -58,7 +58,7 @@ class UseLedgerDelegate(
                     _state.update { state ->
                         existingLedgerFactorSource as FactorSource.Ledger
                         state.copy(
-                            addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+                            addLedgerSheetState = AddLedgerContent.AddLedgerDeviceInfo,
                             waitingForLedgerResponse = false
                         )
                     }
@@ -85,7 +85,7 @@ class UseLedgerDelegate(
                     name = ledgerDeviceUiModel.name
                 )
                 _state.update { state ->
-                    state.copy(addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo)
+                    state.copy(addLedgerSheetState = AddLedgerContent.AddLedgerDeviceInfo)
                 }
                 onUseLedger(result.ledgerFactorSource)
             }
@@ -102,11 +102,17 @@ class UseLedgerDelegate(
     data class UseLedgerDelegateState(
         val loading: Boolean = false,
         val hasLedgerDevices: Boolean = false,
-        val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+        val addLedgerSheetState: AddLedgerContent = AddLedgerContent.AddLedgerDeviceInfo,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
         val uiMessage: UiMessage? = null
-    ) : UiState
+    ) : UiState {
+
+        enum class AddLedgerContent {
+            AddLedgerDeviceInfo,
+            NameLedgerDevice
+        }
+    }
 
     override fun initialState(): UseLedgerDelegateState {
         return UseLedgerDelegateState()

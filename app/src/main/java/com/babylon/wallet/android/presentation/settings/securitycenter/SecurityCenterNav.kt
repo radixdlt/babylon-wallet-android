@@ -8,16 +8,24 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.addfactorsource.addFactorSource
-import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.CreateArculusPinContext
+import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
+import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
+import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
+import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.changepin.changeArculusPin
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.forgotArculusPin
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.verifypin.verifyArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.seedphrase.reveal.revealSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.ROUTE_FACTOR_SOURCE_DETAILS
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.ledgerdevice.ledgerDevices
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
@@ -75,7 +83,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.backupScreen()
                 },
                 onRecoverEntitiesClick = {
-                    navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
+                    navController.importMnemonics(args = ImportMnemonicsArgs(requestSource = ImportMnemonicsRequestSource.Settings))
                 },
                 onBackupEntities = {
                     navController.biometricsPin()
@@ -98,7 +106,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     FactorSourceKind.OFF_DEVICE_MNEMONIC -> navController.offDeviceMnemonics()
                     FactorSourceKind.ARCULUS_CARD -> navController.arculusCards()
                     FactorSourceKind.PASSWORD -> navController.passwords()
-                    else -> {}
                 }
             }
         )
@@ -106,36 +113,58 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onNavigateToDeviceFactorSourceDetails = { navController.factorSourceDetails(it) },
             onNavigateToWriteDownSeedPhrase = { navController.revealSeedPhrase(it) },
             onNavigateToSeedPhraseRestore = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
-                        requestSource = RestoreMnemonicsRequestSource.FactorSourceDetails
+                navController.importMnemonics(
+                    args = ImportMnemonicsArgs(
+                        requestSource = ImportMnemonicsRequestSource.FactorSourceDetails
                     )
                 )
             },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.popBackStack() }
         )
         ledgerDevices(
-            onNavigateToLedgerFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            toFactorSourceDetails = { navController.factorSourceDetails(it) },
             onBackClick = { navController.navigateUp() }
         )
         arculusCards(
             onNavigateToArculusFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddArculusCard = { },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
+        )
+        verifyArculusPin(
+            onDismiss = navController::popBackStack,
+            onComplete = { factorSourceId, pin ->
+                navController.changeArculusPin(factorSourceId, pin) {
+                    popUpTo(route = ROUTE_FACTOR_SOURCE_DETAILS) {
+                        inclusive = false
+                    }
+                }
+            }
+        )
+        changeArculusPin(
+            onDismiss = navController::popBackStack,
+            onComplete = navController::popBackStack
+        )
+        forgotArculusPin(
+            onDismiss = navController::popBackStack,
+            onComplete = { navController.createArculusPin(CreateArculusPinContext.Restore) }
+        )
+        createArculusPin(
+            onDismiss = { navController.popBackStack() },
+            onConfirmed = { context ->
+                when (context) {
+                    CreateArculusPinContext.New -> navController.setFactorSourceName()
+                    CreateArculusPinContext.Restore -> navController.popBackStack(
+                        route = ROUTE_FACTOR_SOURCE_DETAILS,
+                        inclusive = false
+                    )
+                }
+            }
         )
         offDeviceMnemonics(
             onNavigateToOffDeviceMnemonicFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddOffDeviceMnemonic = { },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         passwords(
             onNavigateToPasswordFactorSourceDetails = { navController.factorSourceDetails(it) },
-            onNavigateToAddPassword = { },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBackClick = { navController.navigateUp() }
         )
         factorSourceDetails(
@@ -143,12 +172,14 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 navController.revealSeedPhrase(factorSourceId = factorSourceId)
             },
             navigateToViewSeedPhraseRestore = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
-                        requestSource = RestoreMnemonicsRequestSource.FactorSourceDetails
+                navController.importMnemonics(
+                    args = ImportMnemonicsArgs(
+                        requestSource = ImportMnemonicsRequestSource.FactorSourceDetails
                     )
                 )
             },
+            toChangeArculusPin = navController::verifyArculusPin,
+            toForgotArculusPin = navController::forgotArculusPin,
             onBackClick = { navController.navigateUp() }
         )
         revealSeedPhrase(
@@ -168,6 +199,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
             }
         )
         securityShieldsNavGraph(navController)
+        addFactorSourceKind(navController)
         addFactorSource(navController)
+        selectFactorSource(
+            onDismiss = navController::popBackStack,
+            onComplete = { navController.popBackStack() }
+        )
     }
 }

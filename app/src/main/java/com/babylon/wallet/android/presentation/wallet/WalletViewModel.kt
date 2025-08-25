@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
+import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -24,16 +25,21 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
 import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
+import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HomeCard
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isLegacy
 import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -79,7 +85,7 @@ class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
     private val checkDeletedAccountsOnLedgerUseCase: CheckDeletedAccountsOnLedgerUseCase,
-    getProfileUseCase: GetProfileUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
@@ -87,6 +93,7 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
     private val accountLockersDelegate: WalletAccountLockersDelegate,
@@ -117,6 +124,7 @@ class WalletViewModel @Inject constructor(
         observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
+        observeFactorSources()
         homeCards(scope = viewModelScope, state = _state)
         accountLockersDelegate(scope = viewModelScope, state = _state)
     }
@@ -185,9 +193,9 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    suspend fun createBabylonFactorSource(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+    fun createBabylonFactorSource() {
         viewModelScope.launch {
-            if (deviceBiometricAuthenticationProvider()) {
+            if (biometricsAuthenticateUseCase()) {
                 ensureBabylonFactorSourceExistUseCase()
             } else {
                 // force user to authenticate until we can create Babylon Factor source
@@ -267,9 +275,12 @@ class WalletViewModel @Inject constructor(
             appEventBus.events.collect { event ->
                 when (event) {
                     AppEvent.RefreshAssetsNeeded -> loadAssets(refreshType = RefreshType.WalletRefresh)
-                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
+                    ImportedMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
+                    }
+                    AppEvent.GenericSuccess -> {
+                        _state.update { it.copy(uiMessage = UiMessage.InfoMessage.Success) }
                     }
 
                     else -> {}
@@ -284,6 +295,19 @@ class WalletViewModel @Inject constructor(
         automaticRefreshJob = viewModelScope.launch {
             delay(REFRESH_INTERVAL)
             loadAssets(refreshType = RefreshType.Automatic)
+        }
+    }
+
+    private fun observeFactorSources() {
+        viewModelScope.launch {
+            getProfileUseCase.flow.map { it.factorSources }
+                .collect { factorSources ->
+                    _state.update { state ->
+                        state.copy(
+                            factorSources = factorSources.associateBy { it.id }
+                        )
+                    }
+                }
         }
     }
 
@@ -375,7 +399,8 @@ class WalletViewModel @Inject constructor(
         private val accountsWithLockerDeposits: Map<AccountAddress, List<AccountLockerDeposit>> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val uiMessage: UiMessage? = null,
-        val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList()
+        val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList(),
+        val factorSources: Map<FactorSourceId, FactorSource> = emptyMap()
     ) : UiState {
 
         val isRefreshing: Boolean = refreshType.showRefreshIndicator
@@ -387,6 +412,9 @@ class WalletViewModel @Inject constructor(
             val account = accountWithAssets.account
             val isLegacyOlympiaAccount = account.isLegacy
             val isUnsecuredLedgerControlledAccount = account.isUnsecuredLedgerControlled
+            val factorSource = account.unsecuredControllingFactorInstance?.factorSourceId?.let {
+                factorSources[it.asGeneral()]
+            }
 
             AccountUiItem(
                 account = account,
@@ -404,7 +432,8 @@ class WalletViewModel @Inject constructor(
                 isFiatBalanceVisible = isFiatBalanceVisible,
                 fiatTotalValue = prices.totalBalance(forAccount = accountWithAssets),
                 isLoadingAssets = accountWithAssets.assets == null,
-                isLoadingBalance = prices.isLoadingBalance(forAccount = accountWithAssets)
+                isLoadingBalance = prices.isLoadingBalance(forAccount = accountWithAssets),
+                factorSource = factorSource
             )
         }
 
@@ -485,7 +514,8 @@ class WalletViewModel @Inject constructor(
             val deposits: PersistentList<AccountLockerDeposit>,
             val isFiatBalanceVisible: Boolean,
             val isLoadingAssets: Boolean,
-            val isLoadingBalance: Boolean
+            val isLoadingBalance: Boolean,
+            val factorSource: FactorSource?
         )
 
         sealed interface PricesState {

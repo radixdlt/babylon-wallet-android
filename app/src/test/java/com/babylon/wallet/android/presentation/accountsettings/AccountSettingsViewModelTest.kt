@@ -4,12 +4,15 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
+import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -34,6 +37,7 @@ import org.junit.Test
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
+import rdx.works.core.sargon.updateLastUsed
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
@@ -45,6 +49,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
+    private val getFactorSourceIntegrityStatusMessagesUseCase = mockk<GetFactorSourceIntegrityStatusMessagesUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
@@ -58,6 +63,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
             renameAccountDisplayNameUseCase,
             savedStateHandle,
             changeEntityVisibilityUseCase,
+            getFactorSourceIntegrityStatusMessagesUseCase,
             TestScope(),
             eventBus
         )
@@ -73,6 +79,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress.string
         coEvery { changeEntityVisibilityUseCase.changeAccountVisibility(any(), any()) } just Runs
         coEvery { eventBus.sendEvent(any()) } just Runs
+        coEvery { getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(any(), any(), any()) } returns emptyList()
     }
 
     @Test

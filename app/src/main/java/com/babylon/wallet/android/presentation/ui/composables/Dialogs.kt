@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
@@ -21,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -75,6 +75,7 @@ import kotlin.math.roundToInt
 /**
  * use this if you want AlertDialog style usage, like BasicPromptAlertDialog - not using new route
  */
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BottomSheetDialogWrapper(
@@ -130,7 +131,10 @@ fun BottomSheetDialogWrapper(
                 onDismissRequest()
             }
     ) {
-        BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        ) {
             val contentMaxHeight = with(LocalDensity.current) {
                 maxHeight.toPx()
             }
@@ -210,6 +214,7 @@ fun BottomSheetDialogWrapper(
                         )
                     }
                 }
+
                 if (centerContent) {
                     Column(
                         modifier = Modifier
@@ -314,6 +319,10 @@ fun ErrorAlertDialog(
         errorMessage.error as? CommonException
     }
 
+    if (commonException is CommonException.NfcSessionCancelled) {
+        return
+    }
+
     val context = LocalContext.current
     AlertDialog(
         modifier = modifier,
@@ -341,7 +350,7 @@ fun ErrorAlertDialog(
                 )
             }
         },
-        title = title?.let {
+        title = (title ?: errorMessage.getTitle())?.let {
             {
                 Text(
                     text = it,
@@ -350,12 +359,14 @@ fun ErrorAlertDialog(
                 )
             }
         },
-        text = {
-            Text(
-                text = errorMessage.getMessage(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.text
-            )
+        text = errorMessage.getMessage().takeIf { it.isNotBlank() }?.let {
+            {
+                Text(
+                    text = it,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.text
+                )
+            }
         },
         shape = RadixTheme.shapes.roundedRectSmall,
         containerColor = RadixTheme.colors.background
@@ -453,7 +464,6 @@ fun FailureDialogContent(
                     RadixTheme.colors.background
                 }
             )
-            .navigationBarsPadding()
     ) {
         Column(
             modifier = Modifier

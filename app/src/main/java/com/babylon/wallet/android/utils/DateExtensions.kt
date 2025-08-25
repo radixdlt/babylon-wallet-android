@@ -62,7 +62,7 @@ fun Timestamp.toDateString(): String {
 
 fun Timestamp.relativeTimeFormatted(): String {
     val millis = toEpochSecond().seconds.inWholeMilliseconds
-    return DateUtils.getRelativeTimeSpanString(millis).toString()
+    return DateUtils.getRelativeTimeSpanString(millis)?.toString().orEmpty()
 }
 
 fun ZonedDateTime.toMonthString(): String {
