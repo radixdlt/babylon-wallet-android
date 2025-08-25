@@ -78,8 +78,9 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
                     R.string.factorSources_detail_spotCheckFailure
                 }
             )
+
             RenameSuccessful -> stringResource(R.string.renameLabel_success)
-            Success -> "Success" // TODO crowdin
+            Success -> stringResource(id = R.string.common_success)
         }
     }
 

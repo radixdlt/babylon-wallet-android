@@ -461,13 +461,11 @@ fun RadixWalletException.FactorSource.toUserFriendlyAlertTitle(context: Context)
     RadixWalletException.FactorSource.FactorSourceNotCreated -> null
 }
 
-// TODO crowdin
-@Suppress("UnusedParameter")
 fun RadixWalletException.Arculus.toUserFriendlyMessage(context: Context): String = when (this) {
-    is RadixWalletException.Arculus.MinimumFirmwareRequired -> "Minimum Firmware Required ($version)"
-    RadixWalletException.Arculus.NfcSessionLostTagConnection -> "NFC Session lost the connection with the tag.\nPlease retry."
-    RadixWalletException.Arculus.NfcSessionUnknownTag -> "NFC Session detected an unknown tag.\nPlease retry."
-    is RadixWalletException.Arculus.WrongPin -> "Wrong PIN. Number of remaining tries: $numberOfTries"
+    is RadixWalletException.Arculus.MinimumFirmwareRequired -> context.getString(R.string.addArculus_firmwareVersionError_message, version)
+    RadixWalletException.Arculus.NfcSessionLostTagConnection -> context.getString(R.string.arculusScan_lostTagError_message)
+    RadixWalletException.Arculus.NfcSessionUnknownTag -> context.getString(R.string.arculusScan_unknownTagError_message)
+    is RadixWalletException.Arculus.WrongPin -> context.getString(R.string.arculusDetails_verifyPin_errorMessage, numberOfTries)
 }
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {

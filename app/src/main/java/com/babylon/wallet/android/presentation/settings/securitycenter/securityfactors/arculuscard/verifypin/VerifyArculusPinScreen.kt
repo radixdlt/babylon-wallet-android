@@ -85,7 +85,7 @@ private fun VerifyArculusPinContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Change PIN", // TODO crowdin
+                title = stringResource(id = R.string.arculusDetails_verifyPin_title),
                 onBackClick = onDismiss,
                 backIconType = BackIconType.Back,
                 windowInsets = WindowInsets.statusBarsAndBanner
@@ -114,7 +114,7 @@ private fun VerifyArculusPinContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Enter your current Arculus PIN", // TODO crowdin
+                text = stringResource(id = R.string.arculusDetails_verifyPin_description),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
@@ -126,7 +126,7 @@ private fun VerifyArculusPinContent(
 
             PinTextField(
                 textFieldModifier = Modifier.focusRequester(pinFocusRequester),
-                title = "Enter PIN", // TODO crowdin
+                title = stringResource(id = R.string.arculusDetails_verifyPin_inputLabel),
                 pinValue = state.pin,
                 pinLength = ARCULUS_PIN_LENGTH,
                 onPinChange = onPinChange,

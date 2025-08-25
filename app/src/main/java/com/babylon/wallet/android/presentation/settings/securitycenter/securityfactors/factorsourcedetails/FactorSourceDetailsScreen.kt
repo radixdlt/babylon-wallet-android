@@ -227,7 +227,7 @@ private fun FactorSourceKind.AdditionalSettingsItems(
                 color = RadixTheme.colors.divider
             )
             DefaultSettingsItem(
-                title = "Forgot PIN", // TODO crowdin
+                title = stringResource(id = R.string.factorSources_detail_forgotPin),
                 leadingIconRes = DSR.ic_account_label,
                 onClick = onForgotArculusPinClick
             )

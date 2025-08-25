@@ -54,11 +54,11 @@ private fun ChangeArculusPinContent(
     SetArculusPinScreen(
         modifier = modifier,
         state = state.createPinState,
-        topBarTitle = "Change PIN", // TODO crowdin
+        topBarTitle = stringResource(id = R.string.arculusDetails_changePin_title),
         contentTitle = null,
-        description = "Enter your new Arculus PIN", // TODO crowdin
-        pinInputTitle = "Enter new PIN", // TODO crowdin
-        confirmPinInputTitle = "Confirm PIN", // TODO crowdin
+        description = stringResource(id = R.string.arculusDetails_changePin_description),
+        pinInputTitle = stringResource(id = R.string.arculusDetails_changePin_newPinInputLabel),
+        confirmPinInputTitle = stringResource(id = R.string.arculusDetails_changePin_confirmPinInputLabel),
         confirmButtonTitle = stringResource(R.string.common_continue),
         onDismiss = onDismiss,
         onPinChange = onPinChange,

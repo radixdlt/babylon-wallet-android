@@ -59,16 +59,16 @@ private fun CreateArculusPinContent(
         topBarTitle = stringResource(id = R.string.empty),
         contentTitle = {
             Text(
-                text = "Create New PIN", // TODO crowdin
+                text = stringResource(id = R.string.addArculus_createPin_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.text,
                 textAlign = TextAlign.Center
             )
         },
-        description = "Choose a 6-digit PIN for your Arculus Card. You’ll keep this PIN if you use this card with another wallet.", // TODO crowdin
-        pinInputTitle = "Enter PIN", // TODO crowdin
-        confirmPinInputTitle = "Confirm PIN", // TODO crowdin
-        confirmButtonTitle = "Create", // TODO crowdin
+        description = stringResource(id = R.string.addArculus_createPin_description),
+        pinInputTitle = stringResource(id = R.string.addArculus_createPin_pinInputLabel),
+        confirmPinInputTitle = stringResource(id = R.string.addArculus_createPin_confirmPinInputLabel),
+        confirmButtonTitle = stringResource(id = R.string.addArculus_createPin_button),
         onDismiss = onDismiss,
         onPinChange = onPinChange,
         onConfirmPinChange = onConfirmPinChange,

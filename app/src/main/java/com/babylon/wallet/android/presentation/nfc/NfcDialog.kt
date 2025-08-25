@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -162,7 +163,7 @@ private fun NfcContent(
                 topBar = {
                     RadixCenteredTopAppBar(
                         windowInsets = WindowInsets.none,
-                        title = "Ready to Scan", //TODO crowdin
+                        title = stringResource(id = R.string.arculusScan_heading),
                         onBackClick = handleOnDismiss,
                         backIconType = BackIconType.Close
                     )
@@ -198,9 +199,10 @@ private fun NfcContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
                     Text(
-                        text = "Progress: **${state.progress}%**".takeIf { state.progress != null } // TODO crowdin
-                            .orEmpty()
-                            .formattedSpans(SpanStyle(fontWeight = FontWeight.SemiBold)),
+                        text = state.progress?.let {
+                            stringResource(id = R.string.arculusScan_progress_label, it)
+                                .formattedSpans(SpanStyle(fontWeight = FontWeight.SemiBold))
+                        } ?: AnnotatedString(""),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
@@ -209,7 +211,7 @@ private fun NfcContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
                     Text(
-                        text = "Hold your card flat against the back of the phone. Don’t move.\nThis may take up to a minute.", // TODO crowdin
+                        text = stringResource(id = R.string.arculusScan_instruction_label),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
@@ -246,9 +248,9 @@ private fun NfcContent(
 
     if (state.showNfcDisabled) {
         BasicPromptAlertDialog(
-            titleText = "NFC is turned off", // TODO crowdin
-            messageText = "Please enable NFC in system settings to continue.", // TODO crowdin
-            confirmText = "Open Settings", // TODO crowdin
+            titleText = stringResource(id = R.string.arculusScan_nfcDisabled_title),
+            messageText = stringResource(id = R.string.arculusScan_nfcDisabled_message),
+            confirmText = stringResource(id = R.string.arculusScan_nfcDisabled_positiveButton),
             finish = {
                 if (it) {
                     onOpenNfcSettingsClick()
