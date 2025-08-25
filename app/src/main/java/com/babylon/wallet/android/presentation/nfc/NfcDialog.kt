@@ -162,7 +162,7 @@ private fun NfcContent(
                 topBar = {
                     RadixCenteredTopAppBar(
                         windowInsets = WindowInsets.none,
-                        title = "Ready to Scan",
+                        title = "Ready to Scan", //TODO crowdin
                         onBackClick = handleOnDismiss,
                         backIconType = BackIconType.Close
                     )
@@ -209,8 +209,7 @@ private fun NfcContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
                     Text(
-                        text = "Hold your card flat against the back of the phone. Don’t move.\n" +
-                            "This may take up to a minute.", // TODO crowdin
+                        text = "Hold your card flat against the back of the phone. Don’t move.\nThis may take up to a minute.", // TODO crowdin
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center

@@ -68,7 +68,7 @@ private fun ForgotArculusPinContent(
     SeedPhraseScreen(
         modifier = modifier,
         state = state.seedPhraseState,
-        title = stringResource(id = R.string.enterSeedPhrase_header_title),
+        title = "Enter Seed Phrase", // TODO crowdin
         description = "Enter your Arculus seed phrase", // TODO crowdin
         isConfirmButtonEnabled = state.isConfirmButtonEnabled,
         focusedWordIndex = focusedWordIndex,

@@ -65,8 +65,7 @@ private fun CreateArculusPinContent(
                 textAlign = TextAlign.Center
             )
         },
-        description = "Choose a 6-digit PIN for your Arculus Card. You’ll keep this PIN if you use this card with " +
-            "another wallet.", // TODO crowdin
+        description = "Choose a 6-digit PIN for your Arculus Card. You’ll keep this PIN if you use this card with another wallet.", // TODO crowdin
         pinInputTitle = "Enter PIN", // TODO crowdin
         confirmPinInputTitle = "Confirm PIN", // TODO crowdin
         confirmButtonTitle = "Create", // TODO crowdin

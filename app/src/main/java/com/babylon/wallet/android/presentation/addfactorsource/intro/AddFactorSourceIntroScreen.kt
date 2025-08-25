@@ -146,21 +146,21 @@ private fun AddFactorSourceIntroContent(
 
 @Composable
 private fun FactorSourceKind.addTitle() = when (this) {
-    FactorSourceKind.DEVICE -> "Add a New Biometrics/PIN Seed Phrase"
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Add a New Ledger Nano"
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Add a New Mnemonic Seed Phrase"
-    FactorSourceKind.ARCULUS_CARD -> "Add a New Arculus Card"
-    FactorSourceKind.PASSWORD -> "Add a New Password"
+    FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_title)
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_title)
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Add a New Mnemonic Seed Phrase" // TODO crowdin
+    FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_title)
+    FactorSourceKind.PASSWORD -> "Add a New Password" // TODO crowdin
 }
 
 @Suppress("MaxLineLength")
 @Composable
 private fun FactorSourceKind.addSubtitle() = when (this) {
-    FactorSourceKind.DEVICE -> "This factor is a seed phrase held by your phone and unlocked by your biometrics/PIN."
-    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Ledger Nanos are hardware signing devices you can connect to your Radix Wallet with a USB cable and computer."
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Mnemonics are 12 to 24-word BIP39 seed phrases that you’ll need to enter in full every time you use this factor."
-    FactorSourceKind.ARCULUS_CARD -> "Arculus Cards are hardware signing devices you tap to your phone to sign a transaction."
-    FactorSourceKind.PASSWORD -> "Passwords on Radix are decentralized and aren’t known or stored by anyone but you."
+    FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_subtitle)
+    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_description)
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Mnemonics are 12 to 24-word BIP39 seed phrases that you’ll need to enter in full every time you use this factor." // TODO crowdin
+    FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_description)
+    FactorSourceKind.PASSWORD -> "Passwords on Radix are decentralized and aren’t known or stored by anyone but you." // TODO crowdin
 }
 
 @Composable
