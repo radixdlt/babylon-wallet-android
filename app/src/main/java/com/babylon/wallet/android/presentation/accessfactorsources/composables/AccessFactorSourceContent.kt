@@ -157,7 +157,7 @@ fun AccessArculusCardFactorSourceContent(
             finish = { onInfoMessageDismiss() },
             confirmText = stringResource(id = R.string.common_ok),
             dismissText = null,
-            messageText = "Go to your Arculus card security factor settings to reset the PIN"
+            messageText = stringResource(id = R.string.factorSourceActions_arculusForgotPinInfo_message)
         )
     }
 
@@ -195,7 +195,7 @@ fun AccessArculusCardFactorSourceContent(
                         onPinChange = onPinChange,
                         bottomContent = {
                             RadixTextButton(
-                                text = stringResource(id = R.string.factorSources_detail_forgotPin),
+                                text = stringResource(id = R.string.factorSourceActions_arculusForgotPin_button),
                                 isWithoutPadding = true,
                                 onClick = onForgotPinClick
                             )
