@@ -51,13 +51,10 @@ class IdentifyFactorSourceViewModel @Inject constructor(
         _state.update { state -> state.copy(errorMessage = null) }
     }
 
-    fun onArculusInfoMessageDismiss(accepted: Boolean) {
+    fun onArculusInfoMessageDismiss() {
         viewModelScope.launch {
             _state.update { state -> state.copy(showArculusInfoMessage = false) }
-
-            if (accepted) {
-                sendEvent(Event.ArculusIdentified)
-            }
+            sendEvent(Event.ArculusIdentified)
         }
     }
 

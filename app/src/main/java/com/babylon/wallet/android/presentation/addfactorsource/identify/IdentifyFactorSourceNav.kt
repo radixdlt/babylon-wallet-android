@@ -5,7 +5,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
-import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 private const val ROUTE = "identify_factor_source_sheet"
 
@@ -18,10 +17,12 @@ fun NavGraphBuilder.identifyFactorSource(
     onLedgerIdentified: () -> Unit,
     onArculusIdentified: () -> Unit
 ) {
-    markAsHighPriority(route = ROUTE)
     dialog(
         route = ROUTE,
-        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
+        dialogProperties = DialogProperties(
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        )
     ) {
         IdentifyFactorSourceDialog(
             viewModel = hiltViewModel(),

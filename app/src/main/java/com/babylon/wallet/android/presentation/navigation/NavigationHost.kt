@@ -344,7 +344,9 @@ fun NavigationHost(
             }
         )
         getSignatures(
-            onDismiss = { navController.popBackStack() }
+            onDismiss = {
+                navController.popBackStack()
+            }
         )
         spotCheckDialog(
             onDismiss = { navController.popBackStack() }

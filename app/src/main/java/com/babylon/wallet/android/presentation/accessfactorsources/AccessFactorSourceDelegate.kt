@@ -138,6 +138,14 @@ class AccessFactorSourceDelegate private constructor(
         _state.update { it.copy(arculusPinState = it.arculusPinState.copy(input = pin)) }
     }
 
+    fun onForgotArculusPinClick() {
+        _state.update { it.copy(arculusPinState = it.arculusPinState.copy(showInfoMessage = true)) }
+    }
+
+    fun onArculusInfoMessageDismiss() {
+        _state.update { it.copy(arculusPinState = it.arculusPinState.copy(showInfoMessage = false)) }
+    }
+
     fun onRetry() {
         val factorSource = _state.value.factorSource ?: return
 
@@ -330,7 +338,8 @@ class AccessFactorSourceDelegate private constructor(
         )
 
         data class ArculusPinState(
-            val input: String = ""
+            val input: String = "",
+            val showInfoMessage: Boolean = false
         ) {
 
             val isConfirmButtonEnabled: Boolean = input.length == ARCULUS_PIN_LENGTH

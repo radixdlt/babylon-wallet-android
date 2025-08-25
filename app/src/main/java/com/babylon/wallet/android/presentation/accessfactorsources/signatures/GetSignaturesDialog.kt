@@ -90,6 +90,8 @@ fun GetSignaturesDialog(
         onSeedPhraseWordChanged = viewModel::onSeedPhraseWordChanged,
         onPasswordTyped = viewModel::onPasswordTyped,
         onArculusPinChange = viewModel::onArculusPinChange,
+        onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
+        onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
         onRetryClick = viewModel::onRetry,
         onSkipClick = viewModel::onSkip
     )
@@ -103,6 +105,8 @@ private fun GetSignaturesBottomSheetContent(
     onSeedPhraseWordChanged: (Int, String) -> Unit,
     onPasswordTyped: (String) -> Unit,
     onArculusPinChange: (String) -> Unit,
+    onForgotArculusPinClick: () -> Unit,
+    onArculusInfoMessageDismiss: () -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
@@ -207,6 +211,8 @@ private fun GetSignaturesBottomSheetContent(
                             factorSource = (accessFactorSourceState.factorSource as? FactorSource.ArculusCard)?.value,
                             pinState = accessFactorSourceState.arculusPinState,
                             onPinChange = onArculusPinChange,
+                            onForgotPinClick = onForgotArculusPinClick,
+                            onInfoMessageDismiss = onArculusInfoMessageDismiss,
                             onRetryClick = onRetryClick,
                             skipOption = state.skipOption,
                             onSkipClick = onSkipClick,
@@ -258,6 +264,8 @@ private fun GetSignaturesPreviewLight(
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
             onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}
@@ -288,6 +296,8 @@ private fun GetSignaturesPreviewDark(
             onSeedPhraseWordChanged = { _, _ -> },
             onPasswordTyped = {},
             onArculusPinChange = {},
+            onForgotArculusPinClick = {},
+            onArculusInfoMessageDismiss = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}

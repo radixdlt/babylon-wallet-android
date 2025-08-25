@@ -55,6 +55,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.PreviewBackgroundType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.PinTextField
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
@@ -144,11 +145,22 @@ fun AccessArculusCardFactorSourceContent(
     factorSource: ArculusCardFactorSource?,
     pinState: AccessFactorSourceDelegate.State.ArculusPinState,
     onPinChange: (String) -> Unit,
+    onForgotPinClick: () -> Unit,
+    onInfoMessageDismiss: () -> Unit,
     onRetryClick: () -> Unit,
     skipOption: AccessFactorSourceSkipOption,
     onSkipClick: () -> Unit,
     onConfirmClick: () -> Unit
 ) {
+    if (pinState.showInfoMessage) {
+        BasicPromptAlertDialog(
+            finish = { onInfoMessageDismiss() },
+            confirmText = stringResource(id = R.string.common_ok),
+            dismissText = null,
+            messageText = "Go to your Arculus card security factor settings to reset the PIN"
+        )
+    }
+
     AccessFactorSourceContent(
         modifier = modifier,
         purpose = purpose,
@@ -180,7 +192,14 @@ fun AccessArculusCardFactorSourceContent(
                         title = stringResource(id = R.string.factorSourceActions_arculusEnterPin_heading),
                         pinValue = pinState.input,
                         pinLength = ARCULUS_PIN_LENGTH,
-                        onPinChange = onPinChange
+                        onPinChange = onPinChange,
+                        bottomContent = {
+                            RadixTextButton(
+                                text = stringResource(id = R.string.factorSources_detail_forgotPin),
+                                isWithoutPadding = true,
+                                onClick = onForgotPinClick
+                            )
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -589,6 +608,8 @@ private fun PreviewContent(
             factorSource = factorSource.value,
             pinState = AccessFactorSourceDelegate.State.ArculusPinState(),
             onPinChange = {},
+            onForgotPinClick = {},
+            onInfoMessageDismiss = {},
             onRetryClick = {},
             skipOption = skipOption,
             onSkipClick = {},

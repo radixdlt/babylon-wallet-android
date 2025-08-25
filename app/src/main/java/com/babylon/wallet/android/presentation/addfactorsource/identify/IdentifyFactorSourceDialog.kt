@@ -54,25 +54,12 @@ fun IdentifyFactorSourceDialog(
         onDismiss()
     }
 
-    state.errorMessage?.let { errorMessage ->
-        ErrorAlertDialog(
-            cancel = { viewModel.onMessageShown() },
-            errorMessage = errorMessage
-        )
-    }
-
-    if (state.showArculusInfoMessage) {
-        BasicPromptAlertDialog(
-            messageText = stringResource(id = R.string.addArculus_seedPhraseInstructions_message),
-            confirmText = stringResource(id = R.string.common_ok),
-            finish = viewModel::onArculusInfoMessageDismiss
-        )
-    }
-
     IdentifyFactorSourceContent(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
+        onMessageShown = viewModel::onMessageShown,
+        onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
         onRetryClick = viewModel::onRetry
     )
 
@@ -90,8 +77,10 @@ fun IdentifyFactorSourceDialog(
 private fun FactorSourceKind.message() = when (this) {
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_identifyingInstructions)
         .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
+
     FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_identifyingInstructions)
         .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
+
     FactorSourceKind.DEVICE,
     FactorSourceKind.OFF_DEVICE_MNEMONIC,
     FactorSourceKind.PASSWORD -> error("Not supported here")
@@ -103,6 +92,8 @@ private fun IdentifyFactorSourceContent(
     modifier: Modifier = Modifier,
     state: IdentifyFactorSourceViewModel.State,
     onDismiss: () -> Unit,
+    onMessageShown: () -> Unit,
+    onArculusInfoMessageDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -110,6 +101,24 @@ private fun IdentifyFactorSourceContent(
     LaunchedEffect(Unit) {
         scope.launch {
             sheetState.show()
+        }
+    }
+
+    if (sheetState.hasExpandedState) {
+        state.errorMessage?.let { errorMessage ->
+            ErrorAlertDialog(
+                cancel = { onMessageShown() },
+                errorMessage = errorMessage
+            )
+        }
+
+        if (state.showArculusInfoMessage) {
+            BasicPromptAlertDialog(
+                messageText = stringResource(id = R.string.addArculus_seedPhraseInstructions_message),
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = null,
+                finish = { onArculusInfoMessageDismiss() }
+            )
         }
     }
 
@@ -167,7 +176,9 @@ private fun IdentifyFactorSourcePreviewLight(
         IdentifyFactorSourceContent(
             state = state,
             onDismiss = {},
-            onRetryClick = {}
+            onRetryClick = {},
+            onMessageShown = {},
+            onArculusInfoMessageDismiss = {}
         )
     }
 }
@@ -182,7 +193,9 @@ private fun IdentifyFactorSourcePreviewDark(
         IdentifyFactorSourceContent(
             state = state,
             onDismiss = {},
-            onRetryClick = {}
+            onRetryClick = {},
+            onMessageShown = {},
+            onArculusInfoMessageDismiss = {}
         )
     }
 }

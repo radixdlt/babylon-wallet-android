@@ -34,62 +34,73 @@ class ArculusCardClient @Inject constructor(
         arculusCardDerivePublicKeys(factorSource.value, paths)
     }
 
-    suspend fun validateMinFirmwareVersion(): Result<Unit> = sargonOsManager.callSafely(dispatcher) {
-        arculusCardValidateMinFirmwareVersion()
-    }.then { requirement ->
-        if (requirement is ArculusMinFirmwareVersionRequirement.Invalid) {
-            Result.failure(
-                RadixWalletException.Arculus.MinimumFirmwareRequired(
-                    version = requirement.v1
+    suspend fun validateMinFirmwareVersion(): Result<Unit> {
+        return sargonOsManager.callSafely(dispatcher) {
+            arculusCardValidateMinFirmwareVersion()
+        }.then { requirement ->
+            if (requirement is ArculusMinFirmwareVersionRequirement.Invalid) {
+                Result.failure(
+                    RadixWalletException.Arculus.MinimumFirmwareRequired(
+                        version = requirement.v1
+                    )
                 )
-            )
-        } else {
-            Result.success(Unit)
-        }
+            } else {
+                Result.success(Unit)
+            }
+        }.mapArculusError()
     }
 
     suspend fun configureCardWithMnemonic(
         mnemonic: Mnemonic,
         pin: String
-    ): Result<Unit> = sargonOsManager.callSafely(dispatcher) {
-        arculusCardConfigureWithMnemonic(
-            mnemonic = mnemonic,
-            pin = pin
-        )
+    ): Result<Unit> {
+        return sargonOsManager.callSafely(dispatcher) {
+            arculusCardConfigureWithMnemonic(
+                mnemonic = mnemonic,
+                pin = pin
+            )
+            Unit
+        }.mapArculusError()
     }
 
     suspend fun restoreCardPin(
         factorSource: FactorSource.ArculusCard,
         mnemonic: Mnemonic,
         pin: String
-    ): Result<Unit> = sargonOsManager.callSafely(dispatcher) {
-        arculusCardRestorePin(
-            factorSource = factorSource.value,
-            mnemonic = mnemonic,
-            pin = pin
-        )
+    ): Result<Unit> {
+        return sargonOsManager.callSafely(dispatcher) {
+            arculusCardRestorePin(
+                factorSource = factorSource.value,
+                mnemonic = mnemonic,
+                pin = pin
+            )
+        }.mapArculusError()
     }
 
     suspend fun verifyPin(
         factorSource: FactorSource.ArculusCard,
         pin: String
-    ): Result<Unit> = sargonOsManager.callSafely(dispatcher) {
-        verifyCardPin(
-            factorSource = factorSource.value,
-            pin = pin
-        )
-    }.mapArculusError()
+    ): Result<Unit> {
+        return sargonOsManager.callSafely(dispatcher) {
+            verifyCardPin(
+                factorSource = factorSource.value,
+                pin = pin
+            )
+        }.mapArculusError()
+    }
 
     suspend fun setPin(
         factorSource: FactorSource.ArculusCard,
         oldPin: String,
         newPin: String
-    ): Result<Unit> = sargonOsManager.callSafely(dispatcher) {
-        setCardPin(
-            factorSource = factorSource.value,
-            oldPin = oldPin,
-            newPin = newPin
-        )
+    ): Result<Unit> {
+        return sargonOsManager.callSafely(dispatcher) {
+            setCardPin(
+                factorSource = factorSource.value,
+                oldPin = oldPin,
+                newPin = newPin
+            )
+        }.mapArculusError()
     }
 
     suspend fun sign(
@@ -132,7 +143,7 @@ class ArculusCardClient @Inject constructor(
                     )
                 }
             }
-        }
+        }.mapArculusError()
     }
 
     private fun <T> Result<T>.mapArculusError(): Result<T> = mapError {

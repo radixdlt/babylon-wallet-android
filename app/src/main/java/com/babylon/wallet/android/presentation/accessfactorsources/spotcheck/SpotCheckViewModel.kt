@@ -98,6 +98,10 @@ class SpotCheckViewModel @Inject constructor(
 
     fun onArculusPinChange(pin: String) = accessDelegate.onArculusPinChange(pin)
 
+    fun onForgotArculusPinClick() = accessDelegate.onForgotArculusPinClick()
+
+    fun onArculusInfoMessageDismiss() = accessDelegate.onArculusInfoMessageDismiss()
+
     fun onRetry() = accessDelegate.onRetry()
 
     fun onMessageShown() = accessDelegate.onMessageShown()

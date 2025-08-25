@@ -41,7 +41,8 @@ fun PinTextField(
     onPinComplete: ((String) -> Unit)? = null,
     pinLength: Int = 6,
     imeAction: ImeAction = ImeAction.Done,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    bottomContent: (@Composable () -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -63,6 +64,8 @@ fun PinTextField(
             imeAction = imeAction,
             isEnabled = isEnabled
         )
+
+        bottomContent?.invoke()
     }
 }
 
