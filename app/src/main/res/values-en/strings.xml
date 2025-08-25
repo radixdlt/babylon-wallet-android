@@ -1780,6 +1780,7 @@ Code: %s</string>
   <string name="addArculus_createPin_confirmPinInputLabel">Confirm PIN</string>
   <string name="addArculus_createPin_button">Create</string>
   <string name="addArculus_firmwareVersionError_message">Minimum Firmware Required (%s)</string>
+  <string name="addArculus_seedPhraseInstructions_message">If your card already has a seed phrase set up, you can enter it in the next step or choose to replace it with a new one.</string>
   <string name="arculusDetails_verifyPin_title">Change PIN</string>
   <string name="arculusDetails_verifyPin_description">Enter your current Arculus PIN</string>
   <string name="arculusDetails_verifyPin_inputLabel">Enter PIN</string>
