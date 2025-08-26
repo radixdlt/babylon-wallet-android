@@ -1796,7 +1796,7 @@ Code: %s</string>
   <string name="arculusScan_heading">Ready to Scan</string>
   <string name="arculusScan_purposeConfiguringMnemonic_label">Configuring your Arculus Card</string>
   <string name="arculusScan_purposeConfiguringPin_label">Configuring new Card PIN</string>
-  <string name="arculusScan_purposeDerivingKeys_label">Updating Factor Config</string>
+  <string name="arculusScan_purposeDerivingKeys_label">Deriving Public Keys</string>
   <string name="arculusScan_purposeIdentifying_label">Identifying Card</string>
   <string name="arculusScan_purposeProvingOwnership_label">Signing Transaction</string>
   <string name="arculusScan_purposeSigningPreAuth_label">Signing Transaction</string>
