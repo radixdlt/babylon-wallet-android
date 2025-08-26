@@ -40,7 +40,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun BiometricsPinScreen(
     viewModel: BiometricsPinViewModel,
     onBackClick: () -> Unit,
-    onNavigateToWriteDownSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
+    onNavigateToWriteDownSeedPhrase: (factorSourceId: FactorSourceId) -> Unit,
     onNavigateToSeedPhraseRestore: () -> Unit,
     onNavigateToDeviceFactorSourceDetails: (factorSourceId: FactorSourceId) -> Unit
 ) {

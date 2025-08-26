@@ -100,7 +100,7 @@ class BiometricsPinViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
 
         data class NavigateToDeviceFactorSourceDetails(val factorSourceId: FactorSourceId) : Event
-        data class NavigateToWriteDownSeedPhrase(val factorSourceId: FactorSourceId.Hash) : Event
+        data class NavigateToWriteDownSeedPhrase(val factorSourceId: FactorSourceId) : Event
         data object NavigateToSeedPhraseRestore : Event
     }
 }

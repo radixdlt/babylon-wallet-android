@@ -97,7 +97,7 @@ class RevealSeedPhraseViewModel @Inject constructor(
         val backedUp: Boolean = false,
         val seedPhraseWordsPerLine: Int = 3,
         val showConfirmSeedPhraseDialogState: ConfirmSeedPhraseDialogState = ConfirmSeedPhraseDialogState.None,
-        val uiMessage: UiMessage? = null,
+        val uiMessage: UiMessage.ErrorMessage? = null,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState
 

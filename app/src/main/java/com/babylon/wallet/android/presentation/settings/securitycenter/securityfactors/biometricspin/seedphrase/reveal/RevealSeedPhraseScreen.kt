@@ -26,6 +26,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.SeedPhraseSingleWord
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
@@ -82,6 +83,13 @@ fun RevealSeedPhraseScreen(
                 RevealSeedPhraseViewModel.Effect.Close -> onBackClick()
             }
         }
+    }
+
+    state.uiMessage?.let {
+        ErrorAlertDialog(
+            errorMessage = it,
+            cancel = viewModel::onMessageShown
+        )
     }
 }
 
