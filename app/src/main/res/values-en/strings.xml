@@ -1803,7 +1803,7 @@ Code: %s</string>
   <string name="arculusScan_purposeSigningTx_label">Signing Transaction</string>
   <string name="arculusScan_purposeVerifyingPin_label">Verifying Card PIN</string>
   <string name="arculusScan_purposeRestoringPin_label">Restoring Card PIN</string>
-  <string name="arculusScan_progress_label">Progress: **%s%**</string>
+  <string name="arculusScan_progress_label">Progress: **%s%%**</string>
   <string name="arculusScan_instruction_label">Hold your card flat against the back of the phone. Don’t move.
 This may take up to a minute.</string>
   <string name="arculusScan_nfcDisabled_title">NFC is turned off</string>
