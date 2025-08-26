@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.debug
+package com.babylon.wallet.android.presentation.settings.debug.arculus
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
