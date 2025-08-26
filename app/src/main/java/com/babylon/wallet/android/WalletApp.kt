@@ -54,6 +54,7 @@ import com.babylon.wallet.android.presentation.ui.composables.LockScreenBackgrou
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.coroutines.flow.Flow
 
 @Composable
@@ -276,6 +277,8 @@ private fun HandleFixSecurityIssueEvents(
     navController: NavController,
     events: Flow<AppEvent.FixSecurityIssue>
 ) {
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         events.collect { event ->
             when (event) {
@@ -287,9 +290,11 @@ private fun HandleFixSecurityIssueEvents(
                 }
 
                 is AppEvent.FixSecurityIssue.WriteDownSeedPhrase -> {
-                    navController.revealSeedPhrase(
-                        factorSourceId = event.factorSourceId
-                    )
+                    context.biometricAuthenticate {
+                        navController.revealSeedPhrase(
+                            factorSourceId = event.factorSourceId
+                        )
+                    }
                 }
 
                 AppEvent.FixSecurityIssue.ImportedMnemonic,
