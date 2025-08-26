@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.securityfactors.Fa
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -42,6 +43,8 @@ import com.radixdlt.sargon.PasswordFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SelectFactorSourceScreen(
@@ -86,7 +89,8 @@ private fun SelectFactorSourceContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.empty),
                 windowInsets = WindowInsets.statusBarsAndBanner,
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
         bottomBar = {
@@ -96,7 +100,7 @@ private fun SelectFactorSourceContent(
                 enabled = state.isButtonEnabled
             )
         },
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
             contentPadding = PaddingValues(
@@ -163,10 +167,26 @@ private fun SelectFactorSourceInput.Context.description() = when (this) {
 
 @Composable
 @Preview
-private fun SelectFactorSourcePreview(
+private fun SelectFactorSourceLightPreview(
     @PreviewParameter(SelectFactorSourcePreviewProvider::class) state: SelectFactorSourceViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        SelectFactorSourceContent(
+            state = state,
+            onBackClick = {},
+            onSelectFactorSource = {},
+            onContinueClick = {},
+            onAddFactorSourceClick = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SelectFactorSourceDarkPreview(
+    @PreviewParameter(SelectFactorSourcePreviewProvider::class) state: SelectFactorSourceViewModel.State
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         SelectFactorSourceContent(
             state = state,
             onBackClick = {},
@@ -184,7 +204,11 @@ class SelectFactorSourcePreviewProvider : PreviewParameterProvider<SelectFactorS
         SelectFactorSourceViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
         SelectFactorSourceViewModel.State.UiItem.Factor(
             Selectable(
-                data = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
+                data = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
+                    accounts = persistentListOf(
+                        Account.sampleMainnet()
+                    )
+                ),
                 selected = false
             )
         ),
