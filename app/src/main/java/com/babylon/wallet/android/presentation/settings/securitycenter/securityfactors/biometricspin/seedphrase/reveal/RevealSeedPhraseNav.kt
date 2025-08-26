@@ -22,7 +22,7 @@ const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID}
 
 internal class RevealSeedPhraseArgs(val factorSourceId: FactorSourceId.Hash) {
 
-    private constructor(factorSourceId: FactorSourceId): this(factorSourceId as FactorSourceId.Hash)
+    private constructor(factorSourceId: FactorSourceId) : this(factorSourceId as FactorSourceId.Hash)
 
     constructor(savedStateHandle: SavedStateHandle) : this(
         FactorSourceId.fromJson(checkNotNull(savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID)))
