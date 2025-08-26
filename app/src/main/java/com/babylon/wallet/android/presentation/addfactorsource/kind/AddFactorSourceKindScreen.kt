@@ -71,7 +71,8 @@ private fun AddFactorSourceKindContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.empty),
                 windowInsets = WindowInsets.statusBarsAndBanner,
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
         bottomBar = {
@@ -81,7 +82,7 @@ private fun AddFactorSourceKindContent(
                 enabled = state.isButtonEnabled
             )
         },
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
             contentPadding = PaddingValues(
@@ -130,6 +131,35 @@ private fun AddFactorSourceKindContent(
 @Preview
 private fun AddFactorSourceKindPreview() {
     RadixWalletPreviewTheme {
+        AddFactorSourceKindContent(
+            state = AddFactorSourceKindViewModel.State(
+                isLoading = false,
+                items = listOf(
+                    Selectable(
+                        data = FactorSourceKindCard(
+                            kind = FactorSourceKind.DEVICE,
+                            messages = persistentListOf()
+                        )
+                    ),
+                    Selectable(
+                        data = FactorSourceKindCard(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            messages = persistentListOf()
+                        )
+                    )
+                )
+            ),
+            onBackClick = {},
+            onSelectFactorSourceKindCard = {},
+            onAddClick = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun AddFactorSourceKindDarlPreview() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         AddFactorSourceKindContent(
             state = AddFactorSourceKindViewModel.State(
                 isLoading = false,

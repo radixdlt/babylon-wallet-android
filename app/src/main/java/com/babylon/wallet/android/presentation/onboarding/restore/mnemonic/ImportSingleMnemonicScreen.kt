@@ -9,10 +9,10 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.onboarding.restore.common.views.ImportMnemonicContentView
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorSource
@@ -90,7 +90,35 @@ private fun ImportSingleMnemonicsContent(
 @Preview
 @Composable
 fun ImportSingleMnemonicPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
+        ImportSingleMnemonicsContent(
+            state = ImportSingleMnemonicViewModel.State(
+                isLoading = false,
+                seedPhraseState = SeedPhraseInputDelegate.State(
+                    seedPhraseWords = (0 until 24).map {
+                        SeedPhraseWord(
+                            index = it,
+                            lastWord = it == 23
+                        )
+                    }.toPersistentList()
+                ),
+                factorSourceCard = FactorSource.sample().toFactorSourceCard()
+            ),
+            onBackClick = {},
+            onContinueClick = {},
+            onWordChanged = { _, _ -> },
+            onWordSelected = { _, _ -> },
+            onPassphraseChanged = {},
+            onMessageShown = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun ImportSingleMnemonicDarkPreview() {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
         ImportSingleMnemonicsContent(
             state = ImportSingleMnemonicViewModel.State(
                 isLoading = false,

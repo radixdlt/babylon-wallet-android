@@ -141,6 +141,26 @@ private fun ImportMnemonicsContentPreview(
 }
 
 @UsesSampleValues
+@Preview
+@Composable
+private fun ImportMnemonicsContentDarkPreview(
+    @PreviewParameter(ImportMnemonicsPreviewProvider::class) state: ImportMnemonicsViewModel.State,
+) {
+    RadixWalletPreviewTheme(enableDarkTheme = true) {
+        ImportMnemonicsContent(
+            state = state,
+            onBackClick = {},
+            onSkipSeedPhraseClick = {},
+            onContinueClick = {},
+            onWordChanged = { _, _ -> },
+            onPassphraseChanged = {},
+            onWordSelected = { _, _ -> },
+            onMessageShown = {}
+        )
+    }
+}
+
+@UsesSampleValues
 class ImportMnemonicsPreviewProvider : PreviewParameterProvider<ImportMnemonicsViewModel.State> {
 
     override val values: Sequence<ImportMnemonicsViewModel.State>
