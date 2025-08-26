@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.debug
+package com.babylon.wallet.android.presentation.settings.debug.arculus
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -8,34 +8,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
-private const val ROUTE_ARCULUS_TOOLS = "debug_arculus_tools"
-
-fun NavController.arculusTools() {
-    navigate(ROUTE_ARCULUS_TOOLS)
-}
-
-fun NavGraphBuilder.arculusTools(
-    onBackClick: () -> Unit
-) {
-    composable(route = ROUTE_ARCULUS_TOOLS) {
-        ArculusToolsScreen(onBackClick = onBackClick)
-    }
-}
-
 @Composable
-private fun ArculusToolsScreen(
+fun ArculusToolsScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    viewModel: ArculusToolsViewModel = hiltViewModel()
+    viewModel: ArculusToolsViewModel
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),

@@ -126,6 +126,35 @@
 -keep class com.google.api.services.drive.** {
 *;
 }
+
+# Keep class members annotated with Dagger multibinding keys
+-keepclassmembers class * {
+    @dagger.multibindings.* <methods>;
+}
+
+# Keep enum constant names
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep NavArgs fields
+-keepclassmembers class * implements androidx.navigation.NavArgs {
+    <fields>;
+}
+
+-keepclassmembers class * {
+    @androidx.navigation.* <fields>;
+}
+
+-keepclassmembers class your.package.** {
+    <fields>;
+}
+
+ # Keep class names of Hilt injected ViewModels since their name are used as a multibinding map key.
+ -keepnames @dagger.hilt.android.lifecycle.HiltViewModel class * extends androidx.lifecycle.ViewModel
+
+# Missing classes
 -dontwarn javax.naming.InvalidNameException
 -dontwarn javax.naming.NamingException
 -dontwarn javax.naming.directory.Attribute

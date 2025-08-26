@@ -11,6 +11,7 @@ import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.DebugSettingsItem.InspectProfile
+import com.babylon.wallet.android.presentation.settings.debug.arculus.arculusTools
 import com.babylon.wallet.android.presentation.settings.debug.backups.inspectGoogleBackups
 import com.babylon.wallet.android.presentation.settings.debug.factors.securityFactorSamples
 import com.babylon.wallet.android.presentation.settings.debug.profile.inspectProfile
