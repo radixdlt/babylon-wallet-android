@@ -41,7 +41,7 @@ private fun ArculusToolsScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.settings_debugSettings_arculusTools),
+                title = "Arculus Tools",
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
