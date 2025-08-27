@@ -250,6 +250,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object NfcSessionLostTagConnection : Arculus()
 
         data object NfcSessionUnknownTag : Arculus()
+
+        data object CardBlocked : Arculus()
     }
 }
 
@@ -462,10 +464,18 @@ fun RadixWalletException.FactorSource.toUserFriendlyAlertTitle(context: Context)
 }
 
 fun RadixWalletException.Arculus.toUserFriendlyMessage(context: Context): String = when (this) {
-    is RadixWalletException.Arculus.MinimumFirmwareRequired -> context.getString(R.string.addArculus_firmwareVersionError_message, version)
+    is RadixWalletException.Arculus.MinimumFirmwareRequired -> context.getString(
+        R.string.addArculus_firmwareVersionError_message,
+        version
+    )
+
     RadixWalletException.Arculus.NfcSessionLostTagConnection -> context.getString(R.string.arculusScan_lostTagError_message)
     RadixWalletException.Arculus.NfcSessionUnknownTag -> context.getString(R.string.arculusScan_unknownTagError_message)
-    is RadixWalletException.Arculus.WrongPin -> context.getString(R.string.arculusDetails_verifyPin_errorMessage, numberOfTries)
+    is RadixWalletException.Arculus.WrongPin -> context.getString(
+        R.string.arculusDetails_verifyPin_errorMessage,
+        numberOfTries
+    )
+    RadixWalletException.Arculus.CardBlocked -> context.getString(R.string.arculusScan_cardBlockedError_message)
 }
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {

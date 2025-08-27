@@ -30,8 +30,10 @@ class ArculusCardClient @Inject constructor(
     suspend fun derivePublicKeys(
         factorSource: FactorSource.ArculusCard,
         paths: List<DerivationPath>
-    ): Result<List<HierarchicalDeterministicFactorInstance>> = sargonOsManager.callSafely(dispatcher) {
-        arculusCardDerivePublicKeys(factorSource.value, paths)
+    ): Result<List<HierarchicalDeterministicFactorInstance>> {
+        return sargonOsManager.callSafely(dispatcher) {
+            arculusCardDerivePublicKeys(factorSource.value, paths)
+        }.mapArculusError()
     }
 
     suspend fun validateMinFirmwareVersion(): Result<Unit> {
@@ -148,9 +150,13 @@ class ArculusCardClient @Inject constructor(
 
     private fun <T> Result<T>.mapArculusError(): Result<T> = mapError {
         when (it) {
-            is CommonException.ArculusCardWrongPin -> RadixWalletException.Arculus.WrongPin(
-                numberOfTries = it.numberOfRemainingTries.toInt()
-            )
+            is CommonException.ArculusCardWrongPin -> if (it.numberOfRemainingTries > 0) {
+                RadixWalletException.Arculus.WrongPin(
+                    numberOfTries = it.numberOfRemainingTries.toInt()
+                )
+            } else {
+                RadixWalletException.Arculus.CardBlocked
+            }
 
             is CommonException.NfcSessionLostTagConnection -> RadixWalletException.Arculus.NfcSessionLostTagConnection
             is CommonException.NfcSessionUnknownTag -> RadixWalletException.Arculus.NfcSessionUnknownTag

@@ -263,20 +263,21 @@ private fun NfcContent(
 
 @Composable
 private fun NfcTagDriverPurpose.title(): String {
-    return when (this) {
-        // TODO crowdin
-        is NfcTagDriverPurpose.Arculus -> when (v1) {
-            NfcTagArculusInteractonPurpose.ConfiguringCardMnemonic -> "Configuring your Arculus Card"
-            is NfcTagArculusInteractonPurpose.ConfiguringCardPin -> "Configuring new Card PIN"
-            is NfcTagArculusInteractonPurpose.DerivingPublicKeys -> "Updating Factor Config"
-            NfcTagArculusInteractonPurpose.IdentifyingCard -> "Identifying Card"
-            is NfcTagArculusInteractonPurpose.ProveOwnership -> "Signing Transaction"
-            is NfcTagArculusInteractonPurpose.SignPreAuth -> "Signing Transaction"
-            is NfcTagArculusInteractonPurpose.SignTransaction -> "Signing Transaction"
-            is NfcTagArculusInteractonPurpose.VerifyingPin -> "Verifying Card PIN"
-            is NfcTagArculusInteractonPurpose.RestoringCardPin -> "Restoring Card PIN"
+    return stringResource(
+        id = when (this) {
+            is NfcTagDriverPurpose.Arculus -> when (v1) {
+                NfcTagArculusInteractonPurpose.ConfiguringCardMnemonic -> R.string.arculusScan_purposeConfiguringMnemonic_label
+                is NfcTagArculusInteractonPurpose.ConfiguringCardPin -> R.string.arculusScan_purposeConfiguringPin_label
+                is NfcTagArculusInteractonPurpose.DerivingPublicKeys -> R.string.arculusScan_purposeDerivingKeys_label
+                NfcTagArculusInteractonPurpose.IdentifyingCard -> R.string.arculusScan_purposeIdentifying_label
+                is NfcTagArculusInteractonPurpose.ProveOwnership -> R.string.arculusScan_purposeProvingOwnership_label
+                is NfcTagArculusInteractonPurpose.SignPreAuth -> R.string.arculusScan_purposeSigningPreAuth_label
+                is NfcTagArculusInteractonPurpose.SignTransaction -> R.string.arculusScan_purposeSigningTx_label
+                is NfcTagArculusInteractonPurpose.VerifyingPin -> R.string.arculusScan_purposeVerifyingPin_label
+                is NfcTagArculusInteractonPurpose.RestoringCardPin -> R.string.arculusScan_purposeRestoringPin_label
+            }
         }
-    }
+    )
 }
 
 @UsesSampleValues
