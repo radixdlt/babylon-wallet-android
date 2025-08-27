@@ -5,6 +5,7 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.samples.SampleWithRandomValues
@@ -40,7 +41,7 @@ data class LiquidStakeUnit(
     ): Decimal192? {
         val totalXrdStake = totalStakedInXrd ?: return null
         val amountOwned = lsu ?: return null
-        val supply = totalStaked ?: return null
+        val supply = totalStaked?.takeIf { !it.isZero } ?: return null
 
         val percentage = (amountOwned / supply).roundedWith(divisibility = fungibleResource.divisibility)
 
