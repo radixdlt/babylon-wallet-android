@@ -31,13 +31,13 @@ class ChooseAccountsViewModel @Inject constructor(
         initAccounts()
     }
 
-    override fun initialState(): ChooseEntityUiState<Account> = ChooseEntityUiState(mustSelectAtLeastOne = true)
+    override fun initialState(): ChooseEntityUiState<Account> = ChooseEntityUiState(mustSelectOne = true)
 
     fun onContinueClick() {
         viewModelScope.launch {
             sendEvent(
-                ChooseEntityEvent.EntitiesSelected(
-                    addresses = chooseEntityDelegate.getSelectedItems().map { AddressOfAccountOrPersona.Account(it.address) }
+                ChooseEntityEvent.EntitySelected(
+                    address = chooseEntityDelegate.getSelectedItem().let { AddressOfAccountOrPersona.Account(it.address) }
                 )
             )
         }
@@ -51,12 +51,6 @@ class ChooseAccountsViewModel @Inject constructor(
     }
 
     fun onSkipClick() {
-        viewModelScope.launch {
-            sendEvent(
-                ChooseEntityEvent.EntitiesSelected(
-                    addresses = emptyList()
-                )
-            )
-        }
+        viewModelScope.launch { sendEvent(ChooseEntityEvent.Skip) }
     }
 }

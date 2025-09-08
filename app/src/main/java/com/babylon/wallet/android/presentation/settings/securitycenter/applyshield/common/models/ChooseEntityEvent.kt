@@ -5,7 +5,9 @@ import com.radixdlt.sargon.AddressOfAccountOrPersona
 
 sealed interface ChooseEntityEvent : OneOffEvent {
 
-    data class EntitiesSelected(
-        val addresses: List<AddressOfAccountOrPersona>
+    data class EntitySelected(
+        val address: AddressOfAccountOrPersona
     ) : ChooseEntityEvent
+
+    data object Skip : ChooseEntityEvent
 }

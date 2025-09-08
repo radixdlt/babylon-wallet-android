@@ -36,7 +36,7 @@ fun NavGraphBuilder.applyShield(
         ApplyShieldScreen(
             viewModel = hiltViewModel(),
             securityStructureId = sharedState.securityStructureId,
-            entityAddresses = sharedState.allAddresses,
+            entityAddress = requireNotNull(sharedState.selectedAddress),
             onDismiss = { navController.popBackStack() },
             onShieldApplied = { navController.popBackStack(ROUTE_APPLY_SHIELD_GRAPH, true) }
         )

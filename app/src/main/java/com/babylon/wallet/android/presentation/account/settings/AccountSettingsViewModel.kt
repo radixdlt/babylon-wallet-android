@@ -22,6 +22,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,11 +30,15 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -85,6 +90,10 @@ class AccountSettingsViewModel @Inject constructor(
                 _state.update { it.copy(faucetState = faucetState) }
             }
         }
+        getProfileUseCase.flow.map { it.currentNetwork?.id == NetworkId.STOKENET }
+            .onEach { isOnStokenet ->
+                _state.update { state -> state.copy(isMfaEnabled = isOnStokenet) }
+            }.launchIn(viewModelScope)
     }
 
     private fun loadAccount() {
@@ -240,7 +249,8 @@ class AccountSettingsViewModel @Inject constructor(
         val faucetState: FaucetState = FaucetState.Unavailable,
         val isAccountNameUpdated: Boolean = false,
         val isFreeXRDLoading: Boolean = false,
-        val securedWith: FactorSourceCard? = null
+        val securedWith: FactorSourceCard? = null,
+        val isMfaEnabled: Boolean = false
     ) : UiState {
 
         data class RenameAccountInput(

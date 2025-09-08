@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +37,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
-import com.babylon.wallet.android.designsystem.theme.themedColorTint
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -83,9 +83,8 @@ fun SecurityCenterScreen(
 @Composable
 private fun SecurityCenterContent(
     modifier: Modifier = Modifier,
-    state: SecurityCenterViewModel.SecurityCenterUiState,
+    state: SecurityCenterViewModel.State,
     onBackClick: () -> Unit,
-    @Suppress("UNUSED_PARAMETER")
     onSecurityShieldsClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
@@ -125,100 +124,100 @@ private fun SecurityCenterContent(
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
 
-            when (state) {
-                is SecurityCenterViewModel.SecurityCenterUiState.Data -> {
-                    AnimatedVisibility(visible = state.hasSecurityProblems, enter = fadeIn()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
-                            state.securityProblems.forEach { problem ->
-                                val title = problem.toProblemHeading()
-                                when (problem) {
-                                    is SecurityProblem.EntitiesNotRecoverable -> {
-                                        NotOkStatusCard(
-                                            modifier = Modifier
-                                                .clip(RadixTheme.shapes.roundedRectMedium)
-                                                .clickable {
-                                                    onBackupEntities()
-                                                },
-                                            title = title,
-                                            subtitle = stringResource(id = R.string.securityProblems_no3_securityCenterBody)
-                                        )
-                                    }
+            if (!state.isLoading) {
+                AnimatedVisibility(visible = state.hasSecurityProblems, enter = fadeIn()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
+                        state.securityProblems.forEach { problem ->
+                            val title = problem.toProblemHeading()
+                            when (problem) {
+                                is SecurityProblem.EntitiesNotRecoverable -> {
+                                    NotOkStatusCard(
+                                        modifier = Modifier
+                                            .clip(RadixTheme.shapes.roundedRectMedium)
+                                            .clickable {
+                                                onBackupEntities()
+                                            },
+                                        title = title,
+                                        subtitle = stringResource(id = R.string.securityProblems_no3_securityCenterBody)
+                                    )
+                                }
 
-                                    is SecurityProblem.SeedPhraseNeedRecovery -> {
-                                        NotOkStatusCard(
-                                            modifier = Modifier
-                                                .clip(RadixTheme.shapes.roundedRectMedium)
-                                                .clickable { onRecoverEntitiesClick() },
-                                            title = title,
-                                            subtitle = stringResource(id = R.string.securityProblems_no9_securityCenterBody)
-                                        )
-                                    }
+                                is SecurityProblem.SeedPhraseNeedRecovery -> {
+                                    NotOkStatusCard(
+                                        modifier = Modifier
+                                            .clip(RadixTheme.shapes.roundedRectMedium)
+                                            .clickable { onRecoverEntitiesClick() },
+                                        title = title,
+                                        subtitle = stringResource(id = R.string.securityProblems_no9_securityCenterBody)
+                                    )
+                                }
 
-                                    is SecurityProblem.CloudBackupNotWorking -> {
-                                        when (problem) {
-                                            is SecurityProblem.CloudBackupNotWorking.Disabled -> {
-                                                val text = if (problem.hasManualBackup) {
-                                                    stringResource(id = R.string.securityProblems_no7_securityCenterBody)
-                                                } else {
-                                                    stringResource(id = R.string.securityProblems_no6_securityCenterBody)
-                                                }
-                                                NotOkStatusCard(
-                                                    modifier = Modifier
-                                                        .clip(RadixTheme.shapes.roundedRectMedium)
-                                                        .clickable { onBackupConfigurationClick() },
-                                                    title = title,
-                                                    subtitle = text
-                                                )
+                                is SecurityProblem.CloudBackupNotWorking -> {
+                                    when (problem) {
+                                        is SecurityProblem.CloudBackupNotWorking.Disabled -> {
+                                            val text = if (problem.hasManualBackup) {
+                                                stringResource(id = R.string.securityProblems_no7_securityCenterBody)
+                                            } else {
+                                                stringResource(id = R.string.securityProblems_no6_securityCenterBody)
                                             }
-                                            is SecurityProblem.CloudBackupNotWorking.ServiceError -> {
-                                                NotOkStatusCard(
-                                                    modifier = Modifier
-                                                        .clip(RadixTheme.shapes.roundedRectMedium)
-                                                        .clickable { onBackupConfigurationClick() },
-                                                    title = title,
-                                                    subtitle = stringResource(id = R.string.securityProblems_no5_securityCenterBody)
-                                                )
-                                            }
+                                            NotOkStatusCard(
+                                                modifier = Modifier
+                                                    .clip(RadixTheme.shapes.roundedRectMedium)
+                                                    .clickable { onBackupConfigurationClick() },
+                                                title = title,
+                                                subtitle = text
+                                            )
+                                        }
+
+                                        is SecurityProblem.CloudBackupNotWorking.ServiceError -> {
+                                            NotOkStatusCard(
+                                                modifier = Modifier
+                                                    .clip(RadixTheme.shapes.roundedRectMedium)
+                                                    .clickable { onBackupConfigurationClick() },
+                                                title = title,
+                                                subtitle = stringResource(id = R.string.securityProblems_no5_securityCenterBody)
+                                            )
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    if (!state.hasSecurityProblems) {
-                        RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
-                    }
-
-//                    SecurityCenterCard(
-//                        onClick = onSecurityShieldsClick,
-//                        title = stringResource(id = R.string.securityCenter_securityShieldsItem_title),
-//                        subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
-//                        iconRes = DSR.ic_security_shields,
-//                        needsAction = state.hasSecurityShieldsProblems,
-//                        positiveStatus = stringResource(id = R.string.securityCenter_securityShieldsItem_shieldedStatus)
-//                    )
-
-                    SecurityCenterCard(
-                        onClick = onSecurityFactorsClick,
-                        title = stringResource(id = R.string.securityCenter_securityFactorsItem_title),
-                        subtitle = stringResource(id = R.string.securityCenter_securityFactorsItem_subtitle),
-                        iconRes = DSR.ic_security_factors,
-                        needsAction = state.hasSecurityRelatedProblems,
-                        positiveStatus = stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
-                    )
-
-                    SecurityCenterCard(
-                        onClick = onBackupConfigurationClick,
-                        iconRes = DSR.ic_configuration_backup,
-                        title = stringResource(id = R.string.securityCenter_configurationBackupItem_title),
-                        subtitle = stringResource(id = R.string.securityCenter_configurationBackupItem_subtitle),
-                        needsAction = state.hasCloudBackupProblems,
-                        positiveStatus = stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
-                    )
-
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
-                SecurityCenterViewModel.SecurityCenterUiState.Loading -> {}
+                if (!state.hasSecurityProblems) {
+                    RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
+                }
+
+                if (state.mfaEnabled) {
+                    SecurityCenterCard(
+                        onClick = onSecurityShieldsClick,
+                        title = stringResource(id = R.string.securityCenter_securityShieldsItem_title),
+                        subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
+                        iconRes = DSR.ic_security_shields,
+                        needsAction = false,
+                        positiveStatus = stringResource(id = R.string.securityCenter_securityShieldsItem_shieldedStatus)
+                    )
+                }
+
+                SecurityCenterCard(
+                    onClick = onSecurityFactorsClick,
+                    title = stringResource(id = R.string.securityCenter_securityFactorsItem_title),
+                    subtitle = stringResource(id = R.string.securityCenter_securityFactorsItem_subtitle),
+                    iconRes = DSR.ic_security_factors,
+                    needsAction = state.hasSecurityRelatedProblems,
+                    positiveStatus = stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
+                )
+
+                SecurityCenterCard(
+                    onClick = onBackupConfigurationClick,
+                    iconRes = DSR.ic_configuration_backup,
+                    title = stringResource(id = R.string.securityCenter_configurationBackupItem_title),
+                    subtitle = stringResource(id = R.string.securityCenter_configurationBackupItem_subtitle),
+                    needsAction = state.hasCloudBackupProblems,
+                    positiveStatus = stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
+                )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
         }
     }
@@ -258,7 +257,10 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.warning, RadixTheme.shapes.roundedRectTopMedium)
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
         ) {
@@ -276,7 +278,10 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
@@ -326,11 +331,10 @@ private fun SecurityCenterCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
     ) {
-        Icon(
+        Image(
             modifier = Modifier.size(80.dp),
             painter = painterResource(id = iconRes),
-            contentDescription = null,
-            tint = themedColorTint()
+            contentDescription = null
         )
 
         Column(
@@ -376,7 +380,9 @@ private fun SecurityCenterCard(
 fun SecurityCenterNoProblemsPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
+            state = SecurityCenterViewModel.State(
+                isLoading = false,
+                mfaEnabled = true,
                 securityProblems = emptySet()
             ),
             onBackClick = {},
@@ -395,7 +401,9 @@ fun SecurityCenterNoProblemsPreview() {
 fun SecurityCenterWithSecurityProblem5Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
+            state = SecurityCenterViewModel.State(
+                isLoading = false,
+                mfaEnabled = true,
                 securityProblems = setOf(
                     SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true)
                 )
@@ -416,7 +424,9 @@ fun SecurityCenterWithSecurityProblem5Preview() {
 fun SecurityCenterWithSecurityProblem9Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
+            state = SecurityCenterViewModel.State(
+                isLoading = false,
+                mfaEnabled = true,
                 securityProblems = setOf(
                     SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true)
                 )
@@ -437,7 +447,9 @@ fun SecurityCenterWithSecurityProblem9Preview() {
 fun SecurityCenterWithSecurityProblems2And7Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
+            state = SecurityCenterViewModel.State(
+                isLoading = false,
+                mfaEnabled = true,
                 securityProblems = setOf(
                     SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true),
                     SecurityProblem.EntitiesNotRecoverable(
@@ -464,7 +476,9 @@ fun SecurityCenterWithSecurityProblems2And7Preview() {
 fun SecurityCenterWithSecurityProblems2And7And9AndOnlyHiddenEntitiesPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
+            state = SecurityCenterViewModel.State(
+                isLoading = false,
+                mfaEnabled = true,
                 securityProblems = setOf(
                     SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
                     SecurityProblem.EntitiesNotRecoverable(

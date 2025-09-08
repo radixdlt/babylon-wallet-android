@@ -35,7 +35,7 @@ fun ChoosePersonasScreen(
     modifier: Modifier = Modifier,
     viewModel: ChoosePersonasViewModel,
     onDismiss: () -> Unit,
-    onSelected: (List<AddressOfAccountOrPersona>) -> Unit
+    onSelected: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -43,7 +43,6 @@ fun ChoosePersonasScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
-        onSelectAllToggleClick = viewModel::onSelectAllToggleClick,
         onSelectPersona = viewModel::onSelectItem,
         onContinueClick = viewModel::onContinueClick
     )
@@ -51,7 +50,8 @@ fun ChoosePersonasScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ChooseEntityEvent.EntitiesSelected -> onSelected(event.addresses)
+                is ChooseEntityEvent.EntitySelected -> onSelected(event.address)
+                ChooseEntityEvent.Skip -> error("Shouldn't be here")
             }
         }
     }
@@ -62,7 +62,6 @@ private fun ChoosePersonasContent(
     modifier: Modifier = Modifier,
     state: ChooseEntityUiState<Persona>,
     onDismiss: () -> Unit,
-    onSelectAllToggleClick: () -> Unit,
     onSelectPersona: (Persona) -> Unit,
     onContinueClick: () -> Unit
 ) {
@@ -71,12 +70,9 @@ private fun ChoosePersonasContent(
         title = stringResource(id = R.string.shieldWizardApplyShield_choosePersonas_title),
         subtitle = stringResource(id = R.string.shieldWizardApplyShield_choosePersonas_subtitle),
         isButtonEnabled = state.isButtonEnabled,
-        isSelectAllVisible = !state.isEmpty,
-        selectedAll = state.selectedAll,
         hasSkipButton = false,
         onContinueClick = onContinueClick,
-        onDismiss = onDismiss,
-        onSelectAllToggleClick = onSelectAllToggleClick
+        onDismiss = onDismiss
     ) {
         items(state.items) { persona ->
             SimplePersonaSelectionCard(
@@ -94,7 +90,7 @@ private fun ChoosePersonasContent(
                     .padding(RadixTheme.dimensions.paddingDefault),
                 persona = persona.data,
                 checked = persona.selected,
-                isSingleChoice = false,
+                isSingleChoice = true,
                 onSelectPersona = onSelectPersona
             )
         }
@@ -111,7 +107,6 @@ private fun ChooseAccountsPreviewLight(
         ChoosePersonasContent(
             state = state,
             onDismiss = {},
-            onSelectAllToggleClick = {},
             onSelectPersona = {},
             onContinueClick = {}
         )
@@ -131,7 +126,6 @@ private fun ChooseAccountsPreviewDark(
         ChoosePersonasContent(
             state = state,
             onDismiss = {},
-            onSelectAllToggleClick = {},
             onSelectPersona = {},
             onContinueClick = {}
         )

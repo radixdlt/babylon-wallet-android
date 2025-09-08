@@ -91,6 +91,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.per
 import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.applyshield.applyShieldToEntity
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
@@ -103,6 +104,7 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.walletclaimed.claimedByAnotherDevice
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.networkId
 import rdx.works.core.domain.resources.XrdResource
 
@@ -540,6 +542,9 @@ fun NavigationHost(
             },
             onFactorSourceCardClick = { factorSourceId ->
                 navController.factorSourceDetails(factorSourceId)
+            },
+            onApplyShieldClick = {
+                navController.applyShieldToEntity(AddressOfAccountOrPersona.Account(it))
             }
         )
         deleteAccount(

@@ -9,6 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.ROUTE_APPLY_SHIELD_GRAPH
+import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.apply.applyShield
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.ApplyShieldSharedViewModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.personas.choosePersonas
 
@@ -35,9 +36,10 @@ fun NavGraphBuilder.chooseAccounts(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onSelected = { addresses ->
-                sharedVM.onAccountsSelected(addresses)
-                navController.choosePersonas(mustSelectAtLeastOne = sharedVM.mustSelectAtLeastOnePersona)
-            }
+                sharedVM.onAccountSelected(addresses)
+                navController.applyShield()
+            },
+            onSkip = { navController.choosePersonas(mustSelectOne = true) }
         )
     }
 }

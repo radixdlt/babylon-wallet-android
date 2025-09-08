@@ -35,13 +35,13 @@ class ChoosePersonasViewModel @Inject constructor(
         initPersonas()
     }
 
-    override fun initialState(): ChooseEntityUiState<Persona> = ChooseEntityUiState(mustSelectAtLeastOne = args.mustSelectAtLeastOne)
+    override fun initialState(): ChooseEntityUiState<Persona> = ChooseEntityUiState(mustSelectOne = args.mustSelectOne)
 
     fun onContinueClick() {
         viewModelScope.launch {
             sendEvent(
-                ChooseEntityEvent.EntitiesSelected(
-                    addresses = chooseEntityDelegate.getSelectedItems().map { AddressOfAccountOrPersona.Identity(it.address) }
+                ChooseEntityEvent.EntitySelected(
+                    address = chooseEntityDelegate.getSelectedItem().let { AddressOfAccountOrPersona.Identity(it.address) }
                 )
             )
         }

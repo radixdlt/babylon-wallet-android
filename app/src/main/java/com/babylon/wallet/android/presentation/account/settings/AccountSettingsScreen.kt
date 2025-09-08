@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account.settings
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,11 +24,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.State
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
@@ -62,7 +64,8 @@ fun AccountSettingsScreen(
     onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
     onDeleteAccountClick: (AccountAddress) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onApplyShieldClick: (AccountAddress) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -97,7 +100,8 @@ fun AccountSettingsScreen(
         onHideAccount = viewModel::onHideAccountRequest,
         onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
         onDeleteAccount = viewModel::onDeleteAccountRequest,
-        onFactorSourceCardClick = onFactorSourceCardClick
+        onFactorSourceCardClick = onFactorSourceCardClick,
+        onApplyShieldClick = { onApplyShieldClick(requireNotNull(state.account?.address)) }
     )
 
     if (state.isBottomSheetVisible) {
@@ -109,6 +113,7 @@ fun AccountSettingsScreen(
                     onDismiss = viewModel::onDismissBottomSheet
                 )
             }
+
             State.BottomSheetContent.RenameAccount -> {
                 RenameBottomSheet(
                     sheetState = bottomSheetState,
@@ -122,7 +127,8 @@ fun AccountSettingsScreen(
                     onDismiss = viewModel::onDismissBottomSheet,
                 )
             }
-            State.BottomSheetContent.None -> { }
+
+            State.BottomSheetContent.None -> {}
         }
     }
 }
@@ -139,7 +145,8 @@ private fun AccountSettingsContent(
     onHideAccount: () -> Unit,
     onDeleteAccount: () -> Unit,
     onSnackbarMessageShown: () -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onApplyShieldClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -242,12 +249,23 @@ private fun AccountSettingsContent(
 
             state.securedWith?.let { factorSourceCard ->
                 item {
-                    SectionTitle(
-                        title = stringResource(id = R.string.common_securedWith)
-                    )
+                    Row {
+                        SectionTitle(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(id = R.string.common_securedWith)
+                        )
+
+                        if (state.isMfaEnabled) {
+                            RadixTextButton(
+                                text = "Apply Shield", // TODO crowdin
+                                onClick = onApplyShieldClick
+                            )
+                        }
+                    }
 
                     FactorSourceCardView(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                             .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
                         item = factorSourceCard
                     )
@@ -289,10 +307,11 @@ private fun AccountSettingsContent(
 
 @Composable
 private fun SectionTitle(
-    title: String
+    title: String,
+    modifier: Modifier = Modifier
 ) {
     Text(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(RadixTheme.dimensions.paddingDefault),
         text = title,
@@ -332,7 +351,7 @@ private fun HideAccountSheet(
 @Preview(showBackground = true)
 @Composable
 fun AccountSettingsPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         AccountSettingsContent(
             state = State(
                 error = null,
@@ -360,7 +379,8 @@ fun AccountSettingsPreview() {
             onHideAccount = {},
             onDeleteAccount = {},
             onSnackbarMessageShown = {},
-            onFactorSourceCardClick = {}
+            onFactorSourceCardClick = {},
+            onApplyShieldClick = {}
         )
     }
 }
@@ -369,7 +389,7 @@ fun AccountSettingsPreview() {
 @Preview(showBackground = true)
 @Composable
 fun HideAccountSheetPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         HideAccountSheet(
             sheetState = rememberModalBottomSheetState(),
             onHideAccountClick = {},

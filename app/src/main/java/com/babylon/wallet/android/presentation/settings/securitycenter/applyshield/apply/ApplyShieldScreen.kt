@@ -36,13 +36,12 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureId
-import kotlinx.collections.immutable.PersistentList
 
 @Composable
 fun ApplyShieldScreen(
     modifier: Modifier = Modifier,
     securityStructureId: SecurityStructureId,
-    entityAddresses: PersistentList<AddressOfAccountOrPersona>,
+    entityAddress: AddressOfAccountOrPersona,
     viewModel: ApplyShieldViewModel,
     onDismiss: () -> Unit,
     onShieldApplied: () -> Unit
@@ -54,7 +53,7 @@ fun ApplyShieldScreen(
         state = state,
         onDismiss = onDismiss,
         onMessageShown = viewModel::onMessageShown,
-        onApplyClick = { viewModel.onApplyClick(securityStructureId, entityAddresses) }
+        onApplyClick = { viewModel.onApplyClick(securityStructureId, entityAddress) }
     )
 
     LaunchedEffect(Unit) {

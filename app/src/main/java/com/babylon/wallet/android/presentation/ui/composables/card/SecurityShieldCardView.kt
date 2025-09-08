@@ -40,7 +40,8 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun SecurityShieldCardView(
     modifier: Modifier = Modifier,
-    item: SecurityShieldCard
+    item: SecurityShieldCard,
+    endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer {
         Row(
@@ -99,6 +100,8 @@ fun SecurityShieldCardView(
                     }
                 }
             }
+
+            endContent?.invoke()
         }
     }
 }

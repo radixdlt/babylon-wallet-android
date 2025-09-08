@@ -12,6 +12,7 @@ import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.applyShieldNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addFactor
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.applyshield.applyShieldToEntity
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReady
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboarding
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactors
@@ -55,6 +56,8 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         shieldCreated(navController)
 
         applyShieldNavGraph(navController)
+
+        applyShieldToEntity(navController)
     }
 }
 
