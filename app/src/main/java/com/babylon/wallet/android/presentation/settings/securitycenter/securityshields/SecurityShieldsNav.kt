@@ -77,8 +77,8 @@ fun NavGraphBuilder.securityShieldsScreen(
     ) {
         SecurityShieldsScreen(
             viewModel = hiltViewModel(),
-            onNavigateToSecurityShieldDetails = { securityShieldId, securityShieldName ->
-                navController.securityShieldDetails(securityShieldId, securityShieldName)
+            onNavigateToSecurityShieldDetails = { securityShieldId ->
+                navController.securityShieldDetails(securityShieldId)
             },
             onCreateNewSecurityShieldClick = { navController.securityShieldOnboarding() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },

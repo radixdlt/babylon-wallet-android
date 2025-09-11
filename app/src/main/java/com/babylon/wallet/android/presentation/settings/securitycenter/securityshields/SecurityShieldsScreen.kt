@@ -67,7 +67,7 @@ import kotlinx.collections.immutable.toPersistentList
 fun SecurityShieldsScreen(
     modifier: Modifier = Modifier,
     viewModel: SecurityShieldsViewModel,
-    onNavigateToSecurityShieldDetails: (securityShieldId: SecurityStructureId, securityShieldName: String) -> Unit,
+    onNavigateToSecurityShieldDetails: (securityShieldId: SecurityStructureId) -> Unit,
     onCreateNewSecurityShieldClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit,
@@ -116,7 +116,7 @@ fun SecurityShieldsContent(
     state: SecurityShieldsViewModel.State,
     onBackClick: () -> Unit,
     onChangeMainSecurityShieldClick: () -> Unit,
-    onSecurityShieldClick: (SecurityStructureId, securityShieldName: String) -> Unit,
+    onSecurityShieldClick: (SecurityStructureId) -> Unit,
     onCreateNewSecurityShieldClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -158,7 +158,7 @@ private fun SecurityShieldsList(
     mainSecurityShield: SecurityShieldCard?,
     otherSecurityShields: PersistentList<SecurityShieldCard>,
     onChangeMainSecurityShieldClick: () -> Unit,
-    onSecurityShieldClick: (SecurityStructureId, securityShieldName: String) -> Unit,
+    onSecurityShieldClick: (SecurityStructureId) -> Unit,
     onCreateNewSecurityShieldClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -194,7 +194,7 @@ private fun SecurityShieldsList(
                 }
 
                 SecurityShieldCardView(
-                    modifier = Modifier.clickable { onSecurityShieldClick(securityShieldCard.id, securityShieldCard.name) },
+                    modifier = Modifier.clickable { onSecurityShieldClick(securityShieldCard.id) },
                     item = mainSecurityShield
                 )
                 if (otherSecurityShields.isEmpty()) {
@@ -239,7 +239,7 @@ private fun SecurityShieldsList(
 
         items(otherSecurityShields) { securityShieldCard ->
             SecurityShieldCardView(
-                modifier = Modifier.clickable { onSecurityShieldClick(securityShieldCard.id, securityShieldCard.name) },
+                modifier = Modifier.clickable { onSecurityShieldClick(securityShieldCard.id) },
                 item = securityShieldCard
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -363,7 +363,7 @@ private fun SecurityShieldsWithMainAndOthersPreviewLight() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = { _, _ -> },
+            onSecurityShieldClick = {},
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -384,7 +384,7 @@ private fun SecurityShieldsWithMainAndOthersPreviewDark() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = { _, _ -> },
+            onSecurityShieldClick = {},
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -420,7 +420,7 @@ private fun SecurityShieldsWithMainPreviewLight() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = { _, _ -> },
+            onSecurityShieldClick = {},
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -456,7 +456,7 @@ private fun SecurityShieldsWithMainPreviewDark() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = { _, _ -> },
+            onSecurityShieldClick = {},
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -477,7 +477,7 @@ private fun SecurityShieldsWithOthersPreview() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = { _, _ -> },
+            onSecurityShieldClick = {},
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )
@@ -498,7 +498,7 @@ private fun SecurityShieldsWithOthersPreviewDark() {
             ),
             onBackClick = {},
             onChangeMainSecurityShieldClick = {},
-            onSecurityShieldClick = { _, _ -> },
+            onSecurityShieldClick = {},
             onCreateNewSecurityShieldClick = {},
             onInfoClick = {}
         )

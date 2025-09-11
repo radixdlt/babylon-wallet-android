@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -81,7 +82,8 @@ fun SetupRecoveryScreen(
     viewModel: SetupRecoveryViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    toNameSetup: () -> Unit
+    toNameSetup: () -> Unit,
+    onDismissFlow: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -100,7 +102,8 @@ fun SetupRecoveryScreen(
         onDismissFallbackPeriod = viewModel::onDismissFallbackPeriod,
         onContinueClick = viewModel::onContinueClick,
         onUnsafeCombinationInfoDismiss = viewModel::onUnsafeCombinationInfoDismiss,
-        onUnsafeCombinationInfoConfirm = viewModel::onUnsafeCombinationInfoConfirm
+        onUnsafeCombinationInfoConfirm = viewModel::onUnsafeCombinationInfoConfirm,
+        onDismissMessage = viewModel::onDismissMessage
     )
 
     state.selectFactor?.let { selectFactor ->
@@ -118,6 +121,7 @@ fun SetupRecoveryScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 SetupRecoveryViewModel.Event.ToNameSetup -> toNameSetup()
+                SetupRecoveryViewModel.Event.DismissFlow -> onDismissFlow()
             }
         }
     }
@@ -140,7 +144,8 @@ private fun SetupRecoveryContent(
     onDismissFallbackPeriod: () -> Unit,
     onContinueClick: () -> Unit,
     onUnsafeCombinationInfoDismiss: () -> Unit,
-    onUnsafeCombinationInfoConfirm: () -> Unit
+    onUnsafeCombinationInfoConfirm: () -> Unit,
+    onDismissMessage: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -154,7 +159,11 @@ private fun SetupRecoveryContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
-                text = stringResource(R.string.common_continue),
+                text = if (state.isNewShield) {
+                    stringResource(R.string.common_continue)
+                } else {
+                    stringResource(R.string.common_confirm)
+                },
                 enabled = state.isButtonEnabled
             )
         },
@@ -287,6 +296,13 @@ private fun SetupRecoveryContent(
         UnsafeCombinationInfoDialog(
             onCancelClick = onUnsafeCombinationInfoDismiss,
             onContinueClick = onUnsafeCombinationInfoConfirm
+        )
+    }
+
+    state.errorMessage?.let {
+        ErrorAlertDialog(
+            errorMessage = it,
+            cancel = onDismissMessage
         )
     }
 }
@@ -591,7 +607,8 @@ private fun SetupRecoveryPreview(
             onDismissFallbackPeriod = {},
             onContinueClick = {},
             onUnsafeCombinationInfoDismiss = {},
-            onUnsafeCombinationInfoConfirm = {}
+            onUnsafeCombinationInfoConfirm = {},
+            onDismissMessage = {}
         )
     }
 }

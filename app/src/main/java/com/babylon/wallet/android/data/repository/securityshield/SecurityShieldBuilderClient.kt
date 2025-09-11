@@ -49,12 +49,24 @@ class SecurityShieldBuilderClient @Inject constructor(
     private val primaryRoleSelection = MutableSharedFlow<PrimaryRoleSelection>(1)
     private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
 
+    var securityStructureOfFactorSourceIds: SecurityStructureOfFactorSourceIDs? = null
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun newSecurityShieldBuilder() {
         securityShieldBuilder = SecurityShieldBuilder()
         primaryRoleSelection.resetReplayCache()
         recoveryRoleSelection.resetReplayCache()
         initSelection()
+        securityStructureOfFactorSourceIds = null
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun withExistingSecurityStructure(ids: SecurityStructureOfFactorSourceIDs) {
+        securityShieldBuilder = SecurityShieldBuilder.withSecurityStructureOfFactorSourceIds(ids)
+        primaryRoleSelection.resetReplayCache()
+        recoveryRoleSelection.resetReplayCache()
+        initSelection()
+        securityStructureOfFactorSourceIds = ids
     }
 
     fun primaryRoleSelection(): Flow<PrimaryRoleSelection> = primaryRoleSelection

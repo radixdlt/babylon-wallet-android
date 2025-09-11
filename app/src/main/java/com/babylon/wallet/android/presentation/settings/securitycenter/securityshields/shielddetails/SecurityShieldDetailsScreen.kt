@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,7 +83,8 @@ import kotlinx.collections.immutable.persistentListOf
 fun SecurityShieldDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: SecurityShieldDetailsViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onEditShield: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -118,6 +120,14 @@ fun SecurityShieldDetailsScreen(
         onEditFactorsClick = viewModel::onEditFactorsClick,
         onBackClick = onBackClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                SecurityShieldDetailsViewModel.Event.EditShield -> onEditShield()
+            }
+        }
+    }
 }
 
 @Composable
