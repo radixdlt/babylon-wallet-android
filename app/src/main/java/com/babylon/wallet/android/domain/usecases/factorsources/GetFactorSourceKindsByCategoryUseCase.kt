@@ -18,6 +18,12 @@ class GetFactorSourceKindsByCategoryUseCase @Inject constructor() {
                 FactorSourceKind.ARCULUS_CARD,
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
             )
+        ),
+        FactorSourceKindsByCategory(
+            category = FactorSourceCategory.Information,
+            kinds = listOf(
+                FactorSourceKind.OFF_DEVICE_MNEMONIC
+            )
         )
     )
 }

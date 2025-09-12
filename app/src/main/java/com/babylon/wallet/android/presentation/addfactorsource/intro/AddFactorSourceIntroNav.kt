@@ -31,7 +31,8 @@ fun NavGraphBuilder.addFactorSourceIntro(
             onAddDeviceFactorSource = navController::seedPhrase,
             onAddLedgerFactorSource = navController::identifyFactorSource,
             onAddLinkConnector = navController::linkConnectorIntro,
-            onAddArculusFactorSource = navController::identifyFactorSource
+            onAddArculusFactorSource = navController::identifyFactorSource,
+            onAddOffDeviceMnemonicFactorSource = navController::seedPhrase
         )
     }
 }
