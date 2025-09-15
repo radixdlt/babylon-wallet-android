@@ -214,7 +214,7 @@ jobs:
 
       - name: "Run Sonarcloud"
         run: |
-          ./gradlew sonarqube
+          ./gradlew sonar
 
   build:
     name: "Build"
