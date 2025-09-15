@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dappdir.all
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.dappdir.common.delegates.DAppListDelegate
+import com.babylon.wallet.android.presentation.dappdir.common.delegates.DAppListViewActions
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem.DAppWithDetails
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +19,7 @@ import kotlin.collections.orEmpty
 @HiltViewModel
 class AllDAppsViewModel @Inject constructor(
     private val dAppListDelegate: DAppListDelegate
-) : StateViewModel<DAppListState>(), DAppListDelegate.ViewActions by dAppListDelegate {
+) : StateViewModel<DAppListState>(), DAppListViewActions by dAppListDelegate {
 
     private val dAppsWithDetails: Flow<List<DAppWithDetails>> = combine(
         dAppListDelegate.directoryState.map { directory ->

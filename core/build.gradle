@@ -37,6 +37,7 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    kotlin.compilerOptions.freeCompilerArgs.add("-Xannotation-default-target=first-only")
     afterEvaluate {
         tasks.configureEach { task ->
             if (task.name.contains("Test") && task.name.contains("compile")) {
