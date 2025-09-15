@@ -228,7 +228,9 @@ fun AccountCardView(
                                 }
                             }
                         }
-                    )
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
