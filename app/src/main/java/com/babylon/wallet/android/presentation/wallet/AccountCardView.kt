@@ -94,8 +94,7 @@ fun AccountCardView(
             nameLabel,
             fiatTotalValueLabel,
             fiatTotalLoading,
-            legacyLabel,
-            addressLabel,
+            addressAndTagsLabel,
             spacer,
             assetsContainer,
             promptsContainer
@@ -165,73 +164,75 @@ fun AccountCardView(
 
         val addressTextColor = White.copy(alpha = 0.8f)
 
-        ActionableAddressView(
-            modifier = Modifier.constrainAs(addressLabel) {
+        Row(
+            modifier = Modifier.constrainAs(addressAndTagsLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
-            },
-            address = accountWithAssets.account.address.asGeneral(),
-            textStyle = RadixTheme.typography.body2HighImportance,
-            textColor = addressTextColor,
-            iconColor = addressTextColor
-        )
+                end.linkTo(parent.end)
+            }
+        ) {
+            ActionableAddressView(
+                address = accountWithAssets.account.address.asGeneral(),
+                textStyle = RadixTheme.typography.body2HighImportance,
+                textColor = addressTextColor,
+                iconColor = addressTextColor
+            )
 
-        val tagLabel = accountWithAssets.tag?.let {
-            val context = LocalContext.current
-            remember(it) { it.toLabel(context) }
-        }
+            val tagLabel = accountWithAssets.tag?.let {
+                val context = LocalContext.current
+                remember(it) { it.toLabel(context) }
+            }
 
-        if (tagLabel != null || accountWithAssets.factorSource != null) {
-            val textStyle = RadixTheme.typography.body2Regular
-            val textColor = White
+            if (tagLabel != null || accountWithAssets.factorSource != null) {
+                val textStyle = RadixTheme.typography.body2Regular
+                val textColor = White
 
-            Text(
-                modifier = Modifier.constrainAs(legacyLabel) {
-                    start.linkTo(addressLabel.end)
-                    bottom.linkTo(addressLabel.bottom)
-                },
-                text = buildAnnotatedString {
-                    if (tagLabel != null) {
-                        append(tagLabel)
-                    }
+                Text(
+                    text = buildAnnotatedString {
+                        if (tagLabel != null) {
+                            append(tagLabel)
+                        }
 
-                    if (accountWithAssets.factorSource != null) {
-                        append(" • ")
-                        appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
-                    }
-                },
-                style = textStyle,
-                color = textColor,
-                inlineContent = mapOf(
-                    INLINE_FACTOR_SOURCE_ID to InlineTextContent(
-                        Placeholder(
-                            textStyle.fontSize * (accountWithAssets.factorSource?.name?.length ?: 0),
-                            textStyle.fontSize * 1.2,
-                            PlaceholderVerticalAlign.Center
-                        )
-                    ) {
-                        accountWithAssets.factorSource?.let { factorSource ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
-                            ) {
-                                Text(
-                                    text = factorSource.name,
-                                    style = textStyle,
-                                    color = textColor
-                                )
+                        if (accountWithAssets.factorSource != null) {
+                            append(" • ")
+                            appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
+                        }
+                    },
+                    style = textStyle,
+                    color = textColor,
+                    inlineContent = mapOf(
+                        INLINE_FACTOR_SOURCE_ID to InlineTextContent(
+                            Placeholder(
+                                textStyle.fontSize * (accountWithAssets.factorSource?.name?.length ?: 0),
+                                textStyle.fontSize * 1.2,
+                                PlaceholderVerticalAlign.Center
+                            )
+                        ) {
+                            accountWithAssets.factorSource?.let { factorSource ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
+                                ) {
+                                    Text(
+                                        text = factorSource.name,
+                                        style = textStyle,
+                                        color = textColor
+                                    )
 
-                                Icon(
-                                    modifier = Modifier.fillMaxHeight(),
-                                    painter = painterResource(id = factorSource.kind.iconRes()),
-                                    contentDescription = null,
-                                    tint = textColor
-                                )
+                                    Icon(
+                                        modifier = Modifier.fillMaxHeight(),
+                                        painter = painterResource(id = factorSource.kind.iconRes()),
+                                        contentDescription = null,
+                                        tint = textColor
+                                    )
+                                }
                             }
                         }
-                    }
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-            )
+            }
         }
 
         val assetsPresent = remember(accountWithAssets.isLoadingAssets, accountWithAssets.assets) {
@@ -246,7 +247,7 @@ fun AccountCardView(
                 linkTo(
                     start = parent.start,
                     end = parent.end,
-                    top = addressLabel.bottom,
+                    top = addressAndTagsLabel.bottom,
                     bottom = assetsContainer.top,
                 )
                 height = Dimension.value(if (assetsPresent || promptsPresent) 32.dp else 0.dp)
