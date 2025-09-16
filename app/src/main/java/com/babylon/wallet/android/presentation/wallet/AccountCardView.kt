@@ -165,11 +165,13 @@ fun AccountCardView(
         val addressTextColor = White.copy(alpha = 0.8f)
 
         Row(
-            modifier = Modifier.constrainAs(addressAndTagsLabel) {
-                top.linkTo(nameLabel.bottom, margin = 8.dp)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            }
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(addressAndTagsLabel) {
+                    top.linkTo(nameLabel.bottom, margin = 8.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
         ) {
             ActionableAddressView(
                 address = accountWithAssets.account.address.asGeneral(),
