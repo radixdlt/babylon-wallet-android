@@ -3,46 +3,35 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shielddetails
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -52,32 +41,24 @@ import com.babylon.wallet.android.presentation.common.securityshields.Confirmati
 import com.babylon.wallet.android.presentation.common.securityshields.OrView
 import com.babylon.wallet.android.presentation.common.securityshields.display
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.card.CollapsibleCommonCard
 import com.babylon.wallet.android.presentation.ui.composables.card.CommonCard
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
-import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
-import com.babylon.wallet.android.presentation.ui.composables.card.SimplePersonaCardWithShadow
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ConfirmationRoleWithFactorSources
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PrimaryRoleWithFactorSources
 import com.radixdlt.sargon.RecoveryRoleWithFactorSources
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSampleOther
-import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +96,10 @@ fun SecurityShieldDetailsScreen(
         state = state,
         onRenameSecurityShieldClick = viewModel::onRenameSecurityShieldClick,
         onEditFactorsClick = viewModel::onEditFactorsClick,
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        toggleRegularAccessCard = viewModel::toggleRegularAccessCard,
+        toggleLogInCard = viewModel::toggleLogInCard,
+        toggleRecoveryCard = viewModel::toggleRecoveryCard
     )
 
     LaunchedEffect(Unit) {
@@ -133,12 +117,11 @@ private fun SecurityShieldDetailsContent(
     state: SecurityShieldDetailsViewModel.State,
     onRenameSecurityShieldClick: () -> Unit,
     onEditFactorsClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    toggleRegularAccessCard: () -> Unit,
+    toggleLogInCard: () -> Unit,
+    toggleRecoveryCard: () -> Unit
 ) {
-    var isRegularAccessCardCollapsed by remember { mutableStateOf(true) }
-    var isLogInCardCollapsed by remember { mutableStateOf(true) }
-    var isRecoveryCardCollapsed by remember { mutableStateOf(true) }
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -191,38 +174,31 @@ private fun SecurityShieldDetailsContent(
                 state.securityStructureOfFactorSources?.let {
                     RegularAccessCollapsibleCard(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                        isCollapsed = isRegularAccessCardCollapsed,
+                        isCollapsed = state.isRegularAccessCardCollapsed,
                         primaryRoleWithFactorSources = state.securityStructureOfFactorSources.matrixOfFactors.primaryRole,
-                        onToggleCollapse = { isRegularAccessCardCollapsed = !isRegularAccessCardCollapsed }
+                        onToggleCollapse = { toggleRegularAccessCard() }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                     LogInAndProveOwnershipCollapsibleCard(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                        isCollapsed = isLogInCardCollapsed,
+                        isCollapsed = state.isLogInCardCollapsed,
                         authenticationSigningFactor = state.securityStructureOfFactorSources.authenticationSigningFactor,
-                        onToggleCollapse = { isLogInCardCollapsed = !isLogInCardCollapsed }
+                        onToggleCollapse = { toggleLogInCard() }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                     RecoveryCollapsibleCard(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                        isCollapsed = isRecoveryCardCollapsed,
+                        isCollapsed = state.isRecoveryCardCollapsed,
                         recoveryRoleWithFactorSources = state.securityStructureOfFactorSources.matrixOfFactors.recoveryRole,
                         confirmationRoleWithFactorSources = state.securityStructureOfFactorSources.matrixOfFactors.confirmationRole,
                         confirmationDelay = state.securityStructureOfFactorSources.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
-                        onToggleCollapse = { isRecoveryCardCollapsed = !isRecoveryCardCollapsed }
+                        onToggleCollapse = { toggleRecoveryCard() }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
             }
-
-            LinkedEntitiesView(
-                modifier = Modifier.fillMaxHeight(1f),
-                linkedAccounts = state.linkedAccounts,
-                linkedPersonas = state.linkedPersonas,
-                hasAnyHiddenLinkedEntities = state.hasAnyHiddenLinkedEntities
-            )
         }
     }
 }
@@ -561,135 +537,6 @@ private fun RecoveryCollapsibleCard(
     }
 }
 
-@Composable
-private fun LinkedEntitiesView(
-    modifier: Modifier = Modifier,
-    linkedAccounts: PersistentList<Account>,
-    linkedPersonas: PersistentList<Persona>,
-    hasAnyHiddenLinkedEntities: Boolean,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(color = RadixTheme.colors.backgroundTertiary)
-            .padding(top = RadixTheme.dimensions.paddingDefault)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-    ) {
-        SecurityShieldStatusText()
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        LinkedAccountsView(linkedAccounts = linkedAccounts)
-
-        LinkedPersonasView(linkedPersonas = linkedPersonas)
-
-        if (hasAnyHiddenLinkedEntities) {
-            LinkedHiddenEntitiesText()
-        }
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-    }
-}
-
-@Composable
-private fun SecurityShieldStatusText() {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            modifier = Modifier.size(80.dp),
-            painter = painterResource(id = DSR.ic_shield_not_applied),
-            contentDescription = null,
-            tint = Color.Unspecified
-        )
-        Text(
-            text = stringResource(R.string.securityShields_applied_accountsAndPersonas),
-            style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.text
-        )
-    }
-}
-
-@Composable
-private fun LinkedAccountsView(linkedAccounts: PersistentList<Account>) {
-    Column {
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = stringResource(R.string.securityShields_accounts),
-            style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.text
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        if (linkedAccounts.isNotEmpty()) {
-            linkedAccounts.forEach { account ->
-                SimpleAccountCard(
-                    account = account,
-                    shape = RadixTheme.shapes.roundedRectMedium
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-        } else {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.securityShields_noAccounts),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.textSecondary,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        }
-    }
-}
-
-@Composable
-private fun LinkedPersonasView(linkedPersonas: PersistentList<Persona>) {
-    Column {
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = stringResource(R.string.securityShields_personas),
-            style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.text
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        if (linkedPersonas.isNotEmpty()) {
-            linkedPersonas.forEach { persona ->
-                SimplePersonaCardWithShadow(persona = persona)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-        } else {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.securityShields_noPersonas),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.textSecondary,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        }
-    }
-}
-
-@Composable
-private fun LinkedHiddenEntitiesText() {
-    Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault),
-        text = stringResource(R.string.common_hiddenAccountsOrPersonas),
-        style = RadixTheme.typography.body1Header,
-        color = RadixTheme.colors.textSecondary,
-        textAlign = TextAlign.Center
-    )
-}
-
 @UsesSampleValues
 @Preview
 @Composable
@@ -701,7 +548,10 @@ private fun SecurityShieldDetailsLightPreview(
             state = state,
             onRenameSecurityShieldClick = {},
             onEditFactorsClick = {},
-            onBackClick = {}
+            onBackClick = {},
+            toggleRegularAccessCard = {},
+            toggleLogInCard = {},
+            toggleRecoveryCard = {}
         )
     }
 }
@@ -719,7 +569,10 @@ private fun SecurityShieldDetailsDarkPreview(
             state = state,
             onRenameSecurityShieldClick = {},
             onEditFactorsClick = {},
-            onBackClick = {}
+            onBackClick = {},
+            toggleRegularAccessCard = {},
+            toggleLogInCard = {},
+            toggleRecoveryCard = {}
         )
     }
 }
@@ -730,28 +583,15 @@ class SecurityShieldDetailsPreviewProvider : PreviewParameterProvider<SecuritySh
     override val values: Sequence<SecurityShieldDetailsViewModel.State>
         get() = sequenceOf(
             SecurityShieldDetailsViewModel.State(
-                securityShieldName = "DPG7000",
-                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample(),
-                linkedAccounts = persistentListOf(
-                    Account.sampleMainnet.alice,
-                    Account.sampleMainnet.bob,
-                    Account.sampleMainnet.carol
-                ),
-                linkedPersonas = persistentListOf(
-                    Persona.sampleMainnet.batman,
-                    Persona.sampleMainnet.ripley,
-                ),
-                hasAnyHiddenLinkedEntities = true
+                securityShieldName = "My Shield",
+                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample()
             ),
             SecurityShieldDetailsViewModel.State(
-                securityShieldName = "DPG7000",
+                securityShieldName = "My Shield 2",
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-                linkedAccounts = persistentListOf(),
-                linkedPersonas = persistentListOf(
-                    Persona.sampleMainnet.batman,
-                    Persona.sampleMainnet.ripley,
-                ),
-                hasAnyHiddenLinkedEntities = false
+                isRegularAccessCardCollapsed = false,
+                isLogInCardCollapsed = false,
+                isRecoveryCardCollapsed = false
             )
         )
 }

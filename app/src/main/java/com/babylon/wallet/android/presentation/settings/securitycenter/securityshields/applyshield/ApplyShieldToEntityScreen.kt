@@ -32,7 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.SecurityShieldCardView
-import com.babylon.wallet.android.presentation.ui.composables.card.otherShieldsForDisplaySample
+import com.babylon.wallet.android.presentation.ui.composables.card.shieldsForDisplaySample
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -180,7 +180,7 @@ class ApplyShieldToEntityPreviewProvider : PreviewParameterProvider<ApplyShieldT
         get() = sequenceOf(
             ApplyShieldToEntityViewModel.State(
                 isLoading = false,
-                shields = otherShieldsForDisplaySample
+                shields = shieldsForDisplaySample
             ),
             ApplyShieldToEntityViewModel.State(
                 isLoading = true

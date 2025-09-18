@@ -12,18 +12,12 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -53,10 +47,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     init {
         getProfileUseCase.flow.map { it.appPreferences.security.securityStructuresOfFactorSourceIds }
             .distinctUntilChanged()
-            .onEach {
-                getSecurityStructuresOfFactorSources(shieldId = args.securityStructureId)
-                getEntitiesLinkedToSecurityStructure(shieldId = args.securityStructureId)
-            }
+            .onEach { getSecurityStructuresOfFactorSources(shieldId = args.securityStructureId) }
             .launchIn(viewModelScope)
     }
 
@@ -78,33 +69,11 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun getEntitiesLinkedToSecurityStructure(shieldId: SecurityStructureId) {
-        viewModelScope.launch {
-            sargonOsManager.callSafely(defaultDispatcher) {
-                entitiesLinkedToSecurityStructure(
-                    shieldId = shieldId,
-                    profileToCheck = ProfileToCheck.Current
-                )
-            }.onSuccess { linkedEntities ->
-                _state.update { state ->
-                    state.copy(
-                        linkedAccounts = linkedEntities.accounts.toPersistentList(),
-                        linkedPersonas = linkedEntities.personas.toPersistentList(),
-                        hasAnyHiddenLinkedEntities = linkedEntities.hiddenAccounts.isNotEmpty() ||
-                            linkedEntities.hiddenPersonas.isNotEmpty()
-                    )
-                }
-            }.onFailure {
-                Timber.e("Failed to get linked entities for security structure id: $shieldId")
-            }
-        }
-    }
-
     fun onRenameSecurityShieldClick() {
         _state.update { state ->
             state.copy(
                 isRenameBottomSheetVisible = true,
-                renameSecurityShieldInput = RenameSecurityShieldInput(name = state.securityShieldName)
+                renameSecurityShieldInput = State.RenameSecurityShieldInput(name = state.securityShieldName)
             )
         }
     }
@@ -112,7 +81,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     fun onRenameSecurityShieldChanged(updatedName: String) {
         _state.update { state ->
             state.copy(
-                renameSecurityShieldInput = RenameSecurityShieldInput(name = updatedName)
+                renameSecurityShieldInput = State.RenameSecurityShieldInput(name = updatedName)
             )
         }
     }
@@ -163,22 +132,35 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         }
     }
 
+    fun toggleRegularAccessCard() {
+        _state.update { state -> state.copy(isRegularAccessCardCollapsed = !state.isRegularAccessCardCollapsed) }
+    }
+
+    fun toggleLogInCard() {
+        _state.update { state -> state.copy(isLogInCardCollapsed = !state.isLogInCardCollapsed) }
+    }
+
+    fun toggleRecoveryCard() {
+        _state.update { state -> state.copy(isRecoveryCardCollapsed = !state.isRecoveryCardCollapsed) }
+    }
+
     data class State(
         val isLoading: Boolean = true,
         val securityShieldName: String = "",
         val securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null,
-        val linkedAccounts: PersistentList<Account> = persistentListOf(),
-        val linkedPersonas: PersistentList<Persona> = persistentListOf(),
-        val hasAnyHiddenLinkedEntities: Boolean = false,
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
-        val uiMessage: UiMessage? = null
-    ) : UiState
+        val uiMessage: UiMessage? = null,
+        val isRegularAccessCardCollapsed: Boolean = true,
+        val isLogInCardCollapsed: Boolean = true,
+        val isRecoveryCardCollapsed: Boolean = true
+    ) : UiState {
 
-    data class RenameSecurityShieldInput(
-        override val name: String = "",
-        override val isUpdating: Boolean = false
-    ) : RenameInput()
+        data class RenameSecurityShieldInput(
+            override val name: String = "",
+            override val isUpdating: Boolean = false
+        ) : RenameInput()
+    }
 
     sealed interface Event : OneOffEvent {
 

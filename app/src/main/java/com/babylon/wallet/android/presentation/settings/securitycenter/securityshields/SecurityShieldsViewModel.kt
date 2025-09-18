@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.ui.model.securityshields.Security
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.ShieldForDisplay
-import com.radixdlt.sargon.extensions.isMain
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -40,31 +39,15 @@ class SecurityShieldsViewModel @Inject constructor(
     private suspend fun getSecurityShields() {
         sargonOsManager.callSafely(defaultDispatcher) {
             val securityShields = getShieldsForDisplay()
-            val mainSecurityShield = securityShields.find { it.metadata.isMain }
-            val otherSecurityShields = securityShields.toMutableList().apply { remove(mainSecurityShield) }
 
             _state.update { state ->
                 state.copy(
-                    mainSecurityShield = mainSecurityShield?.toSecurityShieldCard(),
-                    otherSecurityShields = otherSecurityShields.map { it.toSecurityShieldCard() }.toPersistentList(),
+                    shields = securityShields.map { it.toSecurityShieldCard() }.toPersistentList(),
                     isLoading = false
                 )
             }
         }.onFailure { error ->
             Timber.e("Failed to get security shields for display: $error")
-        }
-    }
-
-    private fun resetSecurityShieldsList() {
-        viewModelScope.launch {
-            _state.update { state ->
-                state.copy(
-                    isLoading = true,
-                    mainSecurityShield = null,
-                    otherSecurityShields = persistentListOf()
-                )
-            }
-            getSecurityShields()
         }
     }
 
@@ -75,52 +58,16 @@ class SecurityShieldsViewModel @Inject constructor(
         )
     }
 
-    fun onChangeMainSecurityShieldClick() {
-        _state.update { state -> state.copy(isMainSecurityShieldBottomSheetVisible = true) }
-    }
-
-    fun onSecurityShieldSelect(securityShieldCard: SecurityShieldCard) {
-        _state.update { it.copy(selectedSecurityShieldId = securityShieldCard.id) }
-    }
-
-    fun onConfirmChangeMainSecurityShield() {
-        viewModelScope.launch {
-            _state.update { state -> state.copy(isChangingMainSecurityShieldInProgress = true) }
-            _state.value.selectedSecurityShieldId?.let { id ->
-                sargonOsManager.callSafely(defaultDispatcher) {
-                    setMainSecurityStructure(shieldId = id)
-                }.onFailure { error ->
-                    Timber.e("Failed to set main security shield: $error")
-                }
-            }
-            onDismissMainSecurityShieldBottomSheet()
-            resetSecurityShieldsList()
-        }
-    }
-
-    fun onDismissMainSecurityShieldBottomSheet() {
-        _state.update { state ->
-            state.copy(
-                isChangingMainSecurityShieldInProgress = false,
-                isMainSecurityShieldBottomSheetVisible = false,
-                selectedSecurityShieldId = null
-            )
-        }
-    }
-
     data class State(
         val isLoading: Boolean = true,
-        val mainSecurityShield: SecurityShieldCard? = null,
-        val otherSecurityShields: PersistentList<SecurityShieldCard> = persistentListOf(),
-        val isMainSecurityShieldBottomSheetVisible: Boolean = false,
-        val selectedSecurityShieldId: SecurityStructureId? = null,
-        val isChangingMainSecurityShieldInProgress: Boolean = false,
+        val shields: PersistentList<SecurityShieldCard> = persistentListOf(),
+        val selectedSecurityShieldId: SecurityStructureId? = null
     ) : UiState {
 
         val isContinueButtonEnabled: Boolean
-            get() = selectableOtherSecurityShieldIds.any { it.selected }
+            get() = selectableSecurityShieldIds.any { it.selected }
 
-        val selectableOtherSecurityShieldIds: ImmutableList<Selectable<SecurityShieldCard>> = otherSecurityShields.map {
+        val selectableSecurityShieldIds: ImmutableList<Selectable<SecurityShieldCard>> = shields.map {
             Selectable(
                 data = it,
                 selected = selectedSecurityShieldId == it.id

@@ -28,7 +28,6 @@ import com.babylon.wallet.android.presentation.ui.composables.shared.CardContain
 import com.babylon.wallet.android.presentation.ui.model.securityshields.SecurityShieldCard
 import com.babylon.wallet.android.presentation.ui.model.securityshields.SecurityShieldStatusMessage
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.SecurityStructureFlag
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.SecurityStructureMetadata
 import com.radixdlt.sargon.ShieldForDisplay
@@ -154,25 +153,7 @@ private fun SecurityShieldCardPreview(
 }
 
 @UsesSampleValues
-val mainShieldForDisplaySample = SecurityShieldCard(
-    ShieldForDisplay(
-        metadata = SecurityStructureMetadata(
-            id = SecurityStructureId.randomUUID(),
-            displayName = DisplayName("Panathinaikos"),
-            createdOn = Timestamp.now(),
-            lastUpdatedOn = Timestamp.now(),
-            flags = listOf(SecurityStructureFlag.MAIN)
-        ),
-        numberOfLinkedAccounts = 2.toUInt(),
-        numberOfLinkedHiddenAccounts = 3.toUInt(),
-        numberOfLinkedPersonas = 1.toUInt(),
-        numberOfLinkedHiddenPersonas = 0.toUInt()
-    ),
-    messages = persistentListOf(SecurityShieldStatusMessage.AppliedAndWorking)
-)
-
-@UsesSampleValues
-val otherShieldsForDisplaySample = persistentListOf(
+val shieldsForDisplaySample = persistentListOf(
     SecurityShieldCard(
         shieldForDisplay = ShieldForDisplay(
             metadata = SecurityStructureMetadata(
@@ -259,5 +240,5 @@ val otherShieldsForDisplaySample = persistentListOf(
 class SecurityShieldCardPreviewProvider : PreviewParameterProvider<SecurityShieldCard> {
 
     override val values: Sequence<SecurityShieldCard>
-        get() = otherShieldsForDisplaySample.asSequence()
+        get() = shieldsForDisplaySample.asSequence()
 }
