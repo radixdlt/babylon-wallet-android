@@ -276,3 +276,84 @@ private fun RemovableFactorSourceCardPreview() {
         )
     }
 }
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SelectableSingleChoiceFactorSourceCardDarkPreview() {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
+        SelectableSingleChoiceFactorSourceCard(
+            item = Selectable(
+                data = ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard(),
+                selected = true
+            ),
+            onSelect = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SelectableMultiChoiceFactorSourceCardDarkPreview() {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
+        SelectableMultiChoiceFactorSourceCard(
+            item = Selectable(
+                data = ArculusCardFactorSource.sample().asGeneral().toFactorSourceCard(),
+                selected = true
+            ),
+            onCheckedChange = { _, _ -> }
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SimpleSelectableSingleChoiceFactorSourceCardDarkPreview() {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
+        SimpleSelectableSingleChoiceFactorSourceCard(
+            item = Selectable(
+                data = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
+                selected = true
+            ),
+            onSelect = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SimpleSelectableMultiChoiceFactorSourceCardDarkPreview() {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
+        SimpleSelectableMultiChoiceFactorSourceCard(
+            iconRes = FactorSourceKind.DEVICE.iconRes(),
+            title = "My Phone",
+            isChecked = false,
+            onCheckedChange = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun RemovableFactorSourceCardDarkPreview() {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
+        RemovableFactorSourceCard(
+            item = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(),
+            onRemoveClick = {}
+        )
+    }
+}

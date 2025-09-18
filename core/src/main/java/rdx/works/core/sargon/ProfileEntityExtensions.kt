@@ -8,3 +8,8 @@ fun ProfileEntity.isHidden() = this.flags.contains(EntityFlag.HIDDEN_BY_USER)
 fun ProfileEntity.isNotHidden() = this.isHidden().not()
 
 fun ProfileEntity.isDeleted() = this.flags.contains(EntityFlag.TOMBSTONED_BY_USER)
+
+val List<ProfileEntity>.numberOfSignaturesForTransaction
+    get() = sumOf {
+        it.securityState.numberOfSignaturesForTransaction
+    }

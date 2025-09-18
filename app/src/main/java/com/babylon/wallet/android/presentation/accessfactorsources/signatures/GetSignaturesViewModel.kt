@@ -204,9 +204,9 @@ class GetSignaturesViewModel @Inject constructor(
         val accessState: AccessFactorSourceDelegate.State
     ) : UiState {
 
-        private val canSkipFactor: Boolean = false
-//            get() = signPurpose == AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents ||
-//                signPurpose == AccessFactorSourcesInput.ToSign.Purpose.SubIntents
+        private val canSkipFactor: Boolean
+            get() = signPurpose == Purpose.TransactionIntents ||
+                signPurpose == Purpose.SubIntents
 
         val skipOption: AccessFactorSourceSkipOption
             get() = if (canSkipFactor) AccessFactorSourceSkipOption.CanSkipFactor else AccessFactorSourceSkipOption.None

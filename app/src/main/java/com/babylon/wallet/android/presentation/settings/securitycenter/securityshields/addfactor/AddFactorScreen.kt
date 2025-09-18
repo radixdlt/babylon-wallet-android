@@ -215,10 +215,30 @@ private fun AddFactorViewModel.State.Mode.button(): String = when (this) {
 
 @Composable
 @Preview
-private fun AddFactorPreview(
+private fun AddFactorLightPreview(
     @PreviewParameter(AddFactorPreviewProvider::class) state: AddFactorViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        AddFactorContent(
+            onDismiss = {},
+            state = state,
+            onSkipClick = {},
+            onFactorSourceKindSelect = {},
+            onInfoClick = {},
+            onButtonClick = {},
+            onMessageShown = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun AddFactorDarkPreview(
+    @PreviewParameter(AddFactorPreviewProvider::class) state: AddFactorViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         AddFactorContent(
             onDismiss = {},
             state = state,

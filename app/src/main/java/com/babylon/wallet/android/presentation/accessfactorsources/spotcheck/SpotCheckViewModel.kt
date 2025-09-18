@@ -44,12 +44,6 @@ class SpotCheckViewModel @Inject constructor(
 
     private val proxyInput = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToSpotCheck
 
-    override fun initialState(): State = State(
-        factorSource = proxyInput.factorSource,
-        isSkipAllowed = proxyInput.allowSkip,
-        accessState = accessDelegate.state.value,
-    )
-
     private val accessDelegate = AccessFactorSourceDelegate(
         viewModelScope = viewModelScope,
         factorSource = proxyInput.factorSource,
@@ -70,6 +64,12 @@ class SpotCheckViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
     }
+
+    override fun initialState(): State = State(
+        factorSource = proxyInput.factorSource,
+        isSkipAllowed = proxyInput.allowSkip,
+        accessState = accessDelegate.state.value,
+    )
 
     private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
         is FactorSource.Device -> accessDeviceFactorSource.spotCheck(factorSource = factorSource)

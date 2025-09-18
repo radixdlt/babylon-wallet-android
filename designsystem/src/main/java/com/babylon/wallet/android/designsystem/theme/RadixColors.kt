@@ -30,6 +30,7 @@ val Orange3 = Color(0xFFE59700)
 val LightOrange = Color(0xFFFFF5E2)
 val Red1 = Color(0xFFC82020)
 val LightRed = Color(0xFFfcebeb)
+val Red2 = Color(0xFF301212)
 
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
@@ -57,6 +58,7 @@ data class RadixColors(
     val ok: Color,
     val error: Color,
     val errorSecondary: Color,
+    val onErrorSecondaryText: Color,
     val warning: Color,
     val warningSecondary: Color,
     val card: Color,
@@ -89,6 +91,7 @@ private val LightColorPalette = RadixColors(
     ok = Green1,
     error = Red1,
     errorSecondary = LightRed,
+    onErrorSecondaryText = Gray1,
     warning = Orange3,
     warningSecondary = LightOrange,
     card = White,
@@ -120,7 +123,8 @@ private val DarkColorPalette = RadixColors(
     toggleActive = Color(0xFF00C389),
     ok = Green1,
     error = Orange2,
-    errorSecondary = LightRed,
+    errorSecondary = Red2,
+    onErrorSecondaryText = Gray1,
     warning = Color(0xFFC47F00),
     warningSecondary = Color(0xFFE6DCCB),
     card = Color(0xFF1E1F1F),

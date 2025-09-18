@@ -18,3 +18,14 @@ fun EntitySecurityState.Companion.unsecured(
         provisionalSecurifiedConfig = null
     )
 )
+
+val EntitySecurityState.numberOfSignaturesForTransaction: Int
+    get() = when (this) {
+        is EntitySecurityState.Securified -> {
+            value.securityStructure.matrixOfFactors.primaryRole.thresholdFactors.count()
+        }
+
+        is EntitySecurityState.Unsecured -> {
+            1
+        }
+    }

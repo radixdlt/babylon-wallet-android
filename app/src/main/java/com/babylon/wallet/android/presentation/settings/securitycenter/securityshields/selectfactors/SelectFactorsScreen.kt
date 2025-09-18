@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -124,9 +124,10 @@ private fun SelectFactorsContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Image(
+                Icon(
                     painter = painterResource(id = DSR.ic_select_factors),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = RadixTheme.colors.icon
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -235,10 +236,30 @@ private fun StatusView(
 @Composable
 @Preview
 @UsesSampleValues
-private fun SelectFactorsPreview(
+private fun SelectFactorsLightPreview(
     @PreviewParameter(SelectFactorsPreviewProvider::class) state: SelectFactorsViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        SelectFactorsContent(
+            state = state,
+            onDismiss = {},
+            onFactorCheckedChange = { _, _ -> },
+            onInfoClick = {},
+            onSkipClick = {},
+            onBuildShieldClick = {},
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SelectFactorsDarkPreview(
+    @PreviewParameter(SelectFactorsPreviewProvider::class) state: SelectFactorsViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SelectFactorsContent(
             state = state,
             onDismiss = {},

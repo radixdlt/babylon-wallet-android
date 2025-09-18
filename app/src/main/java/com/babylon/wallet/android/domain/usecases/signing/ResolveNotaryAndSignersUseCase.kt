@@ -12,6 +12,7 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
+import rdx.works.core.sargon.numberOfSignaturesForTransaction
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -75,6 +76,11 @@ data class NotaryAndSigners(
 ) {
     val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
+
+    val numberOfSignaturesForTransaction: Int
+        get() = signers.sumOf {
+            it.securityState.numberOfSignaturesForTransaction
+        }
 
     fun notaryPublicKeyNew(): PublicKey.Ed25519 {
         return ephemeralNotaryPrivateKey.toPublicKey()

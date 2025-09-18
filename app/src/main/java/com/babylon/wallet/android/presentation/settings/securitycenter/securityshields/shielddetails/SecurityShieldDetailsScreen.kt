@@ -40,6 +40,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -69,7 +71,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PrimaryRoleWithFactorSources
 import com.radixdlt.sargon.RecoveryRoleWithFactorSources
-import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
@@ -111,11 +112,7 @@ fun SecurityShieldDetailsScreen(
 
     SecurityShieldDetailsContent(
         modifier = modifier,
-        securityShieldName = state.securityShieldName,
-        securityStructureOfFactorSources = state.securityStructureOfFactorSources,
-        linkedAccounts = state.linkedAccounts,
-        linkedPersonas = state.linkedPersonas,
-        hasAnyHiddenLinkedEntities = state.hasAnyHiddenLinkedEntities,
+        state = state,
         onRenameSecurityShieldClick = viewModel::onRenameSecurityShieldClick,
         onEditFactorsClick = viewModel::onEditFactorsClick,
         onBackClick = onBackClick
@@ -133,11 +130,7 @@ fun SecurityShieldDetailsScreen(
 @Composable
 private fun SecurityShieldDetailsContent(
     modifier: Modifier = Modifier,
-    securityShieldName: String,
-    securityStructureOfFactorSources: SecurityStructureOfFactorSources?,
-    linkedAccounts: PersistentList<Account>,
-    linkedPersonas: PersistentList<Persona>,
-    hasAnyHiddenLinkedEntities: Boolean,
+    state: SecurityShieldDetailsViewModel.State,
     onRenameSecurityShieldClick: () -> Unit,
     onEditFactorsClick: () -> Unit,
     onBackClick: () -> Unit
@@ -181,7 +174,7 @@ private fun SecurityShieldDetailsContent(
             Column {
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                    text = securityShieldName,
+                    text = state.securityShieldName,
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.text
                 )
@@ -195,11 +188,11 @@ private fun SecurityShieldDetailsContent(
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                securityStructureOfFactorSources?.let {
+                state.securityStructureOfFactorSources?.let {
                     RegularAccessCollapsibleCard(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                         isCollapsed = isRegularAccessCardCollapsed,
-                        primaryRoleWithFactorSources = securityStructureOfFactorSources.matrixOfFactors.primaryRole,
+                        primaryRoleWithFactorSources = state.securityStructureOfFactorSources.matrixOfFactors.primaryRole,
                         onToggleCollapse = { isRegularAccessCardCollapsed = !isRegularAccessCardCollapsed }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -207,7 +200,7 @@ private fun SecurityShieldDetailsContent(
                     LogInAndProveOwnershipCollapsibleCard(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                         isCollapsed = isLogInCardCollapsed,
-                        authenticationSigningFactor = securityStructureOfFactorSources.authenticationSigningFactor,
+                        authenticationSigningFactor = state.securityStructureOfFactorSources.authenticationSigningFactor,
                         onToggleCollapse = { isLogInCardCollapsed = !isLogInCardCollapsed }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -215,9 +208,9 @@ private fun SecurityShieldDetailsContent(
                     RecoveryCollapsibleCard(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                         isCollapsed = isRecoveryCardCollapsed,
-                        recoveryRoleWithFactorSources = securityStructureOfFactorSources.matrixOfFactors.recoveryRole,
-                        confirmationRoleWithFactorSources = securityStructureOfFactorSources.matrixOfFactors.confirmationRole,
-                        confirmationDelay = securityStructureOfFactorSources.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
+                        recoveryRoleWithFactorSources = state.securityStructureOfFactorSources.matrixOfFactors.recoveryRole,
+                        confirmationRoleWithFactorSources = state.securityStructureOfFactorSources.matrixOfFactors.confirmationRole,
+                        confirmationDelay = state.securityStructureOfFactorSources.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
                         onToggleCollapse = { isRecoveryCardCollapsed = !isRecoveryCardCollapsed }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -226,9 +219,9 @@ private fun SecurityShieldDetailsContent(
 
             LinkedEntitiesView(
                 modifier = Modifier.fillMaxHeight(1f),
-                linkedAccounts = linkedAccounts,
-                linkedPersonas = linkedPersonas,
-                hasAnyHiddenLinkedEntities = hasAnyHiddenLinkedEntities
+                linkedAccounts = state.linkedAccounts,
+                linkedPersonas = state.linkedPersonas,
+                hasAnyHiddenLinkedEntities = state.hasAnyHiddenLinkedEntities
             )
         }
     }
@@ -700,21 +693,12 @@ private fun LinkedHiddenEntitiesText() {
 @UsesSampleValues
 @Preview
 @Composable
-private fun SecurityShieldDetailsWithAllLinkedEntitiesPreview() {
+private fun SecurityShieldDetailsLightPreview(
+    @PreviewParameter(SecurityShieldDetailsPreviewProvider::class) state: SecurityShieldDetailsViewModel.State
+) {
     RadixWalletPreviewTheme {
         SecurityShieldDetailsContent(
-            securityShieldName = "DPG7000",
-            securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample(),
-            linkedAccounts = persistentListOf(
-                Account.sampleMainnet.alice,
-                Account.sampleMainnet.bob,
-                Account.sampleMainnet.carol
-            ),
-            linkedPersonas = persistentListOf(
-                Persona.sampleMainnet.batman,
-                Persona.sampleMainnet.ripley,
-            ),
-            hasAnyHiddenLinkedEntities = true,
+            state = state,
             onRenameSecurityShieldClick = {},
             onEditFactorsClick = {},
             onBackClick = {}
@@ -725,17 +709,14 @@ private fun SecurityShieldDetailsWithAllLinkedEntitiesPreview() {
 @UsesSampleValues
 @Preview
 @Composable
-private fun SecurityShieldDetailsWithLinkedPersonasPreview() {
-    RadixWalletPreviewTheme {
+private fun SecurityShieldDetailsDarkPreview(
+    @PreviewParameter(SecurityShieldDetailsPreviewProvider::class) state: SecurityShieldDetailsViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SecurityShieldDetailsContent(
-            securityShieldName = "DPG7000",
-            securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-            linkedAccounts = persistentListOf(),
-            linkedPersonas = persistentListOf(
-                Persona.sampleMainnet.batman,
-                Persona.sampleMainnet.ripley,
-            ),
-            hasAnyHiddenLinkedEntities = false,
+            state = state,
             onRenameSecurityShieldClick = {},
             onEditFactorsClick = {},
             onBackClick = {}
@@ -744,90 +725,33 @@ private fun SecurityShieldDetailsWithLinkedPersonasPreview() {
 }
 
 @UsesSampleValues
-@Preview
-@Composable
-private fun LogInAndProveOwnershipCollapsibleCardPreview() {
-    RadixWalletPreviewTheme {
-        val securityStructureOfFactorSourcesSample = newSecurityStructureOfFactorSourcesSample()
-        LogInAndProveOwnershipCollapsibleCard(
-            authenticationSigningFactor = securityStructureOfFactorSourcesSample.authenticationSigningFactor,
-            isCollapsed = false,
-            onToggleCollapse = {}
-        )
-    }
-}
+class SecurityShieldDetailsPreviewProvider : PreviewParameterProvider<SecurityShieldDetailsViewModel.State> {
 
-@UsesSampleValues
-@Preview
-@Composable
-private fun RecoveryCollapsibleCardPreview() {
-    RadixWalletPreviewTheme {
-        val securityStructureOfFactorSourcesSample = newSecurityStructureOfFactorSourcesSample()
-        RecoveryCollapsibleCard(
-            recoveryRoleWithFactorSources = securityStructureOfFactorSourcesSample.matrixOfFactors.recoveryRole,
-            confirmationRoleWithFactorSources = securityStructureOfFactorSourcesSample.matrixOfFactors.confirmationRole,
-            confirmationDelay = securityStructureOfFactorSourcesSample.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
-            isCollapsed = false,
-            onToggleCollapse = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Preview
-@Composable
-private fun SecurityShieldDetailsWithLinkedAccountsAndHiddenPreview() {
-    RadixWalletPreviewTheme {
-        LinkedEntitiesView(
-            linkedAccounts = persistentListOf(
-                Account.sampleMainnet.alice,
-                Account.sampleMainnet.bob,
-                Account.sampleMainnet.carol
+    override val values: Sequence<SecurityShieldDetailsViewModel.State>
+        get() = sequenceOf(
+            SecurityShieldDetailsViewModel.State(
+                securityShieldName = "DPG7000",
+                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample(),
+                linkedAccounts = persistentListOf(
+                    Account.sampleMainnet.alice,
+                    Account.sampleMainnet.bob,
+                    Account.sampleMainnet.carol
+                ),
+                linkedPersonas = persistentListOf(
+                    Persona.sampleMainnet.batman,
+                    Persona.sampleMainnet.ripley,
+                ),
+                hasAnyHiddenLinkedEntities = true
             ),
-            linkedPersonas = persistentListOf(),
-            hasAnyHiddenLinkedEntities = true
+            SecurityShieldDetailsViewModel.State(
+                securityShieldName = "DPG7000",
+                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
+                linkedAccounts = persistentListOf(),
+                linkedPersonas = persistentListOf(
+                    Persona.sampleMainnet.batman,
+                    Persona.sampleMainnet.ripley,
+                ),
+                hasAnyHiddenLinkedEntities = false
+            )
         )
-    }
-}
-
-@UsesSampleValues
-@Preview
-@Composable
-private fun SecurityShieldDetailsWithLinkedPersonasAndHiddenPreview() {
-    RadixWalletPreviewTheme {
-        LinkedEntitiesView(
-            linkedAccounts = persistentListOf(),
-            linkedPersonas = persistentListOf(
-                Persona.sampleMainnet.batman,
-                Persona.sampleMainnet.ripley,
-            ),
-            hasAnyHiddenLinkedEntities = true
-        )
-    }
-}
-
-@UsesSampleValues
-@Preview
-@Composable
-private fun SecurityShieldDetailsWithOnlyLinkedHiddenEntitiesPreview() {
-    RadixWalletPreviewTheme {
-        LinkedEntitiesView(
-            linkedAccounts = persistentListOf(),
-            linkedPersonas = persistentListOf(),
-            hasAnyHiddenLinkedEntities = true
-        )
-    }
-}
-
-@UsesSampleValues
-@Preview
-@Composable
-private fun SecurityShieldDetailsWithoutLinkedEntitiesPreview() {
-    RadixWalletPreviewTheme {
-        LinkedEntitiesView(
-            linkedAccounts = persistentListOf(),
-            linkedPersonas = persistentListOf(),
-            hasAnyHiddenLinkedEntities = false
-        )
-    }
 }

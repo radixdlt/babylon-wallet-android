@@ -179,10 +179,27 @@ private fun ShieldCreatedContent(
 
 @Composable
 @Preview
-private fun ShieldCreatedPreview(
+private fun ShieldCreatedLightPreview(
     @PreviewParameter(ShieldCreatedPreviewProvider::class) state: ShieldCreatedViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        ShieldCreatedContent(
+            state = state,
+            onDismiss = {},
+            onApplyClick = {},
+            onSkipClick = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun ShieldCreatedDarkPreview(
+    @PreviewParameter(ShieldCreatedPreviewProvider::class) state: ShieldCreatedViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         ShieldCreatedContent(
             state = state,
             onDismiss = {},

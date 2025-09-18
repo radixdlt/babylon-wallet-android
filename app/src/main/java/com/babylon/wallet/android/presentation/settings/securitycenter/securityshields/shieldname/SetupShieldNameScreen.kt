@@ -166,10 +166,28 @@ private fun SetupShieldNameContent(
 
 @Composable
 @Preview
-private fun SetupShieldNamePreview(
+private fun SetupShieldNameLightPreview(
     @PreviewParameter(SetupShieldNamePreviewProvider::class) state: SetupShieldNameViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        SetupShieldNameContent(
+            state = state,
+            onNameChange = {},
+            onMessageShown = {},
+            onConfirmClick = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SetupShieldNameDarkPreview(
+    @PreviewParameter(SetupShieldNamePreviewProvider::class) state: SetupShieldNameViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SetupShieldNameContent(
             state = state,
             onNameChange = {},

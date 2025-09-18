@@ -182,7 +182,11 @@ private fun SetupRecoveryContent(
             ) {
                 ShieldBuilderTitleView(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    imageRes = DSR.ic_shield_recovery,
+                    imageRes = if (RadixTheme.config.isDarkTheme) {
+                        DSR.ic_shield_recovery_dark
+                    } else {
+                        DSR.ic_shield_recovery
+                    },
                     title = stringResource(id = R.string.shieldWizardRecovery_title),
                 )
 
@@ -457,7 +461,8 @@ private fun EmergencyFallbackView(
         ) {
             Icon(
                 painter = painterResource(id = DSR.ic_calendar),
-                contentDescription = null
+                contentDescription = null,
+                tint = RadixTheme.colors.icon
             )
 
             Text(
@@ -588,10 +593,40 @@ private fun UnsafeCombinationInfoDialog(
 @Composable
 @Preview
 @UsesSampleValues
-private fun SetupRecoveryPreview(
+private fun SetupRecoveryLightPreview(
     @PreviewParameter(SetupRecoveryPreviewProvider::class) state: SetupRecoveryViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        SetupRecoveryContent(
+            state = state,
+            onDismiss = {},
+            onInfoClick = {},
+            onAddStartRecoveryFactorClick = {},
+            onRemoveStartRecoveryFactor = {},
+            onAddConfirmRecoveryFactorClick = {},
+            onRemoveConfirmRecoveryFactor = {},
+            onFallbackPeriodClick = {},
+            onFallbackPeriodValueChange = {},
+            onFallbackPeriodUnitChange = {},
+            onSetFallbackPeriodClick = {},
+            onDismissFallbackPeriod = {},
+            onContinueClick = {},
+            onUnsafeCombinationInfoDismiss = {},
+            onUnsafeCombinationInfoConfirm = {},
+            onDismissMessage = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SetupRecoveryDarkPreview(
+    @PreviewParameter(SetupRecoveryPreviewProvider::class) state: SetupRecoveryViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SetupRecoveryContent(
             state = state,
             onDismiss = {},
