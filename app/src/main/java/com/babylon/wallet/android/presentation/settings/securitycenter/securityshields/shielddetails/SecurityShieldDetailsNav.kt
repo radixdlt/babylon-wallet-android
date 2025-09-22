@@ -14,33 +14,72 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.applyshie
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.SecurityStructureId
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 
-private const val ROUTE_SECURITY_SHIELD_DETAILS_SCREEN = "security_shield_details_screen"
 private const val ARG_SECURITY_STRUCTURE_ID = "arg_security_structure_id"
+private const val ARG_ACCOUNT_ADDRESS = "arg_account_address"
+private const val DESTINATION_SECURITY_SHIELD_DETAILS_SCREEN = "security_shield_details_screen"
+private const val ROUTE_SECURITY_SHIELD_DETAILS_SCREEN = DESTINATION_SECURITY_SHIELD_DETAILS_SCREEN +
+    "?$ARG_SECURITY_STRUCTURE_ID={$ARG_SECURITY_STRUCTURE_ID}" +
+    "&$ARG_ACCOUNT_ADDRESS={$ARG_ACCOUNT_ADDRESS}"
 
 internal class SecurityShieldDetailsArgs(
-    val securityStructureId: SecurityStructureId
+    val input: Input
 ) {
+
+    sealed interface Input {
+
+        data class Id(
+            val value: SecurityStructureId
+        ) : Input
+
+        data class Account(
+            val address: AccountAddress
+        ) : Input
+    }
+
     constructor(savedStateHandle: SavedStateHandle) : this(
-        securityStructureId = SecurityStructureId.fromString(
-            requireNotNull(savedStateHandle.get<String>(ARG_SECURITY_STRUCTURE_ID))
-        )
+        input = savedStateHandle.get<String>(ARG_SECURITY_STRUCTURE_ID).let { id ->
+            if (id == null) {
+                val arg = requireNotNull(savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS))
+                Input.Account(
+                    address = AccountAddress.init(arg)
+                )
+            } else {
+                Input.Id(
+                    value = SecurityStructureId.fromString(id)
+                )
+            }
+        }
     )
 }
 
 fun NavController.securityShieldDetails(
     securityStructureId: SecurityStructureId
 ) {
-    navigate("$ROUTE_SECURITY_SHIELD_DETAILS_SCREEN/$securityStructureId")
+    navigate("$DESTINATION_SECURITY_SHIELD_DETAILS_SCREEN?$ARG_SECURITY_STRUCTURE_ID=$securityStructureId")
+}
+
+fun NavController.securityShieldDetails(
+    accountAddress: AccountAddress
+) {
+    navigate("$DESTINATION_SECURITY_SHIELD_DETAILS_SCREEN?$ARG_ACCOUNT_ADDRESS=${accountAddress.string}")
 }
 
 fun NavGraphBuilder.securityShieldDetails(navController: NavController) {
     composable(
-        route = "$ROUTE_SECURITY_SHIELD_DETAILS_SCREEN/{$ARG_SECURITY_STRUCTURE_ID}",
+        route = ROUTE_SECURITY_SHIELD_DETAILS_SCREEN,
         arguments = listOf(
             navArgument(ARG_SECURITY_STRUCTURE_ID) {
                 type = NavType.StringType
+                nullable = true
+            },
+            navArgument(ARG_ACCOUNT_ADDRESS) {
+                type = NavType.StringType
+                nullable = true
             }
         ),
         enterTransition = {

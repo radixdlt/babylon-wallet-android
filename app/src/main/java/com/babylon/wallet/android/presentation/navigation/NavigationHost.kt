@@ -92,6 +92,7 @@ import com.babylon.wallet.android.presentation.settings.preferences.walletPrefer
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.applyshield.applyShieldToEntity
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shielddetails.securityShieldDetails
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
@@ -545,6 +546,9 @@ fun NavigationHost(
             },
             onApplyShieldClick = {
                 navController.applyShieldToEntity(AddressOfAccountOrPersona.Account(it))
+            },
+            onShieldClick = {
+                navController.securityShieldDetails(it)
             }
         )
         deleteAccount(

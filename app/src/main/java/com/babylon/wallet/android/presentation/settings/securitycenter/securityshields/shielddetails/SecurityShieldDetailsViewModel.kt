@@ -12,8 +12,8 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.SargonOsManager
@@ -45,20 +45,29 @@ class SecurityShieldDetailsViewModel @Inject constructor(
 
     init {
         getProfileUseCase.flow.distinctUntilChanged()
-            .onEach { getSecurityStructuresOfFactorSources(shieldId = args.securityStructureId) }
+            .onEach { getSecurityStructuresOfFactorSources(args.input) }
             .launchIn(viewModelScope)
     }
 
-    private fun getSecurityStructuresOfFactorSources(shieldId: SecurityStructureId) {
+    private fun getSecurityStructuresOfFactorSources(input: SecurityShieldDetailsArgs.Input) {
         viewModelScope.launch {
             sargonOsManager.callSafely(defaultDispatcher) {
-                securityStructuresOfFactorSources()
-                    .first { it.metadata.id == shieldId }
+                when (input) {
+                    is SecurityShieldDetailsArgs.Input.Account -> securityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
+                        addressOfAccountOrPersona = AddressOfAccountOrPersona.Account(
+                            v1 = input.address
+                        )
+                    )
+
+                    is SecurityShieldDetailsArgs.Input.Id -> securityStructuresOfFactorSources()
+                        .first { it.metadata.id == input.value }
+                }
             }.onSuccess { securityStructureOfFactorSources ->
                 _state.update { state ->
                     state.copy(
                         securityShieldName = securityStructureOfFactorSources.metadata.displayName.value,
-                        securityStructureOfFactorSources = securityStructureOfFactorSources
+                        securityStructureOfFactorSources = securityStructureOfFactorSources,
+                        isEditable = input is SecurityShieldDetailsArgs.Input.Id
                     )
                 }
             }.onFailure {
@@ -94,7 +103,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
 
             sargonOsManager.callSafely(defaultDispatcher) {
                 renameSecurityStructure(
-                    securityStructureId = args.securityStructureId,
+                    securityStructureId = (args.input as SecurityShieldDetailsArgs.Input.Id).value,
                     name = DisplayName.init(state.value.renameSecurityShieldInput.name)
                 )
             }.onFailure { error ->
@@ -135,7 +144,8 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null,
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val isEditable: Boolean = false
     ) : UiState {
 
         data class RenameSecurityShieldInput(

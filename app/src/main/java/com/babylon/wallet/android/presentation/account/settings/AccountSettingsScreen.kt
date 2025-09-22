@@ -30,6 +30,7 @@ import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.State
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
@@ -43,15 +44,12 @@ import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceC
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
-import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 
@@ -65,7 +63,8 @@ fun AccountSettingsScreen(
     onHideAccountClick: () -> Unit,
     onDeleteAccountClick: (AccountAddress) -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onApplyShieldClick: (AccountAddress) -> Unit
+    onApplyShieldClick: (AccountAddress) -> Unit,
+    onShieldClick: (AccountAddress) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -101,7 +100,8 @@ fun AccountSettingsScreen(
         onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
         onDeleteAccount = viewModel::onDeleteAccountRequest,
         onFactorSourceCardClick = onFactorSourceCardClick,
-        onApplyShieldClick = { onApplyShieldClick(requireNotNull(state.account?.address)) }
+        onApplyShieldClick = { onApplyShieldClick(requireNotNull(state.account?.address)) },
+        onShieldClick = { onShieldClick(requireNotNull(state.account?.address)) }
     )
 
     if (state.isBottomSheetVisible) {
@@ -146,7 +146,8 @@ private fun AccountSettingsContent(
     onDeleteAccount: () -> Unit,
     onSnackbarMessageShown: () -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onApplyShieldClick: () -> Unit
+    onApplyShieldClick: () -> Unit,
+    onShieldClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -247,7 +248,7 @@ private fun AccountSettingsContent(
                 }
             }
 
-            state.securedWith?.let { factorSourceCard ->
+            state.securedWith?.let { securedWith ->
                 item {
                     Row {
                         SectionTitle(
@@ -255,7 +256,7 @@ private fun AccountSettingsContent(
                             title = stringResource(id = R.string.common_securedWith)
                         )
 
-                        if (state.isMfaEnabled) {
+                        if (state.canApplyShield) {
                             RadixTextButton(
                                 text = "Apply Shield", // TODO crowdin
                                 onClick = onApplyShieldClick
@@ -263,12 +264,21 @@ private fun AccountSettingsContent(
                         }
                     }
 
-                    FactorSourceCardView(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                            .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
-                        item = factorSourceCard
-                    )
+                    when (securedWith) {
+                        is State.SecuredWith.Factor -> FactorSourceCardView(
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                .throttleClickable { onFactorSourceCardClick(securedWith.factorSourceCard.id) },
+                            item = securedWith.factorSourceCard
+                        )
+
+                        State.SecuredWith.Shield -> DefaultSettingsItem(
+                            onClick = onShieldClick,
+                            leadingIconRes = DSR.ic_entity_update_shield,
+                            title = "Security Shield", // TODO crowdin
+                            subtitle = "View security shield details" // TODO crowdin
+                        )
+                    }
                 }
             }
             state.settingsSections.forEach { section ->
@@ -367,9 +377,7 @@ fun AccountSettingsPreview() {
                 faucetState = FaucetState.Available(isEnabled = true),
                 isFreeXRDLoading = false,
                 isAccountNameUpdated = false,
-                securedWith = FactorSource.sample().toFactorSourceCard(
-                    includeLastUsedOn = true
-                )
+                securedWith = State.SecuredWith.Shield
             ),
             onBackClick = {},
             onMessageShown = {},
@@ -380,7 +388,8 @@ fun AccountSettingsPreview() {
             onDeleteAccount = {},
             onSnackbarMessageShown = {},
             onFactorSourceCardClick = {},
-            onApplyShieldClick = {}
+            onApplyShieldClick = {},
+            onShieldClick = {}
         )
     }
 }

@@ -116,7 +116,7 @@ private fun SecurityShieldDetailsContent(
             )
         },
         bottomBar = {
-            if (state.securityStructureOfFactorSources != null) {
+            if (state.securityStructureOfFactorSources != null && state.isEditable) {
                 RadixBottomBar(
                     button = {
                         RadixSecondaryButton(
@@ -152,19 +152,21 @@ private fun SecurityShieldDetailsContent(
                 FullscreenCircularProgressContent()
             } else {
                 Column {
-                    Text(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                        text = state.securityShieldName,
-                        style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.text
-                    )
+                    if (state.isEditable) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
+                            text = state.securityShieldName,
+                            style = RadixTheme.typography.title,
+                            color = RadixTheme.colors.text
+                        )
 
-                    RadixTextButton(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-                        text = stringResource(R.string.renameLabel_securityShield_title),
-                        isWithoutPadding = true,
-                        onClick = onRenameSecurityShieldClick
-                    )
+                        RadixTextButton(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
+                            text = stringResource(R.string.renameLabel_securityShield_title),
+                            isWithoutPadding = true,
+                            onClick = onRenameSecurityShieldClick
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -232,11 +234,17 @@ class SecurityShieldDetailsPreviewProvider : PreviewParameterProvider<SecuritySh
         get() = sequenceOf(
             SecurityShieldDetailsViewModel.State(
                 securityShieldName = "My Shield",
-                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample()
+                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample(),
+                isEditable = true
             ),
             SecurityShieldDetailsViewModel.State(
                 securityShieldName = "My Shield 2",
-                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther()
+                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
+                isEditable = true
+            ),
+            SecurityShieldDetailsViewModel.State(
+                securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
+                isEditable = false
             )
         )
 }
