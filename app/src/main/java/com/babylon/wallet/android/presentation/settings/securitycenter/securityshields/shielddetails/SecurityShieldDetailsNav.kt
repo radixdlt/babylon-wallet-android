@@ -10,7 +10,9 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.applyShieldNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
 import com.radixdlt.sargon.SecurityStructureId
 
@@ -58,6 +60,11 @@ fun NavGraphBuilder.securityShieldDetails(navController: NavController) {
             viewModel = hiltViewModel(),
             onBackClick = { navController.navigateUp() },
             onFactorClick = { navController.factorSourceDetails(it) },
+            onApplyShieldClick = { id ->
+                navController.applyShieldNavGraph(id) {
+                    popUpTo(ROUTE_SECURITY_SHIELDS_GRAPH) { inclusive = false }
+                }
+            },
             onEditShield = { navController.regularAccess() }
         )
     }

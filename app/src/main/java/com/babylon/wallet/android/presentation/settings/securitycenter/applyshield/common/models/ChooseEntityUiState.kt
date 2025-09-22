@@ -5,11 +5,11 @@ import com.babylon.wallet.android.presentation.common.UiState
 
 data class ChooseEntityUiState<T>(
     val items: List<Selectable<T>> = emptyList(),
-    val mustSelectOne: Boolean = true
+    val mustSelectOne: Boolean = true,
+    val canSkip: Boolean = false
 ) : UiState {
 
     val isEmpty = items.isEmpty()
-    val selectedAll = items.all { it.selected }
     val isButtonEnabled = when {
         mustSelectOne -> items.any { it.selected }
         else -> true

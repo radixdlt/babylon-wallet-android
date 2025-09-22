@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.applyshie
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.models.ChooseEntityEvent
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.models.ChooseEntityUiState
 import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -41,7 +42,8 @@ class ChoosePersonasViewModel @Inject constructor(
         viewModelScope.launch {
             sendEvent(
                 ChooseEntityEvent.EntitySelected(
-                    address = chooseEntityDelegate.getSelectedItem().let { AddressOfAccountOrPersona.Identity(it.address) }
+                    address = chooseEntityDelegate.getSelectedItem()
+                        .let { AddressOfAccountOrPersona.Identity(it.address) }
                 )
             )
         }
@@ -49,7 +51,9 @@ class ChoosePersonasViewModel @Inject constructor(
 
     private fun initPersonas() {
         viewModelScope.launch {
-            val personas = getProfileUseCase().activePersonasOnCurrentNetwork
+            val personas = getProfileUseCase().activePersonasOnCurrentNetwork.filter {
+                it.securityState is EntitySecurityState.Unsecured
+            }
             _state.update { state -> state.copy(items = personas.map { Selectable(it) }) }
         }
     }

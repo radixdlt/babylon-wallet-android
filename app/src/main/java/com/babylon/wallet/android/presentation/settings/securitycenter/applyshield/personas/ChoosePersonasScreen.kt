@@ -70,7 +70,7 @@ private fun ChoosePersonasContent(
         title = stringResource(id = R.string.shieldWizardApplyShield_choosePersonas_title),
         subtitle = stringResource(id = R.string.shieldWizardApplyShield_choosePersonas_subtitle),
         isButtonEnabled = state.isButtonEnabled,
-        hasSkipButton = false,
+        hasSkipButton = state.canSkip,
         onContinueClick = onContinueClick,
         onDismiss = onDismiss
     ) {

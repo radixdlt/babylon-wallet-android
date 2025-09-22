@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -36,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSampleOther
@@ -46,6 +48,7 @@ fun SecurityShieldDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: SecurityShieldDetailsViewModel,
     onBackClick: () -> Unit,
+    onApplyShieldClick: (SecurityStructureId) -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
     onEditShield: () -> Unit
 ) {
@@ -78,6 +81,7 @@ fun SecurityShieldDetailsScreen(
         onRenameSecurityShieldClick = viewModel::onRenameSecurityShieldClick,
         onFactorClick = onFactorClick,
         onEditFactorsClick = viewModel::onEditFactorsClick,
+        onApplyShieldClick = onApplyShieldClick,
         onBackClick = onBackClick
     )
 
@@ -97,6 +101,7 @@ private fun SecurityShieldDetailsContent(
     onRenameSecurityShieldClick: () -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
     onEditFactorsClick: () -> Unit,
+    onApplyShieldClick: (SecurityStructureId) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -111,17 +116,29 @@ private fun SecurityShieldDetailsContent(
             )
         },
         bottomBar = {
-            RadixBottomBar(
-                button = {
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(R.string.securityShields_editFactors),
-                        onClick = onEditFactorsClick
-                    )
-                }
-            )
+            if (state.securityStructureOfFactorSources != null) {
+                RadixBottomBar(
+                    button = {
+                        RadixSecondaryButton(
+                            modifier = Modifier
+                                .padding(bottom = RadixTheme.dimensions.paddingDefault)
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(R.string.securityShields_editFactors),
+                            onClick = onEditFactorsClick
+                        )
+                    },
+                    additionalBottomContent = {
+                        RadixPrimaryButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = "Apply", // TODO crowdin
+                            onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
+                        )
+                    }
+                )
+            }
         },
         containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
@@ -182,6 +199,7 @@ private fun SecurityShieldDetailsLightPreview(
             onRenameSecurityShieldClick = {},
             onFactorClick = {},
             onEditFactorsClick = {},
+            onApplyShieldClick = {},
             onBackClick = {}
         )
     }
@@ -201,6 +219,7 @@ private fun SecurityShieldDetailsDarkPreview(
             onRenameSecurityShieldClick = {},
             onFactorClick = {},
             onEditFactorsClick = {},
+            onApplyShieldClick = {},
             onBackClick = {}
         )
     }

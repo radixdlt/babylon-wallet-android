@@ -72,7 +72,7 @@ private fun ChooseAccountsContent(
         title = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_title),
         subtitle = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_subtitle),
         isButtonEnabled = state.isButtonEnabled,
-        hasSkipButton = true,
+        hasSkipButton = state.canSkip,
         onContinueClick = onContinueClick,
         onDismiss = onDismiss,
         onSkipClick = onSkipClick

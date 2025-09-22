@@ -11,10 +11,12 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.applyshie
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.models.ChooseEntityUiState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.EntitySecurityState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -37,7 +39,8 @@ class ChooseAccountsViewModel @Inject constructor(
         viewModelScope.launch {
             sendEvent(
                 ChooseEntityEvent.EntitySelected(
-                    address = chooseEntityDelegate.getSelectedItem().let { AddressOfAccountOrPersona.Account(it.address) }
+                    address = chooseEntityDelegate.getSelectedItem()
+                        .let { AddressOfAccountOrPersona.Account(it.address) }
                 )
             )
         }
@@ -45,8 +48,19 @@ class ChooseAccountsViewModel @Inject constructor(
 
     private fun initAccounts() {
         viewModelScope.launch {
-            val accounts = getProfileUseCase().activeAccountsOnCurrentNetwork
-            _state.update { state -> state.copy(items = accounts.map { Selectable(it) }) }
+            val profile = getProfileUseCase()
+            val accounts = profile.activeAccountsOnCurrentNetwork.filter {
+                it.securityState is EntitySecurityState.Unsecured
+            }
+            val personas = profile.activePersonasOnCurrentNetwork.filter {
+                it.securityState is EntitySecurityState.Unsecured
+            }
+            _state.update { state ->
+                state.copy(
+                    items = accounts.map { Selectable(it) },
+                    canSkip = personas.isNotEmpty()
+                )
+            }
         }
     }
 
