@@ -8,11 +8,12 @@ import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransa
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureId
+import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.manifestString
 import com.radixdlt.sargon.extensions.toList
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
-import timber.log.Timber
 import javax.inject.Inject
 
 class PrepareApplyShieldRequestUseCase @Inject constructor(
@@ -24,16 +25,15 @@ class PrepareApplyShieldRequestUseCase @Inject constructor(
         securityStructureId: SecurityStructureId,
         entityAddress: AddressOfAccountOrPersona
     ): Result<TransactionRequest> = sargonOsManager.callSafely(dispatcher) {
-        makeInteractionForApplyingSecurityShield(securityStructureId, listOf(entityAddress))
-    }.map { interaction ->
-        Timber.d("Interaction: $interaction")
-
-        val transaction = interaction.transactions.first()
+        val securityStructure = sargonOsManager.sargonOs.securityStructuresOfFactorSources()
+            .first { it.metadata.id == securityStructureId }
+        makeSetupSecurityShieldManifest(securityStructure, entityAddress)
+    }.map { manifest ->
         UnvalidatedManifestData(
-            instructions = transaction.transactionManifestString,
+            instructions = manifest.manifestString,
             plainMessage = null,
             networkId = sargonOsManager.sargonOs.currentNetworkId(),
-            blobs = transaction.blobs.toList().map { it.bytes },
+            blobs = manifest.blobs.toList().map { it.bytes },
         ).prepareInternalTransactionRequest(
             transactionType = TransactionType.SecurifyEntity(
                 entityAddress = entityAddress

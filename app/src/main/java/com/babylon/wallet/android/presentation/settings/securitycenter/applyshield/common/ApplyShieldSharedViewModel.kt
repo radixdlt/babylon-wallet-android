@@ -17,9 +17,6 @@ class ApplyShieldSharedViewModel @Inject constructor(
 
     private val args = ApplyShieldArgs(savedStateHandle)
 
-    val mustSelectPersona
-        get() = state.value.accountAddress == null
-
     override fun initialState(): State = State(securityStructureId = args.securityStructureId)
 
     fun onAccountSelected(address: AddressOfAccountOrPersona) {

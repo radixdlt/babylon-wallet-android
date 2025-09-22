@@ -3,7 +3,8 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.securityshields.GetSecurityShieldCardsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PrepareApplyShieldRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -12,14 +13,9 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.securityshields.SecurityShieldCard
-import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.SecurityStructureId
-import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -27,10 +23,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ApplyShieldToEntityViewModel @Inject constructor(
-    private val sargonOsManager: SargonOsManager,
+    private val getSecurityShieldCardsUseCase: GetSecurityShieldCardsUseCase,
     private val prepareApplyShieldRequestUseCase: PrepareApplyShieldRequestUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<ApplyShieldToEntityViewModel.State>(),
     OneOffEventHandler<ApplyShieldToEntityViewModel.Event> by OneOffEventHandlerImpl() {
@@ -38,31 +33,30 @@ class ApplyShieldToEntityViewModel @Inject constructor(
     private val args = ApplyShieldToEntityArgs(savedStateHandle)
 
     init {
-        viewModelScope.launch {
-            getSecurityShields()
-        }
+        initSecurityShields()
     }
 
-    private suspend fun getSecurityShields() {
-        sargonOsManager.callSafely(defaultDispatcher) {
-            val securityShields = getShieldsForDisplay()
-
-            _state.update { state ->
-                state.copy(
-                    shields = securityShields.map {
-                        SecurityShieldCard(
-                            shieldForDisplay = it,
-                            messages = persistentListOf()
+    private fun initSecurityShields() {
+        viewModelScope.launch {
+            getSecurityShieldCardsUseCase()
+                .onFailure { error ->
+                    Timber.e("Failed to get security shields for display: $error")
+                    _state.update { state ->
+                        state.copy(errorMessage = UiMessage.ErrorMessage(error))
+                    }
+                }.onSuccess { shields ->
+                    _state.update { state ->
+                        state.copy(
+                            shields = shields.map {
+                                Selectable(
+                                    data = it,
+                                    selected = false
+                                )
+                            },
+                            isLoading = false
                         )
-                    }.toPersistentList(),
-                    isLoading = false
-                )
-            }
-        }.onFailure { error ->
-            Timber.e("Failed to get security shields for display: $error")
-            _state.update { state ->
-                state.copy(errorMessage = UiMessage.ErrorMessage(error))
-            }
+                    }
+                }
         }
     }
 
@@ -71,7 +65,9 @@ class ApplyShieldToEntityViewModel @Inject constructor(
     fun onShieldClick(id: SecurityStructureId) {
         _state.update { state ->
             state.copy(
-                selectedId = id
+                shields = state.shields.map { shield ->
+                    shield.copy(selected = shield.data.id == id)
+                }
             )
         }
     }
@@ -110,12 +106,12 @@ class ApplyShieldToEntityViewModel @Inject constructor(
 
     data class State(
         val isLoading: Boolean,
-        val shields: ImmutableList<SecurityShieldCard> = persistentListOf(),
-        val selectedId: SecurityStructureId? = null,
+        val shields: List<Selectable<SecurityShieldCard>> = persistentListOf(),
         val isApplyLoading: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState {
 
+        val selectedId = shields.firstOrNull { it.selected }?.data?.id
         val isButtonEnabled = selectedId != null
     }
 }

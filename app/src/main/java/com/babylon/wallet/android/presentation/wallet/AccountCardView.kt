@@ -7,23 +7,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -42,6 +38,7 @@ import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromp
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
+import com.babylon.wallet.android.presentation.ui.composables.FactorSourceLabelView
 import com.babylon.wallet.android.presentation.ui.composables.HandleSecurityPrompt
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
@@ -57,7 +54,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
@@ -211,23 +207,11 @@ fun AccountCardView(
                         )
                     ) {
                         accountWithAssets.factorSource?.let { factorSource ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
-                            ) {
-                                Text(
-                                    text = factorSource.name,
-                                    style = textStyle,
-                                    color = textColor
-                                )
-
-                                Icon(
-                                    modifier = Modifier.fillMaxHeight(),
-                                    painter = painterResource(id = factorSource.kind.iconRes()),
-                                    contentDescription = null,
-                                    tint = textColor
-                                )
-                            }
+                            FactorSourceLabelView(
+                                factorSource = factorSource,
+                                textStyle = textStyle,
+                                color = textColor
+                            )
                         }
                     }
                 )

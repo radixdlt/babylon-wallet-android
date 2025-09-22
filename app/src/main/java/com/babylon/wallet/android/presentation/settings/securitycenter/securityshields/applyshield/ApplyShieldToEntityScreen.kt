@@ -1,20 +1,22 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.applyshield
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -23,19 +25,20 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixRadioButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.plus
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.card.SecurityShieldCardView
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceSecurityShieldCard
 import com.babylon.wallet.android.presentation.ui.composables.card.shieldsForDisplaySample
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import kotlinx.coroutines.launch
 
 @Composable
 fun ApplyShieldToEntityScreen(
@@ -47,7 +50,7 @@ fun ApplyShieldToEntityScreen(
 
     ApplyShieldToEntityContent(
         state = state,
-        onBackClick = onDismiss,
+        onDismiss = onDismiss,
         onShieldClick = viewModel::onShieldClick,
         onConfirmClick = viewModel::onConfirmClick,
         onDismissMessage = viewModel::onDismissMessage
@@ -62,74 +65,92 @@ fun ApplyShieldToEntityScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ApplyShieldToEntityContent(
     state: ApplyShieldToEntityViewModel.State,
-    onBackClick: () -> Unit,
+    onDismiss: () -> Unit,
     onShieldClick: (SecurityStructureId) -> Unit,
     onConfirmClick: () -> Unit,
     onDismissMessage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            RadixCenteredTopAppBar(
-                title = "",
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner,
-                containerColor = RadixTheme.colors.backgroundSecondary
-            )
-        },
-        bottomBar = {
-            if (!state.isLoading) {
-                RadixBottomBar(
-                    text = stringResource(id = R.string.common_confirm),
-                    enabled = state.isButtonEnabled,
-                    isLoading = state.isApplyLoading,
-                    onClick = onConfirmClick
-                )
-            }
-        },
-        containerColor = RadixTheme.colors.backgroundSecondary
-    ) { padding ->
-        if (state.isLoading) {
-            FullscreenCircularProgressContent()
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = padding + PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
-            ) {
-                item {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                            .padding(bottom = RadixTheme.dimensions.paddingLarge),
-                        text = "Select Security Shield", // TODO crowdin
-                        style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.text,
-                        textAlign = TextAlign.Center
-                    )
-                }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        scope.launch {
+            sheetState.show()
+        }
+    }
+    val onDismissRequest: () -> Unit = {
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
 
-                items(state.shields) { shield ->
-                    SecurityShieldCardView(
-                        modifier = Modifier.clickable { onShieldClick(shield.id) },
-                        item = shield,
-                        endContent = {
-                            RadixRadioButton(
-                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                                selected = shield.id == state.selectedId,
-                                onClick = { onShieldClick(shield.id) }
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = sheetState,
+        onDismissRequest = onDismissRequest,
+        showDragHandle = true,
+        containerColor = RadixTheme.colors.backgroundSecondary,
+        windowInsets = { WindowInsets.statusBarsAndBanner },
+        sheetContent = {
+            Scaffold(
+                bottomBar = {
+                    if (!state.isLoading) {
+                        RadixBottomBar(
+                            text = stringResource(id = R.string.common_confirm),
+                            enabled = state.isButtonEnabled,
+                            isLoading = state.isApplyLoading,
+                            onClick = onConfirmClick
+                        )
+                    }
+                },
+                containerColor = RadixTheme.colors.backgroundSecondary,
+                contentWindowInsets = WindowInsets.none
+            ) { padding ->
+                if (state.isLoading) {
+                    FullscreenCircularProgressContent()
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.padding(padding),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                            Text(
+                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = "Select Security Shield", // TODO crowdin
+                                style = RadixTheme.typography.title,
+                                color = RadixTheme.colors.text,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                        }
+
+                        items(state.shields) {
+                            SelectableSingleChoiceSecurityShieldCard(
+                                item = it,
+                                onSelect = { onShieldClick(it.id) }
                             )
                         }
-                    )
 
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        item {
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        }
+                    }
                 }
             }
         }
-    }
+    )
 
     state.errorMessage?.let {
         ErrorAlertDialog(
@@ -148,7 +169,7 @@ private fun SelectShieldLightPreview(
     RadixWalletPreviewTheme {
         ApplyShieldToEntityContent(
             state = state,
-            onBackClick = {},
+            onDismiss = {},
             onShieldClick = {},
             onConfirmClick = {},
             onDismissMessage = {}
@@ -165,7 +186,7 @@ private fun SelectShieldDarkPreview(
     RadixWalletPreviewTheme(enableDarkTheme = true) {
         ApplyShieldToEntityContent(
             state = state,
-            onBackClick = {},
+            onDismiss = {},
             onShieldClick = {},
             onConfirmClick = {},
             onDismissMessage = {}
@@ -180,7 +201,12 @@ class ApplyShieldToEntityPreviewProvider : PreviewParameterProvider<ApplyShieldT
         get() = sequenceOf(
             ApplyShieldToEntityViewModel.State(
                 isLoading = false,
-                shields = shieldsForDisplaySample
+                shields = shieldsForDisplaySample.map {
+                    Selectable(
+                        data = it,
+                        selected = false
+                    )
+                }
             ),
             ApplyShieldToEntityViewModel.State(
                 isLoading = true

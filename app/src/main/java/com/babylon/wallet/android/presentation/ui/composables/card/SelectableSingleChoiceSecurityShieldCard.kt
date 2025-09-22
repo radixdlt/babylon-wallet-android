@@ -36,7 +36,7 @@ fun SelectableSingleChoiceSecurityShieldCard(
 ) {
     SimpleSecurityShieldCardView(
         modifier = modifier.noIndicationClickable { onSelect(item.data) },
-        title = item.data.shieldForDisplay.metadata.displayName.value,
+        title = item.data.name.value,
         iconRes = DSR.ic_security_shields,
         endContent = {
             RadioButtonSelectorView(
