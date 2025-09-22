@@ -32,7 +32,8 @@ fun FactorSourceLabelsView(
     FlowRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall),
+        maxLines = 2
     ) {
         factorSources.forEach { factorSource ->
             FactorSourceLabelView(

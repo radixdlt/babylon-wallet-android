@@ -21,7 +21,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -45,8 +44,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     override fun initialState() = State()
 
     init {
-        getProfileUseCase.flow.map { it.appPreferences.security.securityStructuresOfFactorSourceIds }
-            .distinctUntilChanged()
+        getProfileUseCase.flow.distinctUntilChanged()
             .onEach { getSecurityStructuresOfFactorSources(shieldId = args.securityStructureId) }
             .launchIn(viewModelScope)
     }
@@ -132,28 +130,12 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         }
     }
 
-    fun toggleRegularAccessCard() {
-        _state.update { state -> state.copy(isRegularAccessCardCollapsed = !state.isRegularAccessCardCollapsed) }
-    }
-
-    fun toggleLogInCard() {
-        _state.update { state -> state.copy(isLogInCardCollapsed = !state.isLogInCardCollapsed) }
-    }
-
-    fun toggleRecoveryCard() {
-        _state.update { state -> state.copy(isRecoveryCardCollapsed = !state.isRecoveryCardCollapsed) }
-    }
-
     data class State(
-        val isLoading: Boolean = true,
         val securityShieldName: String = "",
         val securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null,
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
-        val uiMessage: UiMessage? = null,
-        val isRegularAccessCardCollapsed: Boolean = true,
-        val isLogInCardCollapsed: Boolean = true,
-        val isRecoveryCardCollapsed: Boolean = true
+        val uiMessage: UiMessage? = null
     ) : UiState {
 
         data class RenameSecurityShieldInput(
