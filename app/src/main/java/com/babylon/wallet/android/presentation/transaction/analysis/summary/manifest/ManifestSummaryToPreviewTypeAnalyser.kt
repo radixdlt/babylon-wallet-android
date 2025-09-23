@@ -40,5 +40,5 @@ class ManifestSummaryToPreviewTypeAnalyser @Inject constructor(
     }
 
     private val ManifestClass.isConforming: Boolean
-        get() = this == ManifestClass.GENERAL_SUBINTENT
+        get() = this == ManifestClass.GeneralSubintent
 }

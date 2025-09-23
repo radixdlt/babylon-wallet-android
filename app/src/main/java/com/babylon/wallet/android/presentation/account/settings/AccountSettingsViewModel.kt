@@ -13,13 +13,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.common.secured.SecuredWithUiData
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntitySecurityState
@@ -101,11 +102,11 @@ class AccountSettingsViewModel @Inject constructor(
             getProfileUseCase.flow.mapNotNull { profile ->
                 val account = profile.activeAccountsOnCurrentNetwork.first { it.address == args.address }
                 val securedWith = when (val securityState = account.securityState) {
-                    is EntitySecurityState.Securified -> State.SecuredWith.Shield
+                    is EntitySecurityState.Securified -> SecuredWithUiData.Shield
                     is EntitySecurityState.Unsecured -> profile.factorSourceById(
                         id = securityState.value.transactionSigning.factorSourceId.asGeneral()
                     )?.let { factorSource ->
-                        State.SecuredWith.Factor(
+                        SecuredWithUiData.Factor(
                             factorSourceCard = factorSource.toFactorSourceCard(
                                 includeLastUsedOn = true,
                                 messages = getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(
@@ -252,23 +253,16 @@ class AccountSettingsViewModel @Inject constructor(
         val faucetState: FaucetState = FaucetState.Unavailable,
         val isAccountNameUpdated: Boolean = false,
         val isFreeXRDLoading: Boolean = false,
-        val securedWith: SecuredWith? = null,
+        val securedWith: SecuredWithUiData? = null,
         val isMfaEnabled: Boolean = false
     ) : UiState {
 
         val isBottomSheetVisible: Boolean
             get() = bottomSheetContent != BottomSheetContent.None
         val canApplyShield
-            get() = isMfaEnabled && securedWith != SecuredWith.Shield
-
-        sealed interface SecuredWith {
-
-            data object Shield : SecuredWith
-
-            data class Factor(
-                val factorSourceCard: FactorSourceCard
-            ) : SecuredWith
-        }
+            get() = isMfaEnabled && securedWith != SecuredWithUiData.Shield
+        val address
+            get() = AddressOfAccountOrPersona.Account(requireNotNull(account?.address))
 
         data class RenameAccountInput(
             override val name: String = "",

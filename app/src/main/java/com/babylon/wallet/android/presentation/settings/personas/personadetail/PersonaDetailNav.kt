@@ -11,6 +11,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.init
@@ -32,11 +33,14 @@ fun NavController.personaDetailScreen(personaAddress: IdentityAddress) {
     navigate("persona_detail/${personaAddress.string}")
 }
 
+@Suppress("LongParameterList")
 fun NavGraphBuilder.personaDetailScreen(
     onBackClick: () -> Unit,
     onPersonaEdit: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DETAIL,
@@ -63,7 +67,9 @@ fun NavGraphBuilder.personaDetailScreen(
             onBackClick = onBackClick,
             onEditPersona = onPersonaEdit,
             onDAppClick = onDAppClick,
-            onFactorSourceCardClick = onFactorSourceCardClick
+            onFactorSourceCardClick = onFactorSourceCardClick,
+            onApplyShieldClick = onApplyShieldClick,
+            onShieldClick = onShieldClick
         )
     }
 }

@@ -12,6 +12,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -42,8 +43,8 @@ fun NavGraphBuilder.accountSettings(
     onHideAccountClick: () -> Unit,
     onDeleteAccountClick: (AccountAddress) -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
-    onApplyShieldClick: (AccountAddress) -> Unit,
-    onShieldClick: (AccountAddress) -> Unit
+    onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     composable(
         route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",

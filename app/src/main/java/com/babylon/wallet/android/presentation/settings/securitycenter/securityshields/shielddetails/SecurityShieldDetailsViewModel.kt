@@ -12,7 +12,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
-import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.init
@@ -53,10 +52,8 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             sargonOsManager.callSafely(defaultDispatcher) {
                 when (input) {
-                    is SecurityShieldDetailsArgs.Input.Account -> securityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
-                        addressOfAccountOrPersona = AddressOfAccountOrPersona.Account(
-                            v1 = input.address
-                        )
+                    is SecurityShieldDetailsArgs.Input.Address -> securityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
+                        addressOfAccountOrPersona = input.value
                     )
 
                     is SecurityShieldDetailsArgs.Input.Id -> securityStructuresOfFactorSources()

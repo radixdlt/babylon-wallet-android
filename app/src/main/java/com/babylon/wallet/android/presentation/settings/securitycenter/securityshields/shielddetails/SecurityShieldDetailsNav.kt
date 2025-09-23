@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.applyshie
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_SECURITY_SHIELDS_GRAPH
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -36,8 +36,8 @@ internal class SecurityShieldDetailsArgs(
             val value: SecurityStructureId
         ) : Input
 
-        data class Account(
-            val address: AccountAddress
+        data class Address(
+            val value: AddressOfAccountOrPersona
         ) : Input
     }
 
@@ -45,8 +45,8 @@ internal class SecurityShieldDetailsArgs(
         input = savedStateHandle.get<String>(ARG_SECURITY_STRUCTURE_ID).let { id ->
             if (id == null) {
                 val arg = requireNotNull(savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS))
-                Input.Account(
-                    address = AccountAddress.init(arg)
+                Input.Address(
+                    value = AddressOfAccountOrPersona.init(arg)
                 )
             } else {
                 Input.Id(
@@ -64,9 +64,9 @@ fun NavController.securityShieldDetails(
 }
 
 fun NavController.securityShieldDetails(
-    accountAddress: AccountAddress
+    addressOfAccountOrPersona: AddressOfAccountOrPersona
 ) {
-    navigate("$DESTINATION_SECURITY_SHIELD_DETAILS_SCREEN?$ARG_ACCOUNT_ADDRESS=${accountAddress.string}")
+    navigate("$DESTINATION_SECURITY_SHIELD_DETAILS_SCREEN?$ARG_ACCOUNT_ADDRESS=${addressOfAccountOrPersona.string}")
 }
 
 fun NavGraphBuilder.securityShieldDetails(navController: NavController) {

@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.presentation.settings.personas.personadetail
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,11 +30,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.secured.SecuredWithUiData
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataSectionHeader
@@ -44,9 +49,9 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.IdentityAddress
@@ -54,7 +59,6 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.fields
@@ -66,13 +70,15 @@ fun PersonaDetailScreen(
     modifier: Modifier = Modifier,
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                Event.Close -> onBackClick()
+                PersonaDetailViewModel.Event.Close -> onBackClick()
             }
         }
     }
@@ -104,19 +110,23 @@ fun PersonaDetailScreen(
         onHidePersona = {
             showHidePersonaPrompt = true
         },
-        onFactorSourceCardClick = onFactorSourceCardClick
+        onFactorSourceCardClick = onFactorSourceCardClick,
+        onApplyShieldClick = { onApplyShieldClick(state.address) },
+        onShieldClick = { onShieldClick(state.address) }
     )
 }
 
 @Composable
 private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
-    state: PersonaDetailUiState,
+    state: PersonaDetailViewModel.State,
     onBackClick: () -> Unit,
     onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onHidePersona: () -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onApplyShieldClick: () -> Unit,
+    onShieldClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -153,12 +163,12 @@ private fun PersonaDetailContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(padding),
-                persona = state.persona,
-                authorizedDapps = state.authorizedDapps,
-                securedWith = state.securedWith,
+                state = state,
                 onDAppClick = onDAppClick,
                 onEditPersona = onEditPersona,
-                onFactorSourceCardClick = onFactorSourceCardClick
+                onFactorSourceCardClick = onFactorSourceCardClick,
+                onApplyShieldClick = onApplyShieldClick,
+                onShieldClick = onShieldClick
             )
         } else {
             FullscreenCircularProgressContent()
@@ -168,13 +178,13 @@ private fun PersonaDetailContent(
 
 @Composable
 private fun PersonaDetailList(
-    modifier: Modifier = Modifier,
-    persona: Persona,
-    authorizedDapps: ImmutableList<DApp>,
-    securedWith: FactorSourceCard?,
+    state: PersonaDetailViewModel.State,
     onDAppClick: (DApp) -> Unit,
     onEditPersona: (IdentityAddress) -> Unit,
-    onFactorSourceCardClick: (FactorSourceId) -> Unit
+    onFactorSourceCardClick: (FactorSourceId) -> Unit,
+    onApplyShieldClick: () -> Unit,
+    onShieldClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault),
@@ -189,58 +199,82 @@ private fun PersonaDetailList(
                         bottom = RadixTheme.dimensions.paddingLarge
                     )
                     .size(104.dp),
-                persona = persona
+                persona = state.persona
             )
-        }
-        item {
-            PersonaDataStringField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
-                labelStyle = RadixTheme.typography.body1Header,
-                value = persona.displayName.value
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
-                color = RadixTheme.colors.divider
-            )
-        }
-        val allFields = persona.personaData.fields
-        if (allFields.isNotEmpty()) {
-            items(allFields) { field ->
-                PersonaDataFieldRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    field = field.value,
-                    labelStyle = RadixTheme.typography.body1Header
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.divider
-                )
-            }
         }
 
-        securedWith?.let { factorSourceCard ->
+        if (state.persona != null) {
             item {
-                PersonaDataSectionHeader(
+                PersonaDataStringField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = R.string.common_securedWith),
-                    textStyle = RadixTheme.typography.body1Header
+                    label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
+                    labelStyle = RadixTheme.typography.body1Header,
+                    value = state.persona.displayName.value
                 )
+                HorizontalDivider(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                    color = RadixTheme.colors.divider
+                )
+            }
 
-                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            val allFields = state.persona.personaData.fields
 
-                FactorSourceCardView(
+            if (allFields.isNotEmpty()) {
+                items(allFields) { field ->
+                    PersonaDataFieldRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        field = field.value,
+                        labelStyle = RadixTheme.typography.body1Header
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                        color = RadixTheme.colors.divider
+                    )
+                }
+            }
+        }
+
+        state.securedWith?.let { securedWith ->
+            item {
+                Row(
                     modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .throttleClickable { onFactorSourceCardClick(factorSourceCard.id) },
-                    item = factorSourceCard
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PersonaDataSectionHeader(
+                        text = stringResource(id = R.string.common_securedWith),
+                        textStyle = RadixTheme.typography.body1Header
+                    )
+
+                    if (state.canApplyShield) {
+                        RadixTextButton(
+                            text = "Apply Shield", // TODO crowdin
+                            onClick = onApplyShieldClick
+                        )
+                    }
+                }
+
+                when (securedWith) {
+                    is SecuredWithUiData.Factor -> FactorSourceCardView(
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            .throttleClickable { onFactorSourceCardClick(securedWith.factorSourceCard.id) },
+                        item = securedWith.factorSourceCard
+                    )
+
+                    SecuredWithUiData.Shield -> DefaultSettingsItem(
+                        onClick = onShieldClick,
+                        leadingIconRes = DSR.ic_entity_update_shield,
+                        title = "Security Shield", // TODO crowdin
+                        subtitle = "View security shield details" // TODO crowdin
+                    )
+                }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
@@ -249,16 +283,19 @@ private fun PersonaDetailList(
             }
         }
 
-        item {
-            RadixSecondaryButton(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
-                onClick = { onEditPersona(persona.address) },
-                throttleClicks = true
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        if (state.persona != null) {
+            item {
+                RadixSecondaryButton(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
+                    onClick = { onEditPersona(state.persona.address) },
+                    throttleClicks = true
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
         }
-        if (authorizedDapps.isNotEmpty()) {
+
+        if (state.authorizedDapps.isNotEmpty()) {
             item {
                 HorizontalDivider(
                     color = RadixTheme.colors.divider
@@ -276,7 +313,8 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
                 }
             }
-            items(authorizedDapps) { dApp ->
+
+            items(state.authorizedDapps) { dApp ->
                 GrayBackgroundWrapper {
                     DappCard(
                         modifier = Modifier.throttleClickable {
@@ -287,6 +325,7 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
+
             item {
                 GrayBackgroundWrapper(
                     modifier = Modifier.fillMaxWidth()
@@ -302,24 +341,27 @@ private fun PersonaDetailList(
 @Preview(showBackground = true)
 @Composable
 fun PersonaDetailContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         PersonaDetailContent(
             modifier = Modifier.fillMaxSize(),
-            state = PersonaDetailUiState(
+            state = PersonaDetailViewModel.State(
                 authorizedDapps = persistentListOf(
                     DApp.sampleMainnet(),
                     DApp.sampleMainnet.other()
                 ),
                 persona = Persona.sampleMainnet(),
-                securedWith = FactorSource.sample().toFactorSourceCard(
-                    includeLastUsedOn = true
-                )
+                securedWith = SecuredWithUiData.Factor(
+                    factorSourceCard = FactorSource.sample().toFactorSourceCard()
+                ),
+                isMfaEnabled = true
             ),
             onBackClick = {},
             onEditPersona = {},
             onDAppClick = {},
             onHidePersona = {},
-            onFactorSourceCardClick = {}
+            onFactorSourceCardClick = {},
+            onApplyShieldClick = {},
+            onShieldClick = {}
         )
     }
 }
