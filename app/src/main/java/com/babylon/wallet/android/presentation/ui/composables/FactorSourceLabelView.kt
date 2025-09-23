@@ -52,26 +52,45 @@ fun FactorSourceLabelView(
     color: Color = RadixTheme.colors.text,
     modifier: Modifier = Modifier
 ) {
+    AccountLabelView(
+        modifier = modifier,
+        label = factorSource.name,
+        iconRes = factorSource.kind.iconRes(),
+        textStyle = textStyle,
+        color = color
+    )
+}
+
+@Composable
+fun AccountLabelView(
+    label: String,
+    iconRes: Int?,
+    textStyle: TextStyle = RadixTheme.typography.body2Regular,
+    color: Color = RadixTheme.colors.text,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
     ) {
         Text(
-            text = factorSource.name,
+            text = label,
             style = textStyle,
             color = color
         )
 
-        Icon(
-            modifier = Modifier.height(
-                with(LocalDensity.current) {
-                    textStyle.fontSize.toDp() * 1.2f
-                }
-            ),
-            painter = painterResource(id = factorSource.kind.iconRes()),
-            contentDescription = null,
-            tint = color
-        )
+        iconRes?.let {
+            Icon(
+                modifier = Modifier.height(
+                    with(LocalDensity.current) {
+                        textStyle.fontSize.toDp() * 1.2f
+                    }
+                ),
+                painter = painterResource(id = it),
+                contentDescription = null,
+                tint = color
+            )
+        }
     }
 }

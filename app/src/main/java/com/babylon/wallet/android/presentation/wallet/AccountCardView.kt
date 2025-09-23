@@ -37,8 +37,9 @@ import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.AccountLabelView
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
-import com.babylon.wallet.android.presentation.ui.composables.FactorSourceLabelView
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.HandleSecurityPrompt
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
@@ -54,6 +55,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
@@ -177,9 +179,19 @@ fun AccountCardView(
             remember(it) { it.toLabel(context) }
         }
 
-        if (tagLabel != null || accountWithAssets.factorSource != null) {
+        if (tagLabel != null || accountWithAssets.securedWith != null) {
             val textStyle = RadixTheme.typography.body2Regular
             val textColor = White
+            val inlineLabel = when (accountWithAssets.securedWith) {
+                is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.name
+                AccountUiItem.SecuredWith.Shield -> "Shielded" // TODO crowdin
+                null -> stringResource(id = R.string.empty)
+            }
+            val inlineLabelIconRes = when (accountWithAssets.securedWith) {
+                is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.kind.iconRes()
+                AccountUiItem.SecuredWith.Shield -> DSR.ic_entity_update_shield
+                null -> null
+            }
 
             Text(
                 modifier = Modifier.constrainAs(legacyLabel) {
@@ -191,7 +203,7 @@ fun AccountCardView(
                         append(tagLabel)
                     }
 
-                    if (accountWithAssets.factorSource != null) {
+                    if (accountWithAssets.securedWith != null) {
                         append(" • ")
                         appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
                     }
@@ -201,18 +213,17 @@ fun AccountCardView(
                 inlineContent = mapOf(
                     INLINE_FACTOR_SOURCE_ID to InlineTextContent(
                         Placeholder(
-                            textStyle.fontSize * (accountWithAssets.factorSource?.name?.length ?: 0),
+                            textStyle.fontSize * inlineLabel.length,
                             textStyle.fontSize * 1.2,
                             PlaceholderVerticalAlign.Center
                         )
                     ) {
-                        accountWithAssets.factorSource?.let { factorSource ->
-                            FactorSourceLabelView(
-                                factorSource = factorSource,
-                                textStyle = textStyle,
-                                color = textColor
-                            )
-                        }
+                        AccountLabelView(
+                            label = inlineLabel,
+                            iconRes = inlineLabelIconRes,
+                            textStyle = textStyle,
+                            color = textColor
+                        )
                     }
                 )
             )
@@ -269,7 +280,12 @@ fun AccountCardView(
                 )
             }
         ) {
-            val factorSourceId = remember(accountWithAssets) { accountWithAssets.factorSource?.id }
+            val factorSourceId = remember(accountWithAssets) {
+                when (accountWithAssets.securedWith) {
+                    is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.id
+                    else -> null
+                }
+            }
             val securityPromptClickEvent = remember { mutableStateOf<SecurityPromptType?>(null) }
 
             HandleSecurityPrompt(
@@ -369,7 +385,9 @@ fun AccountCardPreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    factorSource = FactorSource.sample()
+                    securedWith = AccountUiItem.SecuredWith.Factor(
+                        value = FactorSource.sample()
+                    )
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -403,7 +421,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    factorSource = null
+                    securedWith = AccountUiItem.SecuredWith.Shield
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -444,7 +462,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    factorSource = null
+                    securedWith = AccountUiItem.SecuredWith.Shield
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -482,7 +500,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true,
-                        factorSource = null
+                        securedWith = null
                     ),
                     onApplySecuritySettingsClick = {},
                     onLockerDepositClick = { _, _ -> }
@@ -512,7 +530,7 @@ fun AccountCardEmptyPreview() {
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true,
-                        factorSource = null
+                        securedWith = null
                     ),
                     onApplySecuritySettingsClick = {},
                     onLockerDepositClick = { _, _ -> }
@@ -545,7 +563,7 @@ fun AccountCardLoadingPreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true,
-                    factorSource = null
+                    securedWith = null
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
