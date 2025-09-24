@@ -40,17 +40,5 @@ enum class GlossaryItem {
     arculus,
     ledgernano,
     passwords,
-    mnemonics;
-
-    companion object {
-
-        val mfaRelated = listOf(
-            securityshields,
-            buildingshield,
-            emergencyfallback,
-            arculus,
-            passwords,
-            mnemonics
-        )
-    }
+    mnemonics
 }

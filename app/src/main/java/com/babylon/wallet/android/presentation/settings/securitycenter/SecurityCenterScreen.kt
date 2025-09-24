@@ -195,7 +195,7 @@ private fun SecurityCenterContent(
                         subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
                         iconRes = DSR.ic_security_shields,
                         needsAction = false,
-                        positiveStatus = stringResource(id = R.string.securityCenter_securityShieldsItem_shieldedStatus)
+                        positiveStatus = null
                     )
                 }
 
@@ -308,7 +308,7 @@ private fun SecurityCenterCard(
     title: String,
     subtitle: String,
     needsAction: Boolean,
-    positiveStatus: String
+    positiveStatus: String?
 ) {
     Row(
         modifier = modifier
@@ -358,19 +358,21 @@ private fun SecurityCenterCard(
                 color = RadixTheme.colors.textSecondary
             )
 
-            val promptColor = if (needsAction) RadixTheme.colors.warning else RadixTheme.colors.ok
+            positiveStatus?.let {
+                val promptColor = if (needsAction) RadixTheme.colors.warning else RadixTheme.colors.ok
 
-            PromptLabel(
-                modifier = Modifier.fillMaxWidth(),
-                text = if (needsAction) {
-                    stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
-                } else {
-                    positiveStatus
-                },
-                textColor = promptColor,
-                iconRes = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle,
-                iconTint = promptColor
-            )
+                PromptLabel(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = if (needsAction) {
+                        stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
+                    } else {
+                        positiveStatus
+                    },
+                    textColor = promptColor,
+                    iconRes = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle,
+                    iconTint = promptColor
+                )
+            }
         }
     }
 }

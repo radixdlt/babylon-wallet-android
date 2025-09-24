@@ -27,14 +27,15 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 
 @Composable
 fun ChooseEntityContent(
-    modifier: Modifier = Modifier,
-    onSkipClick: (() -> Unit)? = null,
     title: String,
     subtitle: String,
     isButtonEnabled: Boolean,
-    hasSkipButton: Boolean,
     onDismiss: () -> Unit,
     onContinueClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onSkipClick: (() -> Unit)? = null,
+    hasSkipButton: Boolean = false,
+    skipButtonTitle: String? = null,
     content: LazyListScope.() -> Unit
 ) {
     Scaffold(
@@ -55,7 +56,7 @@ fun ChooseEntityContent(
                     {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         RadixTextButton(
-                            text = stringResource(id = R.string.shieldWizardApplyShield_chooseEntities_skipButton),
+                            text = skipButtonTitle ?: stringResource(id = R.string.shieldWizardApplyShield_chooseEntities_skipButton),
                             onClick = { onSkipClick?.invoke() }
                         )
                     }

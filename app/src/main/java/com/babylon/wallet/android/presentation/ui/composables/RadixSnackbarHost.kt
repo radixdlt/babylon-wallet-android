@@ -55,6 +55,14 @@ fun SnackbarUIMessage(
     snackbarHostState: SnackbarHostState,
     onMessageShown: () -> Unit
 ) {
+    val commonException = remember(message) {
+        (message as? UiMessage.ErrorMessage)?.error as? CommonException
+    }
+
+    if (commonException is CommonException.HostInteractionAborted) {
+        return
+    }
+
     if (message != null) {
         val errorMessage = message.getMessage()
         val actionLabel = remember(message) {

@@ -30,19 +30,18 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.title
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.FactorSourceCategoryHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
-import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
@@ -215,18 +214,9 @@ private fun StatusView(
             )
         )
 
-        is SelectedPrimaryThresholdFactorsStatus.Invalid -> StatusMessageText(
-            modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
-                    boldStyle = SpanStyle(
-                        color = RadixTheme.colors.textButton,
-                        fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
-                        fontSize = RadixTheme.typography.body2Link.fontSize
-                    )
-                ),
-                type = StatusMessage.Type.ERROR
-            )
+        is SelectedPrimaryThresholdFactorsStatus.Invalid -> ShieldSetupUnsafeCombinationStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
         )
 
         SelectedPrimaryThresholdFactorsStatus.Optimal -> return
