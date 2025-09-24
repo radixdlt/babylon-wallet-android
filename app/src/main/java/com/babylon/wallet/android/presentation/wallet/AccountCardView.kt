@@ -188,7 +188,7 @@ fun AccountCardView(
                 val textColor = White
                 val inlineLabel = when (accountWithAssets.securedWith) {
                     is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.name
-                    AccountUiItem.SecuredWith.Shield -> "Shielded" // TODO crowdin
+                    AccountUiItem.SecuredWith.Shield -> stringResource(id = R.string.commonSecurityShields_shielded)
                     null -> stringResource(id = R.string.empty)
                 }
                 val inlineLabelIconRes = when (accountWithAssets.securedWith) {

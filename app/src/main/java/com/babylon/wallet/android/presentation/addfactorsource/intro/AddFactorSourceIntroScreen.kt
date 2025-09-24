@@ -150,9 +150,9 @@ private fun AddFactorSourceIntroContent(
 private fun FactorSourceKind.addTitle() = when (this) {
     FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_title)
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_title)
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Add a New Mnemonic Seed Phrase" // TODO crowdin
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> stringResource(id = R.string.addFactorSource_offDeviceMnemonic_title)
     FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_title)
-    FactorSourceKind.PASSWORD -> "Add a New Password" // TODO crowdin
+    FactorSourceKind.PASSWORD -> stringResource(id = R.string.addFactorSource_password_title)
 }
 
 @Suppress("MaxLineLength")
@@ -160,9 +160,9 @@ private fun FactorSourceKind.addTitle() = when (this) {
 private fun FactorSourceKind.addSubtitle() = when (this) {
     FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_subtitle)
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_description)
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Mnemonics are 12 to 24-word BIP39 seed phrases that you’ll need to enter in full every time you use this factor." // TODO crowdin
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> stringResource(id = R.string.addFactorSource_offDeviceMnemonic_description)
     FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_description)
-    FactorSourceKind.PASSWORD -> "Passwords on Radix are decentralized and aren’t known or stored by anyone but you." // TODO crowdin
+    FactorSourceKind.PASSWORD -> stringResource(id = R.string.addFactorSource_password_description)
 }
 
 @Composable

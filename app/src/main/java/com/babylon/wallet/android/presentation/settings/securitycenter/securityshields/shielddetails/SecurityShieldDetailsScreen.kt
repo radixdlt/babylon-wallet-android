@@ -133,7 +133,7 @@ private fun SecurityShieldDetailsContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = "Apply", // TODO crowdin
+                            text = stringResource(id = R.string.securityShields_apply),
                             onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
                         )
                     }

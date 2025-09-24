@@ -260,7 +260,7 @@ private fun AccountSettingsContent(
 
                         if (state.canApplyShield) {
                             RadixTextButton(
-                                text = "Apply Shield", // TODO crowdin
+                                text = stringResource(id = R.string.commonSecurityShields_applyShield),
                                 onClick = onApplyShieldClick
                             )
                         }
@@ -277,8 +277,8 @@ private fun AccountSettingsContent(
                         SecuredWithUiData.Shield -> DefaultSettingsItem(
                             onClick = onShieldClick,
                             leadingIconRes = DSR.ic_entity_update_shield,
-                            title = "Security Shield", // TODO crowdin
-                            subtitle = "View security shield details" // TODO crowdin
+                            title = stringResource(id = R.string.commonSecurityShields_securityShield),
+                            subtitle = stringResource(id = R.string.commonSecurityShields_securityShieldDetails),
                         )
                     }
                 }

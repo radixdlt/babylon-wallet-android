@@ -73,7 +73,7 @@ private fun ChooseAccountsContent(
         subtitle = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_subtitle),
         isButtonEnabled = state.isButtonEnabled,
         hasSkipButton = state.canSkip,
-        skipButtonTitle = "Choose a Persona", // TODO crowdin
+        skipButtonTitle = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_skipButton),
         onContinueClick = onContinueClick,
         onDismiss = onDismiss,
         onSkipClick = onSkipClick

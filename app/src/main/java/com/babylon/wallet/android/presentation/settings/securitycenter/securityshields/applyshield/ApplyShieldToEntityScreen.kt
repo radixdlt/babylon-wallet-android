@@ -127,7 +127,7 @@ private fun ApplyShieldToEntityContent(
 
                             Text(
                                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                text = "Select Security Shield", // TODO crowdin
+                                text = stringResource(id = R.string.commonSecurityShields_select_title),
                                 style = RadixTheme.typography.title,
                                 color = RadixTheme.colors.text,
                                 textAlign = TextAlign.Center
