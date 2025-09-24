@@ -92,8 +92,7 @@ fun AccountCardView(
             nameLabel,
             fiatTotalValueLabel,
             fiatTotalLoading,
-            legacyLabel,
-            addressLabel,
+            addressAndTagsLabel,
             spacer,
             assetsContainer,
             promptsContainer
@@ -163,70 +162,74 @@ fun AccountCardView(
 
         val addressTextColor = White.copy(alpha = 0.8f)
 
-        ActionableAddressView(
-            modifier = Modifier.constrainAs(addressLabel) {
-                top.linkTo(nameLabel.bottom, margin = 8.dp)
-                start.linkTo(parent.start)
-            },
-            address = accountWithAssets.account.address.asGeneral(),
-            textStyle = RadixTheme.typography.body2HighImportance,
-            textColor = addressTextColor,
-            iconColor = addressTextColor
-        )
-
-        val tagLabel = accountWithAssets.tag?.let {
-            val context = LocalContext.current
-            remember(it) { it.toLabel(context) }
-        }
-
-        if (tagLabel != null || accountWithAssets.securedWith != null) {
-            val textStyle = RadixTheme.typography.body2Regular
-            val textColor = White
-            val inlineLabel = when (accountWithAssets.securedWith) {
-                is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.name
-                AccountUiItem.SecuredWith.Shield -> "Shielded" // TODO crowdin
-                null -> stringResource(id = R.string.empty)
-            }
-            val inlineLabelIconRes = when (accountWithAssets.securedWith) {
-                is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.kind.iconRes()
-                AccountUiItem.SecuredWith.Shield -> DSR.ic_entity_update_shield
-                null -> null
-            }
-
-            Text(
-                modifier = Modifier.constrainAs(legacyLabel) {
-                    start.linkTo(addressLabel.end)
-                    bottom.linkTo(addressLabel.bottom)
-                },
-                text = buildAnnotatedString {
-                    if (tagLabel != null) {
-                        append(tagLabel)
-                    }
-
-                    if (accountWithAssets.securedWith != null) {
-                        append(" • ")
-                        appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
-                    }
-                },
-                style = textStyle,
-                color = textColor,
-                inlineContent = mapOf(
-                    INLINE_FACTOR_SOURCE_ID to InlineTextContent(
-                        Placeholder(
-                            textStyle.fontSize * inlineLabel.length,
-                            textStyle.fontSize * 1.2,
-                            PlaceholderVerticalAlign.Center
-                        )
-                    ) {
-                        AccountLabelView(
-                            label = inlineLabel,
-                            iconRes = inlineLabelIconRes,
-                            textStyle = textStyle,
-                            color = textColor
-                        )
-                    }
-                )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(addressAndTagsLabel) {
+                    top.linkTo(nameLabel.bottom, margin = 8.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+        ) {
+            ActionableAddressView(
+                address = accountWithAssets.account.address.asGeneral(),
+                textStyle = RadixTheme.typography.body2HighImportance,
+                textColor = addressTextColor,
+                iconColor = addressTextColor
             )
+
+            val tagLabel = accountWithAssets.tag?.let {
+                val context = LocalContext.current
+                remember(it) { it.toLabel(context) }
+            }
+
+            if (tagLabel != null || accountWithAssets.securedWith != null) {
+                val textStyle = RadixTheme.typography.body2Regular
+                val textColor = White
+                val inlineLabel = when (accountWithAssets.securedWith) {
+                    is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.name
+                    AccountUiItem.SecuredWith.Shield -> "Shielded" // TODO crowdin
+                    null -> stringResource(id = R.string.empty)
+                }
+                val inlineLabelIconRes = when (accountWithAssets.securedWith) {
+                    is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.kind.iconRes()
+                    AccountUiItem.SecuredWith.Shield -> DSR.ic_entity_update_shield
+                    null -> null
+                }
+
+                Text(
+                    text = buildAnnotatedString {
+                        if (tagLabel != null) {
+                            append(tagLabel)
+                        }
+
+                        if (accountWithAssets.securedWith != null) {
+                            append(" • ")
+                            appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
+                        }
+                    },
+                    style = textStyle,
+                    color = textColor,
+                    inlineContent = mapOf(
+                        INLINE_FACTOR_SOURCE_ID to InlineTextContent(
+                            Placeholder(
+                                textStyle.fontSize * inlineLabel.length,
+                                textStyle.fontSize * 1.2,
+                                PlaceholderVerticalAlign.Center
+                            )
+                        ) {
+                            AccountLabelView(
+                                label = inlineLabel,
+                                iconRes = inlineLabelIconRes,
+                                textStyle = textStyle,
+                                color = textColor
+                            )
+                        }
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
         val assetsPresent = remember(accountWithAssets.isLoadingAssets, accountWithAssets.assets) {
@@ -241,7 +244,7 @@ fun AccountCardView(
                 linkTo(
                     start = parent.start,
                     end = parent.end,
-                    top = addressLabel.bottom,
+                    top = addressAndTagsLabel.bottom,
                     bottom = assetsContainer.top,
                 )
                 height = Dimension.value(if (assetsPresent || promptsPresent) 32.dp else 0.dp)
