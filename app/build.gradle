@@ -152,6 +152,7 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    kotlin.compilerOptions.freeCompilerArgs.add("-Xannotation-default-target=first-only")
     buildFeatures {
         compose true
     }
@@ -215,7 +216,6 @@ dependencies {
     implementation libs.immutableCollections
 
     // Accompanist
-    implementation libs.accompanistPagerIndicators
     implementation libs.accompanistDrawablePainter
     implementation libs.accompanistPermissions
     implementation libs.accompanistPlaceholder

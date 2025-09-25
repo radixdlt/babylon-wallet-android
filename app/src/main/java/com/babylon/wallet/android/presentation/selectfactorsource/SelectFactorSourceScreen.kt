@@ -167,6 +167,7 @@ private fun SelectFactorSourceInput.Context.description() = when (this) {
 
 @Composable
 @Preview
+@UsesSampleValues
 private fun SelectFactorSourceLightPreview(
     @PreviewParameter(SelectFactorSourcePreviewProvider::class) state: SelectFactorSourceViewModel.State
 ) {
@@ -183,6 +184,7 @@ private fun SelectFactorSourceLightPreview(
 
 @Composable
 @Preview
+@UsesSampleValues
 private fun SelectFactorSourceDarkPreview(
     @PreviewParameter(SelectFactorSourcePreviewProvider::class) state: SelectFactorSourceViewModel.State
 ) {

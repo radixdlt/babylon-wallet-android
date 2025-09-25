@@ -36,6 +36,7 @@ import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.samples.sample
@@ -239,6 +240,7 @@ private fun FactorSourceKind.AdditionalSettingsItems(
 
 @Preview
 @Composable
+@UsesSampleValues
 private fun FactorSourceDetailsPreview(
     @PreviewParameter(FactorSourceDetailsPreviewProvider::class) state: FactorSourceDetailsViewModel.State
 ) {
@@ -256,6 +258,7 @@ private fun FactorSourceDetailsPreview(
     }
 }
 
+@UsesSampleValues
 class FactorSourceDetailsPreviewProvider : PreviewParameterProvider<FactorSourceDetailsViewModel.State> {
 
     override val values: Sequence<FactorSourceDetailsViewModel.State>

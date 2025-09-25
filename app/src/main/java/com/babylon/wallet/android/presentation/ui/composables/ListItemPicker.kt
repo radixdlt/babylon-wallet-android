@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import androidx.compose.animation.core.exponentialDecay
-import androidx.compose.animation.core.spring
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,15 +36,10 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import dev.chrisbanes.snapper.ExperimentalSnapperApi
-import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-
-// Increase or decrease for more or less friction when scrolling through the list
-private const val SCROLL_FRICTION_MULTIPLIER = 3f
 
 object ListItemPicker {
 
@@ -59,7 +53,6 @@ object ListItemPicker {
     }
 }
 
-@OptIn(ExperimentalSnapperApi::class)
 @Composable
 fun <T> ListItemPicker(
     items: PersistentList<T>,
@@ -93,11 +86,8 @@ fun <T> ListItemPicker(
             firstVisibleItemScrollOffset = 0
         )
     }
-    val flingBehavior = rememberSnapperFlingBehavior(
-        lazyListState = lazyListState,
-        springAnimationSpec = spring(),
-        decayAnimationSpec = exponentialDecay(frictionMultiplier = SCROLL_FRICTION_MULTIPLIER),
-        endContentPadding = verticalContentPadding
+    val flingBehavior = rememberSnapFlingBehavior(
+        lazyListState = lazyListState
     )
 
     LaunchedEffect(lazyListState) {

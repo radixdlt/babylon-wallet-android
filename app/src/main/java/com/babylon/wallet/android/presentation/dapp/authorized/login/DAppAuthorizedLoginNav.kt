@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.remember
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder

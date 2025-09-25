@@ -36,6 +36,7 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    kotlin.compilerOptions.freeCompilerArgs.add("-Xannotation-default-target=first-only")
 }
 
 dependencies {

@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem.DAppWithDetails
 import com.babylon.wallet.android.presentation.dappdir.common.models.sample
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsView
@@ -36,8 +35,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholderSimple
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.Tag
 
@@ -158,15 +156,11 @@ fun DAppCard(
 
 @Composable
 @Preview
+@UsesSampleValues
 private fun DAppCardLightPreview() {
     RadixWalletPreviewTheme {
         DAppCard(
-//            details = DAppWithDetails.sample(),
-            details = DAppWithDetails(
-                dAppDefinitionAddress = AccountAddress.sampleMainnet(),
-                hasDeposits = false,
-                details = DAppListItem.DAppWithDetails.Details.Fetching
-            ),
+            details = DAppWithDetails.sample(),
             onClick = {}
         )
     }
@@ -174,6 +168,7 @@ private fun DAppCardLightPreview() {
 
 @Composable
 @Preview
+@UsesSampleValues
 private fun DAppCardDarkPreview() {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
         DAppCard(

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -82,7 +81,6 @@ fun AlertView(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun AlertContent(
     ui: AlertUI,
