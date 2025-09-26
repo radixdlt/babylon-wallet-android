@@ -319,7 +319,9 @@ fun ErrorAlertDialog(
         errorMessage.error as? CommonException
     }
 
-    if (commonException is CommonException.NfcSessionCancelled) {
+    if (commonException is CommonException.NfcSessionCancelled ||
+        commonException is CommonException.HostInteractionAborted
+    ) {
         return
     }
 

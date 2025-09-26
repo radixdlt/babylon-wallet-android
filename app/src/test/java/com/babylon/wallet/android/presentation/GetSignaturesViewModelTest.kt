@@ -369,7 +369,8 @@ class GetSignaturesViewModelTest {
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Resolving(
                             id = deviceFactorSource1.id.asGeneral()
                         )
-                    )
+                    ),
+                    isMfaEnabled = false
                 ),
                 awaitItem()
             )
@@ -381,7 +382,8 @@ class GetSignaturesViewModelTest {
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
                             factorSource = deviceFactorSource1.asGeneral()
                         )
-                    )
+                    ),
+                    isMfaEnabled = false
                 ),
                 awaitItem()
             )
@@ -393,7 +395,8 @@ class GetSignaturesViewModelTest {
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
                             factorSource = deviceFactorSource1.asGeneral()
                         )
-                    )
+                    ),
+                    isMfaEnabled = false
                 ),
                 awaitItem()
             )
@@ -422,7 +425,8 @@ class GetSignaturesViewModelTest {
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Resolving(
                             id = ledgerFactorSource1.id.asGeneral()
                         )
-                    )
+                    ),
+                    isMfaEnabled = false
                 ),
                 awaitItem()
             )
@@ -435,7 +439,8 @@ class GetSignaturesViewModelTest {
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
                             factorSource = ledgerFactorSource1.asGeneral()
                         )
-                    )
+                    ),
+                    isMfaEnabled = false
                 ),
                 awaitItem()
             )
@@ -448,7 +453,8 @@ class GetSignaturesViewModelTest {
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
                             factorSource = ledgerFactorSource1.asGeneral()
                         )
-                    )
+                    ),
+                    isMfaEnabled = false
                 ),
                 awaitItem()
             )

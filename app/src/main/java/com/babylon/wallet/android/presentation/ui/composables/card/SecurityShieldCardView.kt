@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables.card
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -14,48 +14,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
+import com.babylon.wallet.android.presentation.ui.composables.FactorSourceLabelsView
 import com.babylon.wallet.android.presentation.ui.composables.shared.CardContainer
 import com.babylon.wallet.android.presentation.ui.model.securityshields.SecurityShieldCard
-import com.babylon.wallet.android.presentation.ui.model.securityshields.SecurityShieldStatusMessage
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.SecurityStructureFlag
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SecurityStructureId
-import com.radixdlt.sargon.SecurityStructureMetadata
-import com.radixdlt.sargon.ShieldForDisplay
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun SecurityShieldCardView(
+    item: SecurityShieldCard,
     modifier: Modifier = Modifier,
-    item: SecurityShieldCard
+    contentPadding: PaddingValues = PaddingValues(RadixTheme.dimensions.paddingDefault),
+    iconSize: Dp = 80.dp,
+    iconRes: Int = DSR.ic_shield_not_applied,
+    endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer {
         Row(
             modifier = modifier
-                .padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingSemiLarge
-                )
-                // keep the same height of the card if status message is not present
-                .padding(vertical = if (item.messages.isEmpty()) RadixTheme.dimensions.paddingMedium else 0.dp),
+                .padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                modifier = Modifier.size(80.dp),
-                painter = painterResource(id = DSR.ic_shield_not_applied),
+                modifier = Modifier.size(iconSize),
+                painter = painterResource(id = iconRes),
                 contentDescription = null,
                 tint = Color.Unspecified
             )
@@ -66,74 +61,20 @@ fun SecurityShieldCardView(
                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    text = item.shieldForDisplay.metadata.displayName.value,
+                    text = item.name.value,
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.text
                 )
+
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
-                Text(
-                    text = stringResource(R.string.securityShields_assigned_title),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.textSecondary
+                FactorSourceLabelsView(
+                    factorSources = item.factorSources
                 )
-
-                Text(
-                    text = linkedEntitiesView(
-                        accountsCount = item.numberOfLinkedAccounts,
-                        personasCount = item.numberOfLinkedPersonas,
-                        hasAnyHiddenEntities = item.hasAnyHiddenLinkedEntities
-                    ),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.textSecondary
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-
-                if (item.messages.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
-                        item.messages.forEach {
-                            StatusMessageText(
-                                message = it.getMessage()
-                            )
-                        }
-                    }
-                }
             }
+
+            endContent?.invoke()
         }
-    }
-}
-
-@Composable
-private fun linkedEntitiesView(
-    accountsCount: Int,
-    personasCount: Int,
-    hasAnyHiddenEntities: Boolean
-): String {
-    val accountsText = when (accountsCount) {
-        0 -> stringResource(id = R.string.empty)
-        1 -> stringResource(id = R.string.securityShields_assigned_accountSingular)
-        else -> stringResource(id = R.string.securityShields_assigned_accountPlural, accountsCount)
-    }
-    val personasText = when (personasCount) {
-        0 -> stringResource(id = R.string.empty)
-        1 -> stringResource(id = R.string.securityShields_assigned_personaSingular)
-        else -> stringResource(id = R.string.securityShields_assigned_personaPlural, personasCount)
-    }
-
-    val linkedText = when {
-        accountsCount == 0 && personasCount == 0 && hasAnyHiddenEntities -> stringResource(
-            R.string.common_hiddenAccountsOrPersonas
-        )
-        accountsCount == 0 && personasCount == 0 -> stringResource(R.string.common_none)
-        accountsCount != 0 && personasCount != 0 -> "$accountsText ${stringResource(id = R.string.dot_separator)} $personasText"
-        accountsCount != 0 -> accountsText
-        else -> personasText
-    }
-
-    return if (hasAnyHiddenEntities && (accountsCount != 0 || personasCount != 0)) {
-        "$linkedText ${stringResource(R.string.securityShields_assigned_someHiddenEntities)}"
-    } else {
-        linkedText
     }
 }
 
@@ -151,104 +92,26 @@ private fun SecurityShieldCardPreview(
 }
 
 @UsesSampleValues
-val mainShieldForDisplaySample = SecurityShieldCard(
-    ShieldForDisplay(
-        metadata = SecurityStructureMetadata(
-            id = SecurityStructureId.randomUUID(),
-            displayName = DisplayName("Panathinaikos"),
-            createdOn = Timestamp.now(),
-            lastUpdatedOn = Timestamp.now(),
-            flags = listOf(SecurityStructureFlag.MAIN)
-        ),
-        numberOfLinkedAccounts = 2.toUInt(),
-        numberOfLinkedHiddenAccounts = 3.toUInt(),
-        numberOfLinkedPersonas = 1.toUInt(),
-        numberOfLinkedHiddenPersonas = 0.toUInt()
-    ),
-    messages = persistentListOf(SecurityShieldStatusMessage.AppliedAndWorking)
-)
-
-@UsesSampleValues
-val otherShieldsForDisplaySample = persistentListOf(
+val shieldsForDisplaySample = persistentListOf(
     SecurityShieldCard(
-        shieldForDisplay = ShieldForDisplay(
-            metadata = SecurityStructureMetadata(
-                id = SecurityStructureId.randomUUID(),
-                displayName = DisplayName("cool shield"),
-                createdOn = Timestamp.now(),
-                lastUpdatedOn = Timestamp.now(),
-                flags = emptyList()
-            ),
-            numberOfLinkedAccounts = 21.toUInt(),
-            numberOfLinkedHiddenAccounts = 0.toUInt(),
-            numberOfLinkedPersonas = 1.toUInt(),
-            numberOfLinkedHiddenPersonas = 0.toUInt()
-        ),
-        messages = persistentListOf(SecurityShieldStatusMessage.AppliedAndWorking)
+        id = SecurityStructureId.randomUUID(),
+        name = DisplayName("My Shield"),
+        factorSources = FactorSource.sample.all.toPersistentList()
     ),
     SecurityShieldCard(
-        ShieldForDisplay(
-            metadata = SecurityStructureMetadata(
-                id = SecurityStructureId.randomUUID(),
-                displayName = DisplayName.sample.other(),
-                createdOn = Timestamp.now(),
-                lastUpdatedOn = Timestamp.now(),
-                flags = emptyList()
-            ),
-            numberOfLinkedAccounts = 0.toUInt(),
-            numberOfLinkedHiddenAccounts = 1.toUInt(),
-            numberOfLinkedPersonas = 1.toUInt(),
-            numberOfLinkedHiddenPersonas = 0.toUInt()
-        ),
-        messages = persistentListOf(SecurityShieldStatusMessage.ActionRequired)
+        id = SecurityStructureId.randomUUID(),
+        name = DisplayName("My Shield 3"),
+        factorSources = persistentListOf(FactorSource.sample())
     ),
     SecurityShieldCard(
-        ShieldForDisplay(
-            metadata = SecurityStructureMetadata(
-                id = SecurityStructureId.randomUUID(),
-                displayName = DisplayName("666"),
-                createdOn = Timestamp.now(),
-                lastUpdatedOn = Timestamp.now(),
-                flags = emptyList()
-            ),
-            numberOfLinkedAccounts = 0.toUInt(),
-            numberOfLinkedHiddenAccounts = 0.toUInt(),
-            numberOfLinkedPersonas = 0.toUInt(),
-            numberOfLinkedHiddenPersonas = 0.toUInt()
-        ),
-        messages = persistentListOf()
+        id = SecurityStructureId.randomUUID(),
+        name = DisplayName("My Shield 4"),
+        factorSources = persistentListOf(FactorSource.sample.other())
     ),
     SecurityShieldCard(
-        ShieldForDisplay(
-            metadata = SecurityStructureMetadata(
-                id = SecurityStructureId.randomUUID(),
-                displayName = DisplayName.sample(),
-                createdOn = Timestamp.now(),
-                lastUpdatedOn = Timestamp.now(),
-                flags = emptyList()
-            ),
-            numberOfLinkedAccounts = 23.toUInt(),
-            numberOfLinkedHiddenAccounts = 32.toUInt(),
-            numberOfLinkedPersonas = 11.toUInt(),
-            numberOfLinkedHiddenPersonas = 10.toUInt()
-        ),
-        messages = persistentListOf(SecurityShieldStatusMessage.AppliedAndWorking)
-    ),
-    SecurityShieldCard(
-        ShieldForDisplay(
-            metadata = SecurityStructureMetadata(
-                id = SecurityStructureId.randomUUID(),
-                displayName = DisplayName("ALFZ PSF"),
-                createdOn = Timestamp.now(),
-                lastUpdatedOn = Timestamp.now(),
-                flags = emptyList()
-            ),
-            numberOfLinkedAccounts = 0.toUInt(),
-            numberOfLinkedHiddenAccounts = 0.toUInt(),
-            numberOfLinkedPersonas = 0.toUInt(),
-            numberOfLinkedHiddenPersonas = 1.toUInt()
-        ),
-        messages = persistentListOf()
+        id = SecurityStructureId.randomUUID(),
+        name = DisplayName("My Shield 5"),
+        factorSources = persistentListOf()
     )
 )
 
@@ -256,5 +119,5 @@ val otherShieldsForDisplaySample = persistentListOf(
 class SecurityShieldCardPreviewProvider : PreviewParameterProvider<SecurityShieldCard> {
 
     override val values: Sequence<SecurityShieldCard>
-        get() = otherShieldsForDisplaySample.asSequence()
+        get() = shieldsForDisplaySample.asSequence()
 }

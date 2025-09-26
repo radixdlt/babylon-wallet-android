@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.numberOfSignaturesForTransaction
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -191,8 +192,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val feesState = _state.value.fees ?: return
         val selectedFeePayerAccount = feesState.selectedFeePayerInput?.preselectedCandidate?.account ?: return
         val feePayers = data.value.feePayers ?: return
-
-        val signersCount = data.value.signers.count()
+        val signatureCount = data.value.transactionFees?.signatureCount ?: 0
 
         val updatedFeePayers = feePayers.copy(
             selectedAccountAddress = selectedFeePayerAccount.address,
@@ -201,16 +201,16 @@ class TransactionFeesDelegateImpl @Inject constructor(
         data.update { it.copy(feePayers = updatedFeePayers) }
 
         val customizeFeesSheet = _state.value.sheetState as? Sheet.CustomizeFees ?: return
-        val updatedSignersCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
-            signersCount
+        val updatedSignatureCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
+            signatureCount
         } else {
-            signersCount + 1
+            signatureCount + selectedFeePayerAccount.securityState.numberOfSignaturesForTransaction
         }
 
         data.update {
             it.copy(
                 transactionFees = feesState.transactionFees.copy(
-                    signersCount = updatedSignersCount
+                    signatureCount = updatedSignatureCount
                 )
             )
         }

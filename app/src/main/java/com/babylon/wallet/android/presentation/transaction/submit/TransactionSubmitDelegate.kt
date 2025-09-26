@@ -32,8 +32,8 @@ import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.hash
-import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import com.radixdlt.sargon.extensions.then
+import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -67,6 +67,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
     private val exceptionMessageProvider: ExceptionMessageProvider,
+    private val sargonOsManager: SargonOsManager
 ) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
     TransactionSubmitDelegate {
 
@@ -169,7 +170,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
-    private fun prepareSummary(): Result<Summary> = runCatching {
+    private suspend fun prepareSummary(): Result<Summary> = runCatching {
         when (val summary = data.value.summary) {
             is Summary.FromExecution -> {
                 val transactionPreviewType = (_state.value.previewType as? PreviewType.Transaction)
@@ -177,7 +178,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 if (transactionPreviewType != null && transactionManifest != null) {
                     summary.copy(
                         manifest = SummarizedManifest.Transaction(
-                            transactionManifest.addAssertions(deposits = transactionPreviewType.to)
+                            manifest = transactionManifest.addAssertions(transactionPreviewType.to)
                         )
                     )
                 } else {
@@ -216,7 +217,10 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             lockFee = fees.transactionFees.transactionFeeToLock,
             tipPercentage = fees.transactionFees.tipPercentageForTransaction,
             notarySecretKey = data.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerAddress
+            feePayerAddress = feePayerAddress,
+            guarantees = buildGuarantees(
+                deposits = (_state.value.previewType as? PreviewType.Transaction)?.to.orEmpty()
+            )
         ).then { notarizationResult ->
             transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
         }.onSuccess { notarization ->
@@ -316,13 +320,23 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     }
 
     @Throws(CommonException::class)
-    private fun TransactionManifest.addAssertions(
+    private suspend fun TransactionManifest.addAssertions(
         deposits: List<AccountWithTransferables>
     ): TransactionManifest {
+        return sargonOsManager.sargonOs.modifyTransactionManifestWithoutFeePayer(
+            transactionManifest = this,
+            guarantees = buildGuarantees(deposits)
+        )
+    }
+
+    private fun buildGuarantees(
+        deposits: List<AccountWithTransferables>
+    ): List<TransactionGuarantee> {
         val allTransferables = deposits.map { it.transferables }.flatten()
 
-        val guarantees = allTransferables.mapNotNull { transferable ->
-            val amount = ((transferable as? Transferable.FungibleType)?.amount as? BoundedAmount.Predicted) ?: return@mapNotNull null
+        return allTransferables.mapNotNull { transferable ->
+            val amount = ((transferable as? Transferable.FungibleType)?.amount as? BoundedAmount.Predicted)
+                ?: return@mapNotNull null
             val fungibleAsset = (transferable.asset as? Asset.Fungible) ?: return@mapNotNull null
 
             TransactionGuarantee(
@@ -333,6 +347,5 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 percentage = amount.offset
             )
         }
-        return modifyAddGuarantees(guarantees = guarantees)
     }
 }

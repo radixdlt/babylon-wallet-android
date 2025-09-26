@@ -72,6 +72,8 @@ class SetFactorSourceNameViewModel @Inject constructor(
                     )
                 }
             }.onFailure { throwable ->
+                Timber.d(throwable)
+
                 val uiMessage = if (throwable is CommonException) {
                     when {
                         throwable is CommonException.SecureStorageAccessException &&
@@ -126,23 +128,36 @@ class SetFactorSourceNameViewModel @Inject constructor(
         when (params) {
             is AddFactorSourceIntermediaryParams.Mnemonic -> when (input.kind) {
                 FactorSourceKind.DEVICE -> saveDeviceFactorSource(params)
-                FactorSourceKind.ARCULUS_CARD -> saveFactorSource(
+                FactorSourceKind.ARCULUS_CARD -> runCatching {
                     FactorSource.ArculusCard.init(
                         mnemonicWithPassphrase = params.value,
                         name = state.value.name
                     )
-                )
+                }.then { factorSource ->
+                    saveFactorSource(factorSource)
+                }
+
+                FactorSourceKind.OFF_DEVICE_MNEMONIC -> runCatching {
+                    FactorSource.OffDeviceMnemonic.init(
+                        mnemonicWithPassphrase = params.value,
+                        name = state.value.name
+                    )
+                }.then { factorSource ->
+                    saveFactorSource(factorSource)
+                }
 
                 else -> error("Not yet supported")
             }
 
-            is AddFactorSourceIntermediaryParams.Ledger -> saveFactorSource(
+            is AddFactorSourceIntermediaryParams.Ledger -> runCatching {
                 FactorSource.Ledger.init(
                     id = params.factorSourceId,
                     model = params.model,
                     name = state.value.name
                 )
-            )
+            }.then { factorSource ->
+                saveFactorSource(factorSource)
+            }
         }
     }
 

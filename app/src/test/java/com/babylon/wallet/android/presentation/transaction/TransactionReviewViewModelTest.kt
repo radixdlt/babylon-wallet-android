@@ -312,7 +312,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 clearCachedNewlyCreatedEntitiesUseCase = clearCachedNewlyCreatedEntitiesUseCase,
                 transactionStatusClient = transactionStatusClient,
                 exceptionMessageProvider = exceptionMessageProvider,
-                transactionRepository = transactionRepository
+                transactionRepository = transactionRepository,
+                sargonOsManager = sargonOsManager
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,

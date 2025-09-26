@@ -125,8 +125,7 @@ class SelectFactorsViewModel @Inject constructor(
         val message: UiMessage? = null
     ) : UiState {
 
-        val isButtonEnabled: Boolean = status == SelectedPrimaryThresholdFactorsStatus.Optimal ||
-            status == SelectedPrimaryThresholdFactorsStatus.Suboptimal
+        val isButtonEnabled: Boolean = status != null && status != SelectedPrimaryThresholdFactorsStatus.Insufficient
 
         fun cannotBeUsedByItself(categoryHeader: UiItem.CategoryHeader): Boolean =
             (status as? SelectedPrimaryThresholdFactorsStatus.Invalid)?.let { status ->

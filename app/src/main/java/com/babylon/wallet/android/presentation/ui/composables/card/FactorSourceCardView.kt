@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.annotation.DrawableRes
@@ -469,6 +471,36 @@ private fun FactorSourceCardPreview(
     @PreviewParameter(FactorSourceCardPreviewProvider::class) item: FactorSourceCard
 ) {
     RadixWalletPreviewTheme {
+        FactorSourceCardView(
+            item = item
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun FactorSourceKindCardDarkPreview(
+    @PreviewParameter(FactorSourceKindCardPreviewProvider::class) item: FactorSourceKindCard
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
+        FactorSourceKindCardView(
+            item = item
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun FactorSourceCardDarkPreview(
+    @PreviewParameter(FactorSourceCardPreviewProvider::class) item: FactorSourceCard
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         FactorSourceCardView(
             item = item
         )

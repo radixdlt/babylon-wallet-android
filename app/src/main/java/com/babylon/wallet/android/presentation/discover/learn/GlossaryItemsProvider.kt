@@ -81,8 +81,7 @@ class GlossaryItemsProvider @Inject constructor(
 
     companion object {
 
-        val searchableGlossaryItems =
-            GlossaryItem.entries.filterNot { it in GlossaryItem.mfaRelated }
+        val searchableGlossaryItems = GlossaryItem.entries
     }
 }
 

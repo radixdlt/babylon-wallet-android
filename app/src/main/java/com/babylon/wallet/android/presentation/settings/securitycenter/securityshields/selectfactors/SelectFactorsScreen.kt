@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,19 +30,18 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupUnsafeCombinationStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.title
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.FactorSourceCategoryHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.shared.StatusMessage
-import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.DeviceFactorSource
@@ -124,9 +123,10 @@ private fun SelectFactorsContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Image(
+                Icon(
                     painter = painterResource(id = DSR.ic_select_factors),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = RadixTheme.colors.icon
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -214,18 +214,9 @@ private fun StatusView(
             )
         )
 
-        is SelectedPrimaryThresholdFactorsStatus.Invalid -> StatusMessageText(
-            modifier = modifier.noIndicationClickable { onInfoClick(GlossaryItem.buildingshield) },
-            message = StatusMessage(
-                message = stringResource(id = R.string.shieldSetupStatus_invalidCombination).formattedSpans(
-                    boldStyle = SpanStyle(
-                        color = RadixTheme.colors.textButton,
-                        fontWeight = RadixTheme.typography.body1StandaloneLink.fontWeight,
-                        fontSize = RadixTheme.typography.body2Link.fontSize
-                    )
-                ),
-                type = StatusMessage.Type.ERROR
-            )
+        is SelectedPrimaryThresholdFactorsStatus.Invalid -> ShieldSetupUnsafeCombinationStatusView(
+            modifier = modifier,
+            onInfoClick = onInfoClick
         )
 
         SelectedPrimaryThresholdFactorsStatus.Optimal -> return
@@ -235,10 +226,30 @@ private fun StatusView(
 @Composable
 @Preview
 @UsesSampleValues
-private fun SelectFactorsPreview(
+private fun SelectFactorsLightPreview(
     @PreviewParameter(SelectFactorsPreviewProvider::class) state: SelectFactorsViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        SelectFactorsContent(
+            state = state,
+            onDismiss = {},
+            onFactorCheckedChange = { _, _ -> },
+            onInfoClick = {},
+            onSkipClick = {},
+            onBuildShieldClick = {},
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun SelectFactorsDarkPreview(
+    @PreviewParameter(SelectFactorsPreviewProvider::class) state: SelectFactorsViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SelectFactorsContent(
             state = state,
             onDismiss = {},

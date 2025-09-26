@@ -270,8 +270,25 @@ private fun SecurityShieldOnboardingViewModel.State.Page.descriptionRes() = when
 
 @Composable
 @Preview
-private fun SecurityShieldOnboardingPreview() {
+private fun SecurityShieldOnboardingLightPreview() {
     RadixWalletPreviewTheme {
+        SecurityShieldOnboardingContent(
+            state = SecurityShieldOnboardingViewModel.State(),
+            onDismiss = {},
+            onPageChange = {},
+            onInfoClick = {},
+            onButtonClick = {},
+            onMessageShown = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SecurityShieldOnboardingDarkPreview() {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SecurityShieldOnboardingContent(
             state = SecurityShieldOnboardingViewModel.State(),
             onDismiss = {},

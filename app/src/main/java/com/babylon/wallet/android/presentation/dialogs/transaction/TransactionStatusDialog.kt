@@ -53,9 +53,14 @@ fun TransactionStatusDialog(
             when (event) {
                 TransactionStatusDialogViewModel.Event.DismissDialog -> {
                     sheetState.hide()
-                    onClose()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(sheetState.isVisible) {
+        if (!sheetState.isVisible) {
+            onClose()
         }
     }
 

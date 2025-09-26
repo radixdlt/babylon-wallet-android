@@ -39,7 +39,7 @@ class AddFactorSourceIntroViewModel @Inject constructor(
                 FactorSourceKind.DEVICE -> sendEvent(Event.AddDeviceFactorSource)
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> addLedgerFactorSource()
                 FactorSourceKind.ARCULUS_CARD -> sendEvent(Event.AddArculusFactorSource)
-                FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                FactorSourceKind.OFF_DEVICE_MNEMONIC -> sendEvent(Event.AddOffDeviceMnemonicFactorSource)
                 FactorSourceKind.PASSWORD -> sendEvent(Event.Dismiss)
             }
         }
@@ -80,5 +80,7 @@ class AddFactorSourceIntroViewModel @Inject constructor(
         data object AddLedgerFactorSource : Event
 
         data object AddArculusFactorSource : Event
+
+        data object AddOffDeviceMnemonicFactorSource : Event
     }
 }

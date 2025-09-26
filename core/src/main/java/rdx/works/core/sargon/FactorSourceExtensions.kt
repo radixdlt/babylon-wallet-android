@@ -6,6 +6,7 @@ import com.radixdlt.sargon.ArculusCardModel
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DeviceFactorSourceHint
+import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCommon
@@ -19,6 +20,7 @@ import com.radixdlt.sargon.LedgerHardwareWalletHint
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
+import com.radixdlt.sargon.OffDeviceMnemonicHint
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
@@ -27,6 +29,7 @@ import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.newArculusCardFactorSourceFromMnemonicWithPassphrase
 import com.radixdlt.sargon.newDeviceFactorSourceBabylon
 import com.radixdlt.sargon.newDeviceFactorSourceOlympia
+import com.radixdlt.sargon.newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase
 import com.radixdlt.sargon.samples.Sample
 import rdx.works.core.TimestampGenerator
 import java.time.OffsetDateTime
@@ -105,6 +108,17 @@ fun FactorSource.ArculusCard.Companion.init(
     hint = ArculusCardHint(
         label = name,
         model = ArculusCardModel.ARCULUS_COLD_STORAGE_WALLET
+    )
+).asGeneral()
+
+fun FactorSource.OffDeviceMnemonic.Companion.init(
+    mnemonicWithPassphrase: MnemonicWithPassphrase,
+    name: String
+): FactorSource.OffDeviceMnemonic = newOffDeviceMnemonicFactorSourceFromMnemonicWithPassphrase(
+    mwp = mnemonicWithPassphrase,
+    hint = OffDeviceMnemonicHint(
+        label = DisplayName.init(name),
+        wordCount = mnemonicWithPassphrase.mnemonic.wordCount
     )
 ).asGeneral()
 

@@ -20,6 +20,7 @@ import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.sargon.numberOfSignaturesForTransaction
 
 data class TransactionFees(
     private val nonContingentFeeLock: Decimal192 = 0.toDecimal192(),
@@ -30,10 +31,10 @@ data class TransactionFees(
     private val guaranteesCount: Int = 0,
     private val notaryIsSignatory: Boolean = true,
     private val includeLockFee: Boolean = false,
-    private val signersCount: Int = 0,
     private val feePaddingAmount: String? = null,
     private val tipPercentage: String? = null,
     private val xrdFiatPrice: FiatPrice? = null,
+    val signatureCount: Int = 0,
     val isNetworkCongested: Boolean = false
 ) {
 
@@ -48,7 +49,7 @@ data class TransactionFees(
         get() = if (includeLockFee) LOCK_FEE_INSTRUCTION_COST else 0.toDecimal192()
 
     private val signaturesCost: Decimal192
-        get() = signersCount.toDecimal192() * SIGNATURE_COST
+        get() = signatureCount.toDecimal192() * SIGNATURE_COST
 
     // ********* DEFAULT *********
     private val networkFee: Decimal192
@@ -187,7 +188,7 @@ data class TransactionFees(
             guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
-            signersCount = notaryAndSigners.signers.count()
+            signatureCount = notaryAndSigners.signers.numberOfSignaturesForTransaction
         ).let { fees ->
             if (fees.defaultTransactionFee > 0.toDecimal192()) {
                 // There will be a lock fee so update lock fee cost

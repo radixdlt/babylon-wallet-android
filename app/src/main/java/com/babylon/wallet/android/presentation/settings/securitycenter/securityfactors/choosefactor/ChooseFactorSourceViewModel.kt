@@ -7,6 +7,8 @@ import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.factorsources.GetEntitiesLinkedToFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceKindsByCategoryUseCase
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
+import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -38,7 +40,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.domain.GetProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,8 +48,10 @@ class ChooseFactorSourceViewModel @Inject constructor(
     getFactorSourceKindsByCategoryUseCase: GetFactorSourceKindsByCategoryUseCase,
     private val getEntitiesLinkedToFactorSourceUseCase: GetEntitiesLinkedToFactorSourceUseCase,
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
+    private val addFactorSourceProxy: AddFactorSourceProxy,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
-) : StateViewModel<ChooseFactorSourceViewModel.State>(), OneOffEventHandler<ChooseFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<ChooseFactorSourceViewModel.State>(),
+    OneOffEventHandler<ChooseFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val data = getProfileUseCase.flow.map { it.factorSources }
         .map { allFactorSources ->
@@ -108,7 +111,7 @@ class ChooseFactorSourceViewModel @Inject constructor(
                                     )
                                 }
                         ),
-                        currentPagePosition = 0
+                        currentPagePosition = state.currentPagePosition
                     )
                 }
             }
@@ -117,8 +120,9 @@ class ChooseFactorSourceViewModel @Inject constructor(
 
     fun onSecurityFactorTypeClick(item: SecurityFactorTypeUiItem.Item) {
         _state.update { state ->
-            val nextPagePosition = state.pages.indexOfFirst { it is State.Page.SelectFactorSource && it.kind == item.factorSourceKind }
-                .takeIf { it != -1 } ?: return
+            val nextPagePosition =
+                state.pages.indexOfFirst { it is State.Page.SelectFactorSource && it.kind == item.factorSourceKind }
+                    .takeIf { it != -1 } ?: return
 
             state.copy(currentPagePosition = nextPagePosition)
         }
@@ -167,7 +171,14 @@ class ChooseFactorSourceViewModel @Inject constructor(
     }
 
     fun onAddFactorSourceClick(factorSourceKind: FactorSourceKind) {
-        Timber.d("onAddFactorSourceClick: $factorSourceKind")
+        viewModelScope.launch {
+            addFactorSourceProxy.addFactorSource(
+                AddFactorSourceInput.WithKind(
+                    kind = factorSourceKind,
+                    context = AddFactorSourceInput.Context.New
+                )
+            )
+        }
     }
 
     fun onSheetCloseClick() = viewModelScope.launch {

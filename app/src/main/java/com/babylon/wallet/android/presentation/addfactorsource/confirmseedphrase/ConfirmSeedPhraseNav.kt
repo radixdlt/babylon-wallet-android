@@ -31,7 +31,8 @@ fun NavGraphBuilder.confirmSeedPhrase(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onDeviceSeedPhraseConfirmed = { navController.setFactorSourceName() },
-            onArculusSeedPhraseConfirmed = { navController.createArculusPin(CreateArculusPinContext.New) }
+            onArculusSeedPhraseConfirmed = { navController.createArculusPin(CreateArculusPinContext.New) },
+            onOffDeviceSeedPhraseConfirmed = { navController.setFactorSourceName() }
         )
     }
 }

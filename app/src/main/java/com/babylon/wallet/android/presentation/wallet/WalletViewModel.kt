@@ -29,6 +29,7 @@ import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemon
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HomeCard
@@ -39,7 +40,6 @@ import com.radixdlt.sargon.extensions.isUnsecuredLedgerControlled
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -279,6 +279,7 @@ class WalletViewModel @Inject constructor(
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
                     }
+
                     AppEvent.GenericSuccess -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.Success) }
                     }
@@ -412,9 +413,6 @@ class WalletViewModel @Inject constructor(
             val account = accountWithAssets.account
             val isLegacyOlympiaAccount = account.isLegacy
             val isUnsecuredLedgerControlledAccount = account.isUnsecuredLedgerControlled
-            val factorSource = account.unsecuredControllingFactorInstance?.factorSourceId?.let {
-                factorSources[it.asGeneral()]
-            }
 
             AccountUiItem(
                 account = account,
@@ -433,7 +431,16 @@ class WalletViewModel @Inject constructor(
                 fiatTotalValue = prices.totalBalance(forAccount = accountWithAssets),
                 isLoadingAssets = accountWithAssets.assets == null,
                 isLoadingBalance = prices.isLoadingBalance(forAccount = accountWithAssets),
-                factorSource = factorSource
+                securedWith = when (val securityState = account.securityState) {
+                    is EntitySecurityState.Securified -> AccountUiItem.SecuredWith.Shield
+                    is EntitySecurityState.Unsecured -> factorSources[
+                        securityState.value.transactionSigning.factorSourceId.asGeneral()
+                    ]?.let { factorSource ->
+                        AccountUiItem.SecuredWith.Factor(
+                            value = factorSource
+                        )
+                    }
+                }
             )
         }
 
@@ -515,8 +522,18 @@ class WalletViewModel @Inject constructor(
             val isFiatBalanceVisible: Boolean,
             val isLoadingAssets: Boolean,
             val isLoadingBalance: Boolean,
-            val factorSource: FactorSource?
-        )
+            val securedWith: SecuredWith?
+        ) {
+
+            sealed interface SecuredWith {
+
+                data object Shield : SecuredWith
+
+                data class Factor(
+                    val value: FactorSource
+                ) : SecuredWith
+            }
+        }
 
         sealed interface PricesState {
             // Shimmering state

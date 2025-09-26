@@ -13,27 +13,33 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.common.secured.SecuredWithUiData
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.EntitySecurityState
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -51,7 +57,7 @@ class AccountSettingsViewModel @Inject constructor(
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<AccountSettingsViewModel.State>(),
     OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -85,27 +91,43 @@ class AccountSettingsViewModel @Inject constructor(
                 _state.update { it.copy(faucetState = faucetState) }
             }
         }
+        getProfileUseCase.flow.map { it.currentNetwork?.id == NetworkId.STOKENET }
+            .onEach { isOnStokenet ->
+                _state.update { state -> state.copy(isMfaEnabled = isOnStokenet) }
+            }.launchIn(viewModelScope)
     }
 
     private fun loadAccount() {
         viewModelScope.launch {
             getProfileUseCase.flow.mapNotNull { profile ->
-                val account = profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
-                val factorSource = account?.unsecuredControllingFactorInstance?.let {
-                    profile.factorSourceById(it.factorSourceId.asGeneral())
+                val account = profile.activeAccountsOnCurrentNetwork.first { it.address == args.address }
+                val securedWith = when (val securityState = account.securityState) {
+                    is EntitySecurityState.Securified -> SecuredWithUiData.Shield
+                    is EntitySecurityState.Unsecured -> profile.factorSourceById(
+                        id = securityState.value.transactionSigning.factorSourceId.asGeneral()
+                    )?.let { factorSource ->
+                        SecuredWithUiData.Factor(
+                            factorSourceCard = factorSource.toFactorSourceCard(
+                                includeLastUsedOn = true,
+                                messages = getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(
+                                    factorSource = factorSource,
+                                    includeNoIssuesStatus = false,
+                                    checkIntegrityOnlyIfAnyEntitiesLinked = false
+                                ).toPersistentList()
+                            )
+                        )
+                    }
                 }
-                account?.let {
-                    it to factorSource
-                }
-            }.collect { accountAndFactorSource ->
+                account to securedWith
+            }.collect { accountAndSecuredWith ->
                 val thirdPartyDefaultDepositRule =
-                    accountAndFactorSource.first.onLedgerSettings.thirdPartyDeposits.depositRule
+                    accountAndSecuredWith.first.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->
                     state.copy(
                         renameAccountInput = state.renameAccountInput.copy(
-                            name = accountAndFactorSource.first.displayName.value
+                            name = accountAndSecuredWith.first.displayName.value
                         ),
-                        account = accountAndFactorSource.first,
+                        account = accountAndSecuredWith.first,
                         settingsSections = state.settingsSections.mapWhen(
                             predicate = { it is AccountSettingsSection.AccountSection },
                             mutation = { section ->
@@ -120,16 +142,7 @@ class AccountSettingsViewModel @Inject constructor(
                                 )
                             }
                         ).toPersistentList(),
-                        securedWith = accountAndFactorSource.second?.toFactorSourceCard(
-                            includeLastUsedOn = true,
-                            messages = accountAndFactorSource.second?.let { factorSource ->
-                                getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(
-                                    factorSource = factorSource,
-                                    includeNoIssuesStatus = false,
-                                    checkIntegrityOnlyIfAnyEntitiesLinked = false
-                                )
-                            }.orEmpty().toPersistentList()
-                        )
+                        securedWith = accountAndSecuredWith.second
                     )
                 }
             }
@@ -240,18 +253,24 @@ class AccountSettingsViewModel @Inject constructor(
         val faucetState: FaucetState = FaucetState.Unavailable,
         val isAccountNameUpdated: Boolean = false,
         val isFreeXRDLoading: Boolean = false,
-        val securedWith: FactorSourceCard? = null
+        val securedWith: SecuredWithUiData? = null,
+        val isMfaEnabled: Boolean = false
     ) : UiState {
+
+        val isBottomSheetVisible: Boolean
+            get() = bottomSheetContent != BottomSheetContent.None
+        val canApplyShield
+            get() = isMfaEnabled && securedWith != SecuredWithUiData.Shield
+        val address
+            get() = AddressOfAccountOrPersona.Account(requireNotNull(account?.address))
 
         data class RenameAccountInput(
             override val name: String = "",
             override val isUpdating: Boolean = false
         ) : RenameInput()
 
-        val isBottomSheetVisible: Boolean
-            get() = bottomSheetContent != BottomSheetContent.None
-
         sealed interface BottomSheetContent {
+
             data object None : BottomSheetContent
             data object RenameAccount : BottomSheetContent
             data object HideAccount : BottomSheetContent

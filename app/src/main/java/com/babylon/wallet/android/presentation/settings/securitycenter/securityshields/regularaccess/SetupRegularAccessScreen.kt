@@ -164,7 +164,11 @@ private fun SetupRegularAccessContent(
             ) {
                 ShieldBuilderTitleView(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    imageRes = DSR.ic_regular_access,
+                    imageRes = if (RadixTheme.config.isDarkTheme) {
+                        DSR.ic_regular_access_dark
+                    } else {
+                        DSR.ic_regular_access
+                    },
                     title = stringResource(id = R.string.shieldWizardRegularAccess_title)
                 )
 
@@ -324,7 +328,7 @@ private fun OverrideFactorsView(
                     Icon(
                         painter = painterResource(id = DSR.ic_close),
                         contentDescription = null,
-                        tint = RadixTheme.colors.iconSecondary
+                        tint = RadixTheme.colors.iconTertiary
                     )
                 }
             }
@@ -577,10 +581,39 @@ private fun SelectNumberOfFactorsSheet(
 @Composable
 @Preview
 @UsesSampleValues
-private fun RegularAccessPreview(
+private fun RegularAccessLightPreview(
     @PreviewParameter(RegularAccessPreviewProvider::class) state: SetupRegularAccessViewModel.State
 ) {
     RadixWalletPreviewTheme {
+        SetupRegularAccessContent(
+            state = state,
+            onDismiss = {},
+            onInfoClick = {},
+            onNumberOfFactorsClick = {},
+            onNumberOfFactorsSelect = {},
+            onNumberOfFactorsDismiss = {},
+            onAddThresholdFactorClick = {},
+            onRemoveThresholdFactorClick = {},
+            onAddOverrideClick = {},
+            onAddOverrideFactorClick = {},
+            onRemoveOverrideFactorClick = {},
+            onRemoveAllOverrideFactorsClick = {},
+            onAddAuthenticationFactorClick = {},
+            onRemoveAuthenticationFactorClick = {},
+            onContinueClick = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun RegularAccessDarkPreview(
+    @PreviewParameter(RegularAccessPreviewProvider::class) state: SetupRegularAccessViewModel.State
+) {
+    RadixWalletPreviewTheme(
+        enableDarkTheme = true
+    ) {
         SetupRegularAccessContent(
             state = state,
             onDismiss = {},

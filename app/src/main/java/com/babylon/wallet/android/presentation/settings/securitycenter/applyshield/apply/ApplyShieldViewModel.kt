@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.apply
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
@@ -12,65 +13,78 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.ApplyShieldArgs
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.AddressOfAccountOrPersona
-import com.radixdlt.sargon.SecurityStructureId
+import com.radixdlt.sargon.SecurityStructureOfFactorSources
+import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.manifestString
 import com.radixdlt.sargon.extensions.toList
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class ApplyShieldViewModel @Inject constructor(
+    private val incomingRequestRepository: IncomingRequestRepository,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
-    private val incomingRequestRepository: IncomingRequestRepository
+    savedStateHandle: SavedStateHandle
 ) : StateViewModel<ApplyShieldViewModel.State>(),
     OneOffEventHandler<ApplyShieldViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): State = State()
+    private val args = ApplyShieldArgs(savedStateHandle)
+    private lateinit var securityStructure: SecurityStructureOfFactorSources
+
+    init {
+        viewModelScope.launch {
+            sargonOsManager.callSafely(dispatcher) {
+                securityStructure = sargonOsManager.sargonOs.securityStructuresOfFactorSources()
+                    .first { it.metadata.id == args.securityStructureId }
+                _state.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        factors = sortedFactorSourcesFromSecurityStructure(securityStructure)
+                            .map { it.toFactorSourceCard(includeLastUsedOn = false) }
+                            .toPersistentList()
+                    )
+                }
+            }
+        }
+    }
+
+    override fun initialState(): State = State(isLoading = true)
 
     fun onApplyClick(
-        securityStructureId: SecurityStructureId,
-        entityAddresses: List<AddressOfAccountOrPersona>
+        entityAddress: AddressOfAccountOrPersona
     ) = viewModelScope.launch {
-        _state.update { state -> state.copy(isLoading = true) }
+        _state.update { state -> state.copy(isApplyLoading = true) }
 
         sargonOsManager.callSafely(dispatcher) {
-            makeInteractionForApplyingSecurityShield(securityStructureId, entityAddresses)
-        }.onSuccess { interaction ->
-            Timber.d("Interaction: $interaction")
-            // TODO prepare the batch transactions request and add it to the queue
-
-            // This code is temporary
-            if (interaction.transactions.size == 1) {
-                val transaction = interaction.transactions.first()
-                val request = UnvalidatedManifestData(
-                    instructions = transaction.transactionManifestString,
-                    plainMessage = null,
-                    networkId = sargonOsManager.sargonOs.currentNetworkId(),
-                    blobs = transaction.blobs.toList().map { it.bytes },
-                ).prepareInternalTransactionRequest(
-                    transactionType = TransactionType.SecurifyEntity(
-                        entityAddress = entityAddresses.first()
-                    )
-                )
-
-                _state.update { state -> state.copy(isLoading = false) }
-                sendEvent(Event.ShieldApplied)
-
-                incomingRequestRepository.add(request)
-            } else {
-                // Batch request
-
-                _state.update { state -> state.copy(isLoading = false) }
-                sendEvent(Event.ShieldApplied)
-            }
+            val securityStructure = sargonOsManager.sargonOs.securityStructuresOfFactorSources()
+                .first { it.metadata.id == args.securityStructureId }
+            makeSetupSecurityShieldManifest(securityStructure, entityAddress)
+        }.map { manifest ->
+            UnvalidatedManifestData(
+                instructions = manifest.manifestString,
+                plainMessage = null,
+                networkId = sargonOsManager.sargonOs.currentNetworkId(),
+                blobs = manifest.blobs.toList().map { it.bytes },
+            ).prepareInternalTransactionRequest(
+                transactionType = TransactionType.SecurifyEntity(
+                    entityAddress = entityAddress
+                ),
+                blockUntilCompleted = true
+            )
         }.onFailure { error ->
             _state.update { state ->
                 state.copy(
@@ -78,6 +92,11 @@ class ApplyShieldViewModel @Inject constructor(
                     message = UiMessage.ErrorMessage(error)
                 )
             }
+        }.onSuccess { request ->
+            _state.update { state -> state.copy(isApplyLoading = false) }
+            sendEvent(Event.ShieldApplied)
+
+            incomingRequestRepository.add(request)
         }
     }
 
@@ -86,8 +105,10 @@ class ApplyShieldViewModel @Inject constructor(
     }
 
     data class State(
-        val isLoading: Boolean = false,
-        val message: UiMessage? = null
+        val isLoading: Boolean,
+        val isApplyLoading: Boolean = false,
+        val message: UiMessage? = null,
+        val factors: ImmutableList<FactorSourceCard> = persistentListOf()
     ) : UiState
 
     sealed interface Event : OneOffEvent {

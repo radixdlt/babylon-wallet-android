@@ -23,6 +23,7 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ProfileNetwork
 import com.radixdlt.sargon.ProfileSnapshotVersion
+import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionPreferences
 import com.radixdlt.sargon.extensions.Accounts
@@ -576,6 +577,26 @@ fun Profile.changeDAppLockersVisibility(dApp: AuthorizedDapp, isVisible: Boolean
     )
 
     return copy(networks = ProfileNetworks(updatedNetwork).asList())
+}
+
+fun Profile.updateSecurityShieldName(id: SecurityStructureId, name: DisplayName): Profile {
+    val updatedShields = appPreferences.security.securityStructuresOfFactorSourceIds.mapWhen(
+        predicate = { it.metadata.id == id },
+        mutation = {
+            it.copy(
+                metadata = it.metadata.copy(
+                    displayName = name
+                )
+            )
+        }
+    )
+    return copy(
+        appPreferences = appPreferences.copy(
+            security = appPreferences.security.copy(
+                securityStructuresOfFactorSourceIds = updatedShields
+            )
+        )
+    )
 }
 
 private fun Profile.withUpdatedContentHint() = copy(

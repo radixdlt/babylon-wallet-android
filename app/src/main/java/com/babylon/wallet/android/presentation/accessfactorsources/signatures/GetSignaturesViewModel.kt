@@ -23,6 +23,7 @@ import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
@@ -30,9 +31,11 @@ import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -77,6 +80,7 @@ class GetSignaturesViewModel @Inject constructor(
     override fun initialState(): State = State(
         signPurpose = purpose,
         accessState = accessDelegate.state.value,
+        isMfaEnabled = false
     )
 
     init {
@@ -86,6 +90,11 @@ class GetSignaturesViewModel @Inject constructor(
                 _state.update { it.copy(accessState = accessState) }
             }
             .launchIn(viewModelScope)
+
+        getProfileUseCase.flow.map { it.currentNetwork?.id == NetworkId.STOKENET }
+            .onEach { isOnStokenet ->
+                _state.update { state -> state.copy(isMfaEnabled = isOnStokenet) }
+            }.launchIn(viewModelScope)
     }
 
     private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
@@ -201,12 +210,15 @@ class GetSignaturesViewModel @Inject constructor(
 
     data class State(
         val signPurpose: Purpose,
-        val accessState: AccessFactorSourceDelegate.State
+        val accessState: AccessFactorSourceDelegate.State,
+        val isMfaEnabled: Boolean
     ) : UiState {
 
-        private val canSkipFactor: Boolean = false
-//            get() = signPurpose == AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents ||
-//                signPurpose == AccessFactorSourcesInput.ToSign.Purpose.SubIntents
+        private val canSkipFactor: Boolean
+            get() = isMfaEnabled && (
+                signPurpose == Purpose.TransactionIntents ||
+                    signPurpose == Purpose.SubIntents
+                )
 
         val skipOption: AccessFactorSourceSkipOption
             get() = if (canSkipFactor) AccessFactorSourceSkipOption.CanSkipFactor else AccessFactorSourceSkipOption.None

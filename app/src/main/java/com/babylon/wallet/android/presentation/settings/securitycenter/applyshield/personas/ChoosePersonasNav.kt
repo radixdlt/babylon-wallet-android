@@ -16,28 +16,28 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.applyshie
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.common.ApplyShieldSharedViewModel
 
 private const val ROUTE_CHOOSE_PERSONAS = "choose_personas"
-private const val ARG_MUST_SELECT_AT_LEAST_ONE = "arg_must_select_at_least_one"
+private const val ARG_MUST_SELECT_ONE = "arg_must_select_one"
 
 internal class ChoosePersonasArgs(
-    val mustSelectAtLeastOne: Boolean
+    val mustSelectOne: Boolean
 ) {
 
     constructor(savedStateHandle: SavedStateHandle) : this(
-        mustSelectAtLeastOne = requireNotNull(savedStateHandle.get<Boolean>(ARG_MUST_SELECT_AT_LEAST_ONE))
+        mustSelectOne = requireNotNull(savedStateHandle.get<Boolean>(ARG_MUST_SELECT_ONE))
     )
 }
 
-fun NavController.choosePersonas(mustSelectAtLeastOne: Boolean) {
-    navigate("$ROUTE_CHOOSE_PERSONAS/$mustSelectAtLeastOne")
+fun NavController.choosePersonas(mustSelectOne: Boolean) {
+    navigate("$ROUTE_CHOOSE_PERSONAS/$mustSelectOne")
 }
 
 fun NavGraphBuilder.choosePersonas(
     navController: NavController
 ) {
     composable(
-        route = "$ROUTE_CHOOSE_PERSONAS/{$ARG_MUST_SELECT_AT_LEAST_ONE}",
+        route = "$ROUTE_CHOOSE_PERSONAS/{$ARG_MUST_SELECT_ONE}",
         arguments = listOf(
-            navArgument(ARG_MUST_SELECT_AT_LEAST_ONE) { type = NavType.BoolType }
+            navArgument(ARG_MUST_SELECT_ONE) { type = NavType.BoolType }
         ),
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
@@ -50,9 +50,9 @@ fun NavGraphBuilder.choosePersonas(
         ChoosePersonasScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onSelected = { addresses ->
-                sharedVM.onPersonasSelected(addresses)
-                navController.applyShield()
+            onSelected = { address ->
+                sharedVM.onPersonaSelected(address)
+                navController.applyShield(sharedVM.args.securityStructureId)
             }
         )
     }

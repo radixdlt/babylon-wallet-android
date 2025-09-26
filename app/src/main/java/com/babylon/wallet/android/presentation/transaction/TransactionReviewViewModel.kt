@@ -298,7 +298,6 @@ class TransactionReviewViewModel @Inject constructor(
         private val txRequest: TransactionRequest? = null,
         private val txSummary: Summary? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val signers: List<ProfileEntity> = emptyList(),
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,
         val transactionFees: TransactionFees? = null

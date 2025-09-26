@@ -217,9 +217,9 @@ private fun SetFactorSourceNameContent(
 private fun FactorSourceKind.nameTitle() = when (this) {
     FactorSourceKind.DEVICE -> stringResource(id = R.string.newBiometricFactor_intro_title)
     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> stringResource(id = R.string.addFactorSource_ledger_nameTitle)
-    FactorSourceKind.OFF_DEVICE_MNEMONIC -> "Name your New Mnemonic Seed Phrase" // TODO crowdin
+    FactorSourceKind.OFF_DEVICE_MNEMONIC -> stringResource(id = R.string.addFactorSource_offDeviceMnemonic_nameTitle)
     FactorSourceKind.ARCULUS_CARD -> stringResource(id = R.string.addFactorSource_arculus_nameTitle)
-    FactorSourceKind.PASSWORD -> "Name your New Password" // TODO crowdin
+    FactorSourceKind.PASSWORD -> stringResource(id = R.string.addFactorSource_password_nameTitle)
 }
 
 @Composable
