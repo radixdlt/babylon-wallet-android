@@ -98,7 +98,7 @@ fun NavGraphBuilder.securityShieldDetails(navController: NavController) {
         SecurityShieldDetailsScreen(
             viewModel = hiltViewModel(),
             onBackClick = { navController.navigateUp() },
-            onFactorClick = { navController.factorSourceDetails(it) },
+            onFactorClick = { id -> navController.factorSourceDetails(id) },
             onApplyShieldClick = { id ->
                 navController.applyShieldNavGraph(id) {
                     popUpTo(ROUTE_CREATE_SECURITY_SHIELD_GRAPH) { inclusive = false }

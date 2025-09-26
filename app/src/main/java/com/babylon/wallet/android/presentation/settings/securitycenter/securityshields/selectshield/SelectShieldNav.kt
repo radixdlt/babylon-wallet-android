@@ -50,7 +50,7 @@ fun NavGraphBuilder.applyShieldToEntity(
     ) {
         ApplyShieldToEntityScreen(
             viewModel = hiltViewModel(),
-            onCreateShieldClick = { navController.createSecurityShield(it) },
+            onCreateShieldClick = { address -> navController.createSecurityShield(address) },
             onDismiss = navController::popBackStack,
             onComplete = { securityStructureId, entityAddress ->
                 navController.applyShield(securityStructureId, entityAddress) {

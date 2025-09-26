@@ -130,7 +130,7 @@ private fun SelectShieldContent(
                 items(state.shields) {
                     SelectableSingleChoiceSecurityShieldCard(
                         item = it,
-                        onSelect = { onShieldClick(it.id) }
+                        onSelect = { card -> onShieldClick(card.id) }
                     )
                 }
 
