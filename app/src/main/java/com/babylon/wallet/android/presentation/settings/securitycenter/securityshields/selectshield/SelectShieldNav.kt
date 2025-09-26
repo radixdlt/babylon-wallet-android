@@ -16,8 +16,9 @@ import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 
-private const val ROUTE_APPLY_SHIELD_TO_ENTITY = "apply_shield_to_entity"
+private const val DESTINATION_SELECT_SHIELD = "select_shield"
 private const val ARG_ENTITY_ADDRESS = "arg_entity_address"
+private const val ROUTE_SELECT_SHIELD = "$DESTINATION_SELECT_SHIELD/{$ARG_ENTITY_ADDRESS}"
 
 class ApplyShieldToEntityArgs(
     val address: AddressOfAccountOrPersona
@@ -31,14 +32,14 @@ class ApplyShieldToEntityArgs(
 }
 
 fun NavController.applyShieldToEntity(address: AddressOfAccountOrPersona) {
-    navigate("$ROUTE_APPLY_SHIELD_TO_ENTITY/${address.string}")
+    navigate("$DESTINATION_SELECT_SHIELD/${address.string}")
 }
 
 fun NavGraphBuilder.applyShieldToEntity(
     navController: NavController
 ) {
     composable(
-        route = "$ROUTE_APPLY_SHIELD_TO_ENTITY/{$ARG_ENTITY_ADDRESS}",
+        route = ROUTE_SELECT_SHIELD,
         arguments = listOf(
             navArgument(ARG_ENTITY_ADDRESS) { type = NavType.StringType }
         ),
@@ -52,7 +53,11 @@ fun NavGraphBuilder.applyShieldToEntity(
             onCreateShieldClick = { navController.createSecurityShield(it) },
             onDismiss = navController::popBackStack,
             onComplete = { securityStructureId, entityAddress ->
-                navController.applyShield(securityStructureId, entityAddress)
+                navController.applyShield(securityStructureId, entityAddress) {
+                    popUpTo(ROUTE_SELECT_SHIELD) {
+                        inclusive = true
+                    }
+                }
             }
         )
     }

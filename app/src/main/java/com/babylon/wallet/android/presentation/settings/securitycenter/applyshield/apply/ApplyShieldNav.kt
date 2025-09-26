@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -27,12 +28,14 @@ private const val ROUTE_APPLY_SHIELD = DESTINATION_APPLY_SHIELD +
 
 fun NavController.applyShield(
     securityStructureId: SecurityStructureId,
-    address: AddressOfAccountOrPersona? = null
+    address: AddressOfAccountOrPersona? = null,
+    builder: NavOptionsBuilder.() -> Unit = {}
 ) {
     navigate(
-        DESTINATION_APPLY_SHIELD +
+        route = DESTINATION_APPLY_SHIELD +
             "?$ARG_SECURITY_STRUCTURE_ID=$securityStructureId" +
-            "&$ARG_ENTITY_ADDRESS=${address?.string}"
+            "&$ARG_ENTITY_ADDRESS=${address?.string}",
+        builder = builder
     )
 }
 

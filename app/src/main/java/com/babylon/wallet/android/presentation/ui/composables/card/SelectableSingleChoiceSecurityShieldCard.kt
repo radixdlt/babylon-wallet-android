@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.shared.RadioButtonSelectorView
 import com.babylon.wallet.android.presentation.ui.model.securityshields.SecurityShieldCard
+import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
@@ -21,7 +22,9 @@ fun SelectableSingleChoiceSecurityShieldCard(
     onSelect: (SecurityShieldCard) -> Unit
 ) {
     SecurityShieldCardView(
-        modifier = modifier,
+        modifier = modifier.noIndicationClickable {
+            onSelect(item.data)
+        },
         item = item.data,
         iconRes = DSR.ic_security_shields,
         iconSize = 36.dp,

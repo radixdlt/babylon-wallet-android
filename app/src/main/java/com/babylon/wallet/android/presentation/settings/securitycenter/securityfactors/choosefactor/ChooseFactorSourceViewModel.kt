@@ -111,7 +111,7 @@ class ChooseFactorSourceViewModel @Inject constructor(
                                     )
                                 }
                         ),
-                        currentPagePosition = 0
+                        currentPagePosition = state.currentPagePosition
                     )
                 }
             }
