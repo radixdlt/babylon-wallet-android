@@ -21,7 +21,6 @@ import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.manifestString
 import com.radixdlt.sargon.extensions.toList
 import com.radixdlt.sargon.os.SargonOsManager
@@ -32,7 +31,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.factorSources
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,8 +53,7 @@ class ApplyShieldViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         isLoading = false,
-                        factors = securityStructure.factorSources()
-                            .sortedBy { it.kind.ordinal }
+                        factors = sortedFactorSourcesFromSecurityStructure(securityStructure)
                             .map { it.toFactorSourceCard(includeLastUsedOn = false) }
                             .toPersistentList()
                     )

@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -33,19 +35,22 @@ import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun SecurityShieldCardView(
-    modifier: Modifier = Modifier,
     item: SecurityShieldCard,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(RadixTheme.dimensions.paddingDefault),
+    iconSize: Dp = 80.dp,
+    iconRes: Int = DSR.ic_shield_not_applied,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer {
         Row(
             modifier = modifier
-                .padding(RadixTheme.dimensions.paddingDefault),
+                .padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                modifier = Modifier.size(80.dp),
-                painter = painterResource(id = DSR.ic_shield_not_applied),
+                modifier = Modifier.size(iconSize),
+                painter = painterResource(id = iconRes),
                 contentDescription = null,
                 tint = Color.Unspecified
             )

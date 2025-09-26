@@ -33,7 +33,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -81,6 +80,7 @@ fun AddFactorScreen(
 }
 
 @Composable
+@Suppress("UnusedParameter")
 private fun AddFactorContent(
     modifier: Modifier = Modifier,
     state: AddFactorViewModel.State,
@@ -105,7 +105,8 @@ private fun AddFactorContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onDismiss,
-                windowInsets = WindowInsets.statusBarsAndBanner
+                windowInsets = WindowInsets.statusBarsAndBanner,
+                containerColor = RadixTheme.colors.backgroundSecondary
             )
         },
         bottomBar = {
@@ -133,7 +134,7 @@ private fun AddFactorContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.background
+        containerColor = RadixTheme.colors.backgroundSecondary
     ) { padding ->
         LazyColumn(
             contentPadding = padding,
@@ -178,16 +179,16 @@ private fun AddFactorContent(
                 )
             }
 
-            if (state.isModeHardwareOnly) {
-                item {
-                    InfoButton(
-                        text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
-                        onClick = {
-                            onInfoClick(GlossaryItem.ledgernano) // TODO handle info button click
-                        }
-                    )
-                }
-            }
+//            if (state.isModeHardwareOnly) {
+//                item {
+//                    InfoButton(
+//                        text = stringResource(id = R.string.infoLink_title_nohardwaredevice),
+//                        onClick = {
+//                            onInfoClick(GlossaryItem.ledgernano) // TODO handle info button click
+//                        }
+//                    )
+//                }
+//            }
         }
     }
 }
