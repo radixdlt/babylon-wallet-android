@@ -52,7 +52,7 @@ fun SecurityCenterScreen(
     viewModel: SecurityCenterViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     toSecurityShields: () -> Unit,
-    toSecurityShieldsOnboarding: () -> Unit,
+    toCreateSecurityShield: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
     onRecoverEntitiesClick: () -> Unit,
@@ -74,7 +74,7 @@ fun SecurityCenterScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 SecurityCenterViewModel.Event.ToSecurityShields -> toSecurityShields()
-                SecurityCenterViewModel.Event.ToSecurityShieldsOnboarding -> toSecurityShieldsOnboarding()
+                SecurityCenterViewModel.Event.ToCreateSecurityShield -> toCreateSecurityShield()
             }
         }
     }

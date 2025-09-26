@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.applyshi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -35,9 +36,9 @@ fun NavGraphBuilder.chooseAccounts(
         ChooseAccountsScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onSelected = { addresses ->
-                sharedVM.onAccountSelected(addresses)
-                navController.applyShield()
+            onSelected = { address ->
+                sharedVM.onAccountSelected(address)
+                navController.applyShield(sharedVM.args.securityStructureId)
             },
             onSkip = { navController.choosePersonas(mustSelectOne = true) }
         )

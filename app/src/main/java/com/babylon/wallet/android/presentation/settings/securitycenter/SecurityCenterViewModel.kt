@@ -67,7 +67,7 @@ class SecurityCenterViewModel @Inject constructor(
                 if (hasSecurityShields) {
                     Event.ToSecurityShields
                 } else {
-                    Event.ToSecurityShieldsOnboarding
+                    Event.ToCreateSecurityShield
                 }
             )
         }
@@ -88,7 +88,7 @@ class SecurityCenterViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data object ToSecurityShieldsOnboarding : Event
+        data object ToCreateSecurityShield : Event
 
         data object ToSecurityShields : Event
     }

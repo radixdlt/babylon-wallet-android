@@ -1,6 +1,6 @@
 @file:Suppress("TooManyFunctions")
 
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shields
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues

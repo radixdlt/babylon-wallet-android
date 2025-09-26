@@ -40,7 +40,7 @@ class SetupRecoveryViewModel @Inject constructor(
     init {
         _state.update { state ->
             state.copy(
-                isNewShield = shieldBuilderClient.securityStructureOfFactorSourceIds == null
+                isNewShield = shieldBuilderClient.securityStructureOfFactorSources == null
             )
         }
         initSelection()
@@ -207,7 +207,7 @@ class SetupRecoveryViewModel @Inject constructor(
 
     private fun completeShieldSetup() {
         viewModelScope.launch {
-            val securityStructureIds = shieldBuilderClient.securityStructureOfFactorSourceIds
+            val securityStructureIds = shieldBuilderClient.securityStructureOfFactorSources
 
             if (securityStructureIds == null) {
                 sendEvent(Event.ToNameSetup)

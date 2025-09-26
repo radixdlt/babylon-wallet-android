@@ -31,9 +31,11 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityf
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.offdevicemnemonic.offDeviceMnemonics
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.password.passwords
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactorTypes
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboarding
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.createSecurityShield
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.createSecurityShieldNavGraph
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectshield.applyShieldToEntity
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shielddetails.securityShieldDetails
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shields.securityShieldsScreen
 import com.radixdlt.sargon.FactorSourceKind
 
 const val ROUTE_SECURITY_CENTER_SCREEN = "settings_security_center_screen"
@@ -73,8 +75,8 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 toSecurityShields = {
                     navController.securityShieldsScreen()
                 },
-                toSecurityShieldsOnboarding = {
-                    navController.securityShieldOnboarding()
+                toCreateSecurityShield = {
+                    navController.createSecurityShield()
                 },
                 onSecurityFactorsClick = {
                     navController.securityFactorTypes()
@@ -198,7 +200,10 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 navController.popBackStack()
             }
         )
-        securityShieldsNavGraph(navController)
+        securityShieldsScreen(navController)
+        securityShieldDetails(navController)
+        createSecurityShieldNavGraph(navController)
+        applyShieldToEntity(navController)
         addFactorSourceKind(navController)
         addFactorSource(navController)
         selectFactorSource(

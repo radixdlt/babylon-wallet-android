@@ -91,7 +91,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.per
 import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.applyshield.applyShieldToEntity
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectshield.applyShieldToEntity
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.shielddetails.securityShieldDetails
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan

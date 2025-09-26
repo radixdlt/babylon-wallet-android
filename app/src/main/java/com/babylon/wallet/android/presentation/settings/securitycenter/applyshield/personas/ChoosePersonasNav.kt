@@ -52,7 +52,7 @@ fun NavGraphBuilder.choosePersonas(
             onDismiss = { navController.popBackStack() },
             onSelected = { address ->
                 sharedVM.onPersonaSelected(address)
-                navController.applyShield()
+                navController.applyShield(sharedVM.args.securityStructureId)
             }
         )
     }

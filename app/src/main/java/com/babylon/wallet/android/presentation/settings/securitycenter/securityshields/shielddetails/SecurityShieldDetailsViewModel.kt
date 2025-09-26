@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.toIds
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -131,7 +130,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val shield = state.value.securityStructureOfFactorSources ?: return
 
         viewModelScope.launch {
-            shieldBuilderClient.withExistingSecurityStructure(shield.toIds())
+            shieldBuilderClient.withExistingSecurityStructure(shield)
             sendEvent(Event.EditShield)
         }
     }
