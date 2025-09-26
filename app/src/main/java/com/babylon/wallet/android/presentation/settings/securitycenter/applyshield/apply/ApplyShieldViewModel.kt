@@ -82,7 +82,8 @@ class ApplyShieldViewModel @Inject constructor(
             ).prepareInternalTransactionRequest(
                 transactionType = TransactionType.SecurifyEntity(
                     entityAddress = entityAddress
-                )
+                ),
+                blockUntilCompleted = true
             )
         }.onFailure { error ->
             _state.update { state ->
