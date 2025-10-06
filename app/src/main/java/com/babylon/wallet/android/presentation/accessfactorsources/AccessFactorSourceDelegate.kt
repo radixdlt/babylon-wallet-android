@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.Constants.ARCULUS_PIN_LENGTH
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -227,6 +228,8 @@ class AccessFactorSourceDelegate private constructor(
                     if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
                         null
                     } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
+                        null
+                    } else if (error is CommonException.HostInteractionAborted) {
                         null
                     } else {
                         UiMessage.ErrorMessage(error)

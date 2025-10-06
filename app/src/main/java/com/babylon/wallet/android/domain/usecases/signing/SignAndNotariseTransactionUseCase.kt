@@ -14,13 +14,13 @@ import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SignedIntent
+import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionHeader
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.mapError
-import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.random
 import com.radixdlt.sargon.extensions.summary
 import com.radixdlt.sargon.extensions.then
@@ -32,7 +32,7 @@ import javax.inject.Inject
 class SignAndNotariseTransactionUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val resolveSignersUseCase: ResolveSignersUseCase,
-    private val sargonOsManager: SargonOsManager,
+    private val sargonOsManager: SargonOsManager
 ) {
 
     @Suppress("LongParameterList")
@@ -43,7 +43,8 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
         lockFee: Decimal192 = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
         tipPercentage: UShort = TransactionConfig.TIP_PERCENTAGE,
         notarySecretKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        feePayerAddress: AccountAddress? = null
+        feePayerAddress: AccountAddress? = null,
+        guarantees: List<TransactionGuarantee> = emptyList()
     ): Result<NotarizationResult> {
         val epochRange = transactionRepository.getLedgerEpoch().getOrElse {
             return Result.failure(RadixWalletException.DappRequestException.GetEpoch)
@@ -56,9 +57,11 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
             manifest = if (feePayerAddress == null) {
                 manifest
             } else {
-                manifest.modifyLockFee(
-                    addressOfFeePayer = feePayerAddress,
-                    fee = lockFee
+                sargonOsManager.sargonOs.modifyTransactionManifestWithFeePayer(
+                    transactionManifest = manifest,
+                    feePayerAddress = feePayerAddress,
+                    fee = lockFee,
+                    guarantees = guarantees
                 )
             },
             message = message,

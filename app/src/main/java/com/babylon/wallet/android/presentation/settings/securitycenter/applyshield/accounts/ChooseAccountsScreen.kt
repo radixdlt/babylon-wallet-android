@@ -34,7 +34,8 @@ fun ChooseAccountsScreen(
     modifier: Modifier = Modifier,
     viewModel: ChooseAccountsViewModel,
     onDismiss: () -> Unit,
-    onSelected: (List<AddressOfAccountOrPersona>) -> Unit
+    onSelected: (AddressOfAccountOrPersona) -> Unit,
+    onSkip: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -42,7 +43,6 @@ fun ChooseAccountsScreen(
         modifier = modifier,
         state = state,
         onDismiss = onDismiss,
-        onSelectAllToggleClick = viewModel::onSelectAllToggleClick,
         onSelectAccount = viewModel::onSelectItem,
         onContinueClick = viewModel::onContinueClick,
         onSkipClick = viewModel::onSkipClick
@@ -51,7 +51,8 @@ fun ChooseAccountsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ChooseEntityEvent.EntitiesSelected -> onSelected(event.addresses)
+                is ChooseEntityEvent.EntitySelected -> onSelected(event.address)
+                ChooseEntityEvent.Skip -> onSkip()
             }
         }
     }
@@ -62,7 +63,6 @@ private fun ChooseAccountsContent(
     modifier: Modifier = Modifier,
     state: ChooseEntityUiState<Account>,
     onDismiss: () -> Unit,
-    onSelectAllToggleClick: () -> Unit,
     onSelectAccount: (Account) -> Unit,
     onContinueClick: () -> Unit,
     onSkipClick: () -> Unit
@@ -72,12 +72,10 @@ private fun ChooseAccountsContent(
         title = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_title),
         subtitle = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_subtitle),
         isButtonEnabled = state.isButtonEnabled,
-        isSelectAllVisible = !state.isEmpty,
-        selectedAll = state.selectedAll,
-        hasSkipButton = true,
+        hasSkipButton = state.canSkip,
+        skipButtonTitle = stringResource(id = R.string.shieldWizardApplyShield_chooseAccounts_skipButton),
         onContinueClick = onContinueClick,
         onDismiss = onDismiss,
-        onSelectAllToggleClick = onSelectAllToggleClick,
         onSkipClick = onSkipClick
     ) {
         items(state.items) { account ->
@@ -95,7 +93,7 @@ private fun ChooseAccountsContent(
                 accountName = account.data.displayName.value,
                 address = account.data.address,
                 checked = account.selected,
-                isSingleChoice = false,
+                isSingleChoice = true,
                 radioButtonClicked = { onSelectAccount(account.data) }
             )
         }
@@ -112,7 +110,6 @@ private fun ChooseAccountsPreview(
         ChooseAccountsContent(
             state = state,
             onDismiss = {},
-            onSelectAllToggleClick = {},
             onSelectAccount = {},
             onContinueClick = {},
             onSkipClick = {}

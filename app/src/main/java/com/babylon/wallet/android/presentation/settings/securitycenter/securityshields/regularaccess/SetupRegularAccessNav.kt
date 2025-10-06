@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.setupRecoveryScreen
 
-private const val ROUTE_SETUP_REGULAR_ACCESS = "setup_regular_access"
+const val ROUTE_SETUP_REGULAR_ACCESS = "setup_regular_access"
 
 fun NavController.regularAccess() {
     navigate(ROUTE_SETUP_REGULAR_ACCESS)

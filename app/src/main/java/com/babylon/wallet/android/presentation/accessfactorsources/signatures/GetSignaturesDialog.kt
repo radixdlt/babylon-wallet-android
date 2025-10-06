@@ -251,6 +251,7 @@ private fun GetSignaturesPreviewLight(
         GetSignaturesBottomSheetContent(
             state = GetSignaturesViewModel.State(
                 signPurpose = sample.first,
+                isMfaEnabled = false,
                 accessState = AccessFactorSourceDelegate.State(
                     factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(factorSource = sample.second),
                     seedPhraseInputState = remember(sample.second) {
@@ -283,6 +284,7 @@ private fun GetSignaturesPreviewDark(
         GetSignaturesBottomSheetContent(
             state = GetSignaturesViewModel.State(
                 signPurpose = sample.first,
+                isMfaEnabled = false,
                 accessState = AccessFactorSourceDelegate.State(
                     factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(factorSource = sample.second),
                     seedPhraseInputState = remember(sample.second) {

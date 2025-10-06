@@ -30,10 +30,12 @@ import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ConfirmationRoleWithFactorSources
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PrimaryRoleWithFactorSources
 import com.radixdlt.sargon.RecoveryRoleWithFactorSources
@@ -41,14 +43,15 @@ import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSampleOther
 import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
 fun SecurifyEntityTypeContent(
-    modifier: Modifier = Modifier,
-    preview: PreviewType.SecurifyEntity
+    preview: PreviewType.SecurifyEntity,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -91,40 +94,20 @@ fun SecurifyEntityTypeContent(
                         shape = RadixTheme.shapes.roundedRectBottomMedium
                     )
             ) {
-                ShieldConfigTitle(
+                Text(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    structure = preview.provisionalConfig
-                )
-
-                HorizontalDivider(color = RadixTheme.colors.divider)
-
-                PrimaryView(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    primary = preview.provisionalConfig.matrixOfFactors.primaryRole
-                )
-
-                HorizontalDivider(color = RadixTheme.colors.divider)
-
-                ProveOwnershipView(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingSemiLarge
+                    text = stringResource(
+                        R.string.transactionReview_updateShield_applyTitle,
+                        preview.provisionalConfig.metadata.displayName.value
                     ),
-                    authenticationSigningFactor = preview.provisionalConfig.authenticationSigningFactor
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.text
                 )
 
                 HorizontalDivider(color = RadixTheme.colors.divider)
 
-                RecoveryAndConfirmationView(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(
-                            top = RadixTheme.dimensions.paddingSemiLarge,
-                            bottom = RadixTheme.dimensions.paddingXXXLarge
-                        ),
-                    recovery = preview.provisionalConfig.matrixOfFactors.recoveryRole,
-                    confirmation = preview.provisionalConfig.matrixOfFactors.confirmationRole,
-                    confirmationDelay = preview.provisionalConfig.matrixOfFactors.timeUntilDelayedConfirmationIsCallable
+                ShieldConfigView(
+                    securityStructure = preview.provisionalConfig
                 )
             }
         }
@@ -132,22 +115,53 @@ fun SecurifyEntityTypeContent(
 }
 
 @Composable
-private fun ShieldConfigTitle(
+fun ShieldConfigView(
+    securityStructure: SecurityStructureOfFactorSources,
     modifier: Modifier = Modifier,
-    structure: SecurityStructureOfFactorSources
+    onFactorClick: (FactorSourceId) -> Unit = {}
 ) {
-    Text(
-        modifier = modifier,
-        text = stringResource(R.string.transactionReview_updateShield_applyTitle, structure.metadata.displayName.value),
-        style = RadixTheme.typography.secondaryHeader,
-        color = RadixTheme.colors.text
-    )
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        PrimaryView(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            primary = securityStructure.matrixOfFactors.primaryRole,
+            onFactorClick = onFactorClick
+        )
+
+        HorizontalDivider(color = RadixTheme.colors.divider)
+
+        ProveOwnershipView(
+            modifier = Modifier.padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingSemiLarge
+            ),
+            authenticationSigningFactor = securityStructure.authenticationSigningFactor,
+            onFactorClick = onFactorClick
+        )
+
+        HorizontalDivider(color = RadixTheme.colors.divider)
+
+        RecoveryAndConfirmationView(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    top = RadixTheme.dimensions.paddingSemiLarge,
+                    bottom = RadixTheme.dimensions.paddingXXXLarge
+                ),
+            recovery = securityStructure.matrixOfFactors.recoveryRole,
+            confirmation = securityStructure.matrixOfFactors.confirmationRole,
+            confirmationDelay = securityStructure.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
+            onFactorClick = onFactorClick
+        )
+    }
 }
 
 @Composable
 private fun PrimaryView(
-    modifier: Modifier = Modifier,
-    primary: PrimaryRoleWithFactorSources
+    primary: PrimaryRoleWithFactorSources,
+    onFactorClick: (FactorSourceId) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         Text(
@@ -181,6 +195,7 @@ private fun PrimaryView(
 
         primary.thresholdFactors.forEachIndexed { index, factorSource ->
             FactorSourceCardView(
+                modifier = Modifier.throttleClickable { onFactorClick(factorSource.id) },
                 item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
                 castsShadow = false,
                 isOutlined = true
@@ -208,6 +223,7 @@ private fun PrimaryView(
 
             primary.overrideFactors.forEachIndexed { index, factorSource ->
                 FactorSourceCardView(
+                    modifier = Modifier.throttleClickable { onFactorClick(factorSource.id) },
                     item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
                     castsShadow = false,
                     isOutlined = true
@@ -224,7 +240,8 @@ private fun PrimaryView(
 @Composable
 private fun ProveOwnershipView(
     modifier: Modifier,
-    authenticationSigningFactor: FactorSource
+    authenticationSigningFactor: FactorSource,
+    onFactorClick: (FactorSourceId) -> Unit
 ) {
     Column(modifier = modifier) {
         Text(
@@ -252,6 +269,7 @@ private fun ProveOwnershipView(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         FactorSourceCardView(
+            modifier = Modifier.throttleClickable { onFactorClick(authenticationSigningFactor.id) },
             item = authenticationSigningFactor.toFactorSourceCard(includeLastUsedOn = false),
             castsShadow = false,
             isOutlined = true
@@ -264,7 +282,8 @@ private fun RecoveryAndConfirmationView(
     modifier: Modifier = Modifier,
     recovery: RecoveryRoleWithFactorSources,
     confirmation: ConfirmationRoleWithFactorSources,
-    confirmationDelay: TimePeriod
+    confirmationDelay: TimePeriod,
+    onFactorClick: (FactorSourceId) -> Unit
 ) {
     Column(modifier = modifier) {
         Text(
@@ -313,6 +332,7 @@ private fun RecoveryAndConfirmationView(
 
         recovery.overrideFactors.forEachIndexed { index, factorSource ->
             FactorSourceCardView(
+                modifier = Modifier.throttleClickable { onFactorClick(factorSource.id) },
                 item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
                 castsShadow = false,
                 isOutlined = true
@@ -352,6 +372,7 @@ private fun RecoveryAndConfirmationView(
 
         confirmation.overrideFactors.forEachIndexed { index, factorSource ->
             FactorSourceCardView(
+                modifier = Modifier.throttleClickable { onFactorClick(factorSource.id) },
                 item = factorSource.toFactorSourceCard(includeLastUsedOn = false),
                 castsShadow = false,
                 isOutlined = true

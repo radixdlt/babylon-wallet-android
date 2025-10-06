@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Text
@@ -27,7 +28,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.none
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 
 @Composable
@@ -53,9 +53,14 @@ fun TransactionStatusDialog(
             when (event) {
                 TransactionStatusDialogViewModel.Event.DismissDialog -> {
                     sheetState.hide()
-                    onClose()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(sheetState.isVisible) {
+        if (!sheetState.isVisible) {
+            onClose()
         }
     }
 
@@ -66,7 +71,7 @@ fun TransactionStatusDialog(
         onDismissRequest = viewModel::onDismiss,
         wrapContent = true,
         windowInsets = {
-            WindowInsets.none
+            WindowInsets.navigationBars
         },
         sheetContent = {
             Column {

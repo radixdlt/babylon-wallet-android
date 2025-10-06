@@ -49,7 +49,8 @@ fun ConfirmSeedPhraseScreen(
     viewModel: ConfirmSeedPhraseViewModel,
     onDismiss: () -> Unit,
     onDeviceSeedPhraseConfirmed: () -> Unit,
-    onArculusSeedPhraseConfirmed: () -> Unit
+    onArculusSeedPhraseConfirmed: () -> Unit,
+    onOffDeviceSeedPhraseConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -71,6 +72,10 @@ fun ConfirmSeedPhraseScreen(
 
                 ConfirmSeedPhraseViewModel.Event.ArculusSeedPhraseConfirmed -> {
                     onArculusSeedPhraseConfirmed()
+                }
+
+                ConfirmSeedPhraseViewModel.Event.OffDeviceSeedPhraseConfirmed -> {
+                    onOffDeviceSeedPhraseConfirmed()
                 }
             }
         }

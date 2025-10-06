@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,17 +27,15 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 
 @Composable
 fun ChooseEntityContent(
-    modifier: Modifier = Modifier,
-    onSkipClick: (() -> Unit)? = null,
     title: String,
     subtitle: String,
     isButtonEnabled: Boolean,
-    isSelectAllVisible: Boolean,
-    selectedAll: Boolean,
-    hasSkipButton: Boolean,
     onDismiss: () -> Unit,
-    onSelectAllToggleClick: () -> Unit,
     onContinueClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onSkipClick: (() -> Unit)? = null,
+    hasSkipButton: Boolean = false,
+    skipButtonTitle: String? = null,
     content: LazyListScope.() -> Unit
 ) {
     Scaffold(
@@ -59,7 +56,7 @@ fun ChooseEntityContent(
                     {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         RadixTextButton(
-                            text = stringResource(id = R.string.shieldWizardApplyShield_chooseEntities_skipButton),
+                            text = skipButtonTitle ?: stringResource(id = R.string.shieldWizardApplyShield_chooseEntities_skipButton),
                             onClick = { onSkipClick?.invoke() }
                         )
                     }
@@ -104,24 +101,6 @@ fun ChooseEntityContent(
                         color = RadixTheme.colors.text,
                         textAlign = TextAlign.Center
                     )
-
-                    if (isSelectAllVisible) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-                        RadixTextButton(
-                            modifier = Modifier.align(Alignment.End),
-                            text = stringResource(
-                                id = remember(selectedAll) {
-                                    if (selectedAll) {
-                                        R.string.shieldWizardApplyShield_chooseEntities_deselectAllButton
-                                    } else {
-                                        R.string.shieldWizardApplyShield_chooseEntities_selectAllButton
-                                    }
-                                }
-                            ),
-                            onClick = onSelectAllToggleClick
-                        )
-                    }
                 }
             }
 
@@ -139,12 +118,9 @@ private fun ChooseEntityContentPreview() {
             title = "Choose Accounts",
             subtitle = "Choose the Accounts you want to apply this Shield to.",
             isButtonEnabled = false,
-            isSelectAllVisible = true,
-            selectedAll = false,
             hasSkipButton = true,
             onDismiss = {},
-            onContinueClick = {},
-            onSelectAllToggleClick = {}
+            onContinueClick = {}
         ) {}
     }
 }

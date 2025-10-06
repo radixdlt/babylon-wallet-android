@@ -70,7 +70,10 @@ class SeedPhraseViewModel @Inject constructor(
         }
     }
 
-    override fun initialState(): State = State(context = input.context)
+    override fun initialState(): State = State(
+        context = input.context,
+        factorSourceKind = input.kind
+    )
 
     fun onDismissMessage() {
         viewModelScope.launch {
@@ -196,6 +199,7 @@ class SeedPhraseViewModel @Inject constructor(
 
     data class State(
         val context: AddFactorSourceInput.Context,
+        val factorSourceKind: FactorSourceKind,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
         val isEditingEnabled: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null
@@ -203,5 +207,11 @@ class SeedPhraseViewModel @Inject constructor(
 
         val isOlympiaRecovery = context is AddFactorSourceInput.Context.Recovery && context.isOlympia
         val isConfirmButtonEnabled = seedPhraseState.isInputComplete()
+        val showNumberOfWordsPicker =
+            isOlympiaRecovery || (factorSourceKind == FactorSourceKind.OFF_DEVICE_MNEMONIC && isEditingEnabled)
+        val numberOfWordsOptions = when (factorSourceKind) {
+            FactorSourceKind.OFF_DEVICE_MNEMONIC -> listOf(Bip39WordCount.TWENTY_FOUR, Bip39WordCount.TWELVE)
+            else -> Bip39WordCount.entries
+        }
     }
 }

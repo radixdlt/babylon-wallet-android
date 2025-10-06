@@ -13,6 +13,7 @@ import com.radixdlt.sargon.SecurityShieldBuilder
 import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
+import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
@@ -49,12 +50,24 @@ class SecurityShieldBuilderClient @Inject constructor(
     private val primaryRoleSelection = MutableSharedFlow<PrimaryRoleSelection>(1)
     private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
 
+    var securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun newSecurityShieldBuilder() {
         securityShieldBuilder = SecurityShieldBuilder()
         primaryRoleSelection.resetReplayCache()
         recoveryRoleSelection.resetReplayCache()
         initSelection()
+        securityStructureOfFactorSources = null
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun withExistingSecurityStructure(shield: SecurityStructureOfFactorSources) {
+        securityShieldBuilder = SecurityShieldBuilder.withSecurityStructureOfFactorSources(shield)
+        primaryRoleSelection.resetReplayCache()
+        recoveryRoleSelection.resetReplayCache()
+        initSelection()
+        securityStructureOfFactorSources = shield
     }
 
     fun primaryRoleSelection(): Flow<PrimaryRoleSelection> = primaryRoleSelection

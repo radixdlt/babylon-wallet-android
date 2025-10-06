@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldB
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceProxy
+import com.babylon.wallet.android.presentation.addfactorsource.kind.isSupported
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -116,7 +117,7 @@ class AddFactorViewModel @Inject constructor(
                 listOf(
                     FactorSourceKind.ARCULUS_CARD,
                     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
-                )
+                ).filter { it.isSupported }
             ),
             ANY(
                 listOf(
@@ -124,7 +125,7 @@ class AddFactorViewModel @Inject constructor(
                     FactorSourceKind.ARCULUS_CARD,
                     FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                     FactorSourceKind.OFF_DEVICE_MNEMONIC
-                )
+                ).filter { it.isSupported }
             );
 
             companion object {

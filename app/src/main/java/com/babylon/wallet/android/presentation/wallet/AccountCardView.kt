@@ -7,23 +7,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -41,7 +37,9 @@ import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.AccountLabelView
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.HandleSecurityPrompt
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
@@ -94,8 +92,7 @@ fun AccountCardView(
             nameLabel,
             fiatTotalValueLabel,
             fiatTotalLoading,
-            legacyLabel,
-            addressLabel,
+            addressAndTagsLabel,
             spacer,
             assetsContainer,
             promptsContainer
@@ -165,73 +162,74 @@ fun AccountCardView(
 
         val addressTextColor = White.copy(alpha = 0.8f)
 
-        ActionableAddressView(
-            modifier = Modifier.constrainAs(addressLabel) {
-                top.linkTo(nameLabel.bottom, margin = 8.dp)
-                start.linkTo(parent.start)
-            },
-            address = accountWithAssets.account.address.asGeneral(),
-            textStyle = RadixTheme.typography.body2HighImportance,
-            textColor = addressTextColor,
-            iconColor = addressTextColor
-        )
-
-        val tagLabel = accountWithAssets.tag?.let {
-            val context = LocalContext.current
-            remember(it) { it.toLabel(context) }
-        }
-
-        if (tagLabel != null || accountWithAssets.factorSource != null) {
-            val textStyle = RadixTheme.typography.body2Regular
-            val textColor = White
-
-            Text(
-                modifier = Modifier.constrainAs(legacyLabel) {
-                    start.linkTo(addressLabel.end)
-                    bottom.linkTo(addressLabel.bottom)
-                },
-                text = buildAnnotatedString {
-                    if (tagLabel != null) {
-                        append(tagLabel)
-                    }
-
-                    if (accountWithAssets.factorSource != null) {
-                        append(" • ")
-                        appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
-                    }
-                },
-                style = textStyle,
-                color = textColor,
-                inlineContent = mapOf(
-                    INLINE_FACTOR_SOURCE_ID to InlineTextContent(
-                        Placeholder(
-                            textStyle.fontSize * (accountWithAssets.factorSource?.name?.length ?: 0),
-                            textStyle.fontSize * 1.2,
-                            PlaceholderVerticalAlign.Center
-                        )
-                    ) {
-                        accountWithAssets.factorSource?.let { factorSource ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
-                            ) {
-                                Text(
-                                    text = factorSource.name,
-                                    style = textStyle,
-                                    color = textColor
-                                )
-
-                                Icon(
-                                    modifier = Modifier.fillMaxHeight(),
-                                    painter = painterResource(id = factorSource.kind.iconRes()),
-                                    contentDescription = null,
-                                    tint = textColor
-                                )
-                            }
-                        }
-                    }
-                )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(addressAndTagsLabel) {
+                    top.linkTo(nameLabel.bottom, margin = 8.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+        ) {
+            ActionableAddressView(
+                address = accountWithAssets.account.address.asGeneral(),
+                textStyle = RadixTheme.typography.body2HighImportance,
+                textColor = addressTextColor,
+                iconColor = addressTextColor
             )
+
+            val tagLabel = accountWithAssets.tag?.let {
+                val context = LocalContext.current
+                remember(it) { it.toLabel(context) }
+            }
+
+            if (tagLabel != null || accountWithAssets.securedWith != null) {
+                val textStyle = RadixTheme.typography.body2Regular
+                val textColor = White
+                val inlineLabel = when (accountWithAssets.securedWith) {
+                    is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.name
+                    AccountUiItem.SecuredWith.Shield -> stringResource(id = R.string.commonSecurityShields_shielded)
+                    null -> stringResource(id = R.string.empty)
+                }
+                val inlineLabelIconRes = when (accountWithAssets.securedWith) {
+                    is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.kind.iconRes()
+                    AccountUiItem.SecuredWith.Shield -> DSR.ic_entity_update_shield
+                    null -> null
+                }
+
+                Text(
+                    text = buildAnnotatedString {
+                        if (tagLabel != null) {
+                            append(tagLabel)
+                        }
+
+                        if (accountWithAssets.securedWith != null) {
+                            append(" • ")
+                            appendInlineContent(id = INLINE_FACTOR_SOURCE_ID)
+                        }
+                    },
+                    style = textStyle,
+                    color = textColor,
+                    inlineContent = mapOf(
+                        INLINE_FACTOR_SOURCE_ID to InlineTextContent(
+                            Placeholder(
+                                textStyle.fontSize * inlineLabel.length,
+                                textStyle.fontSize * 1.2,
+                                PlaceholderVerticalAlign.Center
+                            )
+                        ) {
+                            AccountLabelView(
+                                label = inlineLabel,
+                                iconRes = inlineLabelIconRes,
+                                textStyle = textStyle,
+                                color = textColor
+                            )
+                        }
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
         val assetsPresent = remember(accountWithAssets.isLoadingAssets, accountWithAssets.assets) {
@@ -246,7 +244,7 @@ fun AccountCardView(
                 linkTo(
                     start = parent.start,
                     end = parent.end,
-                    top = addressLabel.bottom,
+                    top = addressAndTagsLabel.bottom,
                     bottom = assetsContainer.top,
                 )
                 height = Dimension.value(if (assetsPresent || promptsPresent) 32.dp else 0.dp)
@@ -285,7 +283,12 @@ fun AccountCardView(
                 )
             }
         ) {
-            val factorSourceId = remember(accountWithAssets) { accountWithAssets.factorSource?.id }
+            val factorSourceId = remember(accountWithAssets) {
+                when (accountWithAssets.securedWith) {
+                    is AccountUiItem.SecuredWith.Factor -> accountWithAssets.securedWith.value.id
+                    else -> null
+                }
+            }
             val securityPromptClickEvent = remember { mutableStateOf<SecurityPromptType?>(null) }
 
             HandleSecurityPrompt(
@@ -385,7 +388,9 @@ fun AccountCardPreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    factorSource = FactorSource.sample()
+                    securedWith = AccountUiItem.SecuredWith.Factor(
+                        value = FactorSource.sample()
+                    )
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -419,7 +424,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    factorSource = null
+                    securedWith = AccountUiItem.SecuredWith.Shield
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -460,7 +465,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    factorSource = null
+                    securedWith = AccountUiItem.SecuredWith.Shield
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }
@@ -498,7 +503,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true,
-                        factorSource = null
+                        securedWith = null
                     ),
                     onApplySecuritySettingsClick = {},
                     onLockerDepositClick = { _, _ -> }
@@ -528,7 +533,7 @@ fun AccountCardEmptyPreview() {
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true,
-                        factorSource = null
+                        securedWith = null
                     ),
                     onApplySecuritySettingsClick = {},
                     onLockerDepositClick = { _, _ -> }
@@ -561,7 +566,7 @@ fun AccountCardLoadingPreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true,
-                    factorSource = null
+                    securedWith = null
                 ),
                 onApplySecuritySettingsClick = {},
                 onLockerDepositClick = { _, _ -> }

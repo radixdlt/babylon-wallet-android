@@ -171,7 +171,6 @@ class AccessLedgerHardwareWalletFactorSourceUseCase @Inject constructor(
         ledgerFactorSource: FactorSource.Ledger,
     ): Result<AccessFactorSourcesOutput.SignSubintent> {
         val signatures = input.perTransaction.map { transaction ->
-            val payload = transaction.payload
             val payloadId = transaction.payloadId()
 
             ledgerMessenger.signSubintentHashRequest(

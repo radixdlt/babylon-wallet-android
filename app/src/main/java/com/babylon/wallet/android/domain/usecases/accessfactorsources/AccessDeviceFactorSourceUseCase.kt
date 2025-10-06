@@ -3,19 +3,12 @@ package com.babylon.wallet.android.domain.usecases.accessfactorsources
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.payloadId
 import com.babylon.wallet.android.presentation.accessfactorsources.signedAuth
 import com.babylon.wallet.android.presentation.accessfactorsources.signedSubintent
 import com.babylon.wallet.android.presentation.accessfactorsources.signedTransaction
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.HdSignatureInputOfAuthIntentHash
-import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
-import com.radixdlt.sargon.HdSignatureInputOfTransactionIntentHash
-import com.radixdlt.sargon.HdSignatureOfAuthIntentHash
-import com.radixdlt.sargon.HdSignatureOfSubintentHash
-import com.radixdlt.sargon.HdSignatureOfTransactionIntentHash
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.KeyDerivationRequestPerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -26,11 +19,12 @@ import com.radixdlt.sargon.SecureStorageKey
 import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
-import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.getAuthSignatures
+import com.radixdlt.sargon.extensions.getSubintentSignatures
+import com.radixdlt.sargon.extensions.getTransactionSignatures
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.mapError
-import com.radixdlt.sargon.extensions.sign
 import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.os.driver.BiometricsFailure
@@ -112,90 +106,23 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
     }
 }
 
-// To be moved to sargon
 fun MnemonicWithPassphrase.signTransaction(
     input: PerFactorSourceInputOfTransactionIntent
-): AccessFactorSourcesOutput.Sign {
-    val signatures = input.perTransaction.map { transaction ->
-        val payloadId = transaction.payloadId()
-
-        transaction.ownedFactorInstances.map { instance ->
-            val signatureWithPublicKey = sign(
-                hash = payloadId.hash,
-                path = instance.factorInstance.publicKey.derivationPath
-            )
-
-            HdSignatureOfTransactionIntentHash(
-                input = HdSignatureInputOfTransactionIntentHash(
-                    payloadId = payloadId,
-                    ownedFactorInstance = instance
-                ),
-                signature = signatureWithPublicKey
-            )
-        }
-    }
-        .flatten()
-
-    return AccessFactorSourcesOutput.Sign.signedTransaction(
-        factorSourceId = input.factorSourceId,
-        signatures = signatures
-    )
-}
+): AccessFactorSourcesOutput.Sign = AccessFactorSourcesOutput.Sign.signedTransaction(
+    factorSourceId = input.factorSourceId,
+    signatures = getTransactionSignatures(input)
+)
 
 fun MnemonicWithPassphrase.signSubintent(
     input: PerFactorSourceInputOfSubintent
-): AccessFactorSourcesOutput.Sign {
-    val signatures = input.perTransaction.map { transaction ->
-        val payloadId = transaction.payloadId()
-
-        transaction.ownedFactorInstances.map { instance ->
-            val signatureWithPublicKey = sign(
-                hash = payloadId.hash,
-                path = instance.factorInstance.publicKey.derivationPath
-            )
-
-            HdSignatureOfSubintentHash(
-                input = HdSignatureInputOfSubintentHash(
-                    payloadId = payloadId,
-                    ownedFactorInstance = instance
-                ),
-                signature = signatureWithPublicKey
-            )
-        }
-    }
-        .flatten()
-
-    return AccessFactorSourcesOutput.Sign.signedSubintent(
-        factorSourceId = input.factorSourceId,
-        signatures = signatures
-    )
-}
+): AccessFactorSourcesOutput.Sign = AccessFactorSourcesOutput.Sign.signedSubintent(
+    factorSourceId = input.factorSourceId,
+    signatures = getSubintentSignatures(input)
+)
 
 fun MnemonicWithPassphrase.signAuth(
     input: PerFactorSourceInputOfAuthIntent
-): AccessFactorSourcesOutput.Sign {
-    val signatures = input.perTransaction.map { transaction ->
-        val payloadId = transaction.payloadId()
-
-        transaction.ownedFactorInstances.map { instance ->
-            val signatureWithPublicKey = sign(
-                hash = payloadId.payload.hash(),
-                path = instance.factorInstance.publicKey.derivationPath
-            )
-
-            HdSignatureOfAuthIntentHash(
-                input = HdSignatureInputOfAuthIntentHash(
-                    payloadId = payloadId,
-                    ownedFactorInstance = instance
-                ),
-                signature = signatureWithPublicKey
-            )
-        }
-    }
-        .flatten()
-
-    return AccessFactorSourcesOutput.Sign.signedAuth(
-        factorSourceId = input.factorSourceId,
-        signatures = signatures
-    )
-}
+): AccessFactorSourcesOutput.Sign = AccessFactorSourcesOutput.Sign.signedAuth(
+    factorSourceId = input.factorSourceId,
+    signatures = getAuthSignatures(input)
+)

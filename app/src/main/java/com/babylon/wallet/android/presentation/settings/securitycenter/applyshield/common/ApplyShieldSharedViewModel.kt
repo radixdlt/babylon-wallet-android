@@ -5,10 +5,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.ApplyShieldArgs
 import com.radixdlt.sargon.AddressOfAccountOrPersona
-import com.radixdlt.sargon.SecurityStructureId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -17,27 +14,23 @@ class ApplyShieldSharedViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<ApplyShieldSharedViewModel.State>() {
 
-    private val args = ApplyShieldArgs(savedStateHandle)
+    val args = ApplyShieldArgs(savedStateHandle)
 
-    val mustSelectAtLeastOnePersona
-        get() = state.value.accountAddresses.isEmpty()
+    val selectedAddress
+        get() = state.value.accountAddress ?: state.value.personaAddress ?: args.address
 
-    override fun initialState(): State = State(securityStructureId = args.securityStructureId)
+    override fun initialState(): State = State()
 
-    fun onAccountsSelected(addresses: List<AddressOfAccountOrPersona>) {
-        _state.update { state -> state.copy(accountAddresses = addresses) }
+    fun onAccountSelected(address: AddressOfAccountOrPersona) {
+        _state.update { state -> state.copy(accountAddress = address) }
     }
 
-    fun onPersonasSelected(addresses: List<AddressOfAccountOrPersona>) {
-        _state.update { state -> state.copy(personaAddresses = addresses) }
+    fun onPersonaSelected(address: AddressOfAccountOrPersona) {
+        _state.update { state -> state.copy(personaAddress = address) }
     }
 
     data class State(
-        val securityStructureId: SecurityStructureId,
-        val accountAddresses: List<AddressOfAccountOrPersona> = emptyList(),
-        val personaAddresses: List<AddressOfAccountOrPersona> = emptyList()
-    ) : UiState {
-
-        val allAddresses: PersistentList<AddressOfAccountOrPersona> = (accountAddresses + personaAddresses).toPersistentList()
-    }
+        val accountAddress: AddressOfAccountOrPersona? = null,
+        val personaAddress: AddressOfAccountOrPersona? = null
+    ) : UiState
 }

@@ -119,7 +119,6 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     fun onRemoveAllOverrideFactorsClick() {
         viewModelScope.launch { shieldBuilderClient.executeMutatingFunction { removeAllFactorsFromPrimaryOverride() } }
-        _state.update { state -> state.copy(isOverrideSectionVisible = false) }
     }
 
     private fun observeSelection() {
@@ -140,6 +139,7 @@ class SetupRegularAccessViewModel @Inject constructor(
                                     includeLastUsedOn = false
                                 )
                             }.toPersistentList(),
+                            isOverrideSectionVisible = selection.overrideFactors.isNotEmpty(),
                             authenticationFactor = selection.authenticationFactor?.toFactorSourceCard(
                                 includeDescription = true,
                                 includeLastUsedOn = false

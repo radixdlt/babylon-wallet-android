@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -11,19 +12,18 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
-import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.ProfileToCheck
-import com.radixdlt.sargon.SecurityStructureId
+import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -31,6 +31,8 @@ import javax.inject.Inject
 class SecurityShieldDetailsViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    private val shieldBuilderClient: SecurityShieldBuilderClient,
+    getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<SecurityShieldDetailsViewModel.State>(),
     OneOffEventHandler<SecurityShieldDetailsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -40,51 +42,32 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     override fun initialState() = State()
 
     init {
-        val shieldId = args.securityStructureId
-        val shieldName = args.securityStructureName
-        _state.update { state ->
-            state.copy(securityShieldName = shieldName)
-        }
-
-        getSecurityStructuresOfFactorSources(shieldId = shieldId)
-
-        getEntitiesLinkedToSecurityStructure(shieldId = shieldId)
+        getProfileUseCase.flow.distinctUntilChanged()
+            .onEach { getSecurityStructuresOfFactorSources(args.input) }
+            .launchIn(viewModelScope)
     }
 
-    private fun getSecurityStructuresOfFactorSources(shieldId: SecurityStructureId) {
+    private fun getSecurityStructuresOfFactorSources(input: SecurityShieldDetailsArgs.Input) {
         viewModelScope.launch {
             sargonOsManager.callSafely(defaultDispatcher) {
-                securityStructuresOfFactorSources()
-                    .find { it.metadata.id == shieldId }
-                    ?: error("Security structure not found.")
+                when (input) {
+                    is SecurityShieldDetailsArgs.Input.Address -> securityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
+                        addressOfAccountOrPersona = input.value
+                    )
+
+                    is SecurityShieldDetailsArgs.Input.Id -> securityStructuresOfFactorSources()
+                        .first { it.metadata.id == input.value }
+                }
             }.onSuccess { securityStructureOfFactorSources ->
                 _state.update { state ->
-                    state.copy(securityStructureOfFactorSources = securityStructureOfFactorSources)
-                }
-            }.onFailure {
-                Timber.e("Failed to get security structure.")
-            }
-        }
-    }
-
-    private fun getEntitiesLinkedToSecurityStructure(shieldId: SecurityStructureId) {
-        viewModelScope.launch {
-            sargonOsManager.callSafely(defaultDispatcher) {
-                entitiesLinkedToSecurityStructure(
-                    shieldId = shieldId,
-                    profileToCheck = ProfileToCheck.Current
-                )
-            }.onSuccess { linkedEntities ->
-                _state.update { state ->
                     state.copy(
-                        linkedAccounts = linkedEntities.accounts.toPersistentList(),
-                        linkedPersonas = linkedEntities.personas.toPersistentList(),
-                        hasAnyHiddenLinkedEntities = linkedEntities.hiddenAccounts.isNotEmpty() ||
-                            linkedEntities.hiddenPersonas.isNotEmpty()
+                        securityShieldName = securityStructureOfFactorSources.metadata.displayName.value,
+                        securityStructureOfFactorSources = securityStructureOfFactorSources,
+                        isEditable = input is SecurityShieldDetailsArgs.Input.Id
                     )
                 }
             }.onFailure {
-                Timber.e("Failed to get linked entities for security structure id: $shieldId")
+                Timber.e("Failed to get security structure.")
             }
         }
     }
@@ -93,7 +76,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         _state.update { state ->
             state.copy(
                 isRenameBottomSheetVisible = true,
-                renameSecurityShieldInput = RenameSecurityShieldInput(name = state.securityShieldName)
+                renameSecurityShieldInput = State.RenameSecurityShieldInput(name = state.securityShieldName)
             )
         }
     }
@@ -101,7 +84,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     fun onRenameSecurityShieldChanged(updatedName: String) {
         _state.update { state ->
             state.copy(
-                renameSecurityShieldInput = RenameSecurityShieldInput(name = updatedName)
+                renameSecurityShieldInput = State.RenameSecurityShieldInput(name = updatedName)
             )
         }
     }
@@ -113,21 +96,28 @@ class SecurityShieldDetailsViewModel @Inject constructor(
                     renameSecurityShieldInput = state.renameSecurityShieldInput.copy(isUpdating = true)
                 )
             }
-//            currentSecurityShield?.let {
-//                sargonOsManager.callSafely(defaultDispatcher) {
-//                    updateSecurityShieldName( // TODO future task: add updateSecurityShieldName in sargon
-//                        securityShield = it, // or id
-//                        name = state.value.renameSecurityShieldInput.name
-//                    )
-//                }.onFailure { error ->
-//                    Timber.e("Failed to rename security shield: $error")
-//                }
-//            }
-            _state.update { state ->
-                state.copy(
-                    isRenameBottomSheetVisible = false,
-                    uiMessage = UiMessage.InfoMessage.RenameSuccessful
+
+            sargonOsManager.callSafely(defaultDispatcher) {
+                renameSecurityStructure(
+                    securityStructureId = (args.input as SecurityShieldDetailsArgs.Input.Id).value,
+                    name = DisplayName.init(state.value.renameSecurityShieldInput.name)
                 )
+            }.onFailure { error ->
+                Timber.e("Failed to rename security shield: $error")
+
+                _state.update { state ->
+                    state.copy(
+                        isRenameBottomSheetVisible = false,
+                        uiMessage = UiMessage.ErrorMessage(error)
+                    )
+                }
+            }.onSuccess {
+                _state.update { state ->
+                    state.copy(
+                        isRenameBottomSheetVisible = false,
+                        uiMessage = UiMessage.InfoMessage.RenameSuccessful
+                    )
+                }
             }
         }
     }
@@ -137,27 +127,31 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     }
 
     fun onEditFactorsClick() {
-        // TODO
+        val shield = state.value.securityStructureOfFactorSources ?: return
+
+        viewModelScope.launch {
+            shieldBuilderClient.withExistingSecurityStructure(shield)
+            sendEvent(Event.EditShield)
+        }
     }
 
     data class State(
-        val isLoading: Boolean = true,
         val securityShieldName: String = "",
         val securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null,
-        val linkedAccounts: PersistentList<Account> = persistentListOf(),
-        val linkedPersonas: PersistentList<Persona> = persistentListOf(),
-        val hasAnyHiddenLinkedEntities: Boolean = false,
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
-        val uiMessage: UiMessage? = null
-    ) : UiState
+        val uiMessage: UiMessage? = null,
+        val isEditable: Boolean = false
+    ) : UiState {
 
-    data class RenameSecurityShieldInput(
-        override val name: String = "",
-        override val isUpdating: Boolean = false
-    ) : RenameInput()
+        data class RenameSecurityShieldInput(
+            override val name: String = "",
+            override val isUpdating: Boolean = false
+        ) : RenameInput()
+    }
 
     sealed interface Event : OneOffEvent {
-        data object Dismiss : Event
+
+        data object EditShield : Event
     }
 }

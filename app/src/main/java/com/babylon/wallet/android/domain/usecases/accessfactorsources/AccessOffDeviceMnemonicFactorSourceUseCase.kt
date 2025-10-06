@@ -62,7 +62,16 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
         factorSource: FactorSource.OffDeviceMnemonic,
         input: AccessFactorSourcesInput.Sign
     ): Result<AccessFactorSourcesOutput.Sign> {
-        TODO("Not yet implemented")
+        val mnemonic = seedPhraseChannel.receive()
+        return runCatching {
+            when (input) {
+                is AccessFactorSourcesInput.SignTransaction -> mnemonic.signTransaction(input.input)
+                is AccessFactorSourcesInput.SignSubintent -> mnemonic.signSubintent(input.input)
+                is AccessFactorSourcesInput.SignAuth -> mnemonic.signAuth(input.input)
+            }
+        }.onSuccess {
+            updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+        }
     }
 
     override suspend fun spotCheck(factorSource: FactorSource.OffDeviceMnemonic): Result<Boolean> = runCatching {

@@ -52,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.radixdlt.sargon.Bip39WordCount
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -128,8 +129,8 @@ private fun SeedPhraseContent(
         },
         isConfirmButtonEnabled = state.isConfirmButtonEnabled,
         focusedWordIndex = focusedWordIndex,
-        numberOfWordsOptions = Bip39WordCount.entries.toPersistentList(),
-        showNumberOfWordsPicker = state.isOlympiaRecovery,
+        numberOfWordsOptions = state.numberOfWordsOptions.toPersistentList(),
+        showNumberOfWordsPicker = state.showNumberOfWordsPicker,
         showAdvancedMode = state.isOlympiaRecovery,
         isEditingEnabled = state.isEditingEnabled,
         errorMessage = state.errorMessage,
@@ -329,6 +330,7 @@ class SeedPhrasePreviewProvider : PreviewParameterProvider<SeedPhraseViewModel.S
         get() = sequenceOf(
             SeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.New,
+                factorSourceKind = FactorSourceKind.DEVICE,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
                         SeedPhraseWord(
@@ -343,6 +345,7 @@ class SeedPhrasePreviewProvider : PreviewParameterProvider<SeedPhraseViewModel.S
                 context = AddFactorSourceInput.Context.Recovery(
                     isOlympia = true
                 ),
+                factorSourceKind = FactorSourceKind.DEVICE,
                 seedPhraseState = SeedPhraseInputDelegate.State(
                     seedPhraseWords = Mnemonic.sample().words.mapIndexed { index, bip39Word ->
                         SeedPhraseWord(
@@ -356,6 +359,7 @@ class SeedPhrasePreviewProvider : PreviewParameterProvider<SeedPhraseViewModel.S
             ),
             SeedPhraseViewModel.State(
                 context = AddFactorSourceInput.Context.New,
+                factorSourceKind = FactorSourceKind.DEVICE,
                 errorMessage = UiMessage.ErrorMessage(
                     RadixWalletException.FactorSource.FactorSourceAlreadyInUse(
                         factorSourceName = "My Phone"

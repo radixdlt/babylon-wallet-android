@@ -124,7 +124,8 @@ fun <T> ListItemPicker(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
-                        style = textStyle
+                        style = textStyle,
+                        color = RadixTheme.colors.text
                     )
                 }
             }

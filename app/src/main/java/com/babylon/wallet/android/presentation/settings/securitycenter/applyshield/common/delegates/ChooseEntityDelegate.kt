@@ -8,16 +8,10 @@ import javax.inject.Inject
 
 interface ChooseEntityDelegate<T> {
 
-    fun onSelectAllToggleClick()
-
     fun onSelectItem(item: T)
 }
 
 class ChooseEntityDelegateImpl<T> @Inject constructor() : ViewModelDelegate<ChooseEntityUiState<T>>(), ChooseEntityDelegate<T> {
-
-    override fun onSelectAllToggleClick() {
-        setAllSelected(!_state.value.selectedAll)
-    }
 
     override fun onSelectItem(item: T) {
         _state.update { state ->
@@ -30,13 +24,5 @@ class ChooseEntityDelegateImpl<T> @Inject constructor() : ViewModelDelegate<Choo
         }
     }
 
-    fun getSelectedItems(): List<T> = _state.value.items.filter { it.selected }.map { it.data }
-
-    private fun setAllSelected(selected: Boolean) {
-        _state.update { state ->
-            state.copy(
-                items = state.items.map { it.copy(selected = selected) }
-            )
-        }
-    }
+    fun getSelectedItem(): T = _state.value.items.first { it.selected }.data
 }

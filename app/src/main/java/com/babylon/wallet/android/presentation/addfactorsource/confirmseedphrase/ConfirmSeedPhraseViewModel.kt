@@ -79,8 +79,8 @@ class ConfirmSeedPhraseViewModel @Inject constructor(
                         when (input.kind) {
                             FactorSourceKind.DEVICE -> Event.DeviceSeedPhraseConfirmed
                             FactorSourceKind.ARCULUS_CARD -> Event.ArculusSeedPhraseConfirmed
+                            FactorSourceKind.OFF_DEVICE_MNEMONIC -> Event.OffDeviceSeedPhraseConfirmed
                             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            FactorSourceKind.OFF_DEVICE_MNEMONIC,
                             FactorSourceKind.PASSWORD -> error("")
                         }
                     )
@@ -120,6 +120,8 @@ class ConfirmSeedPhraseViewModel @Inject constructor(
         data object DeviceSeedPhraseConfirmed : Event
 
         data object ArculusSeedPhraseConfirmed : Event
+
+        data object OffDeviceSeedPhraseConfirmed : Event
     }
 
     data class State(
