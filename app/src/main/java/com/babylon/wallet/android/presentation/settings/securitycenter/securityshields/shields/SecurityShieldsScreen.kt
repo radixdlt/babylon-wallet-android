@@ -178,6 +178,7 @@ private fun SecurityShieldsDarkPreview(
     }
 }
 
+@UsesSampleValues
 class SecurityShieldsPreviewProvider : PreviewParameterProvider<SecurityShieldsViewModel.State> {
 
     override val values: Sequence<SecurityShieldsViewModel.State>

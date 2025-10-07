@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.babylon.wallet.android.presentation.dialogs.info
 
 import android.content.Intent
-import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
@@ -33,12 +30,15 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -48,6 +48,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.none
+import com.mikepenz.markdown.annotator.annotatorSettings
+import com.mikepenz.markdown.annotator.buildMarkdownAnnotatedString
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
@@ -55,8 +57,6 @@ import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.DefaultMarkdownColors
 import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownPadding
-import com.mikepenz.markdown.utils.MARKDOWN_TAG_URL
-import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
 import kotlinx.coroutines.launch
 import org.intellij.markdown.MarkdownElementTypes.INLINE_LINK
 import org.intellij.markdown.MarkdownElementTypes.LINK_DESTINATION
@@ -69,6 +69,7 @@ import org.intellij.markdown.ast.getTextInNode
 
 typealias DSR = com.babylon.wallet.android.designsystem.R.drawable
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfoDialog(
     modifier: Modifier = Modifier,
@@ -131,7 +132,11 @@ private fun InfoDialogContent(
                         textStyle.toSpanStyle()
                             .copy(color = RadixTheme.colors.text)
                     )
-                    buildMarkdownAnnotatedString(markdownComponentModel.content, markDownNode)
+                    buildMarkdownAnnotatedString(
+                        content = markdownComponentModel.content,
+                        node = markDownNode,
+                        annotatorSettings = annotatorSettings()
+                    )
                     pop()
                 }
                 Text(
@@ -152,19 +157,21 @@ private fun InfoDialogContent(
                 ?.toString()
             val linkLabel = child.findChildOfType(LINK_LABEL)
                 ?.getTextInNode(content)?.toString()
-            val annotation = destination ?: linkLabel
-            if (annotation != null) pushStringAnnotation(MARKDOWN_TAG_URL, annotation)
+            val annotation = destination ?: linkLabel ?: return@markdownAnnotator false
 
-            pushStyle(
-                SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = linkColor
+            withLink(LinkAnnotation.Url(annotation)) {
+                pushStyle(
+                    SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        color = linkColor
+                    )
                 )
-            )
 
-            append(linkText?.getTextInNode(content).toString())
-            pop()
-            true // return true to consume this ASTNode child
+                append(linkText?.getTextInNode(content).toString())
+                pop()
+            }
+
+            true
         } else {
             false
         }
@@ -212,7 +219,7 @@ private fun InfoDialogContent(
                                 scrollState.animateScrollTo(0)
                             }
                         } else {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+                            context.startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
                         }
                     }
                 }
@@ -241,6 +248,8 @@ private fun InfoDialogContent(
                         codeBackground = RadixTheme.colors.backgroundTertiary,
                         inlineCodeBackground = RadixTheme.colors.backgroundTertiary,
                         dividerColor = RadixTheme.colors.divider,
+                        tableText = RadixTheme.colors.text,
+                        tableBackground = RadixTheme.colors.backgroundTertiary
                     )
                 )
             }
@@ -346,8 +355,6 @@ val GlossaryItem.applyIconTint
 
         GlossaryItem.web3,
         GlossaryItem.radixnetwork,
-        GlossaryItem.radixconnect,
-        GlossaryItem.radixconnector,
         GlossaryItem.dashboard,
         GlossaryItem.dapps,
         GlossaryItem.dex,

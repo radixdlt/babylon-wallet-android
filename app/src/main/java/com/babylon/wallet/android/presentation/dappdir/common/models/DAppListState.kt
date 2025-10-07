@@ -25,6 +25,7 @@ data class DAppListState(
     val isFiltersButtonEnabled: Boolean = filters.availableTags.isNotEmpty()
 }
 
+@UsesSampleValues
 class DAppListPreviewProvider : PreviewParameterProvider<DAppListState> {
 
     override val values: Sequence<DAppListState>
