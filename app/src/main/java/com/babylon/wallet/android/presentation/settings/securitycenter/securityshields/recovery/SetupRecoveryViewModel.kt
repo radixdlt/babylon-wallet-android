@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.data.repository.securityshield.model.ChooseFactorSourceContext
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.transaction.PrepareApplyShieldRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,11 +15,14 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SecurityShieldBuilderStatus
+import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
+import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.extensions.values
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +38,8 @@ import javax.inject.Inject
 class SetupRecoveryViewModel @Inject constructor(
     private val shieldBuilderClient: SecurityShieldBuilderClient,
     private val sargonOsManager: SargonOsManager,
+    private val prepareApplyShieldRequestUseCase: PrepareApplyShieldRequestUseCase,
+    private val incomingRequestRepository: IncomingRequestRepository,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<SetupRecoveryViewModel.State>(),
     OneOffEventHandler<SetupRecoveryViewModel.Event> by OneOffEventHandlerImpl() {
@@ -195,8 +202,7 @@ class SetupRecoveryViewModel @Inject constructor(
                         context = context,
                         alreadySelectedFactorSources = shieldBuilderClient.findAlreadySelectedFactorSourceIds(
                             context
-                        )
-                            .toPersistentList(),
+                        ).toPersistentList(),
                         unusableFactorSourceKinds = shieldBuilderClient.getUnusableFactorSourceKinds(context)
                             .toPersistentList()
                     )
@@ -213,15 +219,40 @@ class SetupRecoveryViewModel @Inject constructor(
                 sendEvent(Event.ToNameSetup)
             } else {
                 val updatedIds = shieldBuilderClient.buildShield(securityStructureIds.metadata.displayName.value)
+                val appliedShieldEntityAddress = shieldBuilderClient.appliedShieldEntityAddress
 
-                sargonOsManager.callSafely(dispatcher) {
-                    updateSecurityStructureOfFactorSourceIds(updatedIds)
-                }.onSuccess {
-                    sendEvent(Event.DismissFlow)
-                }.onFailure { error ->
-                    _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(error)) }
+                if (appliedShieldEntityAddress != null) {
+                    applyNewShieldToEntity(updatedIds, appliedShieldEntityAddress)
+                } else {
+                    updateShieldTemplate(updatedIds)
                 }
             }
+        }
+    }
+
+    private suspend fun updateShieldTemplate(updatedIds: SecurityStructureOfFactorSourceIDs) {
+        sargonOsManager.callSafely(dispatcher) {
+            updateSecurityStructureOfFactorSourceIds(updatedIds)
+        }.onSuccess {
+            sendEvent(Event.DismissFlow)
+        }.onFailure { error ->
+            _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(error)) }
+        }
+    }
+
+    private suspend fun applyNewShieldToEntity(
+        updatedIds: SecurityStructureOfFactorSourceIDs,
+        entityAddress: AddressOfAccountOrPersona
+    ) {
+        sargonOsManager.callSafely(dispatcher) {
+            securityStructureOfFactorSourcesFromSecurityStructureOfFactorSourceIds(updatedIds)
+        }.then { structure ->
+            prepareApplyShieldRequestUseCase(structure, entityAddress)
+        }.onSuccess {
+            sendEvent(Event.DismissFlow)
+            incomingRequestRepository.add(it)
+        }.onFailure { error ->
+            _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(error)) }
         }
     }
 

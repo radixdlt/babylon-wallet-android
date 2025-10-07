@@ -63,7 +63,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
                     state.copy(
                         securityShieldName = securityStructureOfFactorSources.metadata.displayName.value,
                         securityStructureOfFactorSources = securityStructureOfFactorSources,
-                        isEditable = input is SecurityShieldDetailsArgs.Input.Id
+                        isShieldApplied = input is SecurityShieldDetailsArgs.Input.Address
                     )
                 }
             }.onFailure {
@@ -130,7 +130,11 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val shield = state.value.securityStructureOfFactorSources ?: return
 
         viewModelScope.launch {
-            shieldBuilderClient.withExistingSecurityStructure(shield)
+            if (args.input is SecurityShieldDetailsArgs.Input.Address) {
+                shieldBuilderClient.withAppliedSecurityStructure(shield, args.input.value)
+            } else {
+                shieldBuilderClient.withExistingSecurityStructure(shield)
+            }
             sendEvent(Event.EditShield)
         }
     }
@@ -141,7 +145,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
         val uiMessage: UiMessage? = null,
-        val isEditable: Boolean = false
+        val isShieldApplied: Boolean = false
     ) : UiState {
 
         data class RenameSecurityShieldInput(

@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -116,26 +117,36 @@ private fun SecurityShieldDetailsContent(
             )
         },
         bottomBar = {
-            if (state.securityStructureOfFactorSources != null && state.isEditable) {
+            if (state.securityStructureOfFactorSources != null) {
                 RadixBottomBar(
                     button = {
                         RadixSecondaryButton(
                             modifier = Modifier
-                                .padding(bottom = RadixTheme.dimensions.paddingDefault)
+                                .padding(
+                                    bottom = if (state.isShieldApplied) {
+                                        0.dp
+                                    } else {
+                                        RadixTheme.dimensions.paddingDefault
+                                    }
+                                )
                                 .fillMaxWidth()
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                             text = stringResource(R.string.securityShields_editFactors),
                             onClick = onEditFactorsClick
                         )
                     },
-                    additionalBottomContent = {
-                        RadixPrimaryButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.securityShields_apply),
-                            onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
-                        )
+                    additionalBottomContent = if (state.isShieldApplied) {
+                        null
+                    } else {
+                        {
+                            RadixPrimaryButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.securityShields_apply),
+                                onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
+                            )
+                        }
                     }
                 )
             }
@@ -152,7 +163,7 @@ private fun SecurityShieldDetailsContent(
                 FullscreenCircularProgressContent()
             } else {
                 Column {
-                    if (state.isEditable) {
+                    if (!state.isShieldApplied) {
                         Text(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
                             text = state.securityShieldName,
@@ -235,16 +246,16 @@ class SecurityShieldDetailsPreviewProvider : PreviewParameterProvider<SecuritySh
             SecurityShieldDetailsViewModel.State(
                 securityShieldName = "My Shield",
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample(),
-                isEditable = true
+                isShieldApplied = false
             ),
             SecurityShieldDetailsViewModel.State(
                 securityShieldName = "My Shield 2",
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-                isEditable = true
+                isShieldApplied = false
             ),
             SecurityShieldDetailsViewModel.State(
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-                isEditable = false
+                isShieldApplied = true
             )
         )
 }
