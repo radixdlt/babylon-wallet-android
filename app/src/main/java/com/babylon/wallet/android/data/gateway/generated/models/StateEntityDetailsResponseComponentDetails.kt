@@ -15,14 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.coreapi.ComponentEntityState
-import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
-import com.babylon.wallet.android.data.gateway.generated.models.ComponentRoyaltyConfig
-import com.babylon.wallet.android.data.gateway.generated.models.NativeResourceDetails
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
-import com.babylon.wallet.android.data.gateway.generated.models.TwoWayLinkedDappOnLedgerDetails
-
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -61,7 +53,7 @@ data class StateEntityDetailsResponseComponentDetails (
 
     /* A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a custom JSON model defined in the Core API schema.  */
     @Contextual @SerialName(value = "state")
-    val state: ComponentEntityState? = null,
+    val state: Any? = null,
 
     @SerialName(value = "role_assignments")
     val roleAssignments: ComponentEntityRoleAssignments? = null,

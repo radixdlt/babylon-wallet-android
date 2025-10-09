@@ -2,9 +2,10 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
+import com.babylon.wallet.android.data.gateway.coreapi.ScryptoInstant
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
-import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn.ImplicitMetadataState
+import com.radixdlt.sargon.AccessControllerAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.LockerAddress
@@ -18,7 +19,6 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.resources.Divisibility
@@ -237,5 +237,27 @@ class StateDatabaseConverters {
     @TypeConverter
     fun lockerAddressToString(lockerAddress: LockerAddress?): String? {
         return lockerAddress?.string
+    }
+
+    // AccessControllerAddress
+    @TypeConverter
+    fun stringToAccessControllerAddress(accessControllerAddress: String?): AccessControllerAddress? {
+        return accessControllerAddress?.let { AccessControllerAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun accessControllerAddressToString(accessControllerAddress: AccessControllerAddress?): String? {
+        return accessControllerAddress?.string
+    }
+
+    // ScryptoInstant
+    @TypeConverter
+    fun stringToScryptoInstant(string: String?): ScryptoInstant? {
+        return string?.let { json.decodeFromString(string) }
+    }
+
+    @TypeConverter
+    fun scryptoInstantToString(scryptoInstant: ScryptoInstant?): String? {
+        return scryptoInstant?.let { json.encodeToString(it) }
     }
 }

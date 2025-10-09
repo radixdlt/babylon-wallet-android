@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ComponentEntityState(
+data class ValidatorComponentEntityState(
 
     @SerialName(value = "stake_xrd_vault")
     val stakeXrdVault: StakeXrdVault? = null,

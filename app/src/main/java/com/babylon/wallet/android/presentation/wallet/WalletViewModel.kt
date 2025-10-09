@@ -16,6 +16,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.securityproblems.accountPrompts
+import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -97,6 +98,7 @@ class WalletViewModel @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
     private val accountLockersDelegate: WalletAccountLockersDelegate,
+    private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null
@@ -127,6 +129,12 @@ class WalletViewModel @Inject constructor(
         observeFactorSources()
         homeCards(scope = viewModelScope, state = _state)
         accountLockersDelegate(scope = viewModelScope, state = _state)
+
+        accessControllerTimedRecoveryStateObserver.recoveryStateByAccount
+            .onEach {
+                Timber.d("Access controller recovery states: $it")
+            }
+            .launchIn(viewModelScope)
     }
 
     fun processBufferedDeepLinkRequest() {

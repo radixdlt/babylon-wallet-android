@@ -27,7 +27,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
+import com.babylon.wallet.android.data.repository.accesscontroller.model.AccessControllersResponse
 import com.babylon.wallet.android.data.repository.toResult
+import com.radixdlt.sargon.AccessControllerAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.LockerAddress
@@ -126,7 +128,8 @@ suspend fun StateApi.fetchFungibleAmountPerAccount(
         stateVersion = onStateVersion
     ) { chunkedAccounts ->
         chunkedAccounts.items.forEach { accountItem ->
-            val resourceFound = accountItem.fungibleResources?.items?.find { it.resourceAddress == resourceAddressString }
+            val resourceFound =
+                accountItem.fungibleResources?.items?.find { it.resourceAddress == resourceAddressString }
 
             if (resourceFound != null) {
                 resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] = resourceFound.amountDecimal
@@ -145,7 +148,8 @@ suspend fun StateApi.fetchFungibleAmountPerAccount(
                     nextCursor = pageResponse?.nextCursor
 
                     pageResponse?.items?.find { it.resourceAddress == resourceAddressString }?.let { resource ->
-                        resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] = resource.amountDecimal
+                        resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] =
+                            resource.amountDecimal
                         return@forEach
                     }
                 }
@@ -495,4 +499,26 @@ suspend fun StateApi.getAllMetadata(
     }
 
     return items
+}
+
+suspend fun StateApi.paginateAccessControllerItems(
+    addresses: Set<AccessControllerAddress>,
+    stateVersion: Long? = null
+): AccessControllersResponse {
+    val entityDetailsItems = mutableListOf<StateEntityDetailsResponseItem>()
+    var resolvedVersion = stateVersion
+
+    paginateDetails(
+        addresses = addresses.map { it.string }.toSet(),
+        stateVersion = resolvedVersion,
+        onPage = { response ->
+            entityDetailsItems.addAll(response.items)
+            resolvedVersion = response.ledgerState.stateVersion
+        }
+    )
+
+    return AccessControllersResponse(
+        accessControllers = entityDetailsItems,
+        stateVersion = resolvedVersion
+    )
 }

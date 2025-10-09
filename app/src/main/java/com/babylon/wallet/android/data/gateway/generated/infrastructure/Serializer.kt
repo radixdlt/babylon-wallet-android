@@ -1,8 +1,10 @@
 package com.babylon.wallet.android.data.gateway.generated.infrastructure
 
+import com.babylon.wallet.android.data.gateway.serialisers.AnyAsJsonElementSerializer
 import com.radixdlt.sargon.Decimal192
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import rdx.works.core.domain.Serializer
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -35,6 +37,7 @@ object Serializer {
         contextual(URI::class, URIAdapter)
         contextual(URL::class, URLAdapter)
         contextual(StringBuilder::class, StringBuilderAdapter)
+        contextual(Any::class, AnyAsJsonElementSerializer)
     }
 
     @JvmStatic

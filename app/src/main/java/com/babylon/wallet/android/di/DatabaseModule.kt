@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.repository.cache.database.DAppDirectoryDa
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
+import com.babylon.wallet.android.data.repository.cache.database.accesscontroller.AccessControllerDao
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerDao
 import dagger.Module
 import dagger.Provides
@@ -51,5 +52,12 @@ object DatabaseModule {
         stateDatabase: StateDatabase
     ): DAppDirectoryDao {
         return stateDatabase.dAppDirectoryDao()
+    }
+
+    @Provides
+    fun provideAccessControllerDao(
+        stateDatabase: StateDatabase
+    ): AccessControllerDao {
+        return stateDatabase.accessControllerDao()
     }
 }
