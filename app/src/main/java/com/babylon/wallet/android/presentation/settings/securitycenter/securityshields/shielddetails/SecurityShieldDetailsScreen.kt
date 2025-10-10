@@ -118,37 +118,41 @@ private fun SecurityShieldDetailsContent(
         },
         bottomBar = {
             if (state.securityStructureOfFactorSources != null) {
-                RadixBottomBar(
-                    button = {
-                        RadixSecondaryButton(
-                            modifier = Modifier
-                                .padding(
-                                    bottom = if (state.isShieldApplied) {
-                                        0.dp
-                                    } else {
-                                        RadixTheme.dimensions.paddingDefault
-                                    }
+                if (state.canEditShield || !state.isShieldApplied) {
+                    RadixBottomBar(
+                        button = {
+                            if (state.canEditShield) {
+                                RadixSecondaryButton(
+                                    modifier = Modifier
+                                        .padding(
+                                            bottom = if (state.isShieldApplied) {
+                                                0.dp
+                                            } else {
+                                                RadixTheme.dimensions.paddingDefault
+                                            }
+                                        )
+                                        .fillMaxWidth()
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(R.string.securityShields_editFactors),
+                                    onClick = onEditFactorsClick
                                 )
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(R.string.securityShields_editFactors),
-                            onClick = onEditFactorsClick
-                        )
-                    },
-                    additionalBottomContent = if (state.isShieldApplied) {
-                        null
-                    } else {
-                        {
-                            RadixPrimaryButton(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                text = stringResource(id = R.string.securityShields_apply),
-                                onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
-                            )
+                            }
+                        },
+                        additionalBottomContent = if (state.isShieldApplied) {
+                            null
+                        } else {
+                            {
+                                RadixPrimaryButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(id = R.string.securityShields_apply),
+                                    onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
+                                )
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         },
         containerColor = RadixTheme.colors.backgroundSecondary

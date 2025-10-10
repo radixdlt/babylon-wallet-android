@@ -58,7 +58,8 @@ fun MainScreen(
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
     onMoreInfoClick: () -> Unit,
-    onMoreBlogPostsClick: () -> Unit
+    onMoreBlogPostsClick: () -> Unit,
+    onNavigateToTimedRecovery: (AccountAddress) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -78,7 +79,8 @@ fun MainScreen(
                 onDAppClick = onDAppClick,
                 onInfoLinkClick = onInfoLinkClick,
                 onMoreInfoClick = onMoreInfoClick,
-                onMoreBlogPostsClick = onMoreBlogPostsClick
+                onMoreBlogPostsClick = onMoreBlogPostsClick,
+                onNavigateToTimedRecovery = onNavigateToTimedRecovery
             )
         }
 
@@ -118,6 +120,7 @@ private fun MainContent(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
+    onNavigateToTimedRecovery: (AccountAddress) -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
@@ -225,6 +228,7 @@ private fun MainContent(
                     onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                     onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                     onNavigateToLinkConnector = onNavigateToLinkConnector,
+                    onNavigateToTimedRecovery = onNavigateToTimedRecovery
                 )
             }
             composable(MainTab.DApps.route) {

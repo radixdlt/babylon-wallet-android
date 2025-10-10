@@ -27,7 +27,7 @@ fun PromptLabel(
     modifier: Modifier = Modifier,
     textColor: Color = RadixTheme.colors.warning,
     textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
-    @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
+    @DrawableRes iconRes: Int? = R.drawable.ic_warning_error,
     iconTint: Color = RadixTheme.colors.warning,
     iconSize: Dp = 24.dp,
     endContent: (@Composable () -> Unit)? = null
@@ -50,7 +50,7 @@ fun PromptLabel(
     modifier: Modifier = Modifier,
     textColor: Color = RadixTheme.colors.warning,
     textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
-    @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
+    @DrawableRes iconRes: Int? = R.drawable.ic_warning_error,
     iconTint: Color = RadixTheme.colors.warning,
     iconSize: Dp = 24.dp,
     endContent: (@Composable () -> Unit)? = null
@@ -60,12 +60,14 @@ fun PromptLabel(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
     ) {
-        Icon(
-            modifier = Modifier.size(iconSize),
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            tint = iconTint
-        )
+        iconRes?.let {
+            Icon(
+                modifier = Modifier.size(iconSize),
+                painter = painterResource(id = it),
+                contentDescription = null,
+                tint = iconTint
+            )
+        }
 
         Text(
             text = text,

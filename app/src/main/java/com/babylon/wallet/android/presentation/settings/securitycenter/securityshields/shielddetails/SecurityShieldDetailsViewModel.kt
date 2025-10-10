@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -12,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.init
@@ -32,6 +34,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val shieldBuilderClient: SecurityShieldBuilderClient,
+    private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
     getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<SecurityShieldDetailsViewModel.State>(),
@@ -45,6 +48,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         getProfileUseCase.flow.distinctUntilChanged()
             .onEach { getSecurityStructuresOfFactorSources(args.input) }
             .launchIn(viewModelScope)
+        observeAccountRecoveryState()
     }
 
     private fun getSecurityStructuresOfFactorSources(input: SecurityShieldDetailsArgs.Input) {
@@ -63,7 +67,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
                     state.copy(
                         securityShieldName = securityStructureOfFactorSources.metadata.displayName.value,
                         securityStructureOfFactorSources = securityStructureOfFactorSources,
-                        isShieldApplied = input is SecurityShieldDetailsArgs.Input.Address
+                        isShieldApplied = input is SecurityShieldDetailsArgs.Input.Address,
                     )
                 }
             }.onFailure {
@@ -139,13 +143,32 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun observeAccountRecoveryState() {
+        val accountAddress = (
+            (args.input as? SecurityShieldDetailsArgs.Input.Address)?.value
+                as? AddressOfAccountOrPersona.Account
+            )?.v1 ?: return
+
+        accessControllerTimedRecoveryStateObserver.recoveryStateByAccount
+            .onEach { states ->
+                val recoveryState = states[accountAddress]
+                _state.update { state ->
+                    state.copy(
+                        canEditShield = recoveryState == null || !recoveryState.isInTimedRecovery
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     data class State(
         val securityShieldName: String = "",
         val securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null,
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
         val uiMessage: UiMessage? = null,
-        val isShieldApplied: Boolean = false
+        val isShieldApplied: Boolean = false,
+        val canEditShield: Boolean = false
     ) : UiState {
 
         data class RenameSecurityShieldInput(

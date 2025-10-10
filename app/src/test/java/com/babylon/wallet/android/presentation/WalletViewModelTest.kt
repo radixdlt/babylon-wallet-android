@@ -16,7 +16,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
-import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -28,7 +28,6 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow

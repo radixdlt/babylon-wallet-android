@@ -26,7 +26,7 @@ fun AccountPromptLabel(
     modifier: Modifier = Modifier,
     labelColor: Color = White,
     contentColor: Color = White,
-    @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
+    @DrawableRes iconRes: Int? = R.drawable.ic_warning_error,
 ) {
     PromptLabel(
         modifier = modifier
