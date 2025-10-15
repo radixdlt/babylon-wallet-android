@@ -131,7 +131,7 @@ object Thumbnail {
             modifier = modifier.onGloballyPositioned { viewSize = it.size },
             imageType = imageType,
             imageContentScale = ContentScale.Crop,
-            emptyDrawable = R.drawable.ic_token,
+            emptyDrawable = R.drawable.ic_token_default,
             shape = CircleShape,
             contentDescription = name
         )
