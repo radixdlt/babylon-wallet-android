@@ -39,6 +39,9 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.SecurifyEntity -> securifyEntityProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.AccessControllerConfirmTimedRecovery -> TODO()
+            is DetailedManifestClass.AccessControllerRecovery -> TODO()
+            is DetailedManifestClass.AccessControllerStopTimedRecovery -> TODO()
         }
     }
 }

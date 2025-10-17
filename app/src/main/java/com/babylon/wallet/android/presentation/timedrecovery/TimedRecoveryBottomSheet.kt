@@ -42,13 +42,13 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
-fun AccountTimedRecoveryBottomSheet(
-    viewModel: AccountTimedRecoveryViewModel,
+fun TimedRecoveryBottomSheet(
+    viewModel: TimedRecoveryViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    AccountTimedRecoveryContent(
+    TimedRecoveryContent(
         state = state,
         onDismiss = onDismiss,
         onMessageShown = viewModel::onMessageShown,
@@ -59,8 +59,8 @@ fun AccountTimedRecoveryBottomSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AccountTimedRecoveryContent(
-    state: AccountTimedRecoveryViewModel.State,
+private fun TimedRecoveryContent(
+    state: TimedRecoveryViewModel.State,
     onDismiss: () -> Unit,
     onMessageShown: () -> Unit,
     onConfirmClick: () -> Unit,
@@ -171,10 +171,10 @@ private fun RemainingTimeView(
 
 @Composable
 @Preview
-private fun AccountTimedRecoveryPreview() {
+private fun TimedRecoveryPreview() {
     RadixWalletPreviewTheme {
-        AccountTimedRecoveryContent(
-            state = AccountTimedRecoveryViewModel.State(
+        TimedRecoveryContent(
+            state = TimedRecoveryViewModel.State(
                 isLoading = false,
                 remainingTime = 5.minutes
             ),

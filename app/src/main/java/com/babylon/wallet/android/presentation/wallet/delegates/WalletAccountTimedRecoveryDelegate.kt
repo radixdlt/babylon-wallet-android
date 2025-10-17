@@ -4,6 +4,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,11 +32,15 @@ class WalletAccountTimedRecoveryDelegate @Inject constructor(
     }
 
     private fun observeRecoveryStates() {
-        observer.recoveryStateByAccount
+        observer.recoveryStateByAddress
             .onEach { states ->
                 _state.update {
                     it.copy(
-                        accountsWithRecoveryStates = states
+                        accountsWithRecoveryStates = states.mapNotNull { entry ->
+                            val address =
+                                (entry.key as? AddressOfAccountOrPersona.Account)?.v1 ?: return@mapNotNull null
+                            address to entry.value
+                        }.toMap()
                     )
                 }
             }

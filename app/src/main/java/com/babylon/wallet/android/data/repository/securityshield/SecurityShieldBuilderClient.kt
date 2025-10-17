@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.repository.securityshield.model.PrimaryRo
 import com.babylon.wallet.android.data.repository.securityshield.model.RecoveryRoleSelection
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.radixdlt.sargon.AddressOfAccountOrPersona
-import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -17,7 +16,6 @@ import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.samples.sample
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -81,13 +79,7 @@ class SecurityShieldBuilderClient @Inject constructor(
         shield: SecurityStructureOfFactorSources,
         entityAddress: AddressOfAccountOrPersona
     ) {
-        withExistingSecurityStructure(
-            shield.copy(
-                metadata = shield.metadata.copy(
-                    displayName = DisplayName.sample()
-                )
-            )
-        )
+        withExistingSecurityStructure(shield)
         appliedShieldEntityAddress = entityAddress
     }
 

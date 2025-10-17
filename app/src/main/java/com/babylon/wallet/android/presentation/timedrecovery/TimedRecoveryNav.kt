@@ -8,31 +8,31 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 
-private const val ARG_ACCOUNT_ADDRESS = "arg_account_address"
-private const val DESTINATION = "route_account_timed_recovery/{$ARG_ACCOUNT_ADDRESS}"
-private const val ROUTE = "$DESTINATION/{$ARG_ACCOUNT_ADDRESS}"
+private const val ARG_ADDRESS = "arg_address"
+private const val DESTINATION = "route_timed_recovery/{$ARG_ADDRESS}"
+private const val ROUTE = "$DESTINATION/{$ARG_ADDRESS}"
 
 class TimedRecoveryArgs private constructor(
-    val accountAddress: AccountAddress
+    val address: AddressOfAccountOrPersona
 ) {
 
     constructor(savedStateHandle: SavedStateHandle) : this(
-        accountAddress = AccountAddress.init(
-            validatingAddress = requireNotNull(
+        address = AddressOfAccountOrPersona.init(
+            validating = requireNotNull(
                 savedStateHandle.get<String>(
-                    ARG_ACCOUNT_ADDRESS
+                    ARG_ADDRESS
                 )
             )
         )
     )
 }
 
-fun NavController.timedRecovery(accountAddress: AccountAddress) {
-    navigate(route = "$DESTINATION/${accountAddress.string}")
+fun NavController.timedRecovery(address: AddressOfAccountOrPersona) {
+    navigate(route = "$DESTINATION/${address.string}")
 }
 
 fun NavGraphBuilder.timedRecovery(
@@ -42,12 +42,12 @@ fun NavGraphBuilder.timedRecovery(
         route = ROUTE,
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false),
         arguments = listOf(
-            navArgument(ARG_ACCOUNT_ADDRESS) {
+            navArgument(ARG_ADDRESS) {
                 type = NavType.StringType
             }
         )
     ) {
-        AccountTimedRecoveryBottomSheet(
+        TimedRecoveryBottomSheet(
             viewModel = hiltViewModel(),
             onDismiss = onDismiss
         )

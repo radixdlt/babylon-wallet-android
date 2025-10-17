@@ -4,8 +4,8 @@ import com.babylon.wallet.android.data.repository.accesscontroller.AccessControl
 import com.babylon.wallet.android.data.repository.accesscontroller.model.AccessControllerRecoveryState
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AccountOrPersona
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
+import rdx.works.core.sargon.address
 import rdx.works.core.sargon.securityStateAccessControllerAddress
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -35,17 +37,25 @@ class AccessControllerTimedRecoveryStateObserver @Inject constructor(
 ) {
 
     private var monitoringJob: Job? = null
-    private val _recoveryStateByAccount = MutableSharedFlow<Map<AccountAddress, AccessControllerRecoveryState>>(1)
-    val recoveryStateByAccount: Flow<Map<AccountAddress, AccessControllerRecoveryState>> =
-        _recoveryStateByAccount.asSharedFlow()
+    private val _recoveryStateByAddress =
+        MutableSharedFlow<Map<AddressOfAccountOrPersona, AccessControllerRecoveryState>>(1)
+    val recoveryStateByAddress: Flow<Map<AddressOfAccountOrPersona, AccessControllerRecoveryState>> =
+        _recoveryStateByAddress.asSharedFlow()
 
     fun startMonitoring() {
         monitoringJob?.cancel()
         monitoringJob = combine(
-            getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }
-                .distinctUntilChanged(),
+            getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
+            getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork }.distinctUntilChanged(),
             ticker(5.minutes)
-        ) { accounts, _ -> updateAccessControllerRecoveryStates(accounts) }
+        ) { accounts, personas, _ ->
+            val entities = accounts.map {
+                AccountOrPersona.AccountEntity(it)
+            } + personas.map {
+                AccountOrPersona.PersonaEntity(it)
+            }
+            updateAccessControllerRecoveryStates(entities)
+        }
             .catch { Timber.w(it) }
             .flowOn(defaultDispatcher)
             .launchIn(appScope)
@@ -55,19 +65,19 @@ class AccessControllerTimedRecoveryStateObserver @Inject constructor(
         monitoringJob?.cancel()
     }
 
-    private suspend fun updateAccessControllerRecoveryStates(accounts: List<Account>) {
-        val accessControllerAddresses = accounts.mapNotNull { account ->
-            account.securityStateAccessControllerAddress ?: return@mapNotNull null
+    private suspend fun updateAccessControllerRecoveryStates(entities: List<AccountOrPersona>) {
+        val accessControllerAddresses = entities.mapNotNull { entity ->
+            entity.securityStateAccessControllerAddress ?: return@mapNotNull null
         }.toSet()
 
         accessControllersRepository.getAccessControllerRecoveryStates(accessControllerAddresses, false)
             .onSuccess { states ->
-                _recoveryStateByAccount.emit(
-                    accounts.mapNotNull { account ->
-                        val accessControllerAddress = account.securityStateAccessControllerAddress
+                _recoveryStateByAddress.emit(
+                    entities.mapNotNull { entity ->
+                        val accessControllerAddress = entity.securityStateAccessControllerAddress
                             ?: return@mapNotNull null
                         states.firstOrNull { it.address == accessControllerAddress }
-                            ?.let { state -> account.address to state }
+                            ?.let { state -> entity.address to state }
                     }.toMap()
                 )
             }.onFailure {

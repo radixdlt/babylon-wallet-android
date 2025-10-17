@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 
 const val MAIN_ROUTE = "main"
 
@@ -29,7 +30,7 @@ fun NavGraphBuilder.main(
     onInfoLinkClick: (GlossaryItem) -> Unit,
     onMoreInfoClick: () -> Unit,
     onMoreBlogPostsClick: () -> Unit,
-    onNavigateToTimedRecovery: (AccountAddress) -> Unit
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit
 ) {
     composable(
         route = MAIN_ROUTE,

@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.utils.callSafely
-import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.init
@@ -144,14 +143,11 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     }
 
     private fun observeAccountRecoveryState() {
-        val accountAddress = (
-            (args.input as? SecurityShieldDetailsArgs.Input.Address)?.value
-                as? AddressOfAccountOrPersona.Account
-            )?.v1 ?: return
+        val address = (args.input as? SecurityShieldDetailsArgs.Input.Address)?.value ?: return
 
-        accessControllerTimedRecoveryStateObserver.recoveryStateByAccount
+        accessControllerTimedRecoveryStateObserver.recoveryStateByAddress
             .onEach { states ->
-                val recoveryState = states[accountAddress]
+                val recoveryState = states[address]
                 _state.update { state ->
                     state.copy(
                         canEditShield = recoveryState == null || !recoveryState.isInTimedRecovery

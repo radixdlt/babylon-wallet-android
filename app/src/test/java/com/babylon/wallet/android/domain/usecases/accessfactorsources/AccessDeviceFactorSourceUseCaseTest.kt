@@ -3,9 +3,7 @@ package com.babylon.wallet.android.domain.usecases.accessfactorsources
 import androidx.biometric.BiometricPrompt
 import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.radixdlt.sargon.AddressOfAccountOrPersona
-import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.FactorSourceIdFromHash
@@ -22,11 +20,6 @@ import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.newDeviceFactorSourceBabylon
 import com.radixdlt.sargon.os.driver.BiometricsFailure
-import com.radixdlt.sargon.os.signing.FactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorOutcome
-import com.radixdlt.sargon.os.signing.PerFactorSourceInput
-import com.radixdlt.sargon.os.signing.Signable
-import com.radixdlt.sargon.os.signing.TransactionSignRequestInput
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
@@ -38,7 +31,6 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import rdx.works.core.sargon.signInteractorInput
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase

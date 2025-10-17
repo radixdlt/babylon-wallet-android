@@ -21,18 +21,18 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
-class AccountTimedRecoveryViewModel @Inject constructor(
+class TimedRecoveryViewModel @Inject constructor(
     observer: AccessControllerTimedRecoveryStateObserver,
     savedStateHandle: SavedStateHandle
-) : StateViewModel<AccountTimedRecoveryViewModel.State>() {
+) : StateViewModel<TimedRecoveryViewModel.State>() {
 
     private val args = TimedRecoveryArgs(savedStateHandle)
 
     private var observeTimeJob: Job? = null
 
     init {
-        observer.recoveryStateByAccount
-            .map { states -> states[args.accountAddress] }
+        observer.recoveryStateByAddress
+            .map { states -> states[args.address] }
             .filterNotNull()
             .onEach { recoveryState ->
                 val allowAfter = recoveryState.allowTimedRecoveryAfter?.unixTimestampSeconds?.toLongOrNull()

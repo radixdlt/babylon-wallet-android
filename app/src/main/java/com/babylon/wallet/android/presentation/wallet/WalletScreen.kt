@@ -53,7 +53,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -81,7 +81,7 @@ fun WalletScreen(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
-    onNavigateToTimedRecovery: (AccountAddress) -> Unit
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -97,7 +97,7 @@ fun WalletScreen(
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onLockerDepositClick = viewModel::onLockerDepositClick,
-        onTimedRecoveryClick = { onNavigateToTimedRecovery(it.account.address) },
+        onTimedRecoveryClick = { onNavigateToTimedRecovery(AddressOfAccountOrPersona.Account(it.account.address)) },
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose,
     )
