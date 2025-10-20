@@ -152,7 +152,7 @@ private fun IncompatibleWalletWithCausePreviewLight() {
     RadixWalletPreviewTheme {
         IncompatibleWalletContent(
             state = IncompatibleProfileViewModel.State(
-                incompatibleCause = CommonException.Unknown()
+                incompatibleCause = CommonException.Unknown("Test")
             ),
             onDismiss = {},
             onDeleteProfile = {},
@@ -167,7 +167,7 @@ private fun IncompatibleWalletWithCausePreviewDark() {
     RadixWalletPreviewTheme(enableDarkTheme = true) {
         IncompatibleWalletContent(
             state = IncompatibleProfileViewModel.State(
-                incompatibleCause = CommonException.Unknown()
+                incompatibleCause = CommonException.Unknown("Test")
             ),
             onDismiss = {},
             onDeleteProfile = {},
