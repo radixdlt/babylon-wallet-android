@@ -64,7 +64,7 @@ class ApplyShieldViewModel @Inject constructor(
     ) = viewModelScope.launch {
         _state.update { state -> state.copy(isApplyLoading = true) }
 
-        prepareApplyShieldRequestUseCase(args.securityStructureId, entityAddress)
+        prepareApplyShieldRequestUseCase.applyShield(args.securityStructureId, entityAddress)
             .onFailure { error ->
                 _state.update { state ->
                     state.copy(

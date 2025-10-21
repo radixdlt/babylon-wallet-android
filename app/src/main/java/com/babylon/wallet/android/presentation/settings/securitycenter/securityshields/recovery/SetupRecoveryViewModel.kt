@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.data.repository.securityshield.model.ChooseFactorSourceContext
@@ -22,7 +23,6 @@ import com.radixdlt.sargon.SecurityShieldBuilderStatus
 import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.TimePeriodUnit
-import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.extensions.values
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -99,7 +99,13 @@ class SetupRecoveryViewModel @Inject constructor(
                     currentValue = requireNotNull(state.fallbackPeriod).value.toInt(),
                     currentUnit = state.fallbackPeriod.unit,
                     values = state.fallbackPeriod.unit.values.toPersistentList(),
-                    units = TimePeriodUnit.entries.toPersistentList()
+                    units = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+                        TimePeriodUnit.entries
+                    } else {
+                        TimePeriodUnit.entries.filter {
+                            it != TimePeriodUnit.MINUTES
+                        }
+                    }.toPersistentList()
                 )
             )
         }
@@ -244,16 +250,13 @@ class SetupRecoveryViewModel @Inject constructor(
         updatedIds: SecurityStructureOfFactorSourceIDs,
         entityAddress: AddressOfAccountOrPersona
     ) {
-        sargonOsManager.callSafely(dispatcher) {
-            securityStructureOfFactorSourcesFromSecurityStructureOfFactorSourceIds(updatedIds)
-        }.then { structure ->
-            prepareApplyShieldRequestUseCase(structure, entityAddress)
-        }.onSuccess {
-            sendEvent(Event.DismissFlow)
-            incomingRequestRepository.add(it)
-        }.onFailure { error ->
-            _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(error)) }
-        }
+        prepareApplyShieldRequestUseCase.updateShield(updatedIds, entityAddress)
+            .onSuccess {
+                sendEvent(Event.DismissFlow)
+                incomingRequestRepository.add(it)
+            }.onFailure { error ->
+                _state.update { state -> state.copy(errorMessage = UiMessage.ErrorMessage(error)) }
+            }
     }
 
     data class State(

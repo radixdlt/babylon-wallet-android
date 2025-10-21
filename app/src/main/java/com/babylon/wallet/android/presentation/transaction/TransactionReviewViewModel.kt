@@ -221,7 +221,14 @@ class TransactionReviewViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     do {
-                        _state.update { it.copy(expiration = State.Expiration(duration = expirationDuration, startsAfterSign = false)) }
+                        _state.update {
+                            it.copy(
+                                expiration = State.Expiration(
+                                    duration = expirationDuration,
+                                    startsAfterSign = false
+                                )
+                            )
+                        }
                         expirationDuration -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
                     } while (expirationDuration >= 0.seconds)
@@ -327,7 +334,8 @@ class TransactionReviewViewModel @Inject constructor(
         val isSubmitting: Boolean = false
     ) : UiState {
 
-        val isPreviewDisplayable: Boolean = previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
+        val isPreviewDisplayable: Boolean =
+            previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
 
         val isRawManifestToggleInHeader: Boolean
             get() = !isPreAuthorization && isRawManifestToggleVisible
@@ -608,13 +616,24 @@ sealed interface PreviewType {
         val deletingAccount: Account,
         val to: AccountWithTransferables?
     ) : PreviewType {
+
         override val badges: List<Badge> = emptyList()
     }
 
-    data class SecurifyEntity(
+    data class UpdateSecurityStructure(
         val entity: ProfileEntity,
-        val provisionalConfig: SecurityStructureOfFactorSources
+        val provisionalConfig: SecurityStructureOfFactorSources,
+        val operation: Operation
     ) : PreviewType {
+
         override val badges: List<Badge> = emptyList()
+
+        enum class Operation {
+
+            ApplySecurityStructure,
+            InitiateRecovery,
+            ConfirmRecovery,
+            StopRecovery
+        }
     }
 }

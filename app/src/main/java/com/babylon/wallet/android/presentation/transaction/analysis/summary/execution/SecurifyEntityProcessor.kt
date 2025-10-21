@@ -34,9 +34,10 @@ class SecurifyEntityProcessor @Inject constructor(
         val structure = sargonOsManager.sargonOs
             .provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(address)
 
-        return PreviewType.SecurifyEntity(
+        return PreviewType.UpdateSecurityStructure(
             entity = entity,
-            provisionalConfig = structure
+            provisionalConfig = structure,
+            operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
         )
     }
 }

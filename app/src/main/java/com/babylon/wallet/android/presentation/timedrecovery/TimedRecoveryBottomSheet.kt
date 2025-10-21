@@ -55,6 +55,14 @@ fun TimedRecoveryBottomSheet(
         onConfirmClick = viewModel::onConfirmClick,
         onStopClick = viewModel::onStopClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                TimedRecoveryViewModel.Event.Dismiss -> onDismiss()
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

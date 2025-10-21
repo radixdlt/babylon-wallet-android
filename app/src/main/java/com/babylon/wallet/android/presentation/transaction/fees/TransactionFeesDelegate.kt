@@ -375,7 +375,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
             }
             is PreviewType.DeleteAccount -> mapOf(deletingAccount.address to to?.let { getUsedXrdAmount(it) }.orZero())
             is PreviewType.AccountsDepositSettings,
-            is PreviewType.SecurifyEntity,
+            is PreviewType.UpdateSecurityStructure,
             is PreviewType.NonConforming,
             is PreviewType.None,
             is PreviewType.UnacceptableManifest -> emptyMap()

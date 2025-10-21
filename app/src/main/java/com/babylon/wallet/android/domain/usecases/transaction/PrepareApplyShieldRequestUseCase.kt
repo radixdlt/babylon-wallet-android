@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransa
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureId
+import com.radixdlt.sargon.SecurityStructureOfFactorSourceIDs
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
@@ -23,31 +24,49 @@ class PrepareApplyShieldRequestUseCase @Inject constructor(
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    suspend operator fun invoke(
+    suspend fun applyShield(
         securityStructureId: SecurityStructureId,
         entityAddress: AddressOfAccountOrPersona
     ): Result<TransactionRequest> = runCatching {
         sargonOsManager.sargonOs.securityStructuresOfFactorSources()
             .first { it.metadata.id == securityStructureId }
     }.then { securityStructure ->
-        invoke(securityStructure, entityAddress)
+        prepareTransactionRequest(
+            securityStructure = securityStructure,
+            entityAddress = entityAddress,
+            transactionType = TransactionType.SecurifyEntity(
+                entityAddress = entityAddress
+            )
+        )
     }
 
-    suspend operator fun invoke(
-        securityStructure: SecurityStructureOfFactorSources,
+    suspend fun updateShield(
+        securityStructureIds: SecurityStructureOfFactorSourceIDs,
         entityAddress: AddressOfAccountOrPersona
     ): Result<TransactionRequest> = sargonOsManager.callSafely(dispatcher) {
+        securityStructureOfFactorSourcesFromSecurityStructureOfFactorSourceIds(securityStructureIds)
+    }.then { securityStructure ->
+        prepareTransactionRequest(
+            securityStructure = securityStructure,
+            entityAddress = entityAddress,
+            transactionType = TransactionType.InitiateSecurityStructureRecovery
+        )
+    }
+
+    private suspend fun prepareTransactionRequest(
+        securityStructure: SecurityStructureOfFactorSources,
+        entityAddress: AddressOfAccountOrPersona,
+        transactionType: TransactionType
+    ): Result<TransactionRequest> = sargonOsManager.callSafely(dispatcher) {
         makeUpdateSecurityShieldManifest(securityStructure, entityAddress)
-    }.map { manifest ->
+    }.mapCatching { manifest ->
         UnvalidatedManifestData(
             instructions = manifest.manifestString,
             plainMessage = null,
             networkId = sargonOsManager.sargonOs.currentNetworkId(),
             blobs = manifest.blobs.toList().map { it.bytes },
         ).prepareInternalTransactionRequest(
-            transactionType = TransactionType.SecurifyEntity(
-                entityAddress = entityAddress
-            ),
+            transactionType = transactionType,
             blockUntilCompleted = true
         )
     }

@@ -70,7 +70,7 @@ class AccessControllerTimedRecoveryStateObserver @Inject constructor(
             entity.securityStateAccessControllerAddress ?: return@mapNotNull null
         }.toSet()
 
-        accessControllersRepository.getAccessControllerRecoveryStates(accessControllerAddresses, false)
+        accessControllersRepository.getAccessControllerRecoveryStates(accessControllerAddresses, true)
             .onSuccess { states ->
                 _recoveryStateByAddress.emit(
                     entities.mapNotNull { entity ->

@@ -357,7 +357,7 @@ private fun TransactionReviewContent(
                                 onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick
                             )
 
-                            is PreviewType.SecurifyEntity -> SecurifyEntityTypeContent(
+                            is PreviewType.UpdateSecurityStructure -> SecurifyEntityTypeContent(
                                 preview = preview
                             )
 

@@ -50,7 +50,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
 fun SecurifyEntityTypeContent(
-    preview: PreviewType.SecurifyEntity,
+    preview: PreviewType.UpdateSecurityStructure,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -402,9 +402,10 @@ fun SecurifyEntityTypeForAccountPreview() {
     RadixWalletPreviewTheme {
         SecurifyEntityTypeContent(
             modifier = Modifier.verticalScroll(rememberScrollState()),
-            preview = PreviewType.SecurifyEntity(
+            preview = PreviewType.UpdateSecurityStructure(
                 entity = ProfileEntity.AccountEntity(Account.sampleMainnet()),
-                provisionalConfig = newSecurityStructureOfFactorSourcesSample()
+                provisionalConfig = newSecurityStructureOfFactorSourcesSample(),
+                operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
             )
         )
     }
@@ -417,9 +418,10 @@ fun SecurifyEntityTypeForPersonaPreview() {
     RadixWalletPreviewTheme {
         SecurifyEntityTypeContent(
             modifier = Modifier.verticalScroll(rememberScrollState()),
-            preview = PreviewType.SecurifyEntity(
+            preview = PreviewType.UpdateSecurityStructure(
                 entity = ProfileEntity.PersonaEntity(Persona.sampleMainnet()),
-                provisionalConfig = newSecurityStructureOfFactorSourcesSampleOther()
+                provisionalConfig = newSecurityStructureOfFactorSourcesSampleOther(),
+                operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
             )
         )
     }

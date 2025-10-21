@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.usecases.MarkEntityAsSecurifiedUseCase
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
@@ -38,6 +39,7 @@ class TransactionStatusClient @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
     private val markEntityAsSecurifiedUseCase: MarkEntityAsSecurifiedUseCase,
+    private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
@@ -76,12 +78,29 @@ class TransactionStatusClient @Inject constructor(
                         // Before any other update takes place in wallet.
                         tombstoneAccountUseCase(transactionType.accountAddress)
                     }
+
                     is TransactionType.SecurifyEntity -> {
                         // When a securify entity transaction is successful, the first thing to do is to mark it as such in profile.
                         // Before any other update takes place in wallet.
                         markEntityAsSecurifiedUseCase(transactionType.entityAddress)
                     }
-                    else -> {
+
+                    is TransactionType.ConfirmSecurityStructureRecovery -> {
+                        accessControllerTimedRecoveryStateObserver.startMonitoring()
+                        // todo remove provisional config from entity
+                    }
+
+                    TransactionType.InitiateSecurityStructureRecovery -> {
+                        accessControllerTimedRecoveryStateObserver.startMonitoring()
+                    }
+
+                    is TransactionType.StopSecurityStructureRecovery -> {
+                        accessControllerTimedRecoveryStateObserver.startMonitoring()
+                        // todo remove provisional config from entity
+                    }
+
+                    is TransactionType.UpdateThirdPartyDeposits,
+                    TransactionType.Generic -> {
                         // Do nothing
                     }
                 }

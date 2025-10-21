@@ -21,6 +21,8 @@ fun TimePeriod.title(): String {
         } else {
             stringResource(id = R.string.shieldWizardRecovery_fallback_weeks_period, value)
         }
+
+        TimePeriodUnit.MINUTES -> if (isSingular) "1 minute" else "$value minutes"
     }
 }
 
@@ -28,4 +30,5 @@ fun TimePeriod.title(): String {
 fun TimePeriodUnit.displayName(): String = when (this) {
     TimePeriodUnit.DAYS -> stringResource(id = R.string.shieldWizardRecovery_fallback_days_label)
     TimePeriodUnit.WEEKS -> stringResource(id = R.string.shieldWizardRecovery_fallback_weeks_label)
+    TimePeriodUnit.MINUTES -> "Minutes"
 }
