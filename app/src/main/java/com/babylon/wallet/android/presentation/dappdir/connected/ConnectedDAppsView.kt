@@ -22,6 +22,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
 fun ConnectedDAppsView(
@@ -100,6 +101,7 @@ private fun ConnectedDAppsContent(
 
 @Preview
 @Composable
+@UsesSampleValues
 private fun ConnectedDAppsPreviewLight(
     @PreviewParameter(DAppListPreviewProvider::class) state: DAppListState
 ) {
@@ -120,6 +122,7 @@ private fun ConnectedDAppsPreviewLight(
 
 @Preview
 @Composable
+@UsesSampleValues
 private fun ConnectedDAppsPreviewDark(
     @PreviewParameter(DAppListPreviewProvider::class) state: DAppListState
 ) {

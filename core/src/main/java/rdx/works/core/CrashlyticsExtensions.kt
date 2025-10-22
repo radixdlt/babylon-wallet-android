@@ -1,7 +1,7 @@
 package rdx.works.core
 
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 
 fun logNonFatalException(throwable: Throwable) {
     Firebase.crashlytics.recordException(throwable)

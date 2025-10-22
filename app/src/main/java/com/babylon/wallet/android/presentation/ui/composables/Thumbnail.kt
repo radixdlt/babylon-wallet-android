@@ -132,6 +132,9 @@ object Thumbnail {
             imageType = imageType,
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token_default,
+            errorDrawable = R.drawable.ic_token_default,
+            emptyContentScale = ContentScale.Crop,
+            errorContentScale = ContentScale.Crop,
             shape = CircleShape,
             contentDescription = name
         )
@@ -445,7 +448,7 @@ object Thumbnail {
         @DrawableRes emptyDrawable: Int? = null,
         emptyContentScale: ContentScale = ContentScale.FillBounds,
         @DrawableRes errorDrawable: Int? = R.drawable.ic_broken_image,
-        errorContentScale: CustomContentScale = CustomContentScale.standard(LocalDensity.current),
+        errorContentScale: ContentScale = CustomContentScale.standard(LocalDensity.current),
         shape: Shape,
         contentDescription: String,
         backgroundColor: Color = RadixTheme.colors.backgroundTertiary
