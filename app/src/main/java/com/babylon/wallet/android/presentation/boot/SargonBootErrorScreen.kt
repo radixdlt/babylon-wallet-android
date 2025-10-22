@@ -133,7 +133,7 @@ private fun IncompatibleWalletWithCausePreview() {
     RadixWalletPreviewTheme {
         SargonBootErrorContentContent(
             state = SargonBootErrorViewModel.State(
-                bootErrorMessage = UiMessage.ErrorMessage(CommonException.Unknown())
+                bootErrorMessage = UiMessage.ErrorMessage(CommonException.Unknown("Test"))
             ),
             onFinish = {},
             onSendLogs = {}
