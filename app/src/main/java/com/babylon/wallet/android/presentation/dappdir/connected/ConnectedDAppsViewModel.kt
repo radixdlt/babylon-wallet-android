@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dappdir.connected
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.dappdir.common.delegates.DAppListDelegate
+import com.babylon.wallet.android.presentation.dappdir.common.delegates.DAppListViewActions
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem.DAppWithDetails
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListState
 import com.radixdlt.sargon.AuthorizedDapp
@@ -22,7 +23,7 @@ import javax.inject.Inject
 class ConnectedDAppsViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val dAppListDelegate: DAppListDelegate
-) : StateViewModel<DAppListState>(), DAppListDelegate.ViewActions by dAppListDelegate {
+) : StateViewModel<DAppListState>(), DAppListViewActions by dAppListDelegate {
 
     private val connectedDAppsState: MutableStateFlow<List<AuthorizedDapp>> = MutableStateFlow(emptyList())
     private val dAppsWithDetails: Flow<List<DAppWithDetails>> = combine(

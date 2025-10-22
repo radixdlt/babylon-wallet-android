@@ -7,7 +7,6 @@ import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
-import com.babylon.wallet.android.presentation.dappdir.common.delegates.DAppListDelegate.ViewActions
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppCategoryType
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppFilters
 import com.babylon.wallet.android.presentation.dappdir.common.models.DAppListItem.Category
@@ -45,7 +44,7 @@ class DAppListDelegate @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     private val accountLockersObserver: AccountLockersObserver,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
-) : ViewModelDelegate<DAppListState>(), ViewActions {
+) : ViewModelDelegate<DAppListState>(), DAppListViewActions {
 
     val directoryState: MutableStateFlow<DAppDirectory?> = MutableStateFlow(null)
     val dAppDataState = MutableStateFlow<Map<AccountAddress, DAppWithDetails.Details>>(emptyMap())
@@ -343,15 +342,15 @@ class DAppListDelegate @Inject constructor(
             .sortedBy { it.second }
             .map { it.first }
     }
+}
 
-    interface ViewActions {
+interface DAppListViewActions {
 
-        fun onSearchTermUpdated(term: String)
+    fun onSearchTermUpdated(term: String)
 
-        fun onFilterTagAdded(tag: String)
+    fun onFilterTagAdded(tag: String)
 
-        fun onFilterTagRemoved(tag: String)
+    fun onFilterTagRemoved(tag: String)
 
-        fun onAllFilterTagsRemoved()
-    }
+    fun onAllFilterTagsRemoved()
 }

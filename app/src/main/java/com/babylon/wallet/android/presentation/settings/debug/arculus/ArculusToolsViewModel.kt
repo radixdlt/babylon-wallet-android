@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.Mnemonic
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.samples.sample
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +20,7 @@ class ArculusToolsViewModel @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
+    @OptIn(UsesSampleValues::class)
     fun onValidateMinFirmwareVersionClick() {
         viewModelScope.launch {
             // Call into Sargon OS; actual method name may differ; replace when available.
