@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrap
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataSectionHeader
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
+import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -50,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSource
@@ -72,7 +76,8 @@ fun PersonaDetailScreen(
     onDAppClick: (DApp) -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
-    onShieldClick: (AddressOfAccountOrPersona) -> Unit
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -112,7 +117,8 @@ fun PersonaDetailScreen(
         },
         onFactorSourceCardClick = onFactorSourceCardClick,
         onApplyShieldClick = { onApplyShieldClick(state.address) },
-        onShieldClick = { onShieldClick(state.address) }
+        onShieldClick = { onShieldClick(state.address) },
+        onTimedRecoveryClick = onTimedRecoveryClick
     )
 }
 
@@ -126,7 +132,8 @@ private fun PersonaDetailContent(
     onHidePersona: () -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: () -> Unit,
-    onShieldClick: () -> Unit
+    onShieldClick: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -168,7 +175,8 @@ private fun PersonaDetailContent(
                 onEditPersona = onEditPersona,
                 onFactorSourceCardClick = onFactorSourceCardClick,
                 onApplyShieldClick = onApplyShieldClick,
-                onShieldClick = onShieldClick
+                onShieldClick = onShieldClick,
+                onTimedRecoveryClick = onTimedRecoveryClick
             )
         } else {
             FullscreenCircularProgressContent()
@@ -184,6 +192,7 @@ private fun PersonaDetailList(
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: () -> Unit,
     onShieldClick: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -268,11 +277,26 @@ private fun PersonaDetailList(
                         item = securedWith.factorSourceCard
                     )
 
-                    SecuredWithUiData.Shield -> DefaultSettingsItem(
+                    is SecuredWithUiData.Shield -> DefaultSettingsItem(
                         onClick = onShieldClick,
-                        leadingIconRes = DSR.ic_entity_update_shield,
                         title = stringResource(id = R.string.commonSecurityShields_securityShield),
-                        subtitle = stringResource(id = R.string.commonSecurityShields_securityShieldDetails)
+                        subtitle = stringResource(id = R.string.commonSecurityShields_securityShieldDetails),
+                        leadingIcon = {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(id = DSR.ic_entity_update_shield),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.icon
+                            )
+                        },
+                        warningView = {
+                            PromptLabel(
+                                modifier = Modifier.noIndicationClickable {
+                                    onTimedRecoveryClick(state.address)
+                                },
+                                text = "Timed Recovery" // TODO crowdin
+                            )
+                        }
                     )
                 }
 
@@ -361,7 +385,8 @@ fun PersonaDetailContentPreview() {
             onHidePersona = {},
             onFactorSourceCardClick = {},
             onApplyShieldClick = {},
-            onShieldClick = {}
+            onShieldClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }

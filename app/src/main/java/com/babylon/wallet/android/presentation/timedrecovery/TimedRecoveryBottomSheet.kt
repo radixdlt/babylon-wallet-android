@@ -192,12 +192,14 @@ private fun TimedRecoveryContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val text = if (state.canConfirm) {
-                        "The timed recovery period is complete. You can now confirm the new Security Shield configuration shown below. " +
-                            "If you've changed your mind, you can stop this process to discard the update."
+                        "The timed recovery period is complete. You can now confirm the new Security Shield " +
+                            "configuration shown below. If you've changed your mind, you can stop this process to " +
+                            "discard the update."
                     } else {
-                        "Your new Security Shield is in a timed recovery period. This is a security feature to protect your assets.\n\n" +
-                            "You will be able to confirm this change after:\n**${state.confirmationDate}**.\n\n" +
-                            "Review the proposed configuration below. If you don't recognize this activity, you can stop this process immediately."
+                        "Your new Security Shield is in a timed recovery period. This is a security feature to " +
+                            "protect your assets.\n\nYou will be able to confirm this change after:\n" +
+                            "**${state.confirmationDate}**.\n\nReview the proposed configuration below. If you " +
+                            "don't recognize this activity, you can stop this process immediately."
                     }
 
                     Text(

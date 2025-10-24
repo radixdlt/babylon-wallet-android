@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -21,6 +22,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -45,11 +47,13 @@ class PersonaDetailViewModel @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
-    private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase
+    private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
+    private val timedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver
 ) : StateViewModel<PersonaDetailViewModel.State>(),
     OneOffEventHandler<PersonaDetailViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
+    private var recoveryStateJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -57,7 +61,11 @@ class PersonaDetailViewModel @Inject constructor(
                 getProfileUseCase.flow.mapNotNull { profile ->
                     profile.activePersonaOnCurrentNetwork(args.personaAddress)?.let { persona ->
                         val securedWith = when (val securityState = persona.securityState) {
-                            is EntitySecurityState.Securified -> SecuredWithUiData.Shield
+                            is EntitySecurityState.Securified -> SecuredWithUiData.Shield(
+                                isInTimedRecovery = timedRecoveryStateObserver.cachedStateByAddress(
+                                    address = AddressOfAccountOrPersona.Identity(args.personaAddress)
+                                )?.isInTimedRecovery ?: false
+                            )
                             is EntitySecurityState.Unsecured -> profile.factorSourceById(
                                 id = securityState.value.transactionSigning.factorSourceId.asGeneral()
                             )?.let { factorSource ->
@@ -98,6 +106,8 @@ class PersonaDetailViewModel @Inject constructor(
                         loading = false
                     )
                 }
+
+                observeRecoveryState()
             }
         }
 
@@ -123,6 +133,25 @@ class PersonaDetailViewModel @Inject constructor(
         }
     }
 
+    private fun observeRecoveryState() {
+        val personaAddress = AddressOfAccountOrPersona.Identity(args.personaAddress)
+        recoveryStateJob?.cancel()
+        recoveryStateJob = timedRecoveryStateObserver.recoveryStateByAddress
+            .mapNotNull { states -> states[personaAddress] }
+            .onEach { recoveryState ->
+                val securedWith = _state.value.securedWith as? SecuredWithUiData.Shield ?: return@onEach
+
+                _state.update { state ->
+                    state.copy(
+                        securedWith = securedWith.copy(
+                            isInTimedRecovery = recoveryState.isInTimedRecovery
+                        )
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     sealed interface Event : OneOffEvent {
         data object Close : Event
     }
@@ -136,7 +165,7 @@ class PersonaDetailViewModel @Inject constructor(
     ) : UiState {
 
         val canApplyShield
-            get() = isMfaEnabled && securedWith != SecuredWithUiData.Shield
+            get() = isMfaEnabled && securedWith !is SecuredWithUiData.Shield
         val address
             get() = AddressOfAccountOrPersona.Identity(requireNotNull(persona?.address))
     }

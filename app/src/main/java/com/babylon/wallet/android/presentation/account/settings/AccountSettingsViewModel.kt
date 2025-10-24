@@ -32,6 +32,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -64,6 +65,7 @@ class AccountSettingsViewModel @Inject constructor(
     OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
+    private var recoveryStateJob: Job? = null
 
     override fun initialState(): State = State()
 
@@ -254,7 +256,8 @@ class AccountSettingsViewModel @Inject constructor(
 
     private fun observeRecoveryState() {
         val accountAddress = AddressOfAccountOrPersona.Account(args.address)
-        timedRecoveryStateObserver.recoveryStateByAddress
+        recoveryStateJob?.cancel()
+        recoveryStateJob = timedRecoveryStateObserver.recoveryStateByAddress
             .mapNotNull { states -> states[accountAddress] }
             .onEach { recoveryState ->
                 val securedWith = _state.value.securedWith as? SecuredWithUiData.Shield ?: return@onEach

@@ -437,6 +437,9 @@ fun NavigationHost(
             },
             onShieldClick = {
                 navController.securityShieldDetails(it)
+            },
+            onTimedRecoveryClick = {
+                navController.timedRecovery(it)
             }
         )
         personaEditScreen(
