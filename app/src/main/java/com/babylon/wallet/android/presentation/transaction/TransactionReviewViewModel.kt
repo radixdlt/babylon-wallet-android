@@ -631,7 +631,7 @@ sealed interface PreviewType {
         enum class Operation {
 
             ApplySecurityStructure,
-            InitiateRecovery,
+            UpdateSecurityStructure,
             ConfirmRecovery,
             StopRecovery
         }

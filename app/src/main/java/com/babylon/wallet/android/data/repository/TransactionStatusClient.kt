@@ -3,8 +3,8 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.MarkEntityAsSecurifiedUseCase
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.CommitProvisionalShieldUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
 import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
@@ -38,8 +38,8 @@ class TransactionStatusClient @Inject constructor(
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
-    private val markEntityAsSecurifiedUseCase: MarkEntityAsSecurifiedUseCase,
     private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
+    private val commitProvisionalShieldUseCase: CommitProvisionalShieldUseCase,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
@@ -82,12 +82,12 @@ class TransactionStatusClient @Inject constructor(
                     is TransactionType.SecurifyEntity -> {
                         // When a securify entity transaction is successful, the first thing to do is to mark it as such in profile.
                         // Before any other update takes place in wallet.
-                        markEntityAsSecurifiedUseCase(transactionType.entityAddress)
+                        commitProvisionalShieldUseCase(transactionType.entityAddress)
                     }
 
                     is TransactionType.ConfirmSecurityStructureRecovery -> {
                         accessControllerTimedRecoveryStateObserver.startMonitoring()
-                        // todo remove provisional config from entity
+                        commitProvisionalShieldUseCase(transactionType.entityAddress)
                     }
 
                     TransactionType.InitiateSecurityStructureRecovery -> {
@@ -96,7 +96,7 @@ class TransactionStatusClient @Inject constructor(
 
                     is TransactionType.StopSecurityStructureRecovery -> {
                         accessControllerTimedRecoveryStateObserver.startMonitoring()
-                        // todo remove provisional config from entity
+                        commitProvisionalShieldUseCase(transactionType.entityAddress)
                     }
 
                     is TransactionType.UpdateThirdPartyDeposits,

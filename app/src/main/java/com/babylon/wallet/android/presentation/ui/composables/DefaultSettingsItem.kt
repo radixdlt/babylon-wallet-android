@@ -26,6 +26,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.enabledOpacity
+import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -199,6 +200,7 @@ fun DefaultSettingsItem(
     info: String? = null,
     isErrorText: Boolean = false,
     warnings: ImmutableList<String>? = null,
+    onWarningClick: ((String) -> Unit)? = null,
     @DrawableRes leadingIconRes: Int? = null,
     trailingIcon: @Composable (() -> Unit)? = {
         Icon(
@@ -226,6 +228,9 @@ fun DefaultSettingsItem(
                     Spacer(modifier = Modifier)
                     warnings.forEach { warning ->
                         PromptLabel(
+                            modifier = Modifier.noIndicationClickable {
+                                onWarningClick?.invoke(warning)
+                            },
                             text = warning
                         )
                     }

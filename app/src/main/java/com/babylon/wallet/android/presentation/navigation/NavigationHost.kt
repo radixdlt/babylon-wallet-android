@@ -332,6 +332,9 @@ fun NavigationHost(
             },
             onInfoClick = { glossaryItem ->
                 navController.infoDialog(glossaryItem)
+            },
+            onNavigateToTimedRecovery = { address ->
+                navController.timedRecovery(address)
             }
         )
         requestAuthorizationDialog(
@@ -556,6 +559,9 @@ fun NavigationHost(
             },
             onShieldClick = {
                 navController.securityShieldDetails(it)
+            },
+            onTimedRecoveryClick = {
+                navController.timedRecovery(it)
             }
         )
         deleteAccount(
@@ -741,7 +747,8 @@ fun NavigationHost(
             onArculusIdentified = { navController.seedPhrase() }
         )
         timedRecovery(
-            onDismiss = { navController.popBackStack() }
+            onDismiss = { navController.popBackStack() },
+            onInfoClick = { navController.infoDialog(it) }
         )
     }
 }

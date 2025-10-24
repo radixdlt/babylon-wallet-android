@@ -19,6 +19,6 @@ class InitiateAccessControllerRecoveryProcessor @Inject constructor(
     ): PreviewType = process(
         summary = summary,
         acAddresses = classification.acAddresses,
-        operation = PreviewType.UpdateSecurityStructure.Operation.InitiateRecovery
+        operation = PreviewType.UpdateSecurityStructure.Operation.UpdateSecurityStructure
     )
 }

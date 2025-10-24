@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
@@ -42,7 +43,8 @@ fun NavGraphBuilder.account(
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
     onNavigateToSecurityCenter: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit
 ) {
     composable(
         route = "$ROUTE_ACCOUNT/{$ARG_ACCOUNT_ADDRESS}",
@@ -73,7 +75,8 @@ fun NavGraphBuilder.account(
             onNonFungibleResourceClick = onNonFungibleResourceClick,
             onTransferClick = onTransferClick,
             onHistoryClick = onHistoryClick,
-            onInfoClick = onInfoClick
+            onInfoClick = onInfoClick,
+            onNavigateToTimedRecovery = onNavigateToTimedRecovery
         )
     }
 }

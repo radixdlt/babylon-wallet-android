@@ -85,6 +85,7 @@ import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
@@ -108,7 +109,8 @@ fun AccountScreen(
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
     onNavigateToSecurityCenter: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona.Account) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -146,7 +148,8 @@ fun AccountScreen(
         onTabClick = viewModel::onTabSelected,
         onCollectionClick = viewModel::onCollectionToggle,
         onHistoryClick = onHistoryClick,
-        onInfoClick = onInfoClick
+        onInfoClick = onInfoClick,
+        onTimedRecoveryClick = { onNavigateToTimedRecovery(AddressOfAccountOrPersona.Account(it)) }
     )
 }
 
@@ -196,7 +199,8 @@ private fun AccountScreenContent(
     onStakesRequest: () -> Unit,
     onClaimClick: (List<StakeClaim>) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onTimedRecoveryClick: (AccountAddress) -> Unit
 ) {
     val gradient = (state.accountWithAssets?.account?.appearanceId ?: AppearanceId(0u)).gradient()
 
@@ -285,7 +289,8 @@ private fun AccountScreenContent(
                 onClaimClick = onClaimClick,
                 onTabClick = onTabClick,
                 onCollectionClick = onCollectionClick,
-                onInfoClick = onInfoClick
+                onInfoClick = onInfoClick,
+                onTimedRecoveryClick = onTimedRecoveryClick
             )
         }
 
@@ -323,7 +328,8 @@ fun AssetsContent(
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
     onClaimClick: (List<StakeClaim>) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onTimedRecoveryClick: (AccountAddress) -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -357,7 +363,8 @@ fun AssetsContent(
                     onHistoryClick = onHistoryClick,
                     onTransferClick = onTransferClick,
                     onApplySecuritySettingsClick = onApplySecuritySettingsClick,
-                    onLockerDepositClick = onLockerDepositClick
+                    onLockerDepositClick = onLockerDepositClick,
+                    onTimedRecoveryClick = onTimedRecoveryClick
                 )
             }
 
@@ -396,6 +403,7 @@ private fun AccountHeader(
     onTransferClick: (AccountAddress) -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
     onLockerDepositClick: (AccountLockerDeposit) -> Unit,
+    onTimedRecoveryClick: (AccountAddress) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box {
@@ -517,6 +525,22 @@ private fun AccountHeader(
                     }
                 }
             }
+
+            androidx.compose.animation.AnimatedVisibility(
+                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
+                visible = state.isInTimedRecovery,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                AccountPromptLabel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                    onClick = { accountAddress?.let { onTimedRecoveryClick(it) } },
+                    text = "Timed Recovery", // TODO crowdin
+                    iconRes = null
+                )
+            }
         }
 
         Box(
@@ -614,7 +638,8 @@ fun AccountContentPreview() {
             onStakesRequest = {},
             onClaimClick = {},
             onHistoryClick = { _ -> },
-            onInfoClick = {}
+            onInfoClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }
@@ -649,7 +674,8 @@ fun AccountContentWithFiatBalancesDisabledPreview() {
             onStakesRequest = {},
             onClaimClick = {},
             onHistoryClick = { _ -> },
-            onInfoClick = {}
+            onInfoClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }

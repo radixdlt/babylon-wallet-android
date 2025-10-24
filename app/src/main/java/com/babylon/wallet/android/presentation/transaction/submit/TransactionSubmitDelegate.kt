@@ -28,6 +28,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
@@ -196,28 +197,34 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         return when (summary) {
             is Summary.FromExecution -> when (summary.manifest) {
                 is SummarizedManifest.Subintent -> signAndSubmit(subintentManifest = summary.manifest.manifest)
-                is SummarizedManifest.Transaction -> signAndSubmit(transactionManifest = summary.manifest.manifest)
+                is SummarizedManifest.Transaction -> signAndSubmit(
+                    transactionManifest = summary.manifest.manifest,
+                    executionSummary = summary.summary
+                )
             }
 
             is Summary.FromStaticAnalysis -> signAndSubmit(subintentManifest = summary.manifest.manifest)
         }
     }
 
-    private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
+    private suspend fun signAndSubmit(
+        transactionManifest: TransactionManifest,
+        executionSummary: ExecutionSummary
+    ): Result<Unit> {
         val fees = _state.value.fees ?: error("Fees were not resolved")
         val transactionRequest = data.value.request
         val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.Regular
             ?: error("Wrong kind: ${transactionRequest.kind}")
-        val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
         return signAndNotarizeTransactionUseCase(
             manifest = transactionManifest,
+            executionSummary = executionSummary,
             networkId = transactionRequest.unvalidatedManifestData.networkId,
             message = transactionRequest.unvalidatedManifestData.message,
             lockFee = fees.transactionFees.transactionFeeToLock,
             tipPercentage = fees.transactionFees.tipPercentageForTransaction,
             notarySecretKey = data.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerAddress,
+            feePayerAddress = data.value.feePayers?.selectedAccountAddress,
             guarantees = buildGuarantees(
                 deposits = (_state.value.previewType as? PreviewType.Transaction)?.to.orEmpty()
             )

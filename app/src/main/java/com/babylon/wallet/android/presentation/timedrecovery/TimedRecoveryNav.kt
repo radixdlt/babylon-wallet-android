@@ -1,13 +1,14 @@
 package com.babylon.wallet.android.presentation.timedrecovery
 
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -36,7 +37,8 @@ fun NavController.timedRecovery(address: AddressOfAccountOrPersona) {
 }
 
 fun NavGraphBuilder.timedRecovery(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     dialog(
         route = ROUTE,
@@ -49,7 +51,8 @@ fun NavGraphBuilder.timedRecovery(
     ) {
         TimedRecoveryBottomSheet(
             viewModel = hiltViewModel(),
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
+            onInfoClick = onInfoClick
         )
     }
 }

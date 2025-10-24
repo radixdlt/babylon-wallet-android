@@ -44,7 +44,8 @@ fun NavGraphBuilder.accountSettings(
     onDeleteAccountClick: (AccountAddress) -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
-    onShieldClick: (AddressOfAccountOrPersona) -> Unit
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     composable(
         route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
@@ -72,7 +73,8 @@ fun NavGraphBuilder.accountSettings(
             onDeleteAccountClick = onDeleteAccountClick,
             onFactorSourceCardClick = onFactorSourceCardClick,
             onApplyShieldClick = onApplyShieldClick,
-            onShieldClick = onShieldClick
+            onShieldClick = onShieldClick,
+            onTimedRecoveryClick = onTimedRecoveryClick
         )
     }
 }

@@ -65,6 +65,12 @@ class AccessControllerTimedRecoveryStateObserver @Inject constructor(
         monitoringJob?.cancel()
     }
 
+    fun cachedStateByAddress(address: AddressOfAccountOrPersona): AccessControllerRecoveryState? {
+        return _recoveryStateByAddress.replayCache
+            .firstOrNull()
+            ?.let { states -> states[address] }
+    }
+
     private suspend fun updateAccessControllerRecoveryStates(entities: List<AccountOrPersona>) {
         val accessControllerAddresses = entities.mapNotNull { entity ->
             entity.securityStateAccessControllerAddress ?: return@mapNotNull null

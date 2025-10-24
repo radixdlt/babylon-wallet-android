@@ -7,6 +7,7 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -57,7 +58,8 @@ class AccountSettingsViewModel @Inject constructor(
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val timedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver
 ) : StateViewModel<AccountSettingsViewModel.State>(),
     OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -102,7 +104,11 @@ class AccountSettingsViewModel @Inject constructor(
             getProfileUseCase.flow.mapNotNull { profile ->
                 val account = profile.activeAccountsOnCurrentNetwork.first { it.address == args.address }
                 val securedWith = when (val securityState = account.securityState) {
-                    is EntitySecurityState.Securified -> SecuredWithUiData.Shield
+                    is EntitySecurityState.Securified -> SecuredWithUiData.Shield(
+                        isInTimedRecovery = timedRecoveryStateObserver.cachedStateByAddress(
+                            address = AddressOfAccountOrPersona.Account(args.address)
+                        )?.isInTimedRecovery ?: false
+                    )
                     is EntitySecurityState.Unsecured -> profile.factorSourceById(
                         id = securityState.value.transactionSigning.factorSourceId.asGeneral()
                     )?.let { factorSource ->
@@ -145,6 +151,8 @@ class AccountSettingsViewModel @Inject constructor(
                         securedWith = accountAndSecuredWith.second
                     )
                 }
+
+                observeRecoveryState()
             }
         }
     }
@@ -244,6 +252,24 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
+    private fun observeRecoveryState() {
+        val accountAddress = AddressOfAccountOrPersona.Account(args.address)
+        timedRecoveryStateObserver.recoveryStateByAddress
+            .mapNotNull { states -> states[accountAddress] }
+            .onEach { recoveryState ->
+                val securedWith = _state.value.securedWith as? SecuredWithUiData.Shield ?: return@onEach
+
+                _state.update { state ->
+                    state.copy(
+                        securedWith = securedWith.copy(
+                            isInTimedRecovery = recoveryState.isInTimedRecovery
+                        )
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     data class State(
         val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
         val account: Account? = null,
@@ -260,7 +286,7 @@ class AccountSettingsViewModel @Inject constructor(
         val isBottomSheetVisible: Boolean
             get() = bottomSheetContent != BottomSheetContent.None
         val canApplyShield
-            get() = isMfaEnabled && securedWith != SecuredWithUiData.Shield
+            get() = isMfaEnabled && securedWith !is SecuredWithUiData.Shield
         val address
             get() = AddressOfAccountOrPersona.Account(requireNotNull(account?.address))
 

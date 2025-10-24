@@ -14,7 +14,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.FULL_DATE_FORMAT
 import com.babylon.wallet.android.utils.callSafely
+import com.babylon.wallet.android.utils.toDateString
+import com.radixdlt.sargon.SecurityStructureOfFactorSources
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
@@ -42,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 class TimedRecoveryViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     private val incomingRequestRepository: IncomingRequestRepository,
-    observer: AccessControllerTimedRecoveryStateObserver,
+    private val observer: AccessControllerTimedRecoveryStateObserver,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TimedRecoveryViewModel.State>(),
@@ -53,23 +56,8 @@ class TimedRecoveryViewModel @Inject constructor(
     private var observeTimeJob: Job? = null
 
     init {
-        observer.recoveryStateByAddress
-            .map { states -> states[args.address] }
-            .filterNotNull()
-            .onEach { recoveryState ->
-                val allowAfter = recoveryState.allowTimedRecoveryAfter?.unixTimestampSeconds?.toLongOrNull()
-                    ?: return@onEach
-                val remainingTime = allowAfter - Instant.now().epochSecond
-
-                _state.update { state ->
-                    state.copy(isLoading = false)
-                }
-
-                if (remainingTime > 0) {
-                    observeTime(remainingTime.seconds)
-                }
-            }
-            .launchIn(viewModelScope)
+        initConfig()
+        observeAcState()
     }
 
     override fun initialState(): State = State(isLoading = true)
@@ -106,6 +94,46 @@ class TimedRecoveryViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun initConfig() {
+        viewModelScope.launch {
+            sargonOsManager.callSafely(dispatcher) {
+                val structure = provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
+                    addressOfAccountOrPersona = args.address
+                )
+                _state.update { state ->
+                    state.copy(
+                        securityStructure = structure
+                    )
+                }
+            }
+        }
+    }
+
+    private fun observeAcState() {
+        observer.recoveryStateByAddress
+            .map { states -> states[args.address] }
+            .filterNotNull()
+            .onEach { recoveryState ->
+                val allowAfter = recoveryState.allowTimedRecoveryAfter?.unixTimestampSeconds?.toLongOrNull()
+                    ?: return@onEach
+                val remainingTime = allowAfter - Instant.now().epochSecond
+
+                _state.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        confirmationDate = Instant.ofEpochSecond(allowAfter).toDateString(
+                            format = FULL_DATE_FORMAT
+                        )
+                    )
+                }
+
+                if (remainingTime > 0) {
+                    observeTime(remainingTime.seconds)
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private suspend fun addTransaction(manifest: TransactionManifest, type: TransactionType) {
@@ -147,7 +175,9 @@ class TimedRecoveryViewModel @Inject constructor(
     data class State(
         val isLoading: Boolean,
         val uiMessage: UiMessage? = null,
-        val remainingTime: Duration? = null
+        val remainingTime: Duration? = null,
+        val confirmationDate: String? = null,
+        val securityStructure: SecurityStructureOfFactorSources? = null
     ) : UiState {
 
         val canConfirm = remainingTime == null || remainingTime.inWholeSeconds <= 0
