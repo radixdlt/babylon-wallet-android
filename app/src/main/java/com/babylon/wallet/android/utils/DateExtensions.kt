@@ -18,7 +18,7 @@ const val LAST_USED_DATE_FORMAT_THIS_YEAR = "d MMMM"
 const val TIMESTAMP_HOURS_MINUTES = "HH:mm"
 const val TIMESTAMP_ONLY_MONTH = "MMM"
 const val TIMESTAMP_MONTH_AND_YEAR = "MMM YY"
-const val FULL_DATE_FORMAT = "d MMMM yyyy at HH:mm"
+const val FULL_DATE_FORMAT = "d MMMM yyyy 'at' HH:mm"
 
 fun LocalDateTime.toISO8601String(): String {
     return DateTimeFormatter.ISO_ZONED_DATE_TIME.format(

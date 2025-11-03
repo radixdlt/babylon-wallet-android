@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CommitProvisionalShieldUseCase
@@ -14,6 +15,9 @@ import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.Instant
 import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.isAccessControllerTimedRecoveryManifest
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +44,8 @@ class TransactionStatusClient @Inject constructor(
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
     private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
     private val commitProvisionalShieldUseCase: CommitProvisionalShieldUseCase,
-    @ApplicationScope private val appScope: CoroutineScope
+    @ApplicationScope private val appScope: CoroutineScope,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
     private val transactionResult = MutableStateFlow(emptyList<InteractionStatusData>())
@@ -64,10 +69,11 @@ class TransactionStatusClient @Inject constructor(
     fun observeTransactionStatus(
         intentHash: TransactionIntentHash,
         requestId: String,
-        transactionType: TransactionType = TransactionType.Generic,
-        endEpoch: Epoch
+        endEpoch: Epoch,
+        signedManifest: TransactionManifest,
+        transactionType: TransactionType = TransactionType.Generic
     ) {
-        appScope.launch {
+        appScope.launch(dispatcher) {
             val result = getTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
             val isSuccess = result.result is TransactionStatusData.Status.Success
 
@@ -90,8 +96,12 @@ class TransactionStatusClient @Inject constructor(
                         commitProvisionalShieldUseCase(transactionType.entityAddress)
                     }
 
-                    TransactionType.InitiateSecurityStructureRecovery -> {
-                        accessControllerTimedRecoveryStateObserver.startMonitoring()
+                    is TransactionType.InitiateSecurityStructureRecovery -> {
+                        if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
+                            accessControllerTimedRecoveryStateObserver.startMonitoring()
+                        } else {
+                            commitProvisionalShieldUseCase(transactionType.entityAddress)
+                        }
                     }
 
                     is TransactionType.StopSecurityStructureRecovery -> {

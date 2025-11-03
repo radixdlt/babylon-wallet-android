@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
-import com.babylon.wallet.android.data.repository.accesscontroller.model.AccessControllerRecoveryState
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
@@ -29,6 +28,7 @@ import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountTim
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccessControllerStateDetails
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.EntitySecurityState
@@ -403,7 +403,7 @@ class WalletViewModel @Inject constructor(
         private val accountsWithAssets: List<AccountWithAssets>? = null,
         private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
         private val accountsWithLockerDeposits: Map<AccountAddress, List<AccountLockerDeposit>> = emptyMap(),
-        private val accountsWithRecoveryStates: Map<AccountAddress, AccessControllerRecoveryState> = emptyMap(),
+        private val accountsWithRecoveryStates: Map<AccountAddress, AccessControllerStateDetails> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val uiMessage: UiMessage? = null,
         val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList(),
@@ -447,7 +447,7 @@ class WalletViewModel @Inject constructor(
                         )
                     }
                 },
-                isInTimedRecovery = accountsWithRecoveryStates[account.address]?.isInTimedRecovery == true
+                isInTimedRecovery = accountsWithRecoveryStates[account.address]?.timedRecoveryState != null
             )
         }
 

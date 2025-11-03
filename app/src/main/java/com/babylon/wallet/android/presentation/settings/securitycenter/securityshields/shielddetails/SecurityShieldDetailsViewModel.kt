@@ -150,7 +150,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
                 val recoveryState = states[address]
                 _state.update { state ->
                     state.copy(
-                        canEditShield = recoveryState == null || !recoveryState.isInTimedRecovery
+                        canEditShield = recoveryState?.timedRecoveryState == null
                     )
                 }
             }

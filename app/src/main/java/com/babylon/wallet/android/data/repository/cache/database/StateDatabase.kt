@@ -5,8 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.babylon.wallet.android.data.repository.cache.database.accesscontroller.AccessControllerDao
-import com.babylon.wallet.android.data.repository.cache.database.accesscontroller.AccessControllerEntity
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerDao
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerTouchedAtEntity
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerVaultItemEntity
@@ -27,9 +25,8 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
         AccountLockerTouchedAtEntity::class,
         AccountLockerVaultItemEntity::class,
         DirectoryDefinitionEntity::class,
-        AccessControllerEntity::class
     ],
-    version = StateDatabase.VERSION_15
+    version = StateDatabase.VERSION_14
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -41,8 +38,6 @@ abstract class StateDatabase : RoomDatabase() {
     abstract fun accountLockerDao(): AccountLockerDao
 
     abstract fun dAppDirectoryDao(): DAppDirectoryDao
-
-    abstract fun accessControllerDao(): AccessControllerDao
 
     companion object {
         @Deprecated("Initial schema version")
@@ -84,11 +79,8 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Added dApp directory")
         const val VERSION_13 = 13
 
-        @Deprecated("Added dApp directory category")
+        // Added dApp directory category
         const val VERSION_14 = 14
-
-        // Added access controller
-        const val VERSION_15 = 15
 
         private const val NAME = "STATE_DATABASE"
 

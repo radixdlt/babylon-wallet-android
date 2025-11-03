@@ -301,13 +301,17 @@ private fun AccountSettingsContent(
                                     tint = RadixTheme.colors.icon
                                 )
                             },
-                            warningView = {
-                                PromptLabel(
-                                    modifier = Modifier.noIndicationClickable {
-                                        onTimedRecoveryClick(state.address)
-                                    },
-                                    text = "Timed Recovery" // TODO crowdin
-                                )
+                            warningView = if (securedWith.isInTimedRecovery) {
+                                {
+                                    PromptLabel(
+                                        modifier = Modifier.noIndicationClickable {
+                                            onTimedRecoveryClick(state.address)
+                                        },
+                                        text = "Timed Recovery" // TODO crowdin
+                                    )
+                                }
+                            } else {
+                                null
                             }
                         )
                     }

@@ -27,7 +27,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import com.babylon.wallet.android.data.repository.accesscontroller.model.AccessControllersResponse
 import com.babylon.wallet.android.data.repository.toResult
 import com.radixdlt.sargon.AccessControllerAddress
 import com.radixdlt.sargon.AccountAddress
@@ -499,26 +498,4 @@ suspend fun StateApi.getAllMetadata(
     }
 
     return items
-}
-
-suspend fun StateApi.paginateAccessControllerItems(
-    addresses: Set<AccessControllerAddress>,
-    stateVersion: Long? = null
-): AccessControllersResponse {
-    val entityDetailsItems = mutableListOf<StateEntityDetailsResponseItem>()
-    var resolvedVersion = stateVersion
-
-    paginateDetails(
-        addresses = addresses.map { it.string }.toSet(),
-        stateVersion = resolvedVersion,
-        onPage = { response ->
-            entityDetailsItems.addAll(response.items)
-            resolvedVersion = response.ledgerState.stateVersion
-        }
-    )
-
-    return AccessControllersResponse(
-        accessControllers = entityDetailsItems,
-        stateVersion = resolvedVersion
-    )
 }

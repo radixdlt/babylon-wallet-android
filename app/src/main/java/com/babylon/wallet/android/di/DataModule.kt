@@ -8,8 +8,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.NPSSurveyRepository
 import com.babylon.wallet.android.data.repository.NPSSurveyRepositoryImpl
-import com.babylon.wallet.android.data.repository.accesscontroller.AccessControllersRepository
-import com.babylon.wallet.android.data.repository.accesscontroller.AccessControllersRepositoryImpl
 import com.babylon.wallet.android.data.repository.dapps.DAppDirectoryRepository
 import com.babylon.wallet.android.data.repository.dapps.DAppDirectoryRepositoryImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
@@ -127,12 +125,6 @@ interface DataModule {
     fun bindAccountLockerRepository(
         repository: AccountLockersRepositoryImpl
     ): AccountLockersRepository
-
-    @Binds
-    @Singleton
-    fun bindAccessControllersRepository(
-        repository: AccessControllersRepositoryImpl
-    ): AccessControllersRepository
 
     @Binds
     @Singleton

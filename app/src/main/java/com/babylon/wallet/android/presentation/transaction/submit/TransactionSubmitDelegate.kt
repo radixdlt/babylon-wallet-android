@@ -248,7 +248,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 intentHash = notarization.intentHash,
                 requestId = data.value.request.interactionId,
                 transactionType = transactionRequestKind.transactionType,
-                endEpoch = notarization.endEpoch
+                endEpoch = notarization.endEpoch,
+                signedManifest = notarization.notarizedTransaction.signedIntent.intent.manifest
             )
 
             // Respond to dApp

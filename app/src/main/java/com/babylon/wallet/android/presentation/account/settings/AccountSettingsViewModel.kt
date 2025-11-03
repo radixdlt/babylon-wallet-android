@@ -109,7 +109,7 @@ class AccountSettingsViewModel @Inject constructor(
                     is EntitySecurityState.Securified -> SecuredWithUiData.Shield(
                         isInTimedRecovery = timedRecoveryStateObserver.cachedStateByAddress(
                             address = AddressOfAccountOrPersona.Account(args.address)
-                        )?.isInTimedRecovery ?: false
+                        )?.timedRecoveryState != null
                     )
                     is EntitySecurityState.Unsecured -> profile.factorSourceById(
                         id = securityState.value.transactionSigning.factorSourceId.asGeneral()
@@ -265,7 +265,7 @@ class AccountSettingsViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         securedWith = securedWith.copy(
-                            isInTimedRecovery = recoveryState.isInTimedRecovery
+                            isInTimedRecovery = recoveryState.timedRecoveryState != null
                         )
                     )
                 }

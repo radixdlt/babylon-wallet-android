@@ -397,7 +397,7 @@ class AccountViewModel @Inject constructor(
             .onEach { recoveryState ->
                 _state.update { state ->
                     state.copy(
-                        isInTimedRecovery = recoveryState.isInTimedRecovery
+                        isInTimedRecovery = recoveryState.timedRecoveryState != null
                     )
                 }
             }

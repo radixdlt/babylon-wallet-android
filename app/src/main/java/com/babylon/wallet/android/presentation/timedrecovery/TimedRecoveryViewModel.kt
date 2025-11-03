@@ -116,7 +116,7 @@ class TimedRecoveryViewModel @Inject constructor(
             .map { states -> states[args.address] }
             .filterNotNull()
             .onEach { recoveryState ->
-                val allowAfter = recoveryState.allowTimedRecoveryAfter?.unixTimestampSeconds?.toLongOrNull()
+                val allowAfter = recoveryState.timedRecoveryState?.allowTimedRecoveryAfterUnixTimestampSeconds?.toLongOrNull()
                     ?: return@onEach
                 val remainingTime = allowAfter - Instant.now().epochSecond
 

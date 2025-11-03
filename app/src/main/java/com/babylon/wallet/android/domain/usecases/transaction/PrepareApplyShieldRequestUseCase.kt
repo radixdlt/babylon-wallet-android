@@ -49,7 +49,9 @@ class PrepareApplyShieldRequestUseCase @Inject constructor(
         prepareTransactionRequest(
             securityStructure = securityStructure,
             entityAddress = entityAddress,
-            transactionType = TransactionType.InitiateSecurityStructureRecovery
+            transactionType = TransactionType.InitiateSecurityStructureRecovery(
+                entityAddress = entityAddress
+            )
         )
     }
 

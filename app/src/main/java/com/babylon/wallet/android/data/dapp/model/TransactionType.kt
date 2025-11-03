@@ -12,7 +12,7 @@ sealed interface TransactionType {
 
     data class SecurifyEntity(val entityAddress: AddressOfAccountOrPersona) : TransactionType
 
-    data object InitiateSecurityStructureRecovery : TransactionType
+    data class InitiateSecurityStructureRecovery(val entityAddress: AddressOfAccountOrPersona) : TransactionType
 
     data class ConfirmSecurityStructureRecovery(val entityAddress: AddressOfAccountOrPersona) : TransactionType
 
