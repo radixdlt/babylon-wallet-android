@@ -100,7 +100,7 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
                     )
 
                     ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException()
-                    else -> CommonException.Unknown("Device factor source access error: ${error.message}")
+                    else -> CommonException.Unknown("Device factor source access error: $error")
                 }
             }
     }
