@@ -18,8 +18,15 @@ open class BaseAccessControllerRecoveryProcessor(
         val address = acAddresses.first()
         val entity = sargonOsManager.sargonOs.entityByAccessControllerAddress(address).asProfileEntity()
 
-        val structure = sargonOsManager.sargonOs
-            .provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(entity.address)
+        // To stop recovery the on-ledger structure is used instead of provisional one
+        val structure = if (operation != PreviewType.UpdateSecurityStructure.Operation.StopRecovery) {
+            runCatching {
+                sargonOsManager.sargonOs
+                    .provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(entity.address)
+            }.getOrNull()
+        } else {
+            null
+        }
 
         return PreviewType.UpdateSecurityStructure(
             entity = entity,

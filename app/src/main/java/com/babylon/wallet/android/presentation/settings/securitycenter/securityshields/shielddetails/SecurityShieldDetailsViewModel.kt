@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -33,7 +33,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val shieldBuilderClient: SecurityShieldBuilderClient,
-    private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
+    private val accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver,
     getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<SecurityShieldDetailsViewModel.State>(),
@@ -145,7 +145,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     private fun observeAccountRecoveryState() {
         val address = (args.input as? SecurityShieldDetailsArgs.Input.Address)?.value ?: return
 
-        accessControllerTimedRecoveryStateObserver.recoveryStateByAddress
+        accessControllerStateDetailsObserver.acStateByEntityAddress
             .onEach { states ->
                 val recoveryState = states[address]
                 _state.update { state ->

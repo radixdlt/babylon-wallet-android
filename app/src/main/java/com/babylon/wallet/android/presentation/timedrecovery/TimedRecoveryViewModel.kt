@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -45,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 class TimedRecoveryViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val observer: AccessControllerTimedRecoveryStateObserver,
+    private val observer: AccessControllerStateDetailsObserver,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TimedRecoveryViewModel.State>(),
@@ -99,12 +99,28 @@ class TimedRecoveryViewModel @Inject constructor(
     private fun initConfig() {
         viewModelScope.launch {
             sargonOsManager.callSafely(dispatcher) {
-                val structure = provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
-                    addressOfAccountOrPersona = args.address
+                val isProposalUnknown = isRecoveryProposalUnknown(
+                    entityAddress = args.address
                 )
+                val structure = if (!isProposalUnknown) {
+                    provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(
+                        addressOfAccountOrPersona = args.address
+                    )
+                } else {
+                    null
+                }
+                isProposalUnknown to structure
+            }.onFailure {
                 _state.update { state ->
                     state.copy(
-                        securityStructure = structure
+                        uiMessage = UiMessage.ErrorMessage(it)
+                    )
+                }
+            }.onSuccess {
+                _state.update { state ->
+                    state.copy(
+                        isRecoveryProposalUnknown = it.first,
+                        securityStructure = it.second
                     )
                 }
             }
@@ -112,12 +128,13 @@ class TimedRecoveryViewModel @Inject constructor(
     }
 
     private fun observeAcState() {
-        observer.recoveryStateByAddress
+        observer.acStateByEntityAddress
             .map { states -> states[args.address] }
             .filterNotNull()
             .onEach { recoveryState ->
-                val allowAfter = recoveryState.timedRecoveryState?.allowTimedRecoveryAfterUnixTimestampSeconds?.toLongOrNull()
-                    ?: return@onEach
+                val allowAfter =
+                    recoveryState.timedRecoveryState?.allowTimedRecoveryAfterUnixTimestampSeconds?.toLongOrNull()
+                        ?: return@onEach
                 val remainingTime = allowAfter - Instant.now().epochSecond
 
                 _state.update { state ->
@@ -156,7 +173,7 @@ class TimedRecoveryViewModel @Inject constructor(
     }
 
     private fun observeTime(remainingTime: Duration) {
-        var expirationDuration = remainingTime
+        var expirationDuration = remainingTime + 1.seconds
 
         observeTimeJob?.cancel()
         observeTimeJob = viewModelScope.launch {
@@ -177,10 +194,11 @@ class TimedRecoveryViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
         val remainingTime: Duration? = null,
         val confirmationDate: String? = null,
-        val securityStructure: SecurityStructureOfFactorSources? = null
+        val securityStructure: SecurityStructureOfFactorSources? = null,
+        val isRecoveryProposalUnknown: Boolean = false
     ) : UiState {
 
-        val canConfirm = remainingTime == null || remainingTime.inWholeSeconds <= 0
+        val canConfirm = (remainingTime == null || remainingTime.inWholeSeconds <= 0) && !isRecoveryProposalUnknown
     }
 
     sealed interface Event : OneOffEvent {

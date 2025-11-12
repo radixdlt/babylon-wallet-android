@@ -17,7 +17,7 @@ import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWi
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.securityproblems.accountPrompts
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.account.delegates.AccountLockersDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -90,7 +90,7 @@ class AccountViewModel @Inject constructor(
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val accountLockersDelegate: AccountLockersDelegate,
-    private val timedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
+    private val timedRecoveryStateObserver: AccessControllerStateDetailsObserver,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountViewModel.State>(), OneOffEventHandler<AccountViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -392,7 +392,7 @@ class AccountViewModel @Inject constructor(
 
     private fun observeRecoveryState() {
         val accountAddress = AddressOfAccountOrPersona.Account(args.accountAddress)
-        timedRecoveryStateObserver.recoveryStateByAddress
+        timedRecoveryStateObserver.acStateByEntityAddress
             .mapNotNull { states -> states[accountAddress] }
             .onEach { recoveryState ->
                 _state.update { state ->

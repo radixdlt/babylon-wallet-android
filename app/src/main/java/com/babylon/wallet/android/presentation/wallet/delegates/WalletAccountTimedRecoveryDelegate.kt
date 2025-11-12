@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.wallet.delegates
 
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State
 import com.radixdlt.sargon.AddressOfAccountOrPersona
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class WalletAccountTimedRecoveryDelegate @Inject constructor(
-    private val observer: AccessControllerTimedRecoveryStateObserver,
+    private val observer: AccessControllerStateDetailsObserver,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : ViewModelDelegate<State>() {
 
@@ -32,7 +32,7 @@ class WalletAccountTimedRecoveryDelegate @Inject constructor(
     }
 
     private fun observeRecoveryStates() {
-        observer.recoveryStateByAddress
+        observer.acStateByEntityAddress
             .onEach { states ->
                 _state.update {
                     it.copy(

@@ -8,14 +8,23 @@ import kotlinx.coroutines.CoroutineDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 
-class CommitProvisionalShieldUseCase @Inject constructor(
+class UpdateProvisionalShieldUseCase @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    suspend operator fun invoke(address: AddressOfAccountOrPersona): Result<Unit> =
+    suspend fun commit(address: AddressOfAccountOrPersona): Result<Unit> =
         sargonOsManager.callSafely(dispatcher) {
             commitProvisionalSecurityState(address)
+        }.onFailure {
+            Timber.e(it)
+        }.onSuccess {
+            Timber.i("Provisional security state commited.")
+        }
+
+    suspend fun remove(address: AddressOfAccountOrPersona): Result<Unit> =
+        sargonOsManager.callSafely(dispatcher) {
+            removeProvisionalSecurityState(address)
         }.onFailure {
             Timber.e(it)
         }.onSuccess {

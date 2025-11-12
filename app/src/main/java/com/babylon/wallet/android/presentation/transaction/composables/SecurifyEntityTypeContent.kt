@@ -86,29 +86,31 @@ fun SecurifyEntityTypeContent(
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = RadixTheme.colors.backgroundSecondary,
-                        shape = RadixTheme.shapes.roundedRectBottomMedium
+            preview.provisionalConfig?.let { config ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = RadixTheme.colors.backgroundSecondary,
+                            shape = RadixTheme.shapes.roundedRectBottomMedium
+                        )
+                ) {
+                    Text(
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(
+                            R.string.transactionReview_updateShield_applyTitle,
+                            config.metadata.displayName.value
+                        ),
+                        style = RadixTheme.typography.secondaryHeader,
+                        color = RadixTheme.colors.text
                     )
-            ) {
-                Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(
-                        R.string.transactionReview_updateShield_applyTitle,
-                        preview.provisionalConfig.metadata.displayName.value
-                    ),
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.text
-                )
 
-                HorizontalDivider(color = RadixTheme.colors.divider)
+                    HorizontalDivider(color = RadixTheme.colors.divider)
 
-                ShieldConfigView(
-                    securityStructure = preview.provisionalConfig
-                )
+                    ShieldConfigView(
+                        securityStructure = config
+                    )
+                }
             }
         }
     }

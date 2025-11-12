@@ -7,7 +7,7 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -60,7 +60,7 @@ class AccountSettingsViewModel @Inject constructor(
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
-    private val timedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver
+    private val timedRecoveryStateObserver: AccessControllerStateDetailsObserver
 ) : StateViewModel<AccountSettingsViewModel.State>(),
     OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -257,7 +257,7 @@ class AccountSettingsViewModel @Inject constructor(
     private fun observeRecoveryState() {
         val accountAddress = AddressOfAccountOrPersona.Account(args.address)
         recoveryStateJob?.cancel()
-        recoveryStateJob = timedRecoveryStateObserver.recoveryStateByAddress
+        recoveryStateJob = timedRecoveryStateObserver.acStateByEntityAddress
             .mapNotNull { states -> states[accountAddress] }
             .onEach { recoveryState ->
                 val securedWith = _state.value.securedWith as? SecuredWithUiData.Shield ?: return@onEach

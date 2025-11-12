@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -48,7 +48,7 @@ class PersonaDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
-    private val timedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver
+    private val timedRecoveryStateObserver: AccessControllerStateDetailsObserver
 ) : StateViewModel<PersonaDetailViewModel.State>(),
     OneOffEventHandler<PersonaDetailViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -136,7 +136,7 @@ class PersonaDetailViewModel @Inject constructor(
     private fun observeRecoveryState() {
         val personaAddress = AddressOfAccountOrPersona.Identity(args.personaAddress)
         recoveryStateJob?.cancel()
-        recoveryStateJob = timedRecoveryStateObserver.recoveryStateByAddress
+        recoveryStateJob = timedRecoveryStateObserver.acStateByEntityAddress
             .mapNotNull { states -> states[personaAddress] }
             .onEach { recoveryState ->
                 val securedWith = _state.value.securedWith as? SecuredWithUiData.Shield ?: return@onEach

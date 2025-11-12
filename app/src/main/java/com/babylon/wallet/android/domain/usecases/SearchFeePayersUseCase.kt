@@ -20,9 +20,12 @@ class SearchFeePayersUseCase @Inject constructor(
     suspend operator fun invoke(
         feePayerCandidates: Set<AccountAddress>,
         xrdWithdrawals: Map<AccountAddress, Decimal192>,
-        lockFee: Decimal192
+        lockFee: Decimal192,
+        excludedAccountAddresses: Set<AccountAddress>
     ): Result<TransactionFeePayers> {
-        val allAccounts = profileUseCase().activeAccountsOnCurrentNetwork
+        val allAccounts = profileUseCase().activeAccountsOnCurrentNetwork.filterNot { account ->
+            account.address in excludedAccountAddresses
+        }
         return stateRepository.getOwnedXRD(accounts = allAccounts).map { accountsWithXRD ->
             val candidates = accountsWithXRD.mapNotNull { entry ->
                 if (entry.value.isZero) return@mapNotNull null

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.fees
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.recoveryOrConfirmationRoleSignatureCount
 import com.babylon.wallet.android.presentation.transaction.model.guaranteesCount
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
@@ -188,7 +189,8 @@ data class TransactionFees(
             guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
-            signatureCount = notaryAndSigners.signers.numberOfSignaturesForTransaction
+            signatureCount = notaryAndSigners.signers.numberOfSignaturesForTransaction +
+                summary.recoveryOrConfirmationRoleSignatureCount
         ).let { fees ->
             if (fees.defaultTransactionFee > 0.toDecimal192()) {
                 // There will be a lock fee so update lock fee cost

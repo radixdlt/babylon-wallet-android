@@ -154,7 +154,8 @@ fun TransactionReviewScreen(
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning,
         onFailedSigningRestart = viewModel::onFailedSigningRestart,
         onFailedSigningCancel = viewModel::onFailedSigningCancel,
-        onInfoClick = onInfoClick
+        onInfoClick = onInfoClick,
+        onTimedRecoveryWarningDismiss = viewModel::onTimedRecoveryWarningDismiss
     )
 }
 
@@ -193,7 +194,8 @@ private fun TransactionReviewContent(
     onAcknowledgeRawTransactionWarning: () -> Unit,
     onFailedSigningRestart: () -> Unit,
     onFailedSigningCancel: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onTimedRecoveryWarningDismiss: (Boolean) -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -230,6 +232,16 @@ private fun TransactionReviewContent(
                 id = R.string.common_continue
             ),
             dismissText = null
+        )
+    }
+
+    if (state.showTimedRecoveryWarning) {
+        BasicPromptAlertDialog(
+            finish = onTimedRecoveryWarningDismiss,
+            titleText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_title),
+            messageText = "This is a timed recovery transaction.", // TODO crowdin
+            confirmText = stringResource(id = R.string.common_continue),
+            dismissText = stringResource(id = R.string.common_cancel)
         )
     }
 
@@ -627,6 +639,7 @@ private fun BottomSheetContent(
                 onCancelTransaction = onFailedSigningCancel
             )
         }
+
         is State.Sheet.None -> {}
     }
 }
@@ -669,7 +682,8 @@ private fun TransactionPreviewContentPreviewLight(
             onFeePayerSelectionDismiss = {},
             onFailedSigningRestart = {},
             onFailedSigningCancel = {},
-            onInfoClick = {}
+            onInfoClick = {},
+            onTimedRecoveryWarningDismiss = {}
         )
     }
 }
@@ -712,7 +726,8 @@ private fun TransactionPreviewContentPreviewDark(
             onFeePayerSelectionDismiss = {},
             onFailedSigningRestart = {},
             onFailedSigningCancel = {},
-            onInfoClick = {}
+            onInfoClick = {},
+            onTimedRecoveryWarningDismiss = {}
         )
     }
 }

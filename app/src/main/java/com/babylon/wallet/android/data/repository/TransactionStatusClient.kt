@@ -5,10 +5,10 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.CommitProvisionalShieldUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.usecases.transaction.UpdateProvisionalShieldUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
@@ -42,8 +42,8 @@ class TransactionStatusClient @Inject constructor(
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
-    private val accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver,
-    private val commitProvisionalShieldUseCase: CommitProvisionalShieldUseCase,
+    private val accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver,
+    private val updateProvisionalShieldUseCase: UpdateProvisionalShieldUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
@@ -88,25 +88,25 @@ class TransactionStatusClient @Inject constructor(
                     is TransactionType.SecurifyEntity -> {
                         // When a securify entity transaction is successful, the first thing to do is to mark it as such in profile.
                         // Before any other update takes place in wallet.
-                        commitProvisionalShieldUseCase(transactionType.entityAddress)
+                        updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
                     }
 
                     is TransactionType.ConfirmSecurityStructureRecovery -> {
-                        accessControllerTimedRecoveryStateObserver.startMonitoring()
-                        commitProvisionalShieldUseCase(transactionType.entityAddress)
+                        accessControllerStateDetailsObserver.startMonitoring()
+                        updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
                     }
 
                     is TransactionType.InitiateSecurityStructureRecovery -> {
                         if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
-                            accessControllerTimedRecoveryStateObserver.startMonitoring()
+                            accessControllerStateDetailsObserver.startMonitoring()
                         } else {
-                            commitProvisionalShieldUseCase(transactionType.entityAddress)
+                            updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
                         }
                     }
 
                     is TransactionType.StopSecurityStructureRecovery -> {
-                        accessControllerTimedRecoveryStateObserver.startMonitoring()
-                        commitProvisionalShieldUseCase(transactionType.entityAddress)
+                        accessControllerStateDetailsObserver.startMonitoring()
+                        updateProvisionalShieldUseCase.remove(transactionType.entityAddress)
                     }
 
                     is TransactionType.UpdateThirdPartyDeposits,

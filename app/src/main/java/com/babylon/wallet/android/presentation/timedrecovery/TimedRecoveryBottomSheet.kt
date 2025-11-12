@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
+import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
@@ -191,6 +192,15 @@ private fun TimedRecoveryContent(
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    if (state.isRecoveryProposalUnknown) {
+                        PromptLabel(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = "The proposed Security Shield configuration is unknown.", // TODO crowdin
+                        )
+
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    }
+
                     val text = if (state.canConfirm) {
                         "The timed recovery period is complete. You can now confirm the new Security Shield " +
                             "configuration shown below. If you've changed your mind, you can stop this process to " +
@@ -340,6 +350,12 @@ class TimedRecoveryPreviewProvider : PreviewParameterProvider<TimedRecoveryViewM
             TimedRecoveryViewModel.State(
                 isLoading = false,
                 securityStructure = newSecurityStructureOfFactorSourcesSample(),
+                remainingTime = 5.minutes,
+                confirmationDate = "October 23, 2025 02:00 PM"
+            ),
+            TimedRecoveryViewModel.State(
+                isLoading = false,
+                isRecoveryProposalUnknown = true,
                 remainingTime = 5.minutes,
                 confirmationDate = "October 23, 2025 02:00 PM"
             ),

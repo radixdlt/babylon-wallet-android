@@ -8,7 +8,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.utils.AccessControllerTimedRecoveryStateObserver
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.utils.AppsFlyerIntegrationManager
 import com.babylon.wallet.android.utils.logger.PersistentLogger
@@ -52,7 +52,7 @@ class RadixApplication : Application(), Configuration.Provider {
     lateinit var persistentLoggerProvider: Lazy<PersistentLogger>
 
     @Inject
-    lateinit var accessControllerTimedRecoveryStateObserver: AccessControllerTimedRecoveryStateObserver
+    lateinit var accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver
 
     override val workManagerConfiguration: Configuration =
         Configuration.Builder()
@@ -82,7 +82,7 @@ class RadixApplication : Application(), Configuration.Provider {
         override fun onStart(owner: LifecycleOwner) {
             super.onStart(owner)
             accountLockersObserver.startMonitoring()
-            accessControllerTimedRecoveryStateObserver.startMonitoring()
+            accessControllerStateDetailsObserver.startMonitoring()
         }
 
         override fun onStop(owner: LifecycleOwner) {
@@ -91,7 +91,7 @@ class RadixApplication : Application(), Configuration.Provider {
             }
             super.onStop(owner)
             accountLockersObserver.stopMonitoring()
-            accessControllerTimedRecoveryStateObserver.stopMonitoring()
+            accessControllerStateDetailsObserver.stopMonitoring()
         }
     }
 

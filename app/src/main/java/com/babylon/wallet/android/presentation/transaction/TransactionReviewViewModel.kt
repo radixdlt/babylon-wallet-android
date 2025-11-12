@@ -301,6 +301,10 @@ class TransactionReviewViewModel @Inject constructor(
         submit.onSigningCanceled()
     }
 
+    fun onTimedRecoveryWarningDismiss(accepted: Boolean) {
+        submit.onTimedRecoveryWarningDismiss(accepted)
+    }
+
     data class Data(
         private val txRequest: TransactionRequest? = null,
         private val txSummary: Summary? = null,
@@ -331,7 +335,8 @@ class TransactionReviewViewModel @Inject constructor(
         val expiration: Expiration? = null,
         val error: TransactionErrorMessage? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val isSubmitting: Boolean = false
+        val isSubmitting: Boolean = false,
+        val showTimedRecoveryWarning: Boolean = false
     ) : UiState {
 
         val isPreviewDisplayable: Boolean =
@@ -622,7 +627,7 @@ sealed interface PreviewType {
 
     data class UpdateSecurityStructure(
         val entity: ProfileEntity,
-        val provisionalConfig: SecurityStructureOfFactorSources,
+        val provisionalConfig: SecurityStructureOfFactorSources?,
         val operation: Operation
     ) : PreviewType {
 

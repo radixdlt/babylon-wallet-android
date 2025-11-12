@@ -34,8 +34,10 @@ import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.then
+import com.radixdlt.sargon.isAccessControllerTimedRecoveryManifest
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
@@ -77,6 +79,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private var approvalJob: Job? = null
 
     var oneOffEventHandler: OneOffEventHandler<TransactionReviewViewModel.Event>? = null
+    private val timedRecoveryWarningAcceptedChannel = Channel<Boolean>()
 
     override fun onSignAndSubmitTransaction() {
         // Do not re-submit while submission is in progress
@@ -171,6 +174,14 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
+    fun onTimedRecoveryWarningDismiss(accepted: Boolean) {
+        _state.update { state -> state.copy(showTimedRecoveryWarning = false) }
+
+        viewModelScope.launch {
+            timedRecoveryWarningAcceptedChannel.send(accepted)
+        }
+    }
+
     private suspend fun prepareSummary(): Result<Summary> = runCatching {
         when (val summary = data.value.summary) {
             is Summary.FromExecution -> {
@@ -229,7 +240,21 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 deposits = (_state.value.previewType as? PreviewType.Transaction)?.to.orEmpty()
             )
         ).then { notarizationResult ->
-            transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
+            val signedManifest = notarizationResult.notarizedTransaction.signedIntent.intent.manifest
+
+            val timedRecoveryWarningSkippedOrAccepted = if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
+                _state.update { state -> state.copy(showTimedRecoveryWarning = true) }
+                timedRecoveryWarningAcceptedChannel.receive()
+            } else {
+                true
+            }
+
+            if (timedRecoveryWarningSkippedOrAccepted) {
+                transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
+                    .map { notarizationResult }
+            } else {
+                Result.failure(CommonException.HostInteractionAborted())
+            }
         }.onSuccess { notarization ->
             _state.update { it.copy(isSubmitting = false) }
 
