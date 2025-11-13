@@ -97,10 +97,12 @@ class TransactionFeesDelegateImpl @Inject constructor(
         observeFeesChanges()
 
         return searchFeePayersUseCase(
-            feePayerCandidates = executionSummary.feePayerCandidates(),
+            feePayerCandidates = executionSummary.feePayerCandidates(transactionFees.transactionFeeToLock),
             xrdWithdrawals = _state.value.previewType.xrdWithdrawals(),
             lockFee = transactionFees.defaultTransactionFee,
-            excludedAccountAddresses = executionSummary.addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer()
+            excludedAccountAddresses = executionSummary.addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+                transactionFees.transactionFeeToLock
+            )
         ).onSuccess { feePayers ->
             _state.update { state ->
                 state.copy(
@@ -423,8 +425,9 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val executionSummary = (data.value.summary as? Summary.FromExecution)?.summary ?: error(
             "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
         )
+        val fee = data.value.transactionFees?.transactionFeeToLock.orZero()
 
-        val candidates = executionSummary.feePayerCandidates()
+        val candidates = executionSummary.feePayerCandidates(fee)
         return selectedAccountAddress?.let { candidates.contains(it) } ?: true
     }
 
@@ -446,11 +449,16 @@ class TransactionFeesDelegateImpl @Inject constructor(
         }
     }
 
-    private suspend fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> {
+    private suspend fun ExecutionSummary.feePayerCandidates(
+        fee: Decimal192
+    ): Set<AccountAddress> {
         val addressesOfAccountsRequiringAcRecovery =
             addressesOfAccountsRequiringAcRecovery()
         val addressesOfAccountsRequiringAcRecoveryEligibleAsFeePayer = addressesOfAccountsRequiringAcRecovery -
-            addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(addressesOfAccountsRequiringAcRecovery)
+            addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+                addressesOfAccountsRequiringAcRecovery = addressesOfAccountsRequiringAcRecovery,
+                fee = fee
+            )
 
         return withdrawals.keys +
             deposits.keys +
@@ -458,27 +466,24 @@ class TransactionFeesDelegateImpl @Inject constructor(
             addressesOfAccountsRequiringAcRecoveryEligibleAsFeePayer
     }
 
-    private suspend fun ExecutionSummary.addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(): Set<AccountAddress> {
-        return addressesOfAccountsRequiringAcRecovery().mapNotNull { accountAddress ->
-            val acHasXrd = accessControllerStateDetailsObserver.cachedStateByAddress(
-                AddressOfAccountOrPersona.Account(accountAddress)
-            )?.xrdBalance.orZero() > 0.toDecimal192()
-            if (acHasXrd) {
-                null
-            } else {
-                accountAddress
-            }
-        }.toSet()
+    private suspend fun ExecutionSummary.addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+        fee: Decimal192
+    ): Set<AccountAddress> {
+        return addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+            addressesOfAccountsRequiringAcRecovery = addressesOfAccountsRequiringAcRecovery(),
+            fee = fee
+        )
     }
 
     private fun addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
-        addressesOfAccountsRequiringAcRecovery: Set<AccountAddress>
+        addressesOfAccountsRequiringAcRecovery: Set<AccountAddress>,
+        fee: Decimal192
     ): Set<AccountAddress> {
         return addressesOfAccountsRequiringAcRecovery.mapNotNull { accountAddress ->
-            val acHasXrd = accessControllerStateDetailsObserver.cachedStateByAddress(
+            val acHasEnoughXrd = accessControllerStateDetailsObserver.cachedStateByAddress(
                 AddressOfAccountOrPersona.Account(accountAddress)
-            )?.xrdBalance.orZero() > 0.toDecimal192()
-            if (acHasXrd) {
+            )?.xrdBalance.orZero() > fee
+            if (acHasEnoughXrd) {
                 null
             } else {
                 accountAddress

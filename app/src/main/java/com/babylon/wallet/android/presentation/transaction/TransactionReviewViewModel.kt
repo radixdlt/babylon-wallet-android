@@ -633,12 +633,14 @@ sealed interface PreviewType {
 
         override val badges: List<Badge> = emptyList()
 
-        enum class Operation {
+        enum class Operation(
+            val includeBulkTransactionFee: Boolean
+        ) {
 
-            ApplySecurityStructure,
-            UpdateSecurityStructure,
-            ConfirmRecovery,
-            StopRecovery
+            ApplySecurityStructure(false),
+            UpdateSecurityStructure(true),
+            ConfirmRecovery(true),
+            StopRecovery(true)
         }
     }
 }

@@ -35,6 +35,7 @@ data class TransactionFees(
     private val feePaddingAmount: String? = null,
     private val tipPercentage: String? = null,
     private val xrdFiatPrice: FiatPrice? = null,
+    private val includeAcRecoveryBulkTransactionFee: Boolean = false,
     val signatureCount: Int = 0,
     val isNetworkCongested: Boolean = false
 ) {
@@ -52,6 +53,9 @@ data class TransactionFees(
     private val signaturesCost: Decimal192
         get() = signatureCount.toDecimal192() * SIGNATURE_COST
 
+    private val acRecoveryBulkTransactionFee: Decimal192
+        get() = if (includeAcRecoveryBulkTransactionFee) AC_RECOVERY_BULK_TRANSACTION_FEE else 0.toDecimal192()
+
     // ********* DEFAULT *********
     private val networkFee: Decimal192
         get() {
@@ -68,7 +72,8 @@ data class TransactionFees(
             guaranteesCost +
             signaturesCost +
             lockFeeCost +
-            notarizingCost
+            notarizingCost +
+            acRecoveryBulkTransactionFee
 
     /**
      * Network Fee displayed = Network Fee - Non-contingent lock or null if negative or 0 fee applicable
@@ -190,7 +195,9 @@ data class TransactionFees(
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
             signatureCount = notaryAndSigners.signers.numberOfSignaturesForTransaction +
-                summary.recoveryOrConfirmationRoleSignatureCount
+                summary.recoveryOrConfirmationRoleSignatureCount,
+            includeAcRecoveryBulkTransactionFee = (previewType as? PreviewType.UpdateSecurityStructure)
+                ?.operation?.includeBulkTransactionFee ?: false
         ).let { fees ->
             if (fees.defaultTransactionFee > 0.toDecimal192()) {
                 // There will be a lock fee so update lock fee cost
@@ -207,5 +214,6 @@ data class TransactionFees(
         private val SIGNATURE_COST: Decimal192 = 0.01109974758.toDecimal192()
         private val NOTARIZING_COST: Decimal192 = 0.0081393944.toDecimal192()
         private val NOTARIZING_COST_WHEN_NOTARY_IS_SIGNATORY: Decimal192 = 0.0084273944.toDecimal192()
+        private val AC_RECOVERY_BULK_TRANSACTION_FEE: Decimal192 = 0.3.toDecimal192()
     }
 }
