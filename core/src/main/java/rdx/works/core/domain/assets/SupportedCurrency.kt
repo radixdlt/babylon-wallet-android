@@ -1,5 +1,6 @@
 package rdx.works.core.domain.assets
 
+import com.radixdlt.sargon.FiatCurrency
 import com.radixdlt.sargon.extensions.toDecimal192
 import java.util.Currency
 
@@ -37,4 +38,8 @@ enum class SupportedCurrency(val code: String) {
     companion object {
         fun fromCode(code: String) = entries.find { it.code == code }
     }
+}
+
+fun SupportedCurrency.toSargon() = when (this) {
+    SupportedCurrency.USD -> FiatCurrency.USD
 }

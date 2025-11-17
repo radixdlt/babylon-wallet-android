@@ -130,4 +130,9 @@ sealed class AssetPrice {
 
         fun xrdPrice(resource: Resource.FungibleResource): FiatPrice? = prices[resource]
     }
+
+    data class NFTPrice(
+        override val asset: Asset.NonFungible,
+        override val price: FiatPrice?
+    ) : AssetPrice()
 }

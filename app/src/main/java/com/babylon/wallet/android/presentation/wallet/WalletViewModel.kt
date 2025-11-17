@@ -545,14 +545,12 @@ class WalletViewModel @Inject constructor(
             ) : PricesState {
 
                 val totalBalance: FiatPrice? = run {
-                    val prices = (this as? Enabled)?.pricesPerAccount ?: return@run null
-
-                    val isAnyAccountTotalFailed = prices.values.any { assetsPrices -> assetsPrices == null }
+                    val isAnyAccountTotalFailed = pricesPerAccount.values.any { assetsPrices -> assetsPrices == null }
                     if (isAnyAccountTotalFailed) return@run null
 
                     var total = 0.toDecimal192()
                     var currency = SupportedCurrency.USD
-                    prices.values.mapNotNull { it }.forEach { assetPrices ->
+                    pricesPerAccount.values.mapNotNull { it }.forEach { assetPrices ->
                         assetPrices.forEach { assetPrice ->
                             total += assetPrice.price?.price.orZero()
                             currency = assetPrice.price?.currency ?: SupportedCurrency.USD

@@ -22,7 +22,7 @@ import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -43,6 +43,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -66,9 +67,15 @@ interface StateRepository {
         includeHiddenResources: Boolean = false
     ): Flow<List<AccountWithAssets>>
 
-    suspend fun getNextNFTsPage(account: Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
+    suspend fun getNextNFTsPage(
+        account: Account,
+        resource: Resource.NonFungibleResource
+    ): Result<Resource.NonFungibleResource>
 
-    suspend fun updateLSUsInfo(account: Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<List<ValidatorWithStakes>>
+    suspend fun updateLSUsInfo(
+        account: Account,
+        validatorsWithStakes: List<ValidatorWithStakes>
+    ): Result<List<ValidatorWithStakes>>
 
     suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>>
 
@@ -106,6 +113,11 @@ interface StateRepository {
 
     suspend fun clearCachedState(): Result<Unit>
 
+    suspend fun getFullNonFungibleCollection(
+        account: Account,
+        resource: Resource.NonFungibleResource
+    ): Result<NonFungibleCollection>
+
     sealed class Error(cause: Throwable) : Exception(cause) {
         data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
 
@@ -119,7 +131,7 @@ interface StateRepository {
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
+    @IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val accountsStateCache: AccountsStateCache,
     private val profileRepository: ProfileRepository
 ) : StateRepository {
@@ -140,7 +152,7 @@ class StateRepositoryImpl @Inject constructor(
     ): Result<Resource.NonFungibleResource> = withContext(dispatcher) {
         runCatching {
             // No more pages to return
-            if (resource.amount.toInt() == resource.items.size) throw StateRepository.Error.NoMorePages
+            if (resource.allItemsFetched) throw StateRepository.Error.NoMorePages
 
             val accountStateVersion = stateDao.getAccountStateVersion(accountAddress = account.address)
                 ?: throw StateRepository.Error.StateVersionMissing
@@ -193,7 +205,8 @@ class StateRepositoryImpl @Inject constructor(
         validatorsWithStakes: List<ValidatorWithStakes>
     ) = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+            val stateVersion =
+                stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
 
             var result = validatorsWithStakes
 
@@ -289,7 +302,8 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         withContext(dispatcher) {
             runCatching {
-                val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+                val stateVersion =
+                    stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
 
                 claims.map { claim ->
                     val claimNFTs = if (claim.nonFungibleResource.amount > claim.nonFungibleResource.items.size) {
@@ -363,7 +377,10 @@ class StateRepositoryImpl @Inject constructor(
 
             addressesWithResourceEntities.values.filterNotNull().map { resourceEntity ->
                 val amount = underAccountAddress?.let { accountAddress ->
-                    stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address, accountAddress = accountAddress)?.amount
+                    stateDao.getAccountResourceJoin(
+                        resourceAddress = resourceEntity.address,
+                        accountAddress = accountAddress
+                    )?.amount
                 }
 
                 val nextMetadataCursor = resourceEntity.metadata?.nextCursor
@@ -383,7 +400,10 @@ class StateRepositoryImpl @Inject constructor(
                             metadata = resourceEntity.metadata.metadata.toMutableSet().apply {
                                 this union remainingMetadata
                             }.let {
-                                MetadataColumn(metadata = it.toList(), implicitState = MetadataColumn.ImplicitMetadataState.Complete)
+                                MetadataColumn(
+                                    metadata = it.toList(),
+                                    implicitState = MetadataColumn.ImplicitMetadataState.Complete
+                                )
                             }.also {
                                 stateDao.updateMetadata(resourceAddress = resourceEntity.address, metadataColumn = it)
                             }
@@ -414,7 +434,8 @@ class StateRepositoryImpl @Inject constructor(
                 val newPools = stateApi.fetchPools(unknownPools.toSet(), stateVersion)
                 if (newPools.poolItems.isNotEmpty()) {
                     val fetchedStateVersion = requireNotNull(newPools.stateVersion)
-                    val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
+                    val join =
+                        newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
                     stateDao.updatePools(pools = join)
                     cachedPools = stateDao.getCachedPools(
                         poolAddresses = poolAddresses,
@@ -426,34 +447,36 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> = withContext(dispatcher) {
-        runCatching {
-            val stateVersion = getLatestCachedStateVersionInNetwork()
-            val cachedValidators = if (stateVersion != null) {
-                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
-            } else {
-                emptyList()
-            }
-
-            val unknownAddresses = validatorAddresses - cachedValidators.map { it.address }.toSet()
-            if (unknownAddresses.isNotEmpty()) {
-                val response = stateApi.fetchValidators(
-                    validatorsAddresses = unknownAddresses,
-                    stateVersion = stateVersion
-                )
-
-                val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
-                val newValidatorEntities = response.validators.map { it.asValidatorEntity(syncInfo) }.also { entities ->
-                    stateDao.insertValidators(entities)
+    override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> =
+        withContext(dispatcher) {
+            runCatching {
+                val stateVersion = getLatestCachedStateVersionInNetwork()
+                val cachedValidators = if (stateVersion != null) {
+                    stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
+                } else {
+                    emptyList()
                 }
-                newValidatorEntities + cachedValidators
-            } else {
-                cachedValidators
+
+                val unknownAddresses = validatorAddresses - cachedValidators.map { it.address }.toSet()
+                if (unknownAddresses.isNotEmpty()) {
+                    val response = stateApi.fetchValidators(
+                        validatorsAddresses = unknownAddresses,
+                        stateVersion = stateVersion
+                    )
+
+                    val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
+                    val newValidatorEntities =
+                        response.validators.map { it.asValidatorEntity(syncInfo) }.also { entities ->
+                            stateDao.insertValidators(entities)
+                        }
+                    newValidatorEntities + cachedValidators
+                } else {
+                    cachedValidators
+                }
+            }.mapCatching { entities ->
+                entities.map { it.asValidatorDetail() }
             }
-        }.mapCatching { entities ->
-            entities.map { it.asValidatorDetail() }
         }
-    }
 
     override suspend fun getNFTDetails(
         resourceAddress: ResourceAddress,
@@ -481,22 +504,23 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> =
         accountsStateCache.getOwnedXRD(accounts = accounts)
 
-    override suspend fun getEntityOwnerKeys(entities: List<ProfileEntity>): Result<Map<ProfileEntity, List<PublicKeyHash>>> = runCatching {
-        if (entities.isEmpty()) return@runCatching mapOf()
+    override suspend fun getEntityOwnerKeys(entities: List<ProfileEntity>): Result<Map<ProfileEntity, List<PublicKeyHash>>> =
+        runCatching {
+            if (entities.isEmpty()) return@runCatching mapOf()
 
-        val entitiesWithOwnerKeys = mutableMapOf<ProfileEntity, List<PublicKeyHash>>()
-        stateApi.paginateDetails(
-            addresses = entities.map { it.address.string }.toSet(),
-            metadataKeys = setOf(ExplicitMetadataKey.OWNER_KEYS),
-        ) { page ->
-            page.items.forEach { item ->
-                val publicKeys = item.explicitMetadata?.toMetadata()?.ownerKeyHashes() ?: return@forEach
-                val entity = entities.find { item.address == it.address.string } ?: return@forEach
-                entitiesWithOwnerKeys[entity] = publicKeys.keys
+            val entitiesWithOwnerKeys = mutableMapOf<ProfileEntity, List<PublicKeyHash>>()
+            stateApi.paginateDetails(
+                addresses = entities.map { it.address.string }.toSet(),
+                metadataKeys = setOf(ExplicitMetadataKey.OWNER_KEYS),
+            ) { page ->
+                page.items.forEach { item ->
+                    val publicKeys = item.explicitMetadata?.toMetadata()?.ownerKeyHashes() ?: return@forEach
+                    val entity = entities.find { item.address == it.address.string } ?: return@forEach
+                    entitiesWithOwnerKeys[entity] = publicKeys.keys
+                }
             }
+            entitiesWithOwnerKeys
         }
-        entitiesWithOwnerKeys
-    }
 
     override suspend fun getDAppsDetails(
         definitionAddresses: List<AccountAddress>,
@@ -573,20 +597,57 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>) = withContext(dispatcher) {
-        runCatching {
-            val syncedAt = InstantGenerator()
-            stateDao.insertNFTs(newItems.map { it.asEntity(syncedAt) })
+    override suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>) =
+        withContext(dispatcher) {
+            runCatching {
+                val syncedAt = InstantGenerator()
+                stateDao.insertNFTs(newItems.map { it.asEntity(syncedAt) })
+            }
         }
-    }
 
-    override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>) = withContext(dispatcher) {
-        runCatching {
-            stateDao.deleteNFTs(items.map { it.asEntity(InstantGenerator()) })
+    override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>) =
+        withContext(dispatcher) {
+            runCatching {
+                stateDao.deleteNFTs(items.map { it.asEntity(InstantGenerator()) })
+            }
         }
-    }
 
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
+
+    override suspend fun getFullNonFungibleCollection(
+        account: Account,
+        resource: Resource.NonFungibleResource
+    ): Result<NonFungibleCollection> = withContext(dispatcher) {
+        var allPagesCached = resource.allItemsFetched
+
+        while (!allPagesCached) {
+            getNextNFTsPage(
+                account = account,
+                resource = resource
+            ).onFailure { error ->
+                if (error is StateRepository.Error.NoMorePages) {
+                    allPagesCached = true
+                }
+            }.onSuccess { resource ->
+                allPagesCached = resource.allItemsFetched
+            }
+        }
+
+        val accountStateVersion = stateDao.getAccountStateVersion(accountAddress = account.address)
+            ?: return@withContext Result.failure(StateRepository.Error.StateVersionMissing)
+
+        val items = stateDao.getOwnedNfts(
+            accountAddress = account.address,
+            resourceAddress = resource.address,
+            stateVersion = accountStateVersion
+        ).map { it.toItem() }.sorted()
+
+        Result.success(
+            NonFungibleCollection(
+                collection = resource.copy(items = items)
+            )
+        )
+    }
 
     private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
         val currentNetworkId = profileRepository.profile.first().currentGateway.network.id
