@@ -343,6 +343,7 @@ class StateRepositoryImpl @Inject constructor(
             }
         }
 
+    @Suppress("LongMethod")
     override suspend fun getResources(
         addresses: Set<ResourceAddress>,
         underAccountAddress: AccountAddress?,
@@ -618,7 +619,23 @@ class StateRepositoryImpl @Inject constructor(
         account: Account,
         resource: Resource.NonFungibleResource
     ): Result<NonFungibleCollection> = withContext(dispatcher) {
-        var allPagesCached = resource.allItemsFetched
+        val cachedNFTItems = stateDao.getOwnedNfts(
+            accountAddress = account.address,
+            resourceAddress = resource.address
+        )
+
+        // All items cached, return the result
+        if (cachedNFTItems.size == resource.amount.toInt()) {
+            return@withContext Result.success(
+                NonFungibleCollection(
+                    collection = resource.copy(
+                        items = cachedNFTItems.map { it.toItem() }.sorted()
+                    )
+                )
+            )
+        }
+
+        var allPagesCached = false
 
         while (!allPagesCached) {
             getNextNFTsPage(
@@ -633,13 +650,9 @@ class StateRepositoryImpl @Inject constructor(
             }
         }
 
-        val accountStateVersion = stateDao.getAccountStateVersion(accountAddress = account.address)
-            ?: return@withContext Result.failure(StateRepository.Error.StateVersionMissing)
-
         val items = stateDao.getOwnedNfts(
             accountAddress = account.address,
-            resourceAddress = resource.address,
-            stateVersion = accountStateVersion
+            resourceAddress = resource.address
         ).map { it.toItem() }.sorted()
 
         Result.success(

@@ -5,14 +5,18 @@ import com.babylon.wallet.android.fakes.FiatPriceRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.FiatCurrency
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.SargonOs
 import com.radixdlt.sargon.extensions.floor
 import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.os.SargonOsManager
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -33,16 +37,23 @@ class GetFiatValueUseCaseTest {
 
     private val tokenPriceRepositoryFake = FiatPriceRepositoryFake()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+    private val sargonOs = mockk<SargonOs>()
+    private val sargonOsManager = mockk<SargonOsManager>().also {
+        every { it.sargonOs } returns sargonOs
+    }
     private val getFiatValueUseCase = GetFiatValueUseCase(
         mainnetFiatPriceRepository = tokenPriceRepositoryFake,
         testnetFiatPriceRepository = mockk(),
         stateRepository = StateRepositoryFake(),
-        getCurrentGatewayUseCase = getCurrentGatewayUseCase
+        getCurrentGatewayUseCase = getCurrentGatewayUseCase,
+        ioDispatcher = testDispatcher,
+        sargonOsManager = sargonOsManager
     )
 
     @Before
     fun setUp() {
         coEvery { getCurrentGatewayUseCase() } returns Gateway.mainnet
+        coEvery { sargonOs.fetchNftFiatValues(any(), FiatCurrency.USD, any()) } returns emptyMap()
     }
 
     @Test

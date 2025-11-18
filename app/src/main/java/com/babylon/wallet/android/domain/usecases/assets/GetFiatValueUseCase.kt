@@ -9,6 +9,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
@@ -18,6 +19,7 @@ import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -33,6 +35,7 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 class GetFiatValueUseCase @Inject constructor(
     @Mainnet private val mainnetFiatPriceRepository: FiatPriceRepository,
     @Testnet private val testnetFiatPriceRepository: FiatPriceRepository,
@@ -60,20 +63,18 @@ class GetFiatValueUseCase @Inject constructor(
         }
     }
 
-    suspend fun forAccount(
-        accountWithAssets: AccountWithAssets,
+    @Suppress("LongMethod")
+    suspend fun forAccounts(
+        accountsWithAssets: List<AccountWithAssets>,
         currency: SupportedCurrency = SupportedCurrency.USD,
         isRefreshing: Boolean
-    ): Result<List<AssetPrice>> {
-        val networkId = accountWithAssets.account.networkId
+    ): Result<Map<AccountAddress, List<AssetPrice>>> {
+        val networkId = accountsWithAssets.firstOrNull()?.account?.networkId ?: return Result.success(emptyMap())
+
         return runCatching {
-            accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-                accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten()
-                    .orEmpty() +
-                accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten()
-                    .orEmpty() +
-                accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten()
-                    .orEmpty()
+            accountsWithAssets.flatMap { accountWithAssets ->
+                collectPriceRequestAddresses(accountWithAssets.assets, networkId)
+            }
         }.then { addresses ->
             getFiatPrices(
                 networkId = networkId,
@@ -82,29 +83,80 @@ class GetFiatValueUseCase @Inject constructor(
                 isRefreshing = isRefreshing
             )
         }.mapCatching { prices ->
-            // ensure that all claims are fetched
-            val claims = if (accountWithAssets.assets?.ownedStakeClaims?.isNotEmpty() == true) {
-                stateRepository.updateStakeClaims(
-                    account = accountWithAssets.account,
-                    claims = accountWithAssets.assets.ownedStakeClaims
-                ).getOrThrow()
-            } else {
-                accountWithAssets.assets?.ownedStakeClaims
+            accountsWithAssets.associate { accountWithAssets ->
+                accountWithAssets.account.address to aggregateAssetPrices(
+                    accountWithAssets = accountWithAssets,
+                    networkId = networkId,
+                    prices = prices,
+                    currency = currency
+                )
             }
+        }.then { assetPrices ->
+            runCatching {
+                accountsWithAssets.associate { accountWithAssets ->
+                    val nonFungibleResources = accountWithAssets.assets?.ownedNonFungibles?.map { it.resource }.orEmpty()
+                    val fullCollections = nonFungibleResources.map {
+                        stateRepository.getFullNonFungibleCollection(accountWithAssets.account, it)
+                            .onFailure { error -> Timber.w(error) }
+                            .getOrThrow()
+                    }.flatMap { collection ->
+                        collection.resource.items
+                    }.map { item ->
+                        item.globalId
+                    }
+                    accountWithAssets.account.address to fullCollections
+                }
+            }.then { nftIds ->
+                sargonOsManager.callSafely(ioDispatcher) {
+                    fetchNftFiatValues(
+                        nftIds = nftIds.values.flatten(),
+                        currency = currency.toSargon(),
+                        forceFetch = isRefreshing
+                    ).map { entry ->
+                        entry.key to FiatPrice(
+                            price = entry.value,
+                            currency = currency
+                        )
+                    }.toMap()
+                }
+            }.map { nftPrices ->
+                accountsWithAssets.associate { accountWithAssets ->
+                    val prices = accountWithAssets.assets
+                        ?.ownedNonFungibles
+                        ?.map { collection -> collection.price(nftPrices, currency) }
+                        .orEmpty()
+                    accountWithAssets.account.address to prices
+                }
+            }.map { nftPrices ->
+                assetPrices.map { (accountAddress, prices) ->
+                    accountAddress to prices + nftPrices[accountAddress].orEmpty()
+                }.toMap()
+            }
+        }
+    }
 
-            accountWithAssets.assets
-                ?.ownedTokens
-                ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
-                accountWithAssets.assets
-                    ?.ownedLiquidStakeUnits
-                    ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
-                accountWithAssets.assets
-                    ?.ownedPoolUnits
-                    ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
-                claims?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
-                accountWithAssets.assets
-                    ?.ownedNonFungibles
-                    ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty()
+    suspend fun forAccount(
+        accountWithAssets: AccountWithAssets,
+        currency: SupportedCurrency = SupportedCurrency.USD,
+        isRefreshing: Boolean
+    ): Result<List<AssetPrice>> {
+        val networkId = accountWithAssets.account.networkId
+        return runCatching {
+            collectPriceRequestAddresses(accountWithAssets.assets, networkId)
+        }.then { addresses ->
+            getFiatPrices(
+                networkId = networkId,
+                addresses = addresses.toSet(),
+                currency = currency,
+                isRefreshing = isRefreshing
+            )
+        }.mapCatching { prices ->
+            aggregateAssetPrices(
+                accountWithAssets = accountWithAssets,
+                prices = prices,
+                networkId = networkId,
+                currency = currency
+            )
         }.then { assetPrices ->
             getNFTFiatPrices(
                 account = accountWithAssets.account,
@@ -122,34 +174,36 @@ class GetFiatValueUseCase @Inject constructor(
         }
     }
 
-    private suspend fun getNFTFiatPrices(
-        account: Account,
-        nonFungibleResources: List<Resource.NonFungibleResource>,
-        currency: SupportedCurrency,
-        isRefreshing: Boolean
-    ): Result<Map<NonFungibleGlobalId, FiatPrice>> = runCatching {
-        nonFungibleResources.map {
-            stateRepository.getFullNonFungibleCollection(account, it)
-                .onFailure { error -> Timber.e(error) }
-                .getOrThrow()
-        }.flatMap { collection ->
-            collection.resource.items
-        }.map { item ->
-            item.globalId
+    private fun collectPriceRequestAddresses(
+        assets: Assets?,
+        networkId: NetworkId
+    ): List<PriceRequestAddress> {
+        return assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+            assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+            assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+            assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
+    }
+
+    private suspend fun aggregateAssetPrices(
+        accountWithAssets: AccountWithAssets,
+        networkId: NetworkId,
+        prices: Map<ResourceAddress, FiatPrice>,
+        currency: SupportedCurrency
+    ): List<AssetPrice> {
+        val claims = if (accountWithAssets.assets?.ownedStakeClaims?.isNotEmpty() == true) {
+            stateRepository.updateStakeClaims(
+                account = accountWithAssets.account,
+                claims = accountWithAssets.assets.ownedStakeClaims
+            ).getOrThrow()
+        } else {
+            accountWithAssets.assets?.ownedStakeClaims.orEmpty()
         }
-    }.then { nftIds ->
-        sargonOsManager.callSafely(ioDispatcher) {
-            fetchNftFiatValues(
-                nftIds = nftIds,
-                currency = currency.toSargon(),
-                forceFetch = isRefreshing
-            ).map { entry ->
-                entry.key to FiatPrice(
-                    price = entry.value,
-                    currency = currency
-                )
-            }.toMap()
-        }
+
+        return accountWithAssets.assets?.ownedTokens?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
+            accountWithAssets.assets?.ownedLiquidStakeUnits?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
+            accountWithAssets.assets?.ownedPoolUnits?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
+            claims.mapNotNull { it.price(prices, networkId, currency) } +
+            accountWithAssets.assets?.ownedNonFungibles?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty()
     }
 
     /**
@@ -249,6 +303,36 @@ class GetFiatValueUseCase @Inject constructor(
             }
 
             ensured.price(prices, networkId, currency)
+        }
+    }
+
+    private suspend fun getNFTFiatPrices(
+        account: Account,
+        nonFungibleResources: List<Resource.NonFungibleResource>,
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
+    ): Result<Map<NonFungibleGlobalId, FiatPrice>> = runCatching {
+        nonFungibleResources.map {
+            stateRepository.getFullNonFungibleCollection(account, it)
+                .onFailure { error -> Timber.w(error) }
+                .getOrThrow()
+        }.flatMap { collection ->
+            collection.resource.items
+        }.map { item ->
+            item.globalId
+        }
+    }.then { nftIds ->
+        sargonOsManager.callSafely(ioDispatcher) {
+            fetchNftFiatValues(
+                nftIds = nftIds,
+                currency = currency.toSargon(),
+                forceFetch = isRefreshing
+            ).map { entry ->
+                entry.key to FiatPrice(
+                    price = entry.value,
+                    currency = currency
+                )
+            }.toMap()
         }
     }
 
