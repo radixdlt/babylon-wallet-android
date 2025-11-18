@@ -13,9 +13,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.orZero
-import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.times
-import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import rdx.works.core.domain.assets.Asset
@@ -209,9 +207,16 @@ class GetFiatValueUseCase @Inject constructor(
             }
             claim ?: asset
         }.map { asset ->
-            asset.price(fiatPrices = prices, networkId = networkId, currency = currency)
+            asset.price(
+                fiatPrices = prices,
+                networkId = networkId,
+                currency = currency
+            )
         } + nftAssets.map { nftAsset ->
-            nftAsset.price(nftPrices, currency)
+            nftAsset.price(
+                nftPrices = nftPrices,
+                currency = currency
+            )
         }
     }
 
@@ -352,17 +357,11 @@ class GetFiatValueUseCase @Inject constructor(
         nftPrices: Map<NonFungibleGlobalId, FiatPrice>,
         currency: SupportedCurrency
     ): AssetPrice {
-        var totalPrice = 0.toDecimal192()
-        items.forEach { item ->
-            totalPrice += nftPrices[item.globalId]?.price.orZero()
-        }
-
+        val ids = items.map { it.globalId }
         return AssetPrice.NFTPrice(
             asset = NonFungibleCollection(this),
-            price = FiatPrice(
-                price = totalPrice,
-                currency = currency
-            )
+            nftPrices = nftPrices.filterKeys { id -> id in ids },
+            currency = currency
         )
     }
 
