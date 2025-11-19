@@ -44,7 +44,7 @@ interface StateDao {
 
     @Query(
         """
-        SELECT state_version FROM AccountEntity
+        SELECT MAX(state_version) FROM AccountEntity
         WHERE address = :accountAddress
     """
     )

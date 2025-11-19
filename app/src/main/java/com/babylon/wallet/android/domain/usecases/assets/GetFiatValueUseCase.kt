@@ -92,24 +92,19 @@ class GetFiatValueUseCase @Inject constructor(
                 )
             }
         }.then { assetPrices ->
-            runCatching {
-                accountsWithAssets.associate { accountWithAssets ->
-                    val nonFungibleResources = accountWithAssets.assets?.ownedNonFungibles?.map { it.resource }.orEmpty()
-                    val fullCollections = nonFungibleResources.map {
-                        stateRepository.getFullNonFungibleCollection(accountWithAssets.account, it)
-                            .onFailure { error -> Timber.w(error) }
-                            .getOrThrow()
-                    }.flatMap { collection ->
-                        collection.resource.items
-                    }.map { item ->
-                        item.globalId
-                    }
-                    accountWithAssets.account.address to fullCollections
-                }
-            }.then { nftIds ->
+            val nftIds = accountsWithAssets.flatMap { accountsWithAssets ->
+                accountsWithAssets.assets?.ownedNonFungibles?.map { it.resource.items }
+                    .orEmpty()
+            }.flatMap { items ->
+                items.map { it.globalId }
+            }
+
+            if (nftIds.isEmpty()) {
+                Result.success(emptyMap())
+            } else {
                 sargonOsManager.callSafely(ioDispatcher) {
                     fetchNftFiatValues(
-                        nftIds = nftIds.values.flatten(),
+                        nftIds = nftIds,
                         currency = currency.toSargon(),
                         forceFetch = isRefreshing
                     ).map { entry ->
@@ -159,7 +154,6 @@ class GetFiatValueUseCase @Inject constructor(
             )
         }.then { assetPrices ->
             getNFTFiatPrices(
-                account = accountWithAssets.account,
                 nonFungibleResources = accountWithAssets.assets?.ownedNonFungibles?.map { it.resource }.orEmpty(),
                 currency = currency,
                 isRefreshing = isRefreshing
@@ -200,7 +194,8 @@ class GetFiatValueUseCase @Inject constructor(
         }
 
         return accountWithAssets.assets?.ownedTokens?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
-            accountWithAssets.assets?.ownedLiquidStakeUnits?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
+            accountWithAssets.assets?.ownedLiquidStakeUnits?.mapNotNull { it.price(prices, networkId, currency) }
+                .orEmpty() +
             accountWithAssets.assets?.ownedPoolUnits?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
             claims.mapNotNull { it.price(prices, networkId, currency) } +
             accountWithAssets.assets?.ownedNonFungibles?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty()
@@ -246,7 +241,6 @@ class GetFiatValueUseCase @Inject constructor(
 
         val nftAssets = assets.mapNotNull { (it as? Asset.NonFungible)?.resource }
         val nftPrices = getNFTFiatPrices(
-            account = account,
             nonFungibleResources = nftAssets,
             currency = currency,
             isRefreshing = isRefreshing
@@ -307,33 +301,24 @@ class GetFiatValueUseCase @Inject constructor(
     }
 
     private suspend fun getNFTFiatPrices(
-        account: Account,
         nonFungibleResources: List<Resource.NonFungibleResource>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<NonFungibleGlobalId, FiatPrice>> = runCatching {
-        nonFungibleResources.map {
-            stateRepository.getFullNonFungibleCollection(account, it)
-                .onFailure { error -> Timber.w(error) }
-                .getOrThrow()
-        }.flatMap { collection ->
-            collection.resource.items
-        }.map { item ->
-            item.globalId
+    ): Result<Map<NonFungibleGlobalId, FiatPrice>> = sargonOsManager.callSafely(ioDispatcher) {
+        val nftIds = nonFungibleResources.map { it.items }.flatMap { items ->
+            items.map { it.globalId }
         }
-    }.then { nftIds ->
-        sargonOsManager.callSafely(ioDispatcher) {
-            fetchNftFiatValues(
-                nftIds = nftIds,
-                currency = currency.toSargon(),
-                forceFetch = isRefreshing
-            ).map { entry ->
-                entry.key to FiatPrice(
-                    price = entry.value,
-                    currency = currency
-                )
-            }.toMap()
-        }
+
+        fetchNftFiatValues(
+            nftIds = nftIds,
+            currency = currency.toSargon(),
+            forceFetch = isRefreshing
+        ).map { entry ->
+            entry.key to FiatPrice(
+                price = entry.value,
+                currency = currency
+            )
+        }.toMap()
     }
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")

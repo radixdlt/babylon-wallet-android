@@ -37,13 +37,16 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -57,6 +60,8 @@ import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
+import kotlin.collections.map
+import kotlin.collections.orEmpty
 
 @Suppress("TooManyFunctions")
 interface StateRepository {
@@ -113,11 +118,6 @@ interface StateRepository {
 
     suspend fun clearCachedState(): Result<Unit>
 
-    suspend fun getFullNonFungibleCollection(
-        account: Account,
-        resource: Resource.NonFungibleResource
-    ): Result<NonFungibleCollection>
-
     sealed class Error(cause: Throwable) : Exception(cause) {
         data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
 
@@ -144,7 +144,7 @@ class StateRepositoryImpl @Inject constructor(
         accounts = accounts,
         isRefreshing = isRefreshing,
         includeHiddenResources = includeHiddenResources
-    )
+    ).map { ensureNonFungibleItemsForAccounts(it) }
 
     override suspend fun getNextNFTsPage(
         account: Account,
@@ -302,8 +302,8 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         withContext(dispatcher) {
             runCatching {
-                val stateVersion =
-                    stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+                val stateVersion = stateDao.getAccountStateVersion(account.address)
+                    ?: return@withContext Result.failure(StateRepository.Error.StateVersionMissing)
 
                 claims.map { claim ->
                     val claimNFTs = if (claim.nonFungibleResource.amount > claim.nonFungibleResource.items.size) {
@@ -615,10 +615,51 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
 
-    override suspend fun getFullNonFungibleCollection(
+    private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
+        val currentNetworkId = profileRepository.profile.first().currentGateway.network.id
+
+        return stateDao.getAccountStateVersions().filter {
+            it.address.networkId == currentNetworkId
+        }.maxByOrNull { it.stateVersion }?.stateVersion
+    }
+
+    private suspend fun ensureNonFungibleItemsForAccounts(
+        accountsWithAssets: List<AccountWithAssets>
+    ): List<AccountWithAssets> = coroutineScope {
+        val deferred = accountsWithAssets.filter { it.assets != null }
+            .flatMap { accountWithAssets ->
+                accountWithAssets.assets?.ownedNonFungibles?.map { nonFungibleCollection ->
+                    async {
+                        nonFungibleCollection.resource.address to fetchAndCacheNonFungibleItems(
+                            account = accountWithAssets.account,
+                            resource = nonFungibleCollection.resource
+                        )
+                    }
+                }.orEmpty()
+            }
+
+        val itemsByResourceAddress = deferred.awaitAll().toMap()
+
+        accountsWithAssets.map { accountWithAssets ->
+            accountWithAssets.copy(
+                assets = accountWithAssets.assets?.copy(
+                    nonFungibles = accountWithAssets.assets.ownedNonFungibles.map { nonFungibleCollection ->
+                        nonFungibleCollection.copy(
+                            collection = nonFungibleCollection.resource.copy(
+                                items = itemsByResourceAddress[nonFungibleCollection.resource.address]
+                                    ?: nonFungibleCollection.resource.items
+                            )
+                        )
+                    }
+                )
+            )
+        }
+    }
+
+    private suspend fun fetchAndCacheNonFungibleItems(
         account: Account,
         resource: Resource.NonFungibleResource
-    ): Result<NonFungibleCollection> = withContext(dispatcher) {
+    ): List<Resource.NonFungibleResource.Item> = withContext(dispatcher) {
         val cachedNFTItems = stateDao.getOwnedNfts(
             accountAddress = account.address,
             resourceAddress = resource.address
@@ -626,13 +667,7 @@ class StateRepositoryImpl @Inject constructor(
 
         // All items cached, return the result
         if (cachedNFTItems.size == resource.amount.toInt()) {
-            return@withContext Result.success(
-                NonFungibleCollection(
-                    collection = resource.copy(
-                        items = cachedNFTItems.map { it.toItem() }.sorted()
-                    )
-                )
-            )
+            return@withContext cachedNFTItems.map { it.toItem() }.sorted()
         }
 
         var allPagesCached = false
@@ -642,31 +677,16 @@ class StateRepositoryImpl @Inject constructor(
                 account = account,
                 resource = resource
             ).onFailure { error ->
-                if (error is StateRepository.Error.NoMorePages) {
-                    allPagesCached = true
-                }
+                // Skip the particular resource until the next time it's requested
+                allPagesCached = true
             }.onSuccess { resource ->
                 allPagesCached = resource.allItemsFetched
             }
         }
 
-        val items = stateDao.getOwnedNfts(
+        stateDao.getOwnedNfts(
             accountAddress = account.address,
             resourceAddress = resource.address
         ).map { it.toItem() }.sorted()
-
-        Result.success(
-            NonFungibleCollection(
-                collection = resource.copy(items = items)
-            )
-        )
-    }
-
-    private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
-        val currentNetworkId = profileRepository.profile.first().currentGateway.network.id
-
-        return stateDao.getAccountStateVersions().filter {
-            it.address.networkId == currentNetworkId
-        }.maxByOrNull { it.stateVersion }?.stateVersion
     }
 }

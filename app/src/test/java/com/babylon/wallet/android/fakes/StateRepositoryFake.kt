@@ -107,9 +107,4 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>): Result<Unit> {
         return Result.success(Unit)
     }
-
-    override suspend fun getFullNonFungibleCollection(
-        account: Account,
-        resource: Resource.NonFungibleResource
-    ): Result<NonFungibleCollection> = Result.failure(RuntimeException("Not implemented"))
 }
