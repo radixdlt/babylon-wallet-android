@@ -1,5 +1,8 @@
 package rdx.works.profile.data.repository
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.Profile
@@ -21,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.KeystoreManager
 import rdx.works.core.di.ApplicationScope
+import rdx.works.core.di.EncryptedPreferences
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.core.then
@@ -62,6 +66,7 @@ class ProfileRepositoryImpl @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     private val hostInfoRepository: HostInfoRepository,
     private val profileStateChangeDriver: AndroidProfileStateChangeDriver,
+    @EncryptedPreferences private val preferences: DataStore<Preferences>,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
@@ -129,6 +134,11 @@ class ProfileRepositoryImpl @Inject constructor(
             sargonOs.deleteWallet()
         }.onFailure {
             Timber.w(it, "Failed to delete wallet")
+            // Proceed with clearing profile data even if deleting wallet from sargon os failed
+            // Useful when the profile could not be booted
+            withContext(ioDispatcher) {
+                preferences.edit { prefs -> prefs.clear() }
+            }
         }.then {
             keystoreManager.resetMnemonicKeySpecWhenInvalidated().onFailure { error ->
                 Timber.w(error, "Failed to reset encryption keys")
