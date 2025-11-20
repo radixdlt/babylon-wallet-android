@@ -6,11 +6,14 @@ import android.icu.text.NumberFormat
 import android.icu.util.Currency
 import android.os.Build
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.toDouble
 import java.math.RoundingMode
@@ -129,5 +132,24 @@ sealed class AssetPrice {
             }
 
         fun xrdPrice(resource: Resource.FungibleResource): FiatPrice? = prices[resource]
+    }
+
+    data class NFTPrice(
+        override val asset: Asset.NonFungible,
+        private val nftPrices: Map<NonFungibleGlobalId, FiatPrice>,
+        private val currency: SupportedCurrency
+    ) : AssetPrice() {
+
+        override val price: FiatPrice?
+            get() {
+                var totalPrice = 0.toDecimal192()
+                asset.resource.items.forEach { item ->
+                    totalPrice += nftPrices[item.globalId]?.price.orZero()
+                }
+                return FiatPrice(
+                    price = totalPrice,
+                    currency = currency
+                )
+            }
     }
 }

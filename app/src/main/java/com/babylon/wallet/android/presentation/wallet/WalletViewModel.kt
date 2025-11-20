@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
-import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
@@ -231,22 +230,15 @@ class WalletViewModel @Inject constructor(
             // Only when all assets have concluded (either success or error) then we
             // can request for prices.
             if (accountsWithAssets.none { it.assets == null }) {
-                val pricesPerAccount = mutableMapOf<AccountAddress, List<AssetPrice>?>()
-                for (accountWithAssets in accountsWithAssets) {
-                    val pricesError = getFiatValueUseCase.forAccount(
-                        accountWithAssets = accountWithAssets,
-                        isRefreshing = _state.value.refreshType.overrideCache
-                    ).onSuccess { prices ->
-                        pricesPerAccount[accountWithAssets.account.address] = prices
-                    }.exceptionOrNull()
-
-                    if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                        _state.update { it.disableFiatPrices() }
-                        return@onEach
-                    }
+                getFiatValueUseCase.forAccounts(
+                    accountsWithAssets = accountsWithAssets,
+                    isRefreshing = _state.value.refreshType.overrideCache
+                ).onSuccess { prices ->
+                    _state.update { it.onPricesReceived(prices = prices) }
+                }.onFailure { error ->
+                    Timber.w(error)
+                    _state.update { it.disableFiatPrices() }
                 }
-
-                _state.update { it.onPricesReceived(prices = pricesPerAccount) }
             }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
     }
@@ -545,14 +537,12 @@ class WalletViewModel @Inject constructor(
             ) : PricesState {
 
                 val totalBalance: FiatPrice? = run {
-                    val prices = (this as? Enabled)?.pricesPerAccount ?: return@run null
-
-                    val isAnyAccountTotalFailed = prices.values.any { assetsPrices -> assetsPrices == null }
+                    val isAnyAccountTotalFailed = pricesPerAccount.values.any { assetsPrices -> assetsPrices == null }
                     if (isAnyAccountTotalFailed) return@run null
 
                     var total = 0.toDecimal192()
                     var currency = SupportedCurrency.USD
-                    prices.values.mapNotNull { it }.forEach { assetPrices ->
+                    pricesPerAccount.values.mapNotNull { it }.forEach { assetPrices ->
                         assetPrices.forEach { assetPrice ->
                             total += assetPrice.price?.price.orZero()
                             currency = assetPrice.price?.currency ?: SupportedCurrency.USD

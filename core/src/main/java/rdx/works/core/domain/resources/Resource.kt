@@ -187,6 +187,7 @@ sealed class Resource {
         }
 
         val behaviours: AssetBehaviours? = assetBehaviours
+        val allItemsFetched: Boolean = items.size.toLong() == amount
 
         override fun compareTo(other: NonFungibleResource): Int {
             val name = metadata.name()
