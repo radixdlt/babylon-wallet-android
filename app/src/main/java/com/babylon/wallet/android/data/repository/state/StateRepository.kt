@@ -39,7 +39,6 @@ import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -651,8 +650,8 @@ class StateRepositoryImpl @Inject constructor(
 
     private suspend fun ensureNonFungibleItemsForAccounts(
         accountsWithAssets: List<AccountWithAssets>
-    ): List<AccountWithAssets> = coroutineScope {
-        val stateVersion = getLatestCachedStateVersionInNetwork() ?: return@coroutineScope accountsWithAssets
+    ): List<AccountWithAssets> = withContext(dispatcher) {
+        val stateVersion = getLatestCachedStateVersionInNetwork() ?: return@withContext accountsWithAssets
 
         val deferred = accountsWithAssets.filter { it.assets != null }
             .flatMap { accountWithAssets ->
