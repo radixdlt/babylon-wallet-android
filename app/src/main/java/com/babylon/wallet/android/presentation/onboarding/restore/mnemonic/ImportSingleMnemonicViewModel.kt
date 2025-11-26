@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.onboarding.restore.mnemonic
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.hasHiddenEntities
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -39,7 +38,6 @@ import javax.inject.Inject
 class ImportSingleMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val importMnemonicUseCase: ImportMnemonicUseCase,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
@@ -97,9 +95,6 @@ class ImportSingleMnemonicViewModel @Inject constructor(
         val factorSourceId = args.factorSourceId as? FactorSourceId.Hash ?: return
 
         viewModelScope.launch {
-            if (!biometricsAuthenticateUseCase()) {
-                return@launch
-            }
             _state.update { state -> state.copy(isButtonLoading = true) }
 
             val mnemonic = _state.value.seedPhraseState.toMnemonicWithPassphrase()
@@ -113,6 +108,11 @@ class ImportSingleMnemonicViewModel @Inject constructor(
                 _state.update { state -> state.copy(isButtonLoading = true) }
             }.onFailure { error ->
                 if (error is ProfileException.SecureStorageAccess) {
+                    _state.update { state ->
+                        state.copy(
+                            isButtonLoading = false
+                        )
+                    }
                     appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                 } else {
                     _state.update { state ->

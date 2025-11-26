@@ -152,16 +152,13 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun onFileChosen(uri: Uri, deviceBiometricAuthenticationProvider: suspend () -> Boolean) = viewModelScope.launch {
+    fun onFileChosen(uri: Uri) = viewModelScope.launch {
         val fileBackupType = when (val sheet = state.value.encryptSheet) {
             is State.EncryptSheet.Closed -> BackupType.File.PlainText
             is State.EncryptSheet.Open -> BackupType.File.Encrypted(sheet.password)
         }
         if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
-            val authenticationResult = deviceBiometricAuthenticationProvider()
-            if (authenticationResult) {
-                ensureBabylonFactorSourceExistUseCase()
-            } else {
+            ensureBabylonFactorSourceExistUseCase().onFailure {
                 Timber.w("Trying to back up profile without Babylon FS, should not happen!")
                 sendEvent(Event.DeleteFile(uri))
                 // don't backup without Babylon Factor source!

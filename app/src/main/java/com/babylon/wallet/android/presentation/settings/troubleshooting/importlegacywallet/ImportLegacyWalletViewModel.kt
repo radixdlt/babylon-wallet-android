@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -70,8 +69,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val olympiaWalletDataParser: OlympiaWalletDataParser,
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
     private val appEventBus: AppEventBus,
-    private val p2PLinksRepository: P2PLinksRepository,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
+    private val p2PLinksRepository: P2PLinksRepository
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private val scannedData = mutableSetOf<String>()
@@ -277,11 +275,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
             val olympiaDeviceFactorSourceExists = getProfileUseCase().deviceFactorSources.any { it.supportsOlympia }
             val needToVerifyExistingOlympiaFactorSource = softwareAccounts.isNotEmpty() && olympiaDeviceFactorSourceExists
             val needsSeedPhraseInput = if (needToVerifyExistingOlympiaFactorSource) {
-                // If such factor source exists we need to verify if it can derive the public keys of the accounts
-                // about to be imported
-                val authenticated = biometricsAuthenticateUseCase()
-                if (!authenticated) return@launch
-
                 val validFactorSourceId = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccounts).getOrElse { error ->
                     if (error is ProfileException.SecureStorageAccess) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
@@ -311,7 +304,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             }
 
             if (!needsSeedPhraseInput && hardwareAccounts.isEmpty()) {
-                migrateAccounts(biometricsAlreadyProvided = needToVerifyExistingOlympiaFactorSource)
+                migrateAccounts()
             } else {
                 proceedToNextPage()
             }
@@ -341,16 +334,11 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
     }
 
-    private fun migrateAccounts(biometricsAlreadyProvided: Boolean = false) {
+    private fun migrateAccounts() {
         viewModelScope.launch {
             val softwareAccounts = softwareAccountsToMigrate()
             if (softwareAccounts.isNotEmpty()) {
                 val deviceFactorSourceId = state.value.existingOlympiaFactorSourceId ?: run {
-                    if (!biometricsAlreadyProvided) {
-                        val authenticated = biometricsAuthenticateUseCase()
-                        if (!authenticated) return@launch
-                    }
-
                     addOlympiaFactorSourceUseCase(
                         state.value.mnemonicWithPassphrase()
                     ).getOrElse { error ->

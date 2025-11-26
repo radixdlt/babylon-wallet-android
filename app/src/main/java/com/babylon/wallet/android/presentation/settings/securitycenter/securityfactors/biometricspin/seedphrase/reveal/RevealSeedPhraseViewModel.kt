@@ -39,30 +39,30 @@ class RevealSeedPhraseViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             preferencesManager.getBackedUpFactorSourceIds().collect { backedUpIds ->
-                mnemonicRepository.readMnemonic(args.factorSourceId).onSuccess { mnemonicWithPassphrase ->
-                    _state.update { state ->
-                        state.copy(
-                            mnemonicWordsChunked = mnemonicWithPassphrase
-                                .mnemonic
-                                .words
-                                .map { it.word }
-                                .chunked(state.seedPhraseWordsPerLine)
-                                .map {
-                                    it.toPersistentList()
-                                }.toPersistentList(),
-                            passphrase = mnemonicWithPassphrase.passphrase,
-                            backedUp = backedUpIds.contains(args.factorSourceId),
-                            mnemonicSize = mnemonicWithPassphrase.mnemonic.wordCount.value.toInt()
-                        )
+                mnemonicRepository.readMnemonic(args.factorSourceId)
+                    .onSuccess { mnemonicWithPassphrase ->
+                        _state.update { state ->
+                            state.copy(
+                                mnemonicWordsChunked = mnemonicWithPassphrase
+                                    .mnemonic
+                                    .words
+                                    .map { it.word }
+                                    .chunked(state.seedPhraseWordsPerLine)
+                                    .map {
+                                        it.toPersistentList()
+                                    }.toPersistentList(),
+                                passphrase = mnemonicWithPassphrase.passphrase,
+                                backedUp = backedUpIds.contains(args.factorSourceId),
+                                mnemonicSize = mnemonicWithPassphrase.mnemonic.wordCount.value.toInt()
+                            )
+                        }
+                    }.onFailure { error ->
+                        if (error is ProfileException.SecureStorageAccess) {
+                            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                        } else {
+                            sendEvent(Effect.Close)
+                        }
                     }
-                }.onFailure { error ->
-                    if (error is ProfileException.SecureStorageAccess) {
-                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                    }
-                    _state.update {
-                        it.copy(uiMessage = UiMessage.ErrorMessage(error))
-                    }
-                }
             }
         }
     }

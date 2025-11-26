@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.hasHiddenEntities
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -50,7 +49,6 @@ class ImportMnemonicsViewModel @Inject constructor(
     private val importMnemonicUseCase: ImportMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
     private val keystoreManager: KeystoreManager,
@@ -164,9 +162,6 @@ class ImportMnemonicsViewModel @Inject constructor(
 
     private suspend fun restoreMnemonic() {
         val factorSourceToRecover = state.value.recoverableFactorSource?.factorSource ?: return
-        if (!biometricsAuthenticateUseCase()) {
-            return
-        }
 
         _state.update { it.copy(isPrimaryButtonLoading = true) }
 
@@ -178,9 +173,15 @@ class ImportMnemonicsViewModel @Inject constructor(
             showNextRecoverableFactorSourceOrFinish()
         }.onFailure { error ->
             if (error is ProfileException.SecureStorageAccess) {
+                _state.update { it.copy(isPrimaryButtonLoading = false) }
                 appEventBus.sendEvent(AppEvent.SecureFolderWarning)
             } else {
-                _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                _state.update { state ->
+                    state.copy(
+                        uiMessage = UiMessage.ErrorMessage(error),
+                        isPrimaryButtonLoading = false
+                    )
+                }
             }
         }
 

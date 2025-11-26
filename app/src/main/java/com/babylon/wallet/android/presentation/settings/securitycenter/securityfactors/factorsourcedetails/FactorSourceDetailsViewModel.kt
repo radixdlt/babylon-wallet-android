@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -39,7 +38,6 @@ class FactorSourceDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -147,7 +145,7 @@ class FactorSourceDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             if (state.value.isDeviceFactorSourceMnemonicNotAvailable) {
                 sendEvent(Event.NavigateToSeedPhraseRestore)
-            } else if (biometricsAuthenticateUseCase()) {
+            } else {
                 sendEvent(
                     Event.NavigateToSeedPhrase(
                         factorSourceId = deviceFactorSource.value.id.asGeneral()

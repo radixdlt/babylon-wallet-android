@@ -8,7 +8,6 @@ import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -92,7 +91,6 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
     private val accountLockersDelegate: WalletAccountLockersDelegate,
@@ -194,12 +192,11 @@ class WalletViewModel @Inject constructor(
 
     fun createBabylonFactorSource() {
         viewModelScope.launch {
-            if (biometricsAuthenticateUseCase()) {
-                ensureBabylonFactorSourceExistUseCase()
-            } else {
-                // force user to authenticate until we can create Babylon Factor source
-                appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
-            }
+            ensureBabylonFactorSourceExistUseCase()
+                .onFailure {
+                    // force user to authenticate until we can create Babylon Factor source
+                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
+                }
         }
     }
 
