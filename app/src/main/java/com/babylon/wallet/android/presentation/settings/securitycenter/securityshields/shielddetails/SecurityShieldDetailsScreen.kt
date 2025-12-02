@@ -30,6 +30,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.ShieldConfigView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -51,6 +52,7 @@ fun SecurityShieldDetailsScreen(
     onBackClick: () -> Unit,
     onApplyShieldClick: (SecurityStructureId) -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onEditShield: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -83,6 +85,7 @@ fun SecurityShieldDetailsScreen(
         onFactorClick = onFactorClick,
         onEditFactorsClick = viewModel::onEditFactorsClick,
         onApplyShieldClick = onApplyShieldClick,
+        onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
 
@@ -103,6 +106,7 @@ private fun SecurityShieldDetailsContent(
     onFactorClick: (FactorSourceId) -> Unit,
     onEditFactorsClick: () -> Unit,
     onApplyShieldClick: (SecurityStructureId) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -194,7 +198,8 @@ private fun SecurityShieldDetailsContent(
                                 shape = RadixTheme.shapes.roundedRectMedium
                             ),
                         securityStructure = state.securityStructureOfFactorSources,
-                        onFactorClick = onFactorClick
+                        onFactorClick = onFactorClick,
+                        onInfoClick = onInfoClick
                     )
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -217,6 +222,7 @@ private fun SecurityShieldDetailsLightPreview(
             onFactorClick = {},
             onEditFactorsClick = {},
             onApplyShieldClick = {},
+            onInfoClick = {},
             onBackClick = {}
         )
     }
@@ -237,6 +243,7 @@ private fun SecurityShieldDetailsDarkPreview(
             onFactorClick = {},
             onEditFactorsClick = {},
             onApplyShieldClick = {},
+            onInfoClick = {},
             onBackClick = {}
         )
     }

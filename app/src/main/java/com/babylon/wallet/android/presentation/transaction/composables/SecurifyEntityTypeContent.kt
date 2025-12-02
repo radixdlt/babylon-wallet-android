@@ -15,16 +15,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.common.securityshields.ConfirmationDelay
+import com.babylon.wallet.android.presentation.common.securityshields.EmergencyFallbackView
 import com.babylon.wallet.android.presentation.common.securityshields.OrView
 import com.babylon.wallet.android.presentation.common.securityshields.display
 import com.babylon.wallet.android.presentation.dialogs.info.DSR
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -51,6 +53,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 @Composable
 fun SecurifyEntityTypeContent(
     preview: PreviewType.UpdateSecurityStructure,
+    onInfoClick: (GlossaryItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -108,7 +111,8 @@ fun SecurifyEntityTypeContent(
                     HorizontalDivider(color = RadixTheme.colors.divider)
 
                     ShieldConfigView(
-                        securityStructure = config
+                        securityStructure = config,
+                        onInfoClick = onInfoClick
                     )
                 }
             }
@@ -120,7 +124,8 @@ fun SecurifyEntityTypeContent(
 fun ShieldConfigView(
     securityStructure: SecurityStructureOfFactorSources,
     modifier: Modifier = Modifier,
-    onFactorClick: (FactorSourceId) -> Unit = {}
+    onFactorClick: (FactorSourceId) -> Unit = {},
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -154,7 +159,8 @@ fun ShieldConfigView(
             recovery = securityStructure.matrixOfFactors.recoveryRole,
             confirmation = securityStructure.matrixOfFactors.confirmationRole,
             confirmationDelay = securityStructure.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
-            onFactorClick = onFactorClick
+            onFactorClick = onFactorClick,
+            onInfoClick = onInfoClick
         )
     }
 }
@@ -285,7 +291,8 @@ private fun RecoveryAndConfirmationView(
     recovery: RecoveryRoleWithFactorSources,
     confirmation: ConfirmationRoleWithFactorSources,
     confirmationDelay: TimePeriod,
-    onFactorClick: (FactorSourceId) -> Unit
+    onFactorClick: (FactorSourceId) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(modifier = modifier) {
         Text(
@@ -391,8 +398,11 @@ private fun RecoveryAndConfirmationView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        ConfirmationDelay(
-            delay = confirmationDelay
+        EmergencyFallbackView(
+            delay = confirmationDelay,
+            description = AnnotatedString(stringResource(R.string.transactionReview_updateShield_confirmationDelayMessage)),
+            note = null,
+            onInfoClick = onInfoClick
         )
     }
 }
@@ -408,7 +418,8 @@ fun SecurifyEntityTypeForAccountPreview() {
                 entity = ProfileEntity.AccountEntity(Account.sampleMainnet()),
                 provisionalConfig = newSecurityStructureOfFactorSourcesSample(),
                 operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
-            )
+            ),
+            onInfoClick = {}
         )
     }
 }
@@ -424,7 +435,8 @@ fun SecurifyEntityTypeForPersonaPreview() {
                 entity = ProfileEntity.PersonaEntity(Persona.sampleMainnet()),
                 provisionalConfig = newSecurityStructureOfFactorSourcesSampleOther(),
                 operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
-            )
+            ),
+            onInfoClick = {}
         )
     }
 }

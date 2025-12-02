@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
@@ -38,10 +37,12 @@ import com.radixdlt.sargon.isAccessControllerTimedRecoveryManifest
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.mapError
+import rdx.works.core.sargon.timeUntilDelayedConfirmationIsCallable
 import rdx.works.core.toUnitResult
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -79,7 +80,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private var approvalJob: Job? = null
 
     var oneOffEventHandler: OneOffEventHandler<TransactionReviewViewModel.Event>? = null
-    private val timedRecoveryWarningAcceptedChannel = Channel<Boolean>()
+    private val timedRecoveryConfirmedChannel = Channel<Boolean>()
 
     override fun onSignAndSubmitTransaction() {
         // Do not re-submit while submission is in progress
@@ -91,7 +92,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
             if (currentNetworkId != manifestNetworkId) {
                 onDismiss(
-                    exception = DappRequestException.WrongNetwork(
+                    exception = RadixWalletException.DappRequestException.WrongNetwork(
                         currentNetworkId = currentNetworkId,
                         requestNetworkId = manifestNetworkId
                     )
@@ -153,7 +154,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     override fun onSigningCanceled() {
         _state.update { it.copy(sheetState = Sheet.None) }
         viewModelScope.launch {
-            onDismiss(exception = DappRequestException.RejectedByUser)
+            onDismiss(exception = RadixWalletException.DappRequestException.RejectedByUser)
         }
     }
 
@@ -174,11 +175,22 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
-    fun onTimedRecoveryWarningDismiss(accepted: Boolean) {
-        _state.update { state -> state.copy(showTimedRecoveryWarning = false) }
+    @Suppress("MagicNumber")
+    fun onRestartSigningFromTimedRecoverySheet() {
+        viewModelScope.launch {
+            onConfirmTimedRecoverySheetDismiss(false)
+            delay(300L) // Allow time for the previous signing flow to fully dismiss
+            onRestartSignAndSubmitTransaction()
+        }
+    }
+
+    fun onConfirmTimedRecoverySheetDismiss(confirmed: Boolean) {
+        _state.update { state ->
+            state.copy(sheetState = Sheet.None)
+        }
 
         viewModelScope.launch {
-            timedRecoveryWarningAcceptedChannel.send(accepted)
+            timedRecoveryConfirmedChannel.send(confirmed)
         }
     }
 
@@ -242,14 +254,21 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         ).then { notarizationResult ->
             val signedManifest = notarizationResult.notarizedTransaction.signedIntent.intent.manifest
 
-            val timedRecoveryWarningSkippedOrAccepted = if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
-                _state.update { state -> state.copy(showTimedRecoveryWarning = true) }
-                timedRecoveryWarningAcceptedChannel.receive()
+            val timedRecoveryConfirmed = if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
+                _state.update {
+                    it.copy(
+                        sheetState = Sheet.ConfirmTimedRecovery(
+                            time = (_state.value.previewType as? PreviewType.UpdateSecurityStructure)
+                                ?.entity?.securityState?.timeUntilDelayedConfirmationIsCallable
+                        )
+                    )
+                }
+                timedRecoveryConfirmedChannel.receive()
             } else {
                 true
             }
 
-            if (timedRecoveryWarningSkippedOrAccepted) {
+            if (timedRecoveryConfirmed) {
                 transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
                     .map { notarizationResult }
             } else {

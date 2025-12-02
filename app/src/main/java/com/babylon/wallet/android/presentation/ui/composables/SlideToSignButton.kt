@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -109,6 +110,8 @@ fun SlideToSignButton(
         LaunchedEffect(isSubmitting) {
             if (!isSubmitting && draggableState.currentValue == ButtonSliderPosition.End) {
                 draggableState.animateTo(ButtonSliderPosition.Start)
+            } else if (isSubmitting && draggableState.currentValue == ButtonSliderPosition.Start) {
+                draggableState.snapTo(ButtonSliderPosition.End)
             }
         }
         Text(

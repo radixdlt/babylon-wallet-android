@@ -396,7 +396,7 @@ private fun HideAccountSheet(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun AccountSettingsPreview(
+private fun AccountSettingsPreview(
     @PreviewParameter(AccountSettingsPreviewProvider::class) state: State
 ) {
     RadixWalletPreviewTheme {

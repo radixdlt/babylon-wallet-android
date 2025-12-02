@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,9 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -34,14 +26,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.common.displayName
-import com.babylon.wallet.android.presentation.common.title
+import com.babylon.wallet.android.presentation.common.securityshields.EmergencyFallbackView
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
@@ -61,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFact
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.SecurityShieldBuilderRuleViolation
@@ -275,8 +264,11 @@ private fun SetupRecoveryContent(
                     )
 
                     EmergencyFallbackView(
-                        period = period,
+                        delay = period,
                         onInfoClick = onInfoClick,
+                        description = stringResource(id = R.string.shieldWizardRecovery_fallback_subtitle)
+                            .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                        note = stringResource(id = R.string.shieldWizardRecovery_fallback_note),
                         onNumberOfDaysClick = onFallbackPeriodClick
                     )
                 }
@@ -381,109 +373,6 @@ private fun FactorsView(
         AddFactorButton(
             onClick = onAddFactorClick
         )
-    }
-}
-
-@Composable
-private fun EmergencyFallbackView(
-    modifier: Modifier = Modifier,
-    period: TimePeriod,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onNumberOfDaysClick: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = RadixTheme.colors.errorSecondary,
-                shape = RadixTheme.shapes.roundedRectMedium
-            )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = RadixTheme.colors.error,
-                    shape = RadixTheme.shapes.roundedRectTopMedium
-                )
-                .clip(RadixTheme.shapes.roundedRectTopMedium)
-                .clickable { onInfoClick(GlossaryItem.emergencyfallback) }
-                .padding(RadixTheme.dimensions.paddingDefault),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.shieldWizardRecovery_fallback_title),
-                style = RadixTheme.typography.body1Header,
-                color = White
-            )
-
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(DSR.ic_info_outline),
-                tint = White,
-                contentDescription = "info"
-            )
-        }
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.shieldWizardRecovery_fallback_subtitle)
-                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.text
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-        Row(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                .fillMaxWidth()
-                .height(RadixTheme.dimensions.buttonDefaultHeight)
-                .shadow(
-                    elevation = 2.dp,
-                    shape = RadixTheme.shapes.roundedRectSmall
-                )
-                .background(
-                    color = RadixTheme.colors.card,
-                    shape = RadixTheme.shapes.roundedRectSmall
-                )
-                .throttleClickable { onNumberOfDaysClick() }
-                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-        ) {
-            Icon(
-                painter = painterResource(id = DSR.ic_calendar),
-                contentDescription = null,
-                tint = RadixTheme.colors.icon
-            )
-
-            Text(
-                text = period.title(),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.text
-            )
-        }
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
-            text = stringResource(id = R.string.shieldWizardRecovery_fallback_note),
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.error
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
     }
 }
 

@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,12 +46,10 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.Pink1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.discover.common.views.resolveTitleResFromGlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.ShieldConfigView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -280,20 +277,13 @@ private fun TimedRecoveryContent(
                                 )
 
                                 ShieldConfigView(
-                                    securityStructure = structure
+                                    securityStructure = structure,
+                                    onInfoClick = onInfoClick
                                 )
                             }
                         }
 
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        InfoButton(
-                            text = stringResource(id = GlossaryItem.emergencyfallback.resolveTitleResFromGlossaryItem())
-                        ) {
-                            onInfoClick(GlossaryItem.emergencyfallback)
-                        }
                     }
                 }
             }

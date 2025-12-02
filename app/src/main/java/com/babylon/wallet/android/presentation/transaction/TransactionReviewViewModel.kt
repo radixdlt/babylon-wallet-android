@@ -41,6 +41,7 @@ import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
+import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
@@ -301,8 +302,12 @@ class TransactionReviewViewModel @Inject constructor(
         submit.onSigningCanceled()
     }
 
-    fun onTimedRecoveryWarningDismiss(accepted: Boolean) {
-        submit.onTimedRecoveryWarningDismiss(accepted)
+    fun onConfirmTimedRecoverySheetDismiss(confirmed: Boolean) {
+        submit.onConfirmTimedRecoverySheetDismiss(confirmed)
+    }
+
+    fun onRestartSigningFromTimedRecoverySheet() {
+        submit.onRestartSigningFromTimedRecoverySheet()
     }
 
     data class Data(
@@ -335,8 +340,7 @@ class TransactionReviewViewModel @Inject constructor(
         val expiration: Expiration? = null,
         val error: TransactionErrorMessage? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val isSubmitting: Boolean = false,
-        val showTimedRecoveryWarning: Boolean = false
+        val isSubmitting: Boolean = false
     ) : UiState {
 
         val isPreviewDisplayable: Boolean =
@@ -490,6 +494,10 @@ class TransactionReviewViewModel @Inject constructor(
                     )
                 }
             }
+
+            data class ConfirmTimedRecovery(
+                val time: TimePeriod?
+            ) : Sheet
         }
 
         data class SelectFeePayerInput(
