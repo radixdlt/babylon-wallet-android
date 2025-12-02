@@ -130,18 +130,6 @@ private fun MainContent(
 ) {
     val bottomNavController = rememberNavController()
 
-    LaunchedEffect(state.selectedTab) {
-        if (bottomNavController.currentBackStackEntry?.destination?.route != state.selectedTab.route) {
-            bottomNavController.navigate(state.selectedTab.route) {
-                popUpTo(bottomNavController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
-        }
-    }
-
     LaunchedEffect(Unit) {
         bottomNavController.currentBackStackEntryFlow.collect { entry ->
             when (entry.destination.route) {
@@ -254,6 +242,18 @@ private fun MainContent(
                     viewModel = hiltViewModel(),
                     onSettingClick = onSettingClick,
                 )
+            }
+        }
+    }
+
+    LaunchedEffect(state.selectedTab) {
+        if (bottomNavController.currentBackStackEntry?.destination?.route != state.selectedTab.route) {
+            bottomNavController.navigate(state.selectedTab.route) {
+                popUpTo(bottomNavController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
             }
         }
     }

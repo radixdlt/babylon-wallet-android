@@ -5,11 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
-import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -95,7 +93,6 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
     private val accountLockersDelegate: WalletAccountLockersDelegate,
@@ -199,12 +196,11 @@ class WalletViewModel @Inject constructor(
 
     fun createBabylonFactorSource() {
         viewModelScope.launch {
-            if (biometricsAuthenticateUseCase()) {
-                ensureBabylonFactorSourceExistUseCase()
-            } else {
-                // force user to authenticate until we can create Babylon Factor source
-                appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
-            }
+            ensureBabylonFactorSourceExistUseCase()
+                .onFailure {
+                    // force user to authenticate until we can create Babylon Factor source
+                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
+                }
         }
     }
 
@@ -235,22 +231,15 @@ class WalletViewModel @Inject constructor(
             // Only when all assets have concluded (either success or error) then we
             // can request for prices.
             if (accountsWithAssets.none { it.assets == null }) {
-                val pricesPerAccount = mutableMapOf<AccountAddress, List<AssetPrice>?>()
-                for (accountWithAssets in accountsWithAssets) {
-                    val pricesError = getFiatValueUseCase.forAccount(
-                        accountWithAssets = accountWithAssets,
-                        isRefreshing = _state.value.refreshType.overrideCache
-                    ).onSuccess { prices ->
-                        pricesPerAccount[accountWithAssets.account.address] = prices
-                    }.exceptionOrNull()
-
-                    if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                        _state.update { it.disableFiatPrices() }
-                        return@onEach
-                    }
+                getFiatValueUseCase.forAccounts(
+                    accountsWithAssets = accountsWithAssets,
+                    isRefreshing = _state.value.refreshType.overrideCache
+                ).onSuccess { prices ->
+                    _state.update { it.onPricesReceived(prices = prices) }
+                }.onFailure { error ->
+                    Timber.w(error)
+                    _state.update { it.disableFiatPrices() }
                 }
-
-                _state.update { it.onPricesReceived(prices = pricesPerAccount) }
             }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
     }
@@ -553,14 +542,12 @@ class WalletViewModel @Inject constructor(
             ) : PricesState {
 
                 val totalBalance: FiatPrice? = run {
-                    val prices = (this as? Enabled)?.pricesPerAccount ?: return@run null
-
-                    val isAnyAccountTotalFailed = prices.values.any { assetsPrices -> assetsPrices == null }
+                    val isAnyAccountTotalFailed = pricesPerAccount.values.any { assetsPrices -> assetsPrices == null }
                     if (isAnyAccountTotalFailed) return@run null
 
                     var total = 0.toDecimal192()
                     var currency = SupportedCurrency.USD
-                    prices.values.mapNotNull { it }.forEach { assetPrices ->
+                    pricesPerAccount.values.mapNotNull { it }.forEach { assetPrices ->
                         assetPrices.forEach { assetPrice ->
                             total += assetPrice.price?.price.orZero()
                             currency = assetPrice.price?.currency ?: SupportedCurrency.USD

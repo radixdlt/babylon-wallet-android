@@ -8,11 +8,10 @@ import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.data.repository.locker.AccountLockersRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
-import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
@@ -64,7 +63,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val checkMigrationToNewBackupSystemUseCase = mockk<CheckMigrationToNewBackupSystemUseCase>()
     private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
-    private val biometricsAuthenticateUseCase = mockk<BiometricsAuthenticateUseCase>()
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
@@ -96,7 +94,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         npsSurveyStateObserver,
         p2PLinksRepository,
         checkMigrationToNewBackupSystemUseCase,
-        biometricsAuthenticateUseCase,
         testDispatcher,
         HomeCardsDelegate(
             homeCardsRepository

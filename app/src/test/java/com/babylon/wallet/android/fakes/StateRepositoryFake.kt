@@ -16,6 +16,7 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -106,5 +107,4 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>): Result<Unit> {
         return Result.success(Unit)
     }
-
 }

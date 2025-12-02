@@ -104,7 +104,8 @@ class AccountSettingsViewModel @Inject constructor(
     private fun loadAccount() {
         viewModelScope.launch {
             getProfileUseCase.flow.mapNotNull { profile ->
-                val account = profile.activeAccountsOnCurrentNetwork.first { it.address == args.address }
+                val account = profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
+                    ?: return@mapNotNull null
                 val securedWith = when (val securityState = account.securityState) {
                     is EntitySecurityState.Securified -> SecuredWithUiData.Shield(
                         isInTimedRecovery = timedRecoveryStateObserver.cachedStateByAddress(

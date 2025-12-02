@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
 import androidx.biometric.BiometricPrompt
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.CommonException
@@ -37,7 +36,6 @@ import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 
 class AccessDeviceFactorSourceUseCaseTest {
 
-    private val biometricsAuthenticateUseCase = mockk<BiometricsAuthenticateUseCase>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val updateFactorSourceLastUsedUseCase = mockk<UpdateFactorSourceLastUsedUseCase>()
 
@@ -48,7 +46,6 @@ class AccessDeviceFactorSourceUseCaseTest {
     )
 
     val sut = AccessDeviceFactorSourceUseCase(
-        biometricsAuthenticateUseCase = biometricsAuthenticateUseCase,
         mnemonicRepository = mnemonicRepository,
         updateFactorSourceLastUsedUseCase = updateFactorSourceLastUsedUseCase
     )
@@ -355,7 +352,7 @@ class AccessDeviceFactorSourceUseCaseTest {
         coVerify { updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral()) }
     }
 
-    private suspend fun mockMnemonicAccess(
+    private fun mockMnemonicAccess(
         id: FactorSourceIdFromHash,
         keyExists: Boolean = true,
         biometricsSucceeds: Boolean = true,
@@ -363,26 +360,23 @@ class AccessDeviceFactorSourceUseCaseTest {
         failsToAccessMnemonicEvenIfBiometricsProvided: Boolean = false,
     ) {
         coEvery { mnemonicRepository.mnemonicExist(key = id.asGeneral()) } returns keyExists
-        coEvery { biometricsAuthenticateUseCase.asResult() } answers {
-            if (biometricsSucceeds) {
-                Result.success(Unit)
-            } else {
-                Result.failure(
-                    BiometricsFailure(
-                        errorCode = BiometricPrompt.ERROR_USER_CANCELED,
-                        errorMessage = "User cancelled"
-                    )
+        if (biometricsSucceeds) {
+            coEvery { mnemonicRepository.readMnemonic(key = id.asGeneral()) } answers {
+                if (failsToAccessMnemonicEvenIfBiometricsProvided) {
+                    Result.failure(ProfileException.SecureStorageAccess)
+                } else if (mnemonicInRepository != null) {
+                    Result.success(mnemonicInRepository)
+                } else {
+                    Result.failure(ProfileException.NoMnemonic)
+                }
+            }
+        } else {
+            coEvery { mnemonicRepository.readMnemonic(key = id.asGeneral()) } returns Result.failure(
+                BiometricsFailure(
+                    errorCode = BiometricPrompt.ERROR_USER_CANCELED,
+                    errorMessage = "User cancelled"
                 )
-            }
-        }
-        coEvery { mnemonicRepository.readMnemonic(key = id.asGeneral()) } answers {
-            if (failsToAccessMnemonicEvenIfBiometricsProvided) {
-                Result.failure(ProfileException.SecureStorageAccess)
-            } else if (mnemonicInRepository != null) {
-                Result.success(mnemonicInRepository)
-            } else {
-                Result.failure(ProfileException.NoMnemonic)
-            }
+            )
         }
     }
 }

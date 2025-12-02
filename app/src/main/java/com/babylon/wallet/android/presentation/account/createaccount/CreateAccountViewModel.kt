@@ -159,6 +159,9 @@ class CreateAccountViewModel @Inject constructor(
                     }
                 }
             } else if (profileCreationError is CommonException.SecureStorageWriteException) {
+                _state.update {
+                    it.copy(isCreatingAccount = false)
+                }
                 appEventBus.sendEvent(AppEvent.SecureFolderWarning)
             } else {
                 _state.update {
