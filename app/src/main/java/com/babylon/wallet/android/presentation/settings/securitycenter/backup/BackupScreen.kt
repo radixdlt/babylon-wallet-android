@@ -80,7 +80,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
@@ -119,9 +118,7 @@ fun BackupScreen(
         contract = ActivityResultContracts.CreateDocument(mimeType = "application/json")
     ) { uri ->
         if (uri != null) {
-            viewModel.onFileChosen(uri, deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
-            })
+            viewModel.onFileChosen(uri)
         }
     }
 
@@ -133,6 +130,7 @@ fun BackupScreen(
                 is BackupViewModel.Event.DeleteFile -> {
                     DocumentsContract.deleteDocument(context.contentResolver, event.file)
                 }
+
                 is BackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
             }
         }
@@ -505,6 +503,7 @@ private fun BackupWarning(
                 BackupWarning.CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP -> stringResource(
                     id = R.string.securityProblems_no6_configurationBackup
                 )
+
                 BackupWarning.CLOUD_BACKUP_DISABLED_WITH_OUTDATED_MANUAL_BACKUP -> stringResource(
                     id = R.string.securityProblems_no7_configurationBackup
                 )

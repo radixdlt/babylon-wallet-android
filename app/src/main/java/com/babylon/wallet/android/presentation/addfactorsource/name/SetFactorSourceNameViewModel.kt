@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.addfactorsource.name
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIOHandler
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceInput
 import com.babylon.wallet.android.presentation.addfactorsource.AddFactorSourceIntermediaryParams
@@ -46,7 +45,6 @@ class SetFactorSourceNameViewModel @Inject constructor(
     private val addFactorSourceIOHandler: AddFactorSourceIOHandler,
     private val preferencesManager: PreferencesManager,
     private val mnemonicRepository: MnemonicRepository,
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateViewModel<SetFactorSourceNameViewModel.State>(),
     OneOffEventHandler<SetFactorSourceNameViewModel.Event> by OneOffEventHandlerImpl() {
@@ -182,12 +180,10 @@ class SetFactorSourceNameViewModel @Inject constructor(
             )
         }
 
-        return biometricsAuthenticateUseCase.asResult().then {
-            mnemonicRepository.saveMnemonic(
-                key = factorSource.id.asGeneral(),
-                mnemonicWithPassphrase = params.value
-            )
-        }.mapError {
+        return mnemonicRepository.saveMnemonic(
+            key = factorSource.id.asGeneral(),
+            mnemonicWithPassphrase = params.value
+        ).mapError {
             Timber.d(it)
             ProfileException.SecureStorageAccess
         }.then {

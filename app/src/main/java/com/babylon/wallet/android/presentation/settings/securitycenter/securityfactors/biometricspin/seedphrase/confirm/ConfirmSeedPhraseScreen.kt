@@ -22,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,8 +35,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.sargon.sample
@@ -49,18 +46,11 @@ fun ConfirmSeedPhraseScreen(
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
 
     ConfirmSeedPhraseContent(
         state = state,
         onBackClick = onDismiss,
-        onSubmitClick = {
-            context.biometricAuthenticate { result ->
-                if (result == BiometricAuthenticationResult.Succeeded) {
-                    viewModel.onSubmit()
-                }
-            }
-        },
+        onSubmitClick = viewModel::onSubmit,
         onWordTyped = viewModel::onWordChanged,
         onMessageShown = viewModel::onMessageShown
     )

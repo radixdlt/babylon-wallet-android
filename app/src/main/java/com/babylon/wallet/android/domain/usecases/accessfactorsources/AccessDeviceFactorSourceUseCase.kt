@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases.accessfactorsources
 
-import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.signedAuth
@@ -26,7 +25,6 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.mapError
 import com.radixdlt.sargon.extensions.spotCheck
-import com.radixdlt.sargon.extensions.then
 import com.radixdlt.sargon.os.driver.BiometricsFailure
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.ProfileException
@@ -34,7 +32,6 @@ import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
 import javax.inject.Inject
 
 class AccessDeviceFactorSourceUseCase @Inject constructor(
-    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val updateFactorSourceLastUsedUseCase: UpdateFactorSourceLastUsedUseCase
 ) : AccessFactorSource<FactorSource.Device> {
@@ -85,11 +82,8 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
             return Result.failure(CommonException.UnableToLoadMnemonicFromSecureStorage(badValue = factorSourceId.body.hex))
         }
 
-        return biometricsAuthenticateUseCase
-            .asResult()
-            .then {
-                mnemonicRepository.readMnemonic(key = factorSourceId.asGeneral())
-            }.mapError { error ->
+        return mnemonicRepository.readMnemonic(key = factorSourceId.asGeneral())
+            .mapError { error ->
                 when (error) {
                     is BiometricsFailure -> error.toCommonException(
                         key = SecureStorageKey.DeviceFactorSourceMnemonic(factorSourceId)
@@ -99,7 +93,7 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
                         badValue = factorSourceId.body.hex
                     )
 
-                    ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException()
+                    ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException(error.toString())
                     else -> CommonException.Unknown("Device factor source access error: $error")
                 }
             }
