@@ -97,7 +97,7 @@ fun WalletScreen(
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onLockerDepositClick = viewModel::onLockerDepositClick,
-        onTimedRecoveryClick = { onNavigateToTimedRecovery(AddressOfAccountOrPersona.Account(it.account.address)) },
+        onTimedRecoveryClick = { onNavigateToTimedRecovery(it) },
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose,
     )
@@ -173,7 +173,7 @@ private fun WalletContent(
     onMessageShown: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
     onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
-    onTimedRecoveryClick: (WalletViewModel.State.AccountUiItem) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -260,7 +260,7 @@ private fun WalletAccountList(
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
     onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
-    onTimedRecoveryClick: (WalletViewModel.State.AccountUiItem) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {

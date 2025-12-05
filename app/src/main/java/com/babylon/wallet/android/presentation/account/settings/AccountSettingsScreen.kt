@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccount
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -66,6 +67,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -301,17 +303,21 @@ private fun AccountSettingsContent(
                                     tint = RadixTheme.colors.icon
                                 )
                             },
-                            warningView = if (securedWith.isInTimedRecovery) {
+                            warningView = securedWith.timedRecovery?.let { timedRecovery ->
                                 {
                                     PromptLabel(
                                         modifier = Modifier.noIndicationClickable {
-                                            onTimedRecoveryClick(state.address)
+                                            onTimedRecoveryClick(timedRecovery.entityAddress)
                                         },
-                                        text = "Timed Recovery" // TODO crowdin
+                                        text = when {
+                                            timedRecovery.remainingTime != null -> {
+                                                "Recovery in ${timedRecovery.formattedTime}" // TODO crowdin
+                                            }
+
+                                            else -> "Recovery ready to confirm" // TODO crowdin
+                                        }
                                     )
                                 }
-                            } else {
-                                null
                             }
                         )
                     }
@@ -451,7 +457,10 @@ class AccountSettingsPreviewProvider : PreviewParameterProvider<State> {
                 isFreeXRDLoading = false,
                 isAccountNameUpdated = false,
                 securedWith = SecuredWithUiData.Shield(
-                    isInTimedRecovery = true
+                    timedRecovery = TimedRecoveryDisplayData(
+                        remainingTime = 5.hours,
+                        entityAddress = AddressOfAccountOrPersona.sampleMainnet()
+                    )
                 )
             ),
             State(

@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,10 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -62,7 +67,15 @@ fun SecurifyEntityTypeContent(
             .padding(RadixTheme.dimensions.paddingDefault)
     ) {
         SectionTitle(
-            titleRes = R.string.transactionReview_updateShield_sectionTitle,
+            title = when (preview.operation) {
+                PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure,
+                PreviewType.UpdateSecurityStructure.Operation.UpdateSecurityStructure,
+                PreviewType.UpdateSecurityStructure.Operation.ConfirmRecovery -> stringResource(
+                    id = R.string.transactionReview_updateShield_sectionTitle
+                )
+
+                PreviewType.UpdateSecurityStructure.Operation.StopRecovery -> "Stop Timed Recovery" // TODO crowdin
+            },
             iconRes = DSR.ic_entity_update_shield
         )
 
@@ -89,31 +102,57 @@ fun SecurifyEntityTypeContent(
                 )
             }
 
-            preview.provisionalConfig?.let { config ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = RadixTheme.colors.backgroundSecondary,
-                            shape = RadixTheme.shapes.roundedRectBottomMedium
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = RadixTheme.colors.backgroundSecondary,
+                        shape = RadixTheme.shapes.roundedRectBottomMedium
+                    )
+            ) {
+                when (preview.operation) {
+                    PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure,
+                    PreviewType.UpdateSecurityStructure.Operation.UpdateSecurityStructure,
+                    PreviewType.UpdateSecurityStructure.Operation.ConfirmRecovery -> preview.provisionalConfig?.let { config ->
+                        config.metadata.displayName.value.takeIf { it.isNotEmpty() }?.let {
+                            Text(
+                                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(
+                                    R.string.transactionReview_updateShield_applyTitle,
+                                    it
+                                ),
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.text
+                            )
+
+                            HorizontalDivider(color = RadixTheme.colors.divider)
+                        }
+
+                        ShieldConfigView(
+                            securityStructure = config,
+                            onInfoClick = onInfoClick
                         )
-                ) {
-                    Text(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(
-                            R.string.transactionReview_updateShield_applyTitle,
-                            config.metadata.displayName.value
-                        ),
-                        style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.text
-                    )
+                    }
 
-                    HorizontalDivider(color = RadixTheme.colors.divider)
+                    PreviewType.UpdateSecurityStructure.Operation.StopRecovery -> {
+                        Row(
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = DSR.ic_close),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.icon
+                            )
 
-                    ShieldConfigView(
-                        securityStructure = config,
-                        onInfoClick = onInfoClick
-                    )
+                            Text(
+                                text = "Stopping timed recovery. Your current security setup will remain unchanged.", // TODo crowdin
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.text
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -154,7 +193,7 @@ fun ShieldConfigView(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .padding(
                     top = RadixTheme.dimensions.paddingSemiLarge,
-                    bottom = RadixTheme.dimensions.paddingXXXLarge
+                    bottom = RadixTheme.dimensions.paddingDefault
                 ),
             recovery = securityStructure.matrixOfFactors.recoveryRole,
             confirmation = securityStructure.matrixOfFactors.confirmationRole,
@@ -400,6 +439,7 @@ private fun RecoveryAndConfirmationView(
 
         EmergencyFallbackView(
             delay = confirmationDelay,
+            showHeader = false,
             description = AnnotatedString(stringResource(R.string.transactionReview_updateShield_confirmationDelayMessage)),
             note = null,
             onInfoClick = onInfoClick
@@ -417,7 +457,7 @@ fun SecurifyEntityTypeForAccountPreview() {
             preview = PreviewType.UpdateSecurityStructure(
                 entity = ProfileEntity.AccountEntity(Account.sampleMainnet()),
                 provisionalConfig = newSecurityStructureOfFactorSourcesSample(),
-                operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
+                operation = PreviewType.UpdateSecurityStructure.Operation.StopRecovery
             ),
             onInfoClick = {}
         )

@@ -11,7 +11,9 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.secured.SecuredWithUiData
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.NetworkId
@@ -61,11 +63,20 @@ class PersonaDetailViewModel @Inject constructor(
                 getProfileUseCase.flow.mapNotNull { profile ->
                     profile.activePersonaOnCurrentNetwork(args.personaAddress)?.let { persona ->
                         val securedWith = when (val securityState = persona.securityState) {
-                            is EntitySecurityState.Securified -> SecuredWithUiData.Shield(
-                                isInTimedRecovery = timedRecoveryStateObserver.cachedStateByAddress(
-                                    address = AddressOfAccountOrPersona.Identity(args.personaAddress)
-                                )?.timedRecoveryState != null
-                            )
+                            is EntitySecurityState.Securified -> {
+                                val address = AddressOfAccountOrPersona.Identity(args.personaAddress)
+                                SecuredWithUiData.Shield(
+                                    timedRecovery = timedRecoveryStateObserver.cachedStateByAddress(
+                                        address = address
+                                    )?.timedRecoveryState?.let { recoveryState ->
+                                        TimedRecoveryDisplayData(
+                                            remainingTime = recoveryState.remainingTime,
+                                            entityAddress = address
+                                        )
+                                    }
+                                )
+                            }
+
                             is EntitySecurityState.Unsecured -> profile.factorSourceById(
                                 id = securityState.value.transactionSigning.factorSourceId.asGeneral()
                             )?.let { factorSource ->
@@ -144,7 +155,12 @@ class PersonaDetailViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         securedWith = securedWith.copy(
-                            isInTimedRecovery = recoveryState.timedRecoveryState != null
+                            timedRecovery = recoveryState.timedRecoveryState?.let { recoveryState ->
+                                TimedRecoveryDisplayData(
+                                    remainingTime = recoveryState.remainingTime,
+                                    entityAddress = personaAddress
+                                )
+                            }
                         )
                     )
                 }

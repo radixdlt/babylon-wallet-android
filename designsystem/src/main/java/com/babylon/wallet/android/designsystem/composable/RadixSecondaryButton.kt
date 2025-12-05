@@ -3,6 +3,7 @@ package com.babylon.wallet.android.designsystem.composable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
@@ -42,6 +44,9 @@ fun RadixSecondaryButton(
     isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
@@ -64,7 +69,8 @@ fun RadixSecondaryButton(
             containerColor = if (isPressed) containerColor.darken(0.1f) else containerColor,
             disabledContainerColor = RadixTheme.colors.backgroundTertiary,
             disabledContentColor = RadixTheme.colors.textTertiary
-        )
+        ),
+        contentPadding = contentPadding
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
@@ -78,7 +84,12 @@ fun RadixSecondaryButton(
                 )
             } else {
                 leadingContent?.invoke()
-                Text(text = text, style = textStyle)
+                Text(
+                    text = text,
+                    style = textStyle,
+                    maxLines = maxLines,
+                    overflow = overflow
+                )
                 trailingContent?.invoke()
             }
         }

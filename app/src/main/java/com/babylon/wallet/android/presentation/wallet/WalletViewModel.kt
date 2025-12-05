@@ -20,6 +20,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
 import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountLockersDelegate
 import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountTimedRecoveryDelegate
@@ -29,6 +31,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccessControllerStateDetails
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -436,7 +439,12 @@ class WalletViewModel @Inject constructor(
                         )
                     }
                 },
-                isInTimedRecovery = accountsWithRecoveryStates[account.address]?.timedRecoveryState != null
+                timedRecovery = accountsWithRecoveryStates[account.address]?.timedRecoveryState?.let {
+                    TimedRecoveryDisplayData(
+                        remainingTime = it.remainingTime,
+                        entityAddress = AddressOfAccountOrPersona.Account(account.address)
+                    )
+                }
             )
         }
 
@@ -519,7 +527,7 @@ class WalletViewModel @Inject constructor(
             val isLoadingAssets: Boolean,
             val isLoadingBalance: Boolean,
             val securedWith: SecuredWith?,
-            val isInTimedRecovery: Boolean
+            val timedRecovery: TimedRecoveryDisplayData?
         ) {
 
             sealed interface SecuredWith {

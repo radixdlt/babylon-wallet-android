@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -27,7 +26,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircl
 @Composable
 fun SectionTitle(
     modifier: Modifier = Modifier,
-    @StringRes titleRes: Int,
+    title: String,
     @DrawableRes iconRes: Int,
 ) {
     Row(
@@ -46,7 +45,7 @@ fun SectionTitle(
         )
 
         Text(
-            text = stringResource(id = titleRes).uppercase(),
+            text = title.uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.textSecondary,
             overflow = TextOverflow.Ellipsis,
@@ -59,7 +58,7 @@ fun SectionTitle(
 private fun SectionTitlePreview() {
     RadixWalletPreviewTheme {
         SectionTitle(
-            titleRes = R.string.interactionReview_depositsHeading,
+            title = stringResource(id = R.string.interactionReview_depositsHeading),
             iconRes = DSR.ic_arrow_received_downward
         )
     }

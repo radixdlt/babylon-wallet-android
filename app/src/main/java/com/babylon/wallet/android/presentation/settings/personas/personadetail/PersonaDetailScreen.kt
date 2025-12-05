@@ -289,13 +289,21 @@ private fun PersonaDetailList(
                                 tint = RadixTheme.colors.icon
                             )
                         },
-                        warningView = {
-                            PromptLabel(
-                                modifier = Modifier.noIndicationClickable {
-                                    onTimedRecoveryClick(state.address)
-                                },
-                                text = "Timed Recovery" // TODO crowdin
-                            )
+                        warningView = securedWith.timedRecovery?.let { timedRecovery ->
+                            {
+                                PromptLabel(
+                                    modifier = Modifier.noIndicationClickable {
+                                        onTimedRecoveryClick(timedRecovery.entityAddress)
+                                    },
+                                    text = when {
+                                        timedRecovery.remainingTime != null -> {
+                                            "Recovery in ${timedRecovery.formattedTime}" // TODO crowdin
+                                        }
+
+                                        else -> "Recovery ready to confirm" // TODO crowdin
+                                    }
+                                )
+                            }
                         }
                     )
                 }

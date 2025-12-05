@@ -36,6 +36,7 @@ fun EmergencyFallbackView(
     delay: TimePeriod,
     description: AnnotatedString,
     onInfoClick: (GlossaryItem) -> Unit,
+    showHeader: Boolean = true,
     timePeriodTitle: String? = null,
     note: String? = null,
     onNumberOfDaysClick: () -> Unit = {}
@@ -48,32 +49,36 @@ fun EmergencyFallbackView(
             ),
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = RadixTheme.colors.error,
-                    shape = RadixTheme.shapes.roundedRectTopMedium
+        if (showHeader) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = RadixTheme.colors.error,
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    )
+                    .clip(RadixTheme.shapes.roundedRectTopMedium)
+                    .clickable { onInfoClick(GlossaryItem.emergencyfallback) }
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(id = R.string.shieldWizardRecovery_fallback_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = White
                 )
-                .clip(RadixTheme.shapes.roundedRectTopMedium)
-                .clickable { onInfoClick(GlossaryItem.emergencyfallback) }
-                .padding(RadixTheme.dimensions.paddingDefault),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.shieldWizardRecovery_fallback_title),
-                style = RadixTheme.typography.body1Header,
-                color = White
-            )
 
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(DSR.ic_info_outline),
-                tint = White,
-                contentDescription = "info"
-            )
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(DSR.ic_info_outline),
+                    tint = White,
+                    contentDescription = "info"
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         }
 
         Text(
@@ -135,6 +140,6 @@ fun EmergencyFallbackView(
             )
         }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
 }

@@ -11,7 +11,9 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
@@ -150,7 +152,12 @@ class SecurityShieldDetailsViewModel @Inject constructor(
                 val recoveryState = states[address]
                 _state.update { state ->
                     state.copy(
-                        canEditShield = recoveryState?.timedRecoveryState == null
+                        timedRecovery = recoveryState?.timedRecoveryState?.let {
+                            TimedRecoveryDisplayData(
+                                remainingTime = it.remainingTime,
+                                entityAddress = address
+                            )
+                        }
                     )
                 }
             }
@@ -164,8 +171,10 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
         val uiMessage: UiMessage? = null,
         val isShieldApplied: Boolean = false,
-        val canEditShield: Boolean = false
+        val timedRecovery: TimedRecoveryDisplayData? = null
     ) : UiState {
+
+        val isEditShieldEnabled: Boolean = timedRecovery == null
 
         data class RenameSecurityShieldInput(
             override val name: String = "",

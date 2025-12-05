@@ -15,6 +15,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.applyshie
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_CREATE_SECURITY_SHIELD_GRAPH
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
+import com.babylon.wallet.android.presentation.timedrecovery.timedRecovery
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.extensions.init
@@ -106,7 +107,8 @@ fun NavGraphBuilder.securityShieldDetails(navController: NavController) {
                 }
             },
             onInfoClick = { navController.infoDialog(it) },
-            onEditShield = { navController.regularAccess() }
+            onEditShield = { navController.regularAccess() },
+            onTimedRecoveryClick = { navController.timedRecovery(it) }
         )
     }
 }

@@ -18,6 +18,7 @@ import com.babylon.wallet.android.utils.FULL_DATE_FORMAT
 import com.babylon.wallet.android.utils.callSafely
 import com.babylon.wallet.android.utils.toDateString
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
+import com.radixdlt.sargon.TimedRecoveryState
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
@@ -26,8 +27,6 @@ import com.radixdlt.sargon.extensions.toList
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -52,8 +51,6 @@ class TimedRecoveryViewModel @Inject constructor(
     OneOffEventHandler<TimedRecoveryViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = TimedRecoveryArgs(savedStateHandle)
-
-    private var observeTimeJob: Job? = null
 
     init {
         initConfig()
@@ -132,22 +129,17 @@ class TimedRecoveryViewModel @Inject constructor(
             .map { states -> states[args.address] }
             .filterNotNull()
             .onEach { recoveryState ->
-                val allowAfter =
-                    recoveryState.timedRecoveryState?.allowTimedRecoveryAfterUnixTimestampSeconds?.toLongOrNull()
-                        ?: return@onEach
-                val remainingTime = allowAfter - Instant.now().epochSecond
+                val allowAfter = recoveryState.timedRecoveryState?.allowAfter ?: return@onEach
+                val remainingTime = recoveryState.timedRecoveryState?.remainingTime
 
                 _state.update { state ->
                     state.copy(
                         isLoading = false,
                         confirmationDate = Instant.ofEpochSecond(allowAfter).toDateString(
                             format = FULL_DATE_FORMAT
-                        )
+                        ),
+                        remainingTime = remainingTime
                     )
-                }
-
-                if (remainingTime > 0) {
-                    observeTime(remainingTime.seconds)
                 }
             }
             .launchIn(viewModelScope)
@@ -172,23 +164,6 @@ class TimedRecoveryViewModel @Inject constructor(
         }
     }
 
-    private fun observeTime(remainingTime: Duration) {
-        var expirationDuration = remainingTime + 1.seconds
-
-        observeTimeJob?.cancel()
-        observeTimeJob = viewModelScope.launch {
-            do {
-                _state.update { state ->
-                    state.copy(
-                        remainingTime = expirationDuration
-                    )
-                }
-                expirationDuration -= 1.seconds
-                delay(1.seconds)
-            } while (expirationDuration >= 0.seconds)
-        }
-    }
-
     data class State(
         val isLoading: Boolean,
         val uiMessage: UiMessage? = null,
@@ -198,7 +173,8 @@ class TimedRecoveryViewModel @Inject constructor(
         val isRecoveryProposalUnknown: Boolean = false
     ) : UiState {
 
-        val canConfirm = (remainingTime == null || remainingTime.inWholeSeconds <= 0) && !isRecoveryProposalUnknown
+        val isConfirmEnabled = remainingTime == null
+        val isConfirmAvailable = !isRecoveryProposalUnknown
     }
 
     sealed interface Event : OneOffEvent {
@@ -206,3 +182,17 @@ class TimedRecoveryViewModel @Inject constructor(
         data object Dismiss : Event
     }
 }
+
+val TimedRecoveryState.allowAfter: Long?
+    get() = allowTimedRecoveryAfterUnixTimestampSeconds.toLongOrNull()
+
+val TimedRecoveryState.remainingTime: Duration?
+    get() {
+        val allowAfter = allowAfter ?: return null
+        val remainingSeconds = allowAfter - Instant.now().epochSecond
+        return if (remainingSeconds > 0) {
+            remainingSeconds.seconds + 1.seconds
+        } else {
+            null
+        }
+    }

@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -18,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -30,6 +33,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dialogs.info.DSR
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.ShieldConfigView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -38,11 +42,15 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSampleOther
+import com.radixdlt.sargon.samples.sampleMainnet
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +61,8 @@ fun SecurityShieldDetailsScreen(
     onApplyShieldClick: (SecurityStructureId) -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onEditShield: () -> Unit
+    onEditShield: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -84,6 +93,7 @@ fun SecurityShieldDetailsScreen(
         onRenameSecurityShieldClick = viewModel::onRenameSecurityShieldClick,
         onFactorClick = onFactorClick,
         onEditFactorsClick = viewModel::onEditFactorsClick,
+        onTimedRecoveryClick = onTimedRecoveryClick,
         onApplyShieldClick = onApplyShieldClick,
         onInfoClick = onInfoClick,
         onBackClick = onBackClick
@@ -105,6 +115,7 @@ private fun SecurityShieldDetailsContent(
     onRenameSecurityShieldClick: () -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
     onEditFactorsClick: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     onApplyShieldClick: (SecurityStructureId) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
@@ -122,41 +133,68 @@ private fun SecurityShieldDetailsContent(
         },
         bottomBar = {
             if (state.securityStructureOfFactorSources != null) {
-                if (state.canEditShield || !state.isShieldApplied) {
-                    RadixBottomBar(
-                        button = {
-                            if (state.canEditShield) {
+                RadixBottomBar(
+                    button = {
+                        Column(
+                            modifier = Modifier
+                                .padding(
+                                    bottom = if (state.isShieldApplied) {
+                                        0.dp
+                                    } else {
+                                        RadixTheme.dimensions.paddingDefault
+                                    }
+                                )
+                        ) {
+                            RadixSecondaryButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(R.string.securityShields_editFactors),
+                                enabled = state.isEditShieldEnabled,
+                                onClick = onEditFactorsClick
+                            )
+
+                            state.timedRecovery?.let { timedRecovery ->
+                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
                                 RadixSecondaryButton(
                                     modifier = Modifier
-                                        .padding(
-                                            bottom = if (state.isShieldApplied) {
-                                                0.dp
-                                            } else {
-                                                RadixTheme.dimensions.paddingDefault
-                                            }
+                                        .fillMaxWidth()
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    text = when {
+                                        timedRecovery.remainingTime != null -> {
+                                            "Recovery in ${timedRecovery.formattedTime}" // TODO crowdin
+                                        }
+
+                                        else -> "Recovery ready to confirm" // TODO crowdin
+                                    },
+                                    leadingContent = {
+                                        Icon(
+                                            modifier = Modifier.size(18.dp),
+                                            painter = painterResource(id = DSR.hourglass),
+                                            contentDescription = null,
+                                            tint = RadixTheme.colors.icon
                                         )
-                                        .fillMaxWidth()
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(R.string.securityShields_editFactors),
-                                    onClick = onEditFactorsClick
-                                )
-                            }
-                        },
-                        additionalBottomContent = if (state.isShieldApplied) {
-                            null
-                        } else {
-                            {
-                                RadixPrimaryButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(id = R.string.securityShields_apply),
-                                    onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
+                                    },
+                                    onClick = { onTimedRecoveryClick(timedRecovery.entityAddress) }
                                 )
                             }
                         }
-                    )
-                }
+                    },
+                    additionalBottomContent = if (state.isShieldApplied) {
+                        null
+                    } else {
+                        {
+                            RadixPrimaryButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.securityShields_apply),
+                                onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
+                            )
+                        }
+                    }
+                )
             }
         },
         containerColor = RadixTheme.colors.backgroundSecondary
@@ -223,7 +261,8 @@ private fun SecurityShieldDetailsLightPreview(
             onEditFactorsClick = {},
             onApplyShieldClick = {},
             onInfoClick = {},
-            onBackClick = {}
+            onBackClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }
@@ -244,7 +283,8 @@ private fun SecurityShieldDetailsDarkPreview(
             onEditFactorsClick = {},
             onApplyShieldClick = {},
             onInfoClick = {},
-            onBackClick = {}
+            onBackClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }
@@ -266,7 +306,11 @@ class SecurityShieldDetailsPreviewProvider : PreviewParameterProvider<SecuritySh
             ),
             SecurityShieldDetailsViewModel.State(
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-                isShieldApplied = true
+                isShieldApplied = true,
+                timedRecovery = TimedRecoveryDisplayData(
+                    remainingTime = 5.hours,
+                    entityAddress = AddressOfAccountOrPersona.sampleMainnet()
+                )
             )
         )
 }
