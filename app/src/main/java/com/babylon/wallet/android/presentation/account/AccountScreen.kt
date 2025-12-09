@@ -528,18 +528,27 @@ private fun AccountHeader(
 
             androidx.compose.animation.AnimatedVisibility(
                 modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
-                visible = state.isInTimedRecovery,
+                visible = state.timedRecovery != null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                AccountPromptLabel(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = RadixTheme.dimensions.paddingMedium),
-                    onClick = { accountAddress?.let { onTimedRecoveryClick(it) } },
-                    text = "Timed Recovery", // TODO crowdin
-                    iconRes = null
-                )
+                state.timedRecovery?.let { timedRecovery ->
+                    AccountPromptLabel(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                        onClick = { accountAddress?.let { onTimedRecoveryClick(it) } },
+                        text = when {
+                            timedRecovery.remainingTime != null -> stringResource(
+                                id = R.string.commonSecurityShields_recoveryIn,
+                                timedRecovery.formattedTime.orEmpty()
+                            )
+
+                            else -> stringResource(id = R.string.commonSecurityShields_recoveryReadyToConfirm)
+                        },
+                        iconRes = null
+                    )
+                }
             }
         }
 

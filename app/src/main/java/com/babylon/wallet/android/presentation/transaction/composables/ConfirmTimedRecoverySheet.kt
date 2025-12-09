@@ -48,7 +48,7 @@ fun ConfirmTimedRecoverySheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = "Cannot Update Shield Yet", // TODO crowdin
+            text = stringResource(id = R.string.confirmAccountRecovery_title),
             style = RadixTheme.typography.title,
             textAlign = TextAlign.Center,
             color = RadixTheme.colors.text
@@ -60,8 +60,7 @@ fun ConfirmTimedRecoverySheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = "You can use your timed emergency fallback to confirm Shield update or you can restart the signing " +
-                "process.", // TODO crowdin
+            text = stringResource(id = R.string.confirmAccountRecovery_subtitle),
             style = RadixTheme.typography.body1Header,
             textAlign = TextAlign.Center,
             color = RadixTheme.colors.text
@@ -74,9 +73,9 @@ fun ConfirmTimedRecoverySheet(
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                 delay = time,
                 description = AnnotatedString(
-                    text = "Starts the Shield update process. Requires a confirmation transaction when wait period is over." // TODO crowdin
+                    text = stringResource(id = R.string.confirmAccountRecovery_description)
                 ),
-                timePeriodTitle = "You can confirm in", // TODO crowdin
+                timePeriodTitle = stringResource(id = R.string.confirmAccountRecovery_confirmInLabel),
                 onInfoClick = onInfoClick
             )
         }
@@ -93,7 +92,7 @@ fun ConfirmTimedRecoverySheet(
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                    text = "Use Emergency Fallback", // TODO crowdin
+                    text = stringResource(id = R.string.confirmAccountRecovery_useButton),
                     onClick = onConfirm
                 )
             }

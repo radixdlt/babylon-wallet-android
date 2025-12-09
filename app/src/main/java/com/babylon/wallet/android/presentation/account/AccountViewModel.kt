@@ -25,8 +25,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
 import com.babylon.wallet.android.utils.AppEventBus
@@ -393,11 +395,14 @@ class AccountViewModel @Inject constructor(
     private fun observeRecoveryState() {
         val accountAddress = AddressOfAccountOrPersona.Account(args.accountAddress)
         timedRecoveryStateObserver.acStateByEntityAddress
-            .mapNotNull { states -> states[accountAddress] }
+            .mapNotNull { states -> states[accountAddress]?.timedRecoveryState }
             .onEach { recoveryState ->
                 _state.update { state ->
                     state.copy(
-                        isInTimedRecovery = recoveryState.timedRecoveryState != null
+                        timedRecovery = TimedRecoveryDisplayData(
+                            remainingTime = recoveryState.remainingTime,
+                            entityAddress = accountAddress
+                        )
                     )
                 }
             }
@@ -425,7 +430,7 @@ class AccountViewModel @Inject constructor(
         val assetsViewState: AssetsViewState = AssetsViewState.init(),
         val epoch: Long? = null,
         val uiMessage: UiMessage? = null,
-        val isInTimedRecovery: Boolean = false
+        val timedRecovery: TimedRecoveryDisplayData? = null
     ) : UiState {
 
         val isRefreshing: Boolean = refreshType.showRefreshIndicator

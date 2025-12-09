@@ -338,13 +338,12 @@ fun AccountCardView(
                         .padding(bottom = RadixTheme.dimensions.paddingMedium),
                     onClick = { onTimedRecoveryClick(timedRecovery.entityAddress) },
                     text = when {
-                        timedRecovery.remainingTime == null -> {
-                            "Recovery ready to confirm" // TODO crowdin
-                        }
+                        timedRecovery.remainingTime != null -> stringResource(
+                            id = R.string.commonSecurityShields_recoveryIn,
+                            timedRecovery.formattedTime.orEmpty()
+                        )
 
-                        else -> {
-                            "Recovery in ${timedRecovery.formattedTime}" // TODO crowdin
-                        }
+                        else -> stringResource(id = R.string.commonSecurityShields_recoveryReadyToConfirm)
                     },
                     iconRes = DSR.hourglass
                 )

@@ -74,7 +74,9 @@ fun SecurifyEntityTypeContent(
                     id = R.string.transactionReview_updateShield_sectionTitle
                 )
 
-                PreviewType.UpdateSecurityStructure.Operation.StopRecovery -> "Stop Timed Recovery" // TODO crowdin
+                PreviewType.UpdateSecurityStructure.Operation.StopRecovery -> stringResource(
+                    id = R.string.transactionReview_updateShield_stopTimedRecoveryTitle
+                )
             },
             iconRes = DSR.ic_entity_update_shield
         )
@@ -147,7 +149,7 @@ fun SecurifyEntityTypeContent(
                             )
 
                             Text(
-                                text = "Stopping timed recovery. Your current security setup will remain unchanged.", // TODo crowdin
+                                text = stringResource(id = R.string.transactionReview_updateShield_stopTimedRecoveryDescription),
                                 style = RadixTheme.typography.body1Header,
                                 color = RadixTheme.colors.text
                             )

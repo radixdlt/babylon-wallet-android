@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,10 +43,11 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.Green1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.dialogs.info.DSR
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.ShieldConfigView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -129,7 +131,7 @@ private fun TimedRecoveryContent(
             Scaffold(
                 topBar = {
                     RadixCenteredTopAppBar(
-                        title = "Timed Recovery", // TODO crowdin
+                        title = stringResource(id = R.string.accountRecovery_title),
                         onBackClick = onDismissRequest,
                         windowInsets = WindowInsets.none,
                         backIconType = BackIconType.Close
@@ -156,7 +158,7 @@ private fun TimedRecoveryContent(
                             ) {
                                 RadixSecondaryButton(
                                     modifier = Modifier.weight(1f),
-                                    text = "Cancel Recovery", // TODO crowdin
+                                    text = stringResource(id = R.string.accountRecovery_cancel_button),
                                     onClick = onStopClick,
                                     contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingSmall),
                                     maxLines = 1,
@@ -166,7 +168,7 @@ private fun TimedRecoveryContent(
                                 if (state.isConfirmAvailable) {
                                     RadixSecondaryButton(
                                         modifier = Modifier.weight(1f),
-                                        text = "Confirm Recovery", // TODO crowdin
+                                        text = stringResource(id = R.string.accountRecovery_confirm_button),
                                         onClick = onConfirmClick,
                                         enabled = state.isConfirmEnabled,
                                         contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingSmall),
@@ -191,14 +193,14 @@ private fun TimedRecoveryContent(
                     if (state.isRecoveryProposalUnknown) {
                         WarningView(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            title = "Unauthorized Recovery Detected. If you didn't start this recovery, cancel it now to protect your account.", // TODO crowdin
+                            title = stringResource(id = R.string.accountRecovery_unauthorizedRecovery_warning),
                         )
 
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     }
 
                     SectionView(
-                        title = "Recovery Timeline", // TODO crowdin
+                        title = stringResource(id = R.string.accountRecovery_timeline_title),
                     ) {
                         Column {
                             state.confirmationDate?.let {
@@ -235,7 +237,7 @@ private fun TimedRecoveryContent(
 
                             Text(
                                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                text = "About Timed Recovery", // TODO crowdin
+                                text = stringResource(id = R.string.accountRecovery_about_title),
                                 style = RadixTheme.typography.body1HighImportance,
                                 color = RadixTheme.colors.text
                             )
@@ -244,7 +246,7 @@ private fun TimedRecoveryContent(
 
                             Text(
                                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                text = "Timed recovery allows you to regain access to your account if you've lost your security factors. The waiting period protects you by giving time to cancel unauthorized recovery attempts.", // TODO crowdin
+                                text = stringResource(id = R.string.accountRecovery_about_description),
                                 style = RadixTheme.typography.body3Regular,
                                 color = RadixTheme.colors.text
                             )
@@ -256,8 +258,8 @@ private fun TimedRecoveryContent(
 
                         WarningView(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            title = "Unrecognized Recovery",
-                            text = "You cannot see what security factors will control this account after recovery completes.", // TODO crowdin
+                            title = stringResource(id = R.string.accountRecovery_unauthorizedRecoverySection_title),
+                            text = stringResource(id = R.string.accountRecovery_unauthorizedRecoverySection_description),
                             iconColor = RadixTheme.colors.icon
                         )
                     } else {
@@ -265,13 +267,13 @@ private fun TimedRecoveryContent(
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                             SectionView(
-                                title = "New Security Factors", // TODO crowdin
+                                title = stringResource(id = R.string.accountRecovery_newFactors_title),
                                 isCollapsible = true
                             ) {
                                 Column {
                                     Text(
                                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                        text = "After confirmation, your account will be secured with:", // TODO crowdin
+                                        text = stringResource(id = R.string.accountRecovery_newFactors_subtitle),
                                         style = RadixTheme.typography.body3Regular,
                                         color = RadixTheme.colors.text
                                     )
@@ -298,17 +300,17 @@ private fun TimedRecoveryContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                     SectionView(
-                        title = "What Happens Next?" // TODO crowdin
+                        title = stringResource(id = R.string.accountRecovery_whatHappensSection_title)
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                             text = if (state.isRecoveryProposalUnknown) {
-                                "Confirm is **unavailable. You can only cancel recoveries you don't recognize to protect your account.**\nCancel to stop the recovery and keep your current security setup."
-                                    .formattedSpans(SpanStyle(color = RadixTheme.colors.error)) // TODO crowdin
+                                stringResource(id = R.string.accountRecovery_whatHappensSectionUnauthorized_description)
+                                    .formattedSpans(SpanStyle(color = RadixTheme.colors.error))
                             } else {
                                 AnnotatedString(
-                                    "Confirm to complete the recovery and switch to the new security factors.\nCancel to stop the recovery and keep your current security setup."
-                                ) // TODO crowdin
+                                    text = stringResource(id = R.string.accountRecovery_whatHappensSection_description)
+                                )
                             },
                             style = RadixTheme.typography.body3Regular,
                             color = RadixTheme.colors.text
@@ -360,9 +362,9 @@ private fun SectionView(
                 Icon(
                     painter = painterResource(
                         id = if (isExpanded) {
-                            R.drawable.ic_arrow_up
+                            DSR.ic_arrow_up
                         } else {
-                            R.drawable.ic_arrow_down
+                            DSR.ic_arrow_down
                         }
                     ),
                     contentDescription = null,
@@ -393,14 +395,14 @@ private fun ConfirmationDateView(
     ) {
         Icon(
             modifier = Modifier.size(28.dp),
-            painter = painterResource(id = R.drawable.ic_calendar),
+            painter = painterResource(id = DSR.ic_calendar),
             contentDescription = null,
             tint = RadixTheme.colors.icon
         )
 
         Column {
             Text(
-                text = "Confirmable after",
+                text = stringResource(id = R.string.accountRecovery_confirmableAfter_title),
                 style = RadixTheme.typography.body3Regular,
                 color = RadixTheme.colors.textSecondary
             )
@@ -424,13 +426,13 @@ private fun ReadyToConfirmView(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_check_circle),
+            painter = painterResource(id = DSR.ic_check_circle),
             contentDescription = null,
             tint = Green1
         )
 
         Text(
-            text = "Ready to confirm",
+            text = stringResource(id = R.string.accountRecovery_readyToConfirm),
             style = RadixTheme.typography.body2HighImportance,
             color = Green1
         )
@@ -449,14 +451,14 @@ private fun RemainingTimeView(
     ) {
         Icon(
             modifier = Modifier.size(32.dp),
-            painter = painterResource(id = R.drawable.hourglass),
+            painter = painterResource(id = DSR.hourglass),
             contentDescription = null,
             tint = RadixTheme.colors.text
         )
 
         Column {
             Text(
-                text = "Time remaining",
+                text = stringResource(id = R.string.accountRecovery_remainingTime),
                 style = RadixTheme.typography.body3Regular,
                 color = RadixTheme.colors.textSecondary
             )
@@ -496,7 +498,7 @@ private fun WarningView(
     ) {
         Icon(
             modifier = Modifier.size(24.dp),
-            painter = painterResource(id = R.drawable.ic_warning_error),
+            painter = painterResource(id = DSR.ic_warning_error),
             contentDescription = null,
             tint = iconColor
         )

@@ -162,11 +162,12 @@ private fun SecurityShieldDetailsContent(
                                         .fillMaxWidth()
                                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                                     text = when {
-                                        timedRecovery.remainingTime != null -> {
-                                            "Recovery in ${timedRecovery.formattedTime}" // TODO crowdin
-                                        }
+                                        timedRecovery.remainingTime != null -> stringResource(
+                                            id = R.string.commonSecurityShields_recoveryIn,
+                                            timedRecovery.formattedTime.orEmpty()
+                                        )
 
-                                        else -> "Recovery ready to confirm" // TODO crowdin
+                                        else -> stringResource(id = R.string.commonSecurityShields_recoveryReadyToConfirm)
                                     },
                                     leadingContent = {
                                         Icon(
