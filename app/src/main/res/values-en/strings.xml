@@ -474,6 +474,8 @@
   <string name="transactionReview_updateShield_proveOwnerhipTitle">Log In and Prove Ownership</string>
   <string name="transactionReview_updateShield_proveOwnerhipMessage">Factors required to log into dApps with Personas and prove ownership of Accounts.</string>
   <string name="transactionReview_updateShield_proveOwnerhipThreshold">Must present this factor</string>
+  <string name="transactionReview_updateShield_stopTimedRecoveryTitle">Stop Timed Recovery</string>
+  <string name="transactionReview_updateShield_stopTimedRecoveryDescription">Stopping timed recovery. Your current security setup will remain unchanged.</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
@@ -1827,4 +1829,30 @@ Please retry.</string>
   <string name="commonSecurityShields_applyShield">Apply Shield</string>
   <string name="commonSecurityShields_shielded">Shielded</string>
   <string name="commonSecurityShields_select_title">Select Security Shield</string>
+  <string name="commonSecurityShields_recoveryIn">Recovery in %s</string>
+  <string name="commonSecurityShields_recoveryReadyToConfirm">Recovery ready to confirm</string>
+  <string name="accountRecovery_title">Account Recovery</string>
+  <string name="accountRecovery_cancel_button">Cancel Recovery</string>
+  <string name="accountRecovery_confirm_button">Confirm Recovery</string>
+  <string name="accountRecovery_unauthorizedRecovery_warning">Unauthorized Recovery Detected. If you didn\'t start this recovery, cancel it now to protect your account.</string>
+  <string name="accountRecovery_unauthorizedRecoverySection_title">Unrecognized Recovery</string>
+  <string name="accountRecovery_unauthorizedRecoverySection_description">You cannot see what security factors will control this account after recovery completes.</string>
+  <string name="accountRecovery_timeline_title">Recovery Timeline</string>
+  <string name="accountRecovery_about_title">About Timed Recovery</string>
+  <string name="accountRecovery_about_description">Timed recovery allows you to regain access to your account if you\'ve lost your security factors. The waiting period protects you by giving time to cancel unauthorized recovery attempts.</string>
+  <string name="accountRecovery_newFactors_title">New Security Factors</string>
+  <string name="accountRecovery_newFactors_subtitle">After confirmation, your account will be secured with:</string>
+  <string name="accountRecovery_whatHappensSection_title">What Happens Next?</string>
+  <string name="accountRecovery_whatHappensSectionUnauthorized_description">Confirm is **unavailable. You can only cancel recoveries you don\'t recognize to protect your account.**
+Cancel to stop the recovery and keep your current security setup.</string>
+  <string name="accountRecovery_whatHappensSection_description">Confirm to complete the recovery and switch to the new security factors.
+Cancel to stop the recovery and keep your current security setup.</string>
+  <string name="accountRecovery_confirmableAfter_title">Confirmable after</string>
+  <string name="accountRecovery_readyToConfirm">Ready to confirm</string>
+  <string name="accountRecovery_remainingTime">Time remaining</string>
+  <string name="confirmAccountRecovery_title">Cannot Update Shield Yet</string>
+  <string name="confirmAccountRecovery_subtitle">You can use your timed emergency fallback to confirm Shield update or you can restart the signing process.</string>
+  <string name="confirmAccountRecovery_description">Starts the Shield update process. Requires a confirmation transaction when wait period is over.</string>
+  <string name="confirmAccountRecovery_confirmInLabel">You can confirm in</string>
+  <string name="confirmAccountRecovery_useButton">Use Emergency Fallback</string>
 </resources>
