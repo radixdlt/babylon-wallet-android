@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
+import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
@@ -180,7 +181,7 @@ class TransactionReviewViewModel @Inject constructor(
             withContext(defaultDispatcher) {
                 analysis.analyse()
                     .onSuccess { analysis ->
-                        data.update { it.copy(txSummary = analysis.summary) }
+                        data.update { it.copy(analysis = analysis) }
 
                         when (request.kind) {
                             is TransactionRequest.Kind.PreAuthorized -> processExpiration(request.kind.expiration)
@@ -312,7 +313,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class Data(
         private val txRequest: TransactionRequest? = null,
-        private val txSummary: Summary? = null,
+        val analysis: Analysis? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,
@@ -323,7 +324,7 @@ class TransactionReviewViewModel @Inject constructor(
             get() = requireNotNull(txRequest)
 
         val summary: Summary
-            get() = requireNotNull(txSummary)
+            get() = requireNotNull(analysis?.summary)
     }
 
     data class State(

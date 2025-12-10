@@ -207,7 +207,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val feesState = _state.value.fees ?: return
         val selectedFeePayerAccount = feesState.selectedFeePayerInput?.preselectedCandidate?.account ?: return
         val feePayers = data.value.feePayers ?: return
-        val signatureCount = data.value.transactionFees?.signatureCount ?: 0
 
         val updatedFeePayers = feePayers.copy(
             selectedAccountAddress = selectedFeePayerAccount.address,
@@ -219,12 +218,13 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
         viewModelScope.launch {
             val updatedSignatureCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
-                signatureCount
+                data.value.transactionFees?.signatureCount ?: 0
             } else {
                 val recoveryOrConfirmationSignatureCount = (data.value.summary as? Summary.FromExecution)?.summary
                     ?.recoveryOrConfirmationRoleSignatureCount ?: 0
+                val txSignerCount = data.value.analysis?.signers?.numberOfSignaturesForTransaction ?: 0
 
-                selectedFeePayerAccount.securityState.numberOfSignaturesForTransaction +
+                txSignerCount + selectedFeePayerAccount.securityState.numberOfSignaturesForTransaction +
                     recoveryOrConfirmationSignatureCount
             }
 
