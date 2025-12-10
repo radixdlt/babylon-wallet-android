@@ -2,8 +2,6 @@
 
 package com.babylon.wallet.android.data.gateway.extensions
 
-import com.babylon.wallet.android.data.gateway.coreapi.AccessControllerComponentEntityState
-import com.babylon.wallet.android.data.gateway.coreapi.RecoveryRoleRecoveryAttempt
 import com.babylon.wallet.android.data.gateway.coreapi.ValidatorComponentEntityState
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
@@ -85,14 +83,6 @@ fun StateEntityDetailsResponseItemDetails.extractBehaviours(): AssetBehaviours =
     is StateEntityDetailsResponseNonFungibleResourceDetails -> details.roleAssignments.assetBehaviours()
     else -> setOf()
 }
-
-val StateEntityDetailsResponseItemDetails.recoveryRoleRecoveryAttempt: RecoveryRoleRecoveryAttempt?
-    get() = when (this) {
-        is StateEntityDetailsResponseComponentDetails ->
-            state
-                .decodeJsonElementAsOrNull<AccessControllerComponentEntityState>()?.recoveryRoleRecoveryAttempt
-        else -> null
-    }
 
 // Try to decode `state` into a specific type T.
 // Returns null if state is null, not a JsonElement, or the decoding fails.

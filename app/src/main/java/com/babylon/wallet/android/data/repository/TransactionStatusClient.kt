@@ -88,6 +88,7 @@ class TransactionStatusClient @Inject constructor(
                     is TransactionType.SecurifyEntity -> {
                         // When a securify entity transaction is successful, the first thing to do is to mark it as such in profile.
                         // Before any other update takes place in wallet.
+
                         updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
                     }
 

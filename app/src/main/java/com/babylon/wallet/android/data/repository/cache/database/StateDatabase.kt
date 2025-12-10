@@ -24,7 +24,7 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
         TokenPriceEntity::class,
         AccountLockerTouchedAtEntity::class,
         AccountLockerVaultItemEntity::class,
-        DirectoryDefinitionEntity::class,
+        DirectoryDefinitionEntity::class
     ],
     version = StateDatabase.VERSION_14
 )

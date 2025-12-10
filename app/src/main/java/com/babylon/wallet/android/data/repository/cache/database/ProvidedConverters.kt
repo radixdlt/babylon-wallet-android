@@ -2,7 +2,6 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
-import com.babylon.wallet.android.data.gateway.coreapi.ScryptoInstant
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.radixdlt.sargon.AccessControllerAddress
@@ -248,16 +247,5 @@ class StateDatabaseConverters {
     @TypeConverter
     fun accessControllerAddressToString(accessControllerAddress: AccessControllerAddress?): String? {
         return accessControllerAddress?.string
-    }
-
-    // ScryptoInstant
-    @TypeConverter
-    fun stringToScryptoInstant(string: String?): ScryptoInstant? {
-        return string?.let { json.decodeFromString(string) }
-    }
-
-    @TypeConverter
-    fun scryptoInstantToString(scryptoInstant: ScryptoInstant?): String? {
-        return scryptoInstant?.let { json.encodeToString(it) }
     }
 }
