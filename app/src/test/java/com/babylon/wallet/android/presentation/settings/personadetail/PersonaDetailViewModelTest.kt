@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
@@ -47,6 +48,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val getFactorSourceIntegrityStatusMessagesUseCase = mockk<GetFactorSourceIntegrityStatusMessagesUseCase>()
     private val eventBus = mockk<AppEventBus>()
+    private val acStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()
 
     val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     val persona = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
@@ -58,7 +60,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             getDAppsUseCase,
             savedStateHandle,
             changeEntityVisibilityUseCase,
-            getFactorSourceIntegrityStatusMessagesUseCase
+            getFactorSourceIntegrityStatusMessagesUseCase,
+            acStateDetailsObserver
         )
     }
 
@@ -73,6 +76,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
         coEvery { getDAppsUseCase(dApp.dAppAddress, false) } returns Result.success(dApp)
         coEvery { getDAppsUseCase(dAppOther.dAppAddress, false) } returns Result.success(dAppOther)
         coEvery { getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(any(), any(), any()) } returns emptyList()
+        coEvery { acStateDetailsObserver.acStateByEntityAddress } returns flowOf(emptyMap())
+        coEvery { acStateDetailsObserver.cachedAcStates } returns emptyMap()
     }
 
     @Test

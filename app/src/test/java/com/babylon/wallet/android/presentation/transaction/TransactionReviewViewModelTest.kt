@@ -27,6 +27,7 @@ import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.InitiateAccessControllerRecoveryProcessor
@@ -140,6 +141,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val sargonOsManager = mockk<SargonOsManager>().also {
         every { it.sargonOs } returns sargonOs
     }
+    private val accessControllerStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()
     private val manifestSummaryToPreviewTypeAnalyser = ManifestSummaryToPreviewTypeAnalyser(
         resolveAssetsFromAddressUseCase,
         getProfileUseCase,
@@ -268,8 +270,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
-        coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { searchFeePayersUseCase(any(), any(), any()) } returns Result.success(
+        coEvery { signAndNotariseTransactionUseCase(any(), any()) } returns Result.success(notarizationResult)
+        coEvery { searchFeePayersUseCase(any(), any(), any(), any()) } returns Result.success(
             TransactionFeePayers(
                 AccountAddress.sampleMainnet.random()
             )
@@ -321,7 +323,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             fees = TransactionFeesDelegateImpl(
                 getProfileUseCase = getProfileUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
-                getFiatValueUseCase = getFiatValueUseCase
+                getFiatValueUseCase = getFiatValueUseCase,
+                accessControllerStateDetailsObserver = accessControllerStateDetailsObserver,
+                sargonOsManager = sargonOsManager,
+                dispatcher = coroutineDispatcher
             ),
             submit = TransactionSubmitDelegateImpl(
                 signAndNotarizeTransactionUseCase = signAndNotariseTransactionUseCase,
@@ -382,7 +387,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.failure(
+        coEvery { signAndNotariseTransactionUseCase(any(), any()) } returns Result.failure(
             RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value
