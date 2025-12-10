@@ -106,9 +106,9 @@ fun NavGraphBuilder.securityShieldDetails(navController: NavController) {
                     popUpTo(ROUTE_CREATE_SECURITY_SHIELD_GRAPH) { inclusive = false }
                 }
             },
-            onInfoClick = { navController.infoDialog(it) },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onEditShield = { navController.regularAccess() },
-            onTimedRecoveryClick = { navController.timedRecovery(it) }
+            onTimedRecoveryClick = { address -> navController.timedRecovery(address) }
         )
     }
 }

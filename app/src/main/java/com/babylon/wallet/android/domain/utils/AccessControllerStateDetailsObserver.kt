@@ -60,8 +60,8 @@ class AccessControllerStateDetailsObserver @Inject constructor(
                 fetchAllAccessControllersDetails().map { details ->
                     entityByAccessControllerAddress(details.address).address to details
                 }
-            }.onFailure {
-                Timber.w(it)
+            }.onFailure { error ->
+                Timber.w(error)
             }.getOrNull().orEmpty().toMap()
         }.onEach { detailsByEntityAddress ->
             _acStateByEntityAddress.emit(detailsByEntityAddress)
