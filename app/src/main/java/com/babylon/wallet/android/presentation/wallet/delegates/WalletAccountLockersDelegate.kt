@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.wallet.locker
+package com.babylon.wallet.android.presentation.wallet.delegates
 
 import com.babylon.wallet.android.data.repository.locker.AccountLockersRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher

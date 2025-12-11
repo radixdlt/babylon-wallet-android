@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarDuration
@@ -19,8 +21,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -35,6 +41,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
+import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -45,15 +52,22 @@ import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceC
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
+import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +80,8 @@ fun AccountSettingsScreen(
     onDeleteAccountClick: (AccountAddress) -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
-    onShieldClick: (AddressOfAccountOrPersona) -> Unit
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -103,7 +118,8 @@ fun AccountSettingsScreen(
         onDeleteAccount = viewModel::onDeleteAccountRequest,
         onFactorSourceCardClick = onFactorSourceCardClick,
         onApplyShieldClick = { onApplyShieldClick(state.address) },
-        onShieldClick = { onShieldClick(state.address) }
+        onShieldClick = { onShieldClick(state.address) },
+        onTimedRecoveryClick = onTimedRecoveryClick
     )
 
     if (state.isBottomSheetVisible) {
@@ -149,7 +165,8 @@ private fun AccountSettingsContent(
     onSnackbarMessageShown: () -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: () -> Unit,
-    onShieldClick: () -> Unit
+    onShieldClick: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -274,11 +291,35 @@ private fun AccountSettingsContent(
                             item = securedWith.factorSourceCard
                         )
 
-                        SecuredWithUiData.Shield -> DefaultSettingsItem(
+                        is SecuredWithUiData.Shield -> DefaultSettingsItem(
                             onClick = onShieldClick,
-                            leadingIconRes = DSR.ic_entity_update_shield,
                             title = stringResource(id = R.string.commonSecurityShields_securityShield),
                             subtitle = stringResource(id = R.string.commonSecurityShields_securityShieldDetails),
+                            leadingIcon = {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    painter = painterResource(id = DSR.ic_entity_update_shield),
+                                    contentDescription = null,
+                                    tint = RadixTheme.colors.icon
+                                )
+                            },
+                            warningView = securedWith.timedRecovery?.let { timedRecovery ->
+                                {
+                                    PromptLabel(
+                                        modifier = Modifier.noIndicationClickable {
+                                            onTimedRecoveryClick(timedRecovery.entityAddress)
+                                        },
+                                        text = when {
+                                            timedRecovery.remainingTime != null -> stringResource(
+                                                id = R.string.commonSecurityShields_recoveryIn,
+                                                timedRecovery.formattedTime.orEmpty()
+                                            )
+
+                                            else -> stringResource(id = R.string.commonSecurityShields_recoveryReadyToConfirm)
+                                        }
+                                    )
+                                }
+                            }
                         )
                     }
                 }
@@ -362,25 +403,12 @@ private fun HideAccountSheet(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun AccountSettingsPreview() {
+private fun AccountSettingsPreview(
+    @PreviewParameter(AccountSettingsPreviewProvider::class) state: State
+) {
     RadixWalletPreviewTheme {
         AccountSettingsContent(
-            state = State(
-                error = null,
-                account = Account.sampleMainnet(),
-                settingsSections = persistentListOf(
-                    AccountSettingsSection.AccountSection(
-                        listOf(
-                            AccountSettingItem.AccountLabel,
-                            AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL)
-                        )
-                    )
-                ),
-                faucetState = FaucetState.Available(isEnabled = true),
-                isFreeXRDLoading = false,
-                isAccountNameUpdated = false,
-                securedWith = SecuredWithUiData.Shield
-            ),
+            state = state,
             onBackClick = {},
             onMessageShown = {},
             onShowRenameAccountClick = {},
@@ -391,7 +419,8 @@ fun AccountSettingsPreview() {
             onSnackbarMessageShown = {},
             onFactorSourceCardClick = {},
             onApplyShieldClick = {},
-            onShieldClick = {}
+            onShieldClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }
@@ -407,4 +436,53 @@ fun HideAccountSheetPreview() {
             onDismiss = {}
         )
     }
+}
+
+@UsesSampleValues
+class AccountSettingsPreviewProvider : PreviewParameterProvider<State> {
+
+    override val values: Sequence<State>
+        get() = sequenceOf(
+            State(
+                error = null,
+                account = Account.sampleMainnet(),
+                settingsSections = persistentListOf(
+                    AccountSettingsSection.AccountSection(
+                        listOf(
+                            AccountSettingItem.AccountLabel,
+                            AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL)
+                        )
+                    )
+                ),
+                faucetState = FaucetState.Available(isEnabled = true),
+                isFreeXRDLoading = false,
+                isAccountNameUpdated = false,
+                securedWith = SecuredWithUiData.Shield(
+                    timedRecovery = TimedRecoveryDisplayData(
+                        remainingTime = 5.hours,
+                        entityAddress = AddressOfAccountOrPersona.sampleMainnet()
+                    )
+                )
+            ),
+            State(
+                error = null,
+                account = Account.sampleMainnet(),
+                settingsSections = persistentListOf(
+                    AccountSettingsSection.AccountSection(
+                        listOf(
+                            AccountSettingItem.AccountLabel,
+                            AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL)
+                        )
+                    )
+                ),
+                faucetState = FaucetState.Available(isEnabled = true),
+                isFreeXRDLoading = false,
+                isAccountNameUpdated = false,
+                securedWith = SecuredWithUiData.Factor(
+                    factorSourceCard = DeviceFactorSource.sample().asGeneral().toFactorSourceCard(
+                        includeLastUsedOn = true
+                    )
+                )
+            )
+        )
 }

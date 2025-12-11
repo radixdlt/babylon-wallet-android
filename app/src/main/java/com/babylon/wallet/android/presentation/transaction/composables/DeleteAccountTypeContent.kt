@@ -54,7 +54,7 @@ fun DeleteAccountTypeContent(
             .padding(RadixTheme.dimensions.paddingDefault)
     ) {
         SectionTitle(
-            titleRes = R.string.transactionReview_deletingAccount_title,
+            title = stringResource(id = R.string.transactionReview_deletingAccount_title),
             iconRes = DSR.ic_account_delete_small
         )
 

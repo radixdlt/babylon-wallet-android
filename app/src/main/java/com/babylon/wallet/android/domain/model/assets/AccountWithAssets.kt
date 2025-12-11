@@ -8,7 +8,7 @@ import rdx.works.core.domain.resources.metadata.AccountType
 data class AccountWithAssets(
     val account: Account,
     val details: AccountDetails? = null,
-    val assets: Assets? = null,
+    val assets: Assets? = null
 ) {
 
     val isDappDefinitionAccountType: Boolean

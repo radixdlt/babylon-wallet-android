@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.coreapi.DefaultDepositRule
+import com.babylon.wallet.android.data.gateway.coreapi.ValidatorComponentEntityState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.radixdlt.sargon.DepositRule
@@ -19,10 +20,9 @@ val StateEntityDetailsResponseItem.isEntityActive: Boolean
 
 val StateEntityDetailsResponseItem.defaultDepositRule: DefaultDepositRule?
     get() = when (details) {
-        is StateEntityDetailsResponseComponentDetails -> {
-            details.state?.defaultDepositRule
-        }
-
+        is StateEntityDetailsResponseComponentDetails ->
+            details.state
+                .decodeJsonElementAsOrNull<ValidatorComponentEntityState>()?.defaultDepositRule
         else -> null
     }
 

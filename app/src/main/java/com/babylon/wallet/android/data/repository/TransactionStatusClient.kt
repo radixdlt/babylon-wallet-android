@@ -2,17 +2,22 @@ package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.MarkEntityAsSecurifiedUseCase
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.UpdateProvisionalShieldUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.Instant
 import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.isAccessControllerTimedRecoveryManifest
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +42,10 @@ class TransactionStatusClient @Inject constructor(
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
-    private val markEntityAsSecurifiedUseCase: MarkEntityAsSecurifiedUseCase,
-    @ApplicationScope private val appScope: CoroutineScope
+    private val accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver,
+    private val updateProvisionalShieldUseCase: UpdateProvisionalShieldUseCase,
+    @ApplicationScope private val appScope: CoroutineScope,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
     private val transactionResult = MutableStateFlow(emptyList<InteractionStatusData>())
@@ -62,10 +69,11 @@ class TransactionStatusClient @Inject constructor(
     fun observeTransactionStatus(
         intentHash: TransactionIntentHash,
         requestId: String,
-        transactionType: TransactionType = TransactionType.Generic,
-        endEpoch: Epoch
+        endEpoch: Epoch,
+        signedManifest: TransactionManifest,
+        transactionType: TransactionType = TransactionType.Generic
     ) {
-        appScope.launch {
+        appScope.launch(dispatcher) {
             val result = getTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
             val isSuccess = result.result is TransactionStatusData.Status.Success
 
@@ -76,12 +84,34 @@ class TransactionStatusClient @Inject constructor(
                         // Before any other update takes place in wallet.
                         tombstoneAccountUseCase(transactionType.accountAddress)
                     }
+
                     is TransactionType.SecurifyEntity -> {
                         // When a securify entity transaction is successful, the first thing to do is to mark it as such in profile.
                         // Before any other update takes place in wallet.
-                        markEntityAsSecurifiedUseCase(transactionType.entityAddress)
+
+                        updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
                     }
-                    else -> {
+
+                    is TransactionType.ConfirmSecurityStructureRecovery -> {
+                        accessControllerStateDetailsObserver.startMonitoring()
+                        updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
+                    }
+
+                    is TransactionType.InitiateSecurityStructureRecovery -> {
+                        if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
+                            accessControllerStateDetailsObserver.startMonitoring()
+                        } else {
+                            updateProvisionalShieldUseCase.commit(transactionType.entityAddress)
+                        }
+                    }
+
+                    is TransactionType.StopSecurityStructureRecovery -> {
+                        accessControllerStateDetailsObserver.startMonitoring()
+                        updateProvisionalShieldUseCase.remove(transactionType.entityAddress)
+                    }
+
+                    is TransactionType.UpdateThirdPartyDeposits,
+                    TransactionType.Generic -> {
                         // Do nothing
                     }
                 }

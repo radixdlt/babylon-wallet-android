@@ -2,6 +2,8 @@
 
 package com.babylon.wallet.android.data.gateway.extensions
 
+import com.babylon.wallet.android.data.gateway.coreapi.ValidatorComponentEntityState
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
@@ -14,6 +16,8 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192OrNull
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.XrdResource
@@ -34,14 +38,17 @@ fun StateEntityDetailsResponseItemDetails.divisibility(): Divisibility? {
 }
 
 val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
-    get() = when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.stakeXrdVault?.entityAddress
+    get() = when (this) {
+        is StateEntityDetailsResponseComponentDetails ->
+            state.decodeJsonElementAsOrNull<ValidatorComponentEntityState>()?.stakeXrdVault?.entityAddress
         else -> null
     }
 
 val StateEntityDetailsResponseItem.totalXRDStake: Decimal192?
     get() {
-        val xrdVaultAddress = details?.xrdVaultAddress?.let { runCatching { VaultAddress.init(it) }.getOrNull() } ?: return null
+        val xrdVaultAddress = details?.xrdVaultAddress?.let {
+            runCatching { VaultAddress.init(it) }.getOrNull()
+        } ?: return null
 
         val xrdResource = fungibleResources?.items?.find {
             XrdResource.address(networkId = xrdVaultAddress.networkId).string == it.resourceAddress
@@ -56,13 +63,18 @@ val StateEntityDetailsResponseItem.totalXRDStake: Decimal192?
 
 val StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress: String?
     get() = when (this) {
-        is StateEntityDetailsResponseComponentDetails -> state?.stakeUnitResourceAddress
+        is StateEntityDetailsResponseComponentDetails ->
+            state
+                .decodeJsonElementAsOrNull<ValidatorComponentEntityState>()?.stakeUnitResourceAddress
+
         else -> null
     }
 
 val StateEntityDetailsResponseItemDetails.claimTokenResourceAddress: String?
     get() = when (this) {
-        is StateEntityDetailsResponseComponentDetails -> state?.claimTokenResourceAddress
+        is StateEntityDetailsResponseComponentDetails ->
+            state
+                .decodeJsonElementAsOrNull<ValidatorComponentEntityState>()?.claimTokenResourceAddress
         else -> null
     }
 
@@ -70,4 +82,11 @@ fun StateEntityDetailsResponseItemDetails.extractBehaviours(): AssetBehaviours =
     is StateEntityDetailsResponseFungibleResourceDetails -> details.roleAssignments.assetBehaviours()
     is StateEntityDetailsResponseNonFungibleResourceDetails -> details.roleAssignments.assetBehaviours()
     else -> setOf()
+}
+
+// Try to decode `state` into a specific type T.
+// Returns null if state is null, not a JsonElement, or the decoding fails.
+inline fun <reified T> Any?.decodeJsonElementAsOrNull(): T? {
+    val element = this as? JsonElement ?: return null
+    return runCatching { Serializer.kotlinxSerializationJson.decodeFromJsonElement<T>(element) }.getOrNull()
 }

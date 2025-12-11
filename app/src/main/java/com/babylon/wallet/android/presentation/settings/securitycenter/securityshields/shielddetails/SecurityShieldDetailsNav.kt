@@ -10,10 +10,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.applyshield.applyShieldNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.factorsourcedetails.factorSourceDetails
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.ROUTE_CREATE_SECURITY_SHIELD_GRAPH
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccess
+import com.babylon.wallet.android.presentation.timedrecovery.timedRecovery
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.extensions.init
@@ -104,7 +106,9 @@ fun NavGraphBuilder.securityShieldDetails(navController: NavController) {
                     popUpTo(ROUTE_CREATE_SECURITY_SHIELD_GRAPH) { inclusive = false }
                 }
             },
-            onEditShield = { navController.regularAccess() }
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
+            onEditShield = { navController.regularAccess() },
+            onTimedRecoveryClick = { address -> navController.timedRecovery(address) }
         )
     }
 }

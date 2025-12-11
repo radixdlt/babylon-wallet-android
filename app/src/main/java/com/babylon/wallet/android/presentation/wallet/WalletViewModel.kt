@@ -20,13 +20,18 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
-import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountTimedRecoveryDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccessControllerStateDetails
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -94,6 +99,7 @@ class WalletViewModel @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
     private val accountLockersDelegate: WalletAccountLockersDelegate,
+    private val timedRecoveryDelegate: WalletAccountTimedRecoveryDelegate
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null
@@ -124,6 +130,7 @@ class WalletViewModel @Inject constructor(
         observeFactorSources()
         homeCards(scope = viewModelScope, state = _state)
         accountLockersDelegate(scope = viewModelScope, state = _state)
+        timedRecoveryDelegate(scope = viewModelScope, state = _state)
     }
 
     fun processBufferedDeepLinkRequest() {
@@ -304,6 +311,7 @@ class WalletViewModel @Inject constructor(
     fun onRefresh() {
         loadAssets(refreshType = RefreshType.WalletRefresh)
         refreshAccountLockers()
+        timedRecoveryDelegate.onRefresh()
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -387,6 +395,7 @@ class WalletViewModel @Inject constructor(
         private val accountsWithAssets: List<AccountWithAssets>? = null,
         private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
         private val accountsWithLockerDeposits: Map<AccountAddress, List<AccountLockerDeposit>> = emptyMap(),
+        private val accountsWithRecoveryStates: Map<AccountAddress, AccessControllerStateDetails> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val uiMessage: UiMessage? = null,
         val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList(),
@@ -429,6 +438,12 @@ class WalletViewModel @Inject constructor(
                             value = factorSource
                         )
                     }
+                },
+                timedRecovery = accountsWithRecoveryStates[account.address]?.timedRecoveryState?.let {
+                    TimedRecoveryDisplayData(
+                        remainingTime = it.remainingTime,
+                        entityAddress = AddressOfAccountOrPersona.Account(account.address)
+                    )
                 }
             )
         }
@@ -511,7 +526,8 @@ class WalletViewModel @Inject constructor(
             val isFiatBalanceVisible: Boolean,
             val isLoadingAssets: Boolean,
             val isLoadingBalance: Boolean,
-            val securedWith: SecuredWith?
+            val securedWith: SecuredWith?,
+            val timedRecovery: TimedRecoveryDisplayData?
         ) {
 
             sealed interface SecuredWith {

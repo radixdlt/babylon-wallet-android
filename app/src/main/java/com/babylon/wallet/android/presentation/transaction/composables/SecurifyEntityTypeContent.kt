@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,21 +12,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.common.securityshields.ConfirmationDelay
+import com.babylon.wallet.android.presentation.common.securityshields.EmergencyFallbackView
 import com.babylon.wallet.android.presentation.common.securityshields.OrView
 import com.babylon.wallet.android.presentation.common.securityshields.display
 import com.babylon.wallet.android.presentation.dialogs.info.DSR
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -50,7 +57,8 @@ import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
 fun SecurifyEntityTypeContent(
-    preview: PreviewType.SecurifyEntity,
+    preview: PreviewType.UpdateSecurityStructure,
+    onInfoClick: (GlossaryItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -59,7 +67,17 @@ fun SecurifyEntityTypeContent(
             .padding(RadixTheme.dimensions.paddingDefault)
     ) {
         SectionTitle(
-            titleRes = R.string.transactionReview_updateShield_sectionTitle,
+            title = when (preview.operation) {
+                PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure,
+                PreviewType.UpdateSecurityStructure.Operation.UpdateSecurityStructure,
+                PreviewType.UpdateSecurityStructure.Operation.ConfirmRecovery -> stringResource(
+                    id = R.string.transactionReview_updateShield_sectionTitle
+                )
+
+                PreviewType.UpdateSecurityStructure.Operation.StopRecovery -> stringResource(
+                    id = R.string.transactionReview_updateShield_stopTimedRecoveryTitle
+                )
+            },
             iconRes = DSR.ic_entity_update_shield
         )
 
@@ -94,21 +112,50 @@ fun SecurifyEntityTypeContent(
                         shape = RadixTheme.shapes.roundedRectBottomMedium
                     )
             ) {
-                Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(
-                        R.string.transactionReview_updateShield_applyTitle,
-                        preview.provisionalConfig.metadata.displayName.value
-                    ),
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.text
-                )
+                when (preview.operation) {
+                    PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure,
+                    PreviewType.UpdateSecurityStructure.Operation.UpdateSecurityStructure,
+                    PreviewType.UpdateSecurityStructure.Operation.ConfirmRecovery -> preview.provisionalConfig?.let { config ->
+                        config.metadata.displayName.value.takeIf { it.isNotEmpty() }?.let {
+                            Text(
+                                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(
+                                    R.string.transactionReview_updateShield_applyTitle,
+                                    it
+                                ),
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.text
+                            )
 
-                HorizontalDivider(color = RadixTheme.colors.divider)
+                            HorizontalDivider(color = RadixTheme.colors.divider)
+                        }
 
-                ShieldConfigView(
-                    securityStructure = preview.provisionalConfig
-                )
+                        ShieldConfigView(
+                            securityStructure = config,
+                            onInfoClick = onInfoClick
+                        )
+                    }
+
+                    PreviewType.UpdateSecurityStructure.Operation.StopRecovery -> {
+                        Row(
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = DSR.ic_close),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.icon
+                            )
+
+                            Text(
+                                text = stringResource(id = R.string.transactionReview_updateShield_stopTimedRecoveryDescription),
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.text
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -118,7 +165,8 @@ fun SecurifyEntityTypeContent(
 fun ShieldConfigView(
     securityStructure: SecurityStructureOfFactorSources,
     modifier: Modifier = Modifier,
-    onFactorClick: (FactorSourceId) -> Unit = {}
+    onFactorClick: (FactorSourceId) -> Unit = {},
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -147,12 +195,13 @@ fun ShieldConfigView(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .padding(
                     top = RadixTheme.dimensions.paddingSemiLarge,
-                    bottom = RadixTheme.dimensions.paddingXXXLarge
+                    bottom = RadixTheme.dimensions.paddingDefault
                 ),
             recovery = securityStructure.matrixOfFactors.recoveryRole,
             confirmation = securityStructure.matrixOfFactors.confirmationRole,
             confirmationDelay = securityStructure.matrixOfFactors.timeUntilDelayedConfirmationIsCallable,
-            onFactorClick = onFactorClick
+            onFactorClick = onFactorClick,
+            onInfoClick = onInfoClick
         )
     }
 }
@@ -283,7 +332,8 @@ private fun RecoveryAndConfirmationView(
     recovery: RecoveryRoleWithFactorSources,
     confirmation: ConfirmationRoleWithFactorSources,
     confirmationDelay: TimePeriod,
-    onFactorClick: (FactorSourceId) -> Unit
+    onFactorClick: (FactorSourceId) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(modifier = modifier) {
         Text(
@@ -389,8 +439,12 @@ private fun RecoveryAndConfirmationView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        ConfirmationDelay(
-            delay = confirmationDelay
+        EmergencyFallbackView(
+            delay = confirmationDelay,
+            showHeader = false,
+            description = AnnotatedString(stringResource(R.string.transactionReview_updateShield_confirmationDelayMessage)),
+            note = null,
+            onInfoClick = onInfoClick
         )
     }
 }
@@ -402,10 +456,12 @@ fun SecurifyEntityTypeForAccountPreview() {
     RadixWalletPreviewTheme {
         SecurifyEntityTypeContent(
             modifier = Modifier.verticalScroll(rememberScrollState()),
-            preview = PreviewType.SecurifyEntity(
+            preview = PreviewType.UpdateSecurityStructure(
                 entity = ProfileEntity.AccountEntity(Account.sampleMainnet()),
-                provisionalConfig = newSecurityStructureOfFactorSourcesSample()
-            )
+                provisionalConfig = newSecurityStructureOfFactorSourcesSample(),
+                operation = PreviewType.UpdateSecurityStructure.Operation.StopRecovery
+            ),
+            onInfoClick = {}
         )
     }
 }
@@ -417,10 +473,12 @@ fun SecurifyEntityTypeForPersonaPreview() {
     RadixWalletPreviewTheme {
         SecurifyEntityTypeContent(
             modifier = Modifier.verticalScroll(rememberScrollState()),
-            preview = PreviewType.SecurifyEntity(
+            preview = PreviewType.UpdateSecurityStructure(
                 entity = ProfileEntity.PersonaEntity(Persona.sampleMainnet()),
-                provisionalConfig = newSecurityStructureOfFactorSourcesSampleOther()
-            )
+                provisionalConfig = newSecurityStructureOfFactorSourcesSampleOther(),
+                operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
+            ),
+            onInfoClick = {}
         )
     }
 }

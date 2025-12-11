@@ -17,6 +17,7 @@ import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWi
 import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.securityproblems.accountPrompts
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.account.delegates.AccountLockersDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -24,12 +25,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
 import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -70,6 +74,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.collections.mapNotNull
 import kotlin.time.Duration.Companion.minutes
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -87,6 +92,7 @@ class AccountViewModel @Inject constructor(
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val accountLockersDelegate: AccountLockersDelegate,
+    private val timedRecoveryStateObserver: AccessControllerStateDetailsObserver,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountViewModel.State>(), OneOffEventHandler<AccountViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -105,6 +111,7 @@ class AccountViewModel @Inject constructor(
         observeAccountAssets()
         observeGlobalAppEvents()
         observeSecurityPrompt()
+        observeRecoveryState()
         accountLockersDelegate(scope = viewModelScope, state = _state)
         accountLockersDelegate.observeAccountLockers(args.accountAddress)
     }
@@ -114,7 +121,11 @@ class AccountViewModel @Inject constructor(
             accountFlow,
             refreshFlow.onStart {
                 loadAccountDetails(
-                    refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = true)
+                    refreshType = State.RefreshType.Manual(
+                        overrideCache = false,
+                        showRefreshIndicator = false,
+                        firstRequest = true
+                    )
                 )
             }
         ) { account, refreshEvent ->
@@ -156,7 +167,11 @@ class AccountViewModel @Inject constructor(
                  * So user does not have to wait [REFRESH_INTERVAL] to get fresh data
                  */
                 loadAccountDetails(
-                    refreshType = State.RefreshType.Manual(overrideCache = true, showRefreshIndicator = false, firstRequest = false)
+                    refreshType = State.RefreshType.Manual(
+                        overrideCache = true,
+                        showRefreshIndicator = false,
+                        firstRequest = false
+                    )
                 )
             }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
@@ -177,7 +192,11 @@ class AccountViewModel @Inject constructor(
                     )
 
                     ImportedMnemonic -> loadAccountDetails(
-                        refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = false)
+                        refreshType = State.RefreshType.Manual(
+                            overrideCache = false,
+                            showRefreshIndicator = false,
+                            firstRequest = false
+                        )
                     )
 
                     else -> {}
@@ -199,7 +218,12 @@ class AccountViewModel @Inject constructor(
                     isRefreshing = isRefreshing
                 )
                 _state.update { state ->
-                    state.copy(pricesState = State.PricesState.Enabled(assetsPrices.mapNotNull { it }.associateBy { it.asset }))
+                    state.copy(
+                        pricesState = State.PricesState.Enabled(
+                            assetsPrices.mapNotNull { it }
+                                .associateBy { it.asset }
+                        )
+                    )
                 }
             }
         }
@@ -218,7 +242,14 @@ class AccountViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadAccountDetails(refreshType = State.RefreshType.Manual(overrideCache = true, showRefreshIndicator = true, firstRequest = false))
+        loadAccountDetails(
+            refreshType = State.RefreshType.Manual(
+                overrideCache = true,
+                showRefreshIndicator = true,
+                firstRequest = false
+            )
+        )
+        timedRecoveryStateObserver.startMonitoring()
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -310,7 +341,12 @@ class AccountViewModel @Inject constructor(
                 updateLSUsInfo(account, validatorsWithStakes).onSuccess {
                     _state.update { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
-                    _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
+                    _state.update { state ->
+                        state.copy(
+                            pendingStakeUnits = false,
+                            uiMessage = UiMessage.ErrorMessage(error)
+                        )
+                    }
                 }
             }
         }
@@ -356,6 +392,24 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    private fun observeRecoveryState() {
+        val accountAddress = AddressOfAccountOrPersona.Account(args.accountAddress)
+        timedRecoveryStateObserver.acStateByEntityAddress
+            .mapNotNull { states -> states[accountAddress]?.timedRecoveryState }
+            .onEach { recoveryState ->
+                _state.update { state ->
+                    state.copy(
+                        timedRecovery = TimedRecoveryDisplayData(
+                            remainingTime = recoveryState.remainingTime,
+                            entityAddress = accountAddress
+                        )
+                    )
+                }
+            }
+            .flowOn(defaultDispatcher)
+            .launchIn(viewModelScope)
+    }
+
     internal sealed interface Event : OneOffEvent {
         data object NavigateToSecurityCenter : Event
         data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Account) : Event
@@ -375,7 +429,8 @@ class AccountViewModel @Inject constructor(
         val deposits: PersistentList<AccountLockerDeposit> = persistentListOf(),
         val assetsViewState: AssetsViewState = AssetsViewState.init(),
         val epoch: Long? = null,
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val timedRecovery: TimedRecoveryDisplayData? = null
     ) : UiState {
 
         val isRefreshing: Boolean = refreshType.showRefreshIndicator

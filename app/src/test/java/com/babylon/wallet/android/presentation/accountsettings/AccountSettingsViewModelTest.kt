@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
@@ -54,6 +55,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
     private val eventBus = mockk<AppEventBus>()
+    private val acStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()
     private val sampleTxId = "txId1"
 
     override fun initVM(): AccountSettingsViewModel {
@@ -65,7 +67,8 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
             changeEntityVisibilityUseCase,
             getFactorSourceIntegrityStatusMessagesUseCase,
             TestScope(),
-            eventBus
+            eventBus,
+            acStateDetailsObserver
         )
     }
 
@@ -80,6 +83,8 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         coEvery { changeEntityVisibilityUseCase.changeAccountVisibility(any(), any()) } just Runs
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getFactorSourceIntegrityStatusMessagesUseCase.forFactorSource(any(), any(), any()) } returns emptyList()
+        coEvery { acStateDetailsObserver.acStateByEntityAddress } returns flowOf(emptyMap())
+        coEvery { acStateDetailsObserver.cachedAcStates } returns emptyMap()
     }
 
     @Test

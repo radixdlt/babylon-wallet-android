@@ -4,6 +4,7 @@ import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.UnsecuredEntityControl
 
 fun EntitySecurityState.Companion.unsecured(
@@ -27,5 +28,16 @@ val EntitySecurityState.numberOfSignaturesForTransaction: Int
 
         is EntitySecurityState.Unsecured -> {
             1
+        }
+    }
+
+val EntitySecurityState.timeUntilDelayedConfirmationIsCallable: TimePeriod?
+    get() = when (this) {
+        is EntitySecurityState.Securified -> {
+            value.securityStructure.matrixOfFactors.timeUntilDelayedConfirmationIsCallable
+        }
+
+        is EntitySecurityState.Unsecured -> {
+            null
         }
     }

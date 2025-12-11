@@ -1,5 +1,6 @@
 package rdx.works.core.sargon
 
+import com.radixdlt.sargon.AccessControllerAddress
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
@@ -32,6 +33,9 @@ val Account.isDeleted: Boolean
 
 val Account.hasAcceptKnownDepositRule: Boolean
     get() = onLedgerSettings.thirdPartyDeposits.depositRule == DepositRule.ACCEPT_KNOWN
+
+val Account.securityStateAccessControllerAddress: AccessControllerAddress?
+    get() = (securityState as? EntitySecurityState.Securified)?.value?.accessControllerAddress
 
 @Suppress("LongParameterList")
 fun Account.Companion.initBabylon(

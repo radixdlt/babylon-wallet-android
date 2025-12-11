@@ -39,7 +39,12 @@ class SearchFeePayersUseCaseTest {
         testScope.runTest {
             val manifestData = feePayerCandidates(account1)
 
-            val result = useCase(manifestData, emptyMap(), TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
+            val result = useCase(
+                manifestData,
+                emptyMap(),
+                TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
+                emptySet()
+            ).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
@@ -58,7 +63,12 @@ class SearchFeePayersUseCaseTest {
             val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.1)
-            val result = useCase(manifestData, emptyMap(), TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
+            val result = useCase(
+                manifestData,
+                emptyMap(),
+                TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
+                emptySet()
+            ).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
@@ -77,7 +87,12 @@ class SearchFeePayersUseCaseTest {
             val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 100.0)
-            val result = useCase(manifestData, mapOf(account1.address to 90.toDecimal192()), TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
+            val result = useCase(
+                manifestData,
+                mapOf(account1.address to 90.toDecimal192()),
+                TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
+                emptySet()
+            ).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
@@ -96,7 +111,12 @@ class SearchFeePayersUseCaseTest {
             val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.0)
-            val result = useCase(manifestData, emptyMap(), 200.toDecimal192()).getOrThrow()
+            val result = useCase(
+                manifestData,
+                emptyMap(),
+                200.toDecimal192(),
+                emptySet()
+            ).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(

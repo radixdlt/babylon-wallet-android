@@ -7,6 +7,7 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.domain.usecases.factorsources.GetFactorSourceIntegrityStatusMessagesUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -14,8 +15,10 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.secured.SecuredWithUiData
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
 import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
@@ -31,6 +34,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -57,11 +61,13 @@ class AccountSettingsViewModel @Inject constructor(
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     private val getFactorSourceIntegrityStatusMessagesUseCase: GetFactorSourceIntegrityStatusMessagesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val timedRecoveryStateObserver: AccessControllerStateDetailsObserver
 ) : StateViewModel<AccountSettingsViewModel.State>(),
     OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
+    private var recoveryStateJob: Job? = null
 
     override fun initialState(): State = State()
 
@@ -103,7 +109,20 @@ class AccountSettingsViewModel @Inject constructor(
                 val account = profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
                     ?: return@mapNotNull null
                 val securedWith = when (val securityState = account.securityState) {
-                    is EntitySecurityState.Securified -> SecuredWithUiData.Shield
+                    is EntitySecurityState.Securified -> {
+                        val address = AddressOfAccountOrPersona.Account(args.address)
+                        SecuredWithUiData.Shield(
+                            timedRecovery = timedRecoveryStateObserver.cachedStateByAddress(
+                                address = address
+                            )?.timedRecoveryState?.let { recoveryState ->
+                                TimedRecoveryDisplayData(
+                                    remainingTime = recoveryState.remainingTime,
+                                    entityAddress = address
+                                )
+                            }
+                        )
+                    }
+
                     is EntitySecurityState.Unsecured -> profile.factorSourceById(
                         id = securityState.value.transactionSigning.factorSourceId.asGeneral()
                     )?.let { factorSource ->
@@ -146,6 +165,8 @@ class AccountSettingsViewModel @Inject constructor(
                         securedWith = accountAndSecuredWith.second
                     )
                 }
+
+                observeRecoveryState()
             }
         }
     }
@@ -245,6 +266,30 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
+    private fun observeRecoveryState() {
+        val accountAddress = AddressOfAccountOrPersona.Account(args.address)
+        recoveryStateJob?.cancel()
+        recoveryStateJob = timedRecoveryStateObserver.acStateByEntityAddress
+            .mapNotNull { states -> states[accountAddress] }
+            .onEach { recoveryState ->
+                val securedWith = _state.value.securedWith as? SecuredWithUiData.Shield ?: return@onEach
+
+                _state.update { state ->
+                    state.copy(
+                        securedWith = securedWith.copy(
+                            timedRecovery = recoveryState.timedRecoveryState?.let {
+                                TimedRecoveryDisplayData(
+                                    remainingTime = it.remainingTime,
+                                    entityAddress = accountAddress
+                                )
+                            }
+                        )
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     data class State(
         val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
         val account: Account? = null,
@@ -261,7 +306,7 @@ class AccountSettingsViewModel @Inject constructor(
         val isBottomSheetVisible: Boolean
             get() = bottomSheetContent != BottomSheetContent.None
         val canApplyShield
-            get() = isMfaEnabled && securedWith != SecuredWithUiData.Shield
+            get() = isMfaEnabled && securedWith !is SecuredWithUiData.Shield
         val address
             get() = AddressOfAccountOrPersona.Account(requireNotNull(account?.address))
 

@@ -11,7 +11,6 @@ import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -47,7 +45,10 @@ class AccountLockersObserver @Inject constructor(
     fun startMonitoring() {
         monitoringJob?.cancel()
         monitoringJob = appScope.launch {
-            combine(observeAuthorizedDApps(), ticker()) { authorizedDApps, _ -> checkDeposits(authorizedDApps) }
+            combine(
+                observeAuthorizedDApps(),
+                ticker(5.minutes)
+            ) { authorizedDApps, _ -> checkDeposits(authorizedDApps) }
                 .onEach { _depositsByAccount.emit(it) }
                 .catch { Timber.w(it) }
                 .flowOn(defaultDispatcher)
@@ -120,14 +121,5 @@ class AccountLockersObserver @Inject constructor(
                     dApp.preferences.deposits == AuthorizedDappPreferenceDeposits.VISIBLE
                 }
             }
-    }
-
-    private fun ticker(): Flow<Unit> {
-        return flow {
-            while (true) {
-                emit(Unit)
-                delay(5.minutes.inWholeMilliseconds)
-            }
-        }
     }
 }

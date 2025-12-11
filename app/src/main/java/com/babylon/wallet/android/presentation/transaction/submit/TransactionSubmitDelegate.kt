@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
@@ -28,17 +27,22 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.then
+import com.radixdlt.sargon.isAccessControllerTimedRecoveryManifest
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.mapError
+import rdx.works.core.sargon.timeUntilDelayedConfirmationIsCallable
 import rdx.works.core.toUnitResult
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -76,6 +80,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private var approvalJob: Job? = null
 
     var oneOffEventHandler: OneOffEventHandler<TransactionReviewViewModel.Event>? = null
+    private val timedRecoveryConfirmedChannel = Channel<Boolean>()
 
     override fun onSignAndSubmitTransaction() {
         // Do not re-submit while submission is in progress
@@ -87,7 +92,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
             if (currentNetworkId != manifestNetworkId) {
                 onDismiss(
-                    exception = DappRequestException.WrongNetwork(
+                    exception = RadixWalletException.DappRequestException.WrongNetwork(
                         currentNetworkId = currentNetworkId,
                         requestNetworkId = manifestNetworkId
                     )
@@ -149,7 +154,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     override fun onSigningCanceled() {
         _state.update { it.copy(sheetState = Sheet.None) }
         viewModelScope.launch {
-            onDismiss(exception = DappRequestException.RejectedByUser)
+            onDismiss(exception = RadixWalletException.DappRequestException.RejectedByUser)
         }
     }
 
@@ -167,6 +172,25 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             incomingRequestRepository.requestHandled(request.interactionId)
         } else {
             logger.d("Cannot dismiss transaction while is in progress")
+        }
+    }
+
+    @Suppress("MagicNumber")
+    fun onRestartSigningFromTimedRecoverySheet() {
+        viewModelScope.launch {
+            onConfirmTimedRecoverySheetDismiss(false)
+            delay(300L) // Allow time for the previous signing flow to fully dismiss
+            onRestartSignAndSubmitTransaction()
+        }
+    }
+
+    fun onConfirmTimedRecoverySheetDismiss(confirmed: Boolean) {
+        _state.update { state ->
+            state.copy(sheetState = Sheet.None)
+        }
+
+        viewModelScope.launch {
+            timedRecoveryConfirmedChannel.send(confirmed)
         }
     }
 
@@ -196,33 +220,60 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         return when (summary) {
             is Summary.FromExecution -> when (summary.manifest) {
                 is SummarizedManifest.Subintent -> signAndSubmit(subintentManifest = summary.manifest.manifest)
-                is SummarizedManifest.Transaction -> signAndSubmit(transactionManifest = summary.manifest.manifest)
+                is SummarizedManifest.Transaction -> signAndSubmit(
+                    transactionManifest = summary.manifest.manifest,
+                    executionSummary = summary.summary
+                )
             }
 
             is Summary.FromStaticAnalysis -> signAndSubmit(subintentManifest = summary.manifest.manifest)
         }
     }
 
-    private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
+    private suspend fun signAndSubmit(
+        transactionManifest: TransactionManifest,
+        executionSummary: ExecutionSummary
+    ): Result<Unit> {
         val fees = _state.value.fees ?: error("Fees were not resolved")
         val transactionRequest = data.value.request
         val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.Regular
             ?: error("Wrong kind: ${transactionRequest.kind}")
-        val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
         return signAndNotarizeTransactionUseCase(
             manifest = transactionManifest,
+            executionSummary = executionSummary,
             networkId = transactionRequest.unvalidatedManifestData.networkId,
             message = transactionRequest.unvalidatedManifestData.message,
             lockFee = fees.transactionFees.transactionFeeToLock,
             tipPercentage = fees.transactionFees.tipPercentageForTransaction,
             notarySecretKey = data.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerAddress,
+            feePayerAddress = data.value.feePayers?.selectedAccountAddress,
             guarantees = buildGuarantees(
                 deposits = (_state.value.previewType as? PreviewType.Transaction)?.to.orEmpty()
             )
         ).then { notarizationResult ->
-            transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
+            val signedManifest = notarizationResult.notarizedTransaction.signedIntent.intent.manifest
+
+            val timedRecoveryConfirmed = if (isAccessControllerTimedRecoveryManifest(signedManifest)) {
+                _state.update {
+                    it.copy(
+                        sheetState = Sheet.ConfirmTimedRecovery(
+                            time = (_state.value.previewType as? PreviewType.UpdateSecurityStructure)
+                                ?.entity?.securityState?.timeUntilDelayedConfirmationIsCallable
+                        )
+                    )
+                }
+                timedRecoveryConfirmedChannel.receive()
+            } else {
+                true
+            }
+
+            if (timedRecoveryConfirmed) {
+                transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
+                    .map { notarizationResult }
+            } else {
+                Result.failure(CommonException.HostInteractionAborted())
+            }
         }.onSuccess { notarization ->
             _state.update { it.copy(isSubmitting = false) }
 
@@ -241,7 +292,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 intentHash = notarization.intentHash,
                 requestId = data.value.request.interactionId,
                 transactionType = transactionRequestKind.transactionType,
-                endEpoch = notarization.endEpoch
+                endEpoch = notarization.endEpoch,
+                signedManifest = notarization.notarizedTransaction.signedIntent.intent.manifest
             )
 
             // Respond to dApp

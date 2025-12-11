@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary
 
 import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ManifestSummary
 import com.radixdlt.sargon.NetworkId
@@ -9,6 +10,11 @@ sealed interface Summary {
 
     val entitiesRequiringAuth: List<AddressOfAccountOrPersona>
     val networkId: NetworkId
+    val detailedManifestClass: DetailedManifestClass?
+        get() = when (this) {
+            is FromExecution -> summary.detailedClassification
+            is FromStaticAnalysis -> null
+        }
 
     data class FromExecution(
         val manifest: SummarizedManifest,

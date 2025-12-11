@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
+import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
@@ -41,6 +42,7 @@ import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
+import com.radixdlt.sargon.TimePeriod
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
@@ -179,7 +181,7 @@ class TransactionReviewViewModel @Inject constructor(
             withContext(defaultDispatcher) {
                 analysis.analyse()
                     .onSuccess { analysis ->
-                        data.update { it.copy(txSummary = analysis.summary) }
+                        data.update { it.copy(analysis = analysis) }
 
                         when (request.kind) {
                             is TransactionRequest.Kind.PreAuthorized -> processExpiration(request.kind.expiration)
@@ -221,7 +223,14 @@ class TransactionReviewViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     do {
-                        _state.update { it.copy(expiration = State.Expiration(duration = expirationDuration, startsAfterSign = false)) }
+                        _state.update {
+                            it.copy(
+                                expiration = State.Expiration(
+                                    duration = expirationDuration,
+                                    startsAfterSign = false
+                                )
+                            )
+                        }
                         expirationDuration -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
                     } while (expirationDuration >= 0.seconds)
@@ -294,9 +303,17 @@ class TransactionReviewViewModel @Inject constructor(
         submit.onSigningCanceled()
     }
 
+    fun onConfirmTimedRecoverySheetDismiss(confirmed: Boolean) {
+        submit.onConfirmTimedRecoverySheetDismiss(confirmed)
+    }
+
+    fun onRestartSigningFromTimedRecoverySheet() {
+        submit.onRestartSigningFromTimedRecoverySheet()
+    }
+
     data class Data(
         private val txRequest: TransactionRequest? = null,
-        private val txSummary: Summary? = null,
+        val analysis: Analysis? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,
@@ -307,7 +324,7 @@ class TransactionReviewViewModel @Inject constructor(
             get() = requireNotNull(txRequest)
 
         val summary: Summary
-            get() = requireNotNull(txSummary)
+            get() = requireNotNull(analysis?.summary)
     }
 
     data class State(
@@ -327,7 +344,8 @@ class TransactionReviewViewModel @Inject constructor(
         val isSubmitting: Boolean = false
     ) : UiState {
 
-        val isPreviewDisplayable: Boolean = previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
+        val isPreviewDisplayable: Boolean =
+            previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
 
         val isRawManifestToggleInHeader: Boolean
             get() = !isPreAuthorization && isRawManifestToggleVisible
@@ -477,6 +495,10 @@ class TransactionReviewViewModel @Inject constructor(
                     )
                 }
             }
+
+            data class ConfirmTimedRecovery(
+                val time: TimePeriod?
+            ) : Sheet
         }
 
         data class SelectFeePayerInput(
@@ -608,13 +630,26 @@ sealed interface PreviewType {
         val deletingAccount: Account,
         val to: AccountWithTransferables?
     ) : PreviewType {
+
         override val badges: List<Badge> = emptyList()
     }
 
-    data class SecurifyEntity(
+    data class UpdateSecurityStructure(
         val entity: ProfileEntity,
-        val provisionalConfig: SecurityStructureOfFactorSources
+        val provisionalConfig: SecurityStructureOfFactorSources?,
+        val operation: Operation
     ) : PreviewType {
+
         override val badges: List<Badge> = emptyList()
+
+        enum class Operation(
+            val includeBulkTransactionFee: Boolean
+        ) {
+
+            ApplySecurityStructure(false),
+            UpdateSecurityStructure(true),
+            ConfirmRecovery(true),
+            StopRecovery(true)
+        }
     }
 }

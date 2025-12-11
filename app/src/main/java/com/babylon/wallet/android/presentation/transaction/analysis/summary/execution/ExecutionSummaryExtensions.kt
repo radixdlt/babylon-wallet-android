@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FungibleResourceIndicator
 import com.radixdlt.sargon.NewlyCreatedResource
@@ -99,7 +100,8 @@ fun ExecutionSummary.resolveBadges(onLedgerAssets: List<Asset>): List<Badge> {
         val badgeResource = when (specifier) {
             is ResourceSpecifier.Fungible -> {
                 // In this case we need to attach the amount of the specifier to the resource since it is not resolved by GW
-                (asset.resource as? Resource.FungibleResource)?.copy(ownedAmount = specifier.amount) ?: return@mapNotNull null
+                (asset.resource as? Resource.FungibleResource)?.copy(ownedAmount = specifier.amount)
+                    ?: return@mapNotNull null
             }
 
             is ResourceSpecifier.NonFungible -> asset.resource
@@ -276,6 +278,7 @@ private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonF
             },
             additional = null
         )
+
         is NonFungibleResourceIndicator.Predicted -> NonFungibleAmount(
             certain = emptyList(),
             predicted = ind.predictedIds.value.map { localId ->
@@ -456,3 +459,10 @@ private fun ExecutionSummary.resolveAccounts(
         transferables = transferables
     )
 }
+
+val ExecutionSummary.recoveryOrConfirmationRoleSignatureCount
+    get() = if (detailedClassification is DetailedManifestClass.AccessControllerRecovery) {
+        1
+    } else {
+        0
+    }

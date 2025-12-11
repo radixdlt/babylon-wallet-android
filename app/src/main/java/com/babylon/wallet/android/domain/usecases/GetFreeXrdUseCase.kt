@@ -42,7 +42,7 @@ class GetFreeXrdUseCase @Inject constructor(
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
-                signAndNotarizeTransactionUseCase(
+                signAndNotarizeTransactionUseCase.notarizeFaucetTransaction(
                     manifest = manifest,
                 ).then { notarization ->
                     transactionRepository.submitTransaction(notarization.notarizedTransaction)

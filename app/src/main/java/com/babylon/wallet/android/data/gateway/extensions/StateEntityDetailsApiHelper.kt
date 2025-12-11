@@ -126,7 +126,8 @@ suspend fun StateApi.fetchFungibleAmountPerAccount(
         stateVersion = onStateVersion
     ) { chunkedAccounts ->
         chunkedAccounts.items.forEach { accountItem ->
-            val resourceFound = accountItem.fungibleResources?.items?.find { it.resourceAddress == resourceAddressString }
+            val resourceFound =
+                accountItem.fungibleResources?.items?.find { it.resourceAddress == resourceAddressString }
 
             if (resourceFound != null) {
                 resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] = resourceFound.amountDecimal
@@ -145,7 +146,8 @@ suspend fun StateApi.fetchFungibleAmountPerAccount(
                     nextCursor = pageResponse?.nextCursor
 
                     pageResponse?.items?.find { it.resourceAddress == resourceAddressString }?.let { resource ->
-                        resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] = resource.amountDecimal
+                        resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] =
+                            resource.amountDecimal
                         return@forEach
                     }
                 }

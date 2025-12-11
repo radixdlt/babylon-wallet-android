@@ -51,4 +51,20 @@ object TimeFormatter {
             }
         }
     }
+
+    @Suppress("MagicNumber")
+    fun formatShortTruncatedToHours(duration: Duration): String {
+        val seconds = duration.inWholeSeconds
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = hours / 24
+
+        return if (days > 0) {
+            "${days}d"
+        } else if (hours > 0) {
+            "${hours}h"
+        } else {
+            "<1h"
+        }
+    }
 }

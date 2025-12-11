@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.repository.securityshield.model.ChooseFac
 import com.babylon.wallet.android.data.repository.securityshield.model.PrimaryRoleSelection
 import com.babylon.wallet.android.data.repository.securityshield.model.RecoveryRoleSelection
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -51,6 +52,7 @@ class SecurityShieldBuilderClient @Inject constructor(
     private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
 
     var securityStructureOfFactorSources: SecurityStructureOfFactorSources? = null
+    var appliedShieldEntityAddress: AddressOfAccountOrPersona? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun newSecurityShieldBuilder() {
@@ -59,6 +61,7 @@ class SecurityShieldBuilderClient @Inject constructor(
         recoveryRoleSelection.resetReplayCache()
         initSelection()
         securityStructureOfFactorSources = null
+        appliedShieldEntityAddress = null
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -68,6 +71,16 @@ class SecurityShieldBuilderClient @Inject constructor(
         recoveryRoleSelection.resetReplayCache()
         initSelection()
         securityStructureOfFactorSources = shield
+        appliedShieldEntityAddress = null
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun withAppliedSecurityStructure(
+        shield: SecurityStructureOfFactorSources,
+        entityAddress: AddressOfAccountOrPersona
+    ) {
+        withExistingSecurityStructure(shield)
+        appliedShieldEntityAddress = entityAddress
     }
 
     fun primaryRoleSelection(): Flow<PrimaryRoleSelection> = primaryRoleSelection
@@ -97,19 +110,22 @@ class SecurityShieldBuilderClient @Inject constructor(
         isFactorSourceKindValidOrCanBe(context, kind)
     }
 
-    suspend fun findAlreadySelectedFactorSourceIds(context: ChooseFactorSourceContext): List<FactorSourceId> = withContext(dispatcher) {
-        validationForAdditionOfFactorSources(context).mapNotNull { status ->
-            status.factorSourceId.takeIf {
-                val nonBasicInvalidReason = status.reasonIfInvalid as? FactorSourceValidationStatusReasonIfInvalid.NonBasic
-                nonBasicInvalidReason?.v1 is SecurityShieldBuilderRuleViolation.FactorSourceAlreadyPresent
+    suspend fun findAlreadySelectedFactorSourceIds(context: ChooseFactorSourceContext): List<FactorSourceId> =
+        withContext(dispatcher) {
+            validationForAdditionOfFactorSources(context).mapNotNull { status ->
+                status.factorSourceId.takeIf {
+                    val nonBasicInvalidReason =
+                        status.reasonIfInvalid as? FactorSourceValidationStatusReasonIfInvalid.NonBasic
+                    nonBasicInvalidReason?.v1 is SecurityShieldBuilderRuleViolation.FactorSourceAlreadyPresent
+                }
             }
         }
-    }
 
-    suspend fun executeMutatingFunction(function: suspend SecurityShieldBuilder.() -> SecurityShieldBuilder) = withContext(dispatcher) {
-        securityShieldBuilder = securityShieldBuilder.function()
-        initSelection()
-    }
+    suspend fun executeMutatingFunction(function: suspend SecurityShieldBuilder.() -> SecurityShieldBuilder) =
+        withContext(dispatcher) {
+            securityShieldBuilder = securityShieldBuilder.function()
+            initSelection()
+        }
 
     private suspend fun initSelection() {
         val status = securityShieldBuilder.status().also { Timber.w("Security shield builder status: $it") }
@@ -131,16 +147,17 @@ class SecurityShieldBuilderClient @Inject constructor(
         )
     }
 
-    private suspend fun initRecoveryAndConfirmationRoleSelection(status: SecurityShieldBuilderStatus) = withContext(dispatcher) {
-        recoveryRoleSelection.emit(
-            RecoveryRoleSelection(
-                startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
-                confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
-                timePeriodUntilAutoConfirm = securityShieldBuilder.getTimeUntilTimedConfirmationIsCallable(),
-                shieldStatus = status
+    private suspend fun initRecoveryAndConfirmationRoleSelection(status: SecurityShieldBuilderStatus) =
+        withContext(dispatcher) {
+            recoveryRoleSelection.emit(
+                RecoveryRoleSelection(
+                    startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
+                    confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
+                    timePeriodUntilAutoConfirm = securityShieldBuilder.getTimeUntilTimedConfirmationIsCallable(),
+                    shieldStatus = status
+                )
             )
-        )
-    }
+        }
 
     private suspend fun isFactorSourceKindValidOrCanBe(
         context: ChooseFactorSourceContext,
@@ -150,15 +167,19 @@ class SecurityShieldBuilderClient @Inject constructor(
             ChooseFactorSourceContext.PrimaryThreshold -> {
                 securityShieldBuilder.additionOfFactorSourceOfKindToPrimaryThresholdIsValidOrCanBe(kind)
             }
+
             ChooseFactorSourceContext.PrimaryOverride -> {
                 securityShieldBuilder.additionOfFactorSourceOfKindToPrimaryOverrideIsValidOrCanBe(kind)
             }
+
             ChooseFactorSourceContext.Recovery -> {
                 securityShieldBuilder.additionOfFactorSourceOfKindToRecoveryIsValidOrCanBe(kind)
             }
+
             ChooseFactorSourceContext.Confirmation -> {
                 securityShieldBuilder.additionOfFactorSourceOfKindToConfirmationIsValidOrCanBe(kind)
             }
+
             ChooseFactorSourceContext.AuthenticationSigning -> {
                 securityShieldBuilder.isAllowedFactorSourceKindForAuthenticationSigning(kind)
             }
@@ -172,15 +193,19 @@ class SecurityShieldBuilderClient @Inject constructor(
             ChooseFactorSourceContext.PrimaryThreshold -> {
                 securityShieldBuilder.validationForAdditionOfFactorSourceToPrimaryThresholdForEach(factorSourceIds)
             }
+
             ChooseFactorSourceContext.PrimaryOverride -> {
                 securityShieldBuilder.validationForAdditionOfFactorSourceToPrimaryOverrideForEach(factorSourceIds)
             }
+
             ChooseFactorSourceContext.Recovery -> {
                 securityShieldBuilder.validationForAdditionOfFactorSourceToRecoveryOverrideForEach(factorSourceIds)
             }
+
             ChooseFactorSourceContext.Confirmation -> {
                 securityShieldBuilder.validationForAdditionOfFactorSourceToConfirmationOverrideForEach(factorSourceIds)
             }
+
             ChooseFactorSourceContext.AuthenticationSigning -> {
                 emptyList()
             }

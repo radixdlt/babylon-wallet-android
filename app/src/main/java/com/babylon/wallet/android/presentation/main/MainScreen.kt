@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.none
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.babylon.wallet.android.designsystem.R as DSR
 
 @Composable
@@ -58,7 +59,8 @@ fun MainScreen(
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
     onMoreInfoClick: () -> Unit,
-    onMoreBlogPostsClick: () -> Unit
+    onMoreBlogPostsClick: () -> Unit,
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -78,7 +80,8 @@ fun MainScreen(
                 onDAppClick = onDAppClick,
                 onInfoLinkClick = onInfoLinkClick,
                 onMoreInfoClick = onMoreInfoClick,
-                onMoreBlogPostsClick = onMoreBlogPostsClick
+                onMoreBlogPostsClick = onMoreBlogPostsClick,
+                onNavigateToTimedRecovery = onNavigateToTimedRecovery
             )
         }
 
@@ -118,6 +121,7 @@ private fun MainContent(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
     onInfoLinkClick: (GlossaryItem) -> Unit,
@@ -213,6 +217,7 @@ private fun MainContent(
                     onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                     onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                     onNavigateToLinkConnector = onNavigateToLinkConnector,
+                    onNavigateToTimedRecovery = onNavigateToTimedRecovery
                 )
             }
             composable(MainTab.DApps.route) {

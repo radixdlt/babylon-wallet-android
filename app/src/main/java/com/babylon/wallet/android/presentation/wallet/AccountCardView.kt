@@ -46,10 +46,12 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBa
 import com.babylon.wallet.android.presentation.ui.composables.card.iconRes
 import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.toText
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.AccountTag
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.AccountUiItem
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -73,7 +75,8 @@ fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: AccountUiItem,
     onApplySecuritySettingsClick: () -> Unit,
-    onLockerDepositClick: (AccountUiItem, AccountLockerDeposit) -> Unit
+    onLockerDepositClick: (AccountUiItem, AccountLockerDeposit) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     ConstraintLayout(
         modifier
@@ -235,8 +238,14 @@ fun AccountCardView(
         val assetsPresent = remember(accountWithAssets.isLoadingAssets, accountWithAssets.assets) {
             !accountWithAssets.isLoadingAssets && accountWithAssets.assets?.tokens?.isNotEmpty() == true
         }
-        val promptsPresent = remember(accountWithAssets.securityPrompts, accountWithAssets.deposits) {
-            accountWithAssets.securityPrompts != null || accountWithAssets.deposits.isNotEmpty()
+        val promptsPresent = remember(
+            accountWithAssets.securityPrompts,
+            accountWithAssets.deposits,
+            accountWithAssets.timedRecovery
+        ) {
+            accountWithAssets.securityPrompts != null ||
+                accountWithAssets.deposits.isNotEmpty() ||
+                accountWithAssets.timedRecovery != null
         }
 
         Spacer(
@@ -321,6 +330,24 @@ fun AccountCardView(
                     iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_notifications
                 )
             }
+
+            accountWithAssets.timedRecovery?.let { timedRecovery ->
+                AccountPromptLabel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                    onClick = { onTimedRecoveryClick(timedRecovery.entityAddress) },
+                    text = when {
+                        timedRecovery.remainingTime != null -> stringResource(
+                            id = R.string.commonSecurityShields_recoveryIn,
+                            timedRecovery.formattedTime.orEmpty()
+                        )
+
+                        else -> stringResource(id = R.string.commonSecurityShields_recoveryReadyToConfirm)
+                    },
+                    iconRes = DSR.hourglass
+                )
+            }
         }
     }
 }
@@ -390,10 +417,15 @@ fun AccountCardPreview() {
                     isLoadingBalance = false,
                     securedWith = AccountUiItem.SecuredWith.Factor(
                         value = FactorSource.sample()
+                    ),
+                    timedRecovery = TimedRecoveryDisplayData(
+                        remainingTime = null,
+                        entityAddress = AddressOfAccountOrPersona.sampleMainnet()
                     )
                 ),
                 onApplySecuritySettingsClick = {},
-                onLockerDepositClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> },
+                onTimedRecoveryClick = {}
             )
         }
     }
@@ -424,10 +456,12 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    securedWith = AccountUiItem.SecuredWith.Shield
+                    securedWith = AccountUiItem.SecuredWith.Shield,
+                    timedRecovery = null
                 ),
                 onApplySecuritySettingsClick = {},
-                onLockerDepositClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> },
+                onTimedRecoveryClick = {}
             )
         }
     }
@@ -465,10 +499,12 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
-                    securedWith = AccountUiItem.SecuredWith.Shield
+                    securedWith = AccountUiItem.SecuredWith.Shield,
+                    timedRecovery = null
                 ),
                 onApplySecuritySettingsClick = {},
-                onLockerDepositClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> },
+                onTimedRecoveryClick = {}
             )
         }
     }
@@ -503,10 +539,12 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true,
-                        securedWith = null
+                        securedWith = null,
+                        timedRecovery = null
                     ),
                     onApplySecuritySettingsClick = {},
-                    onLockerDepositClick = { _, _ -> }
+                    onLockerDepositClick = { _, _ -> },
+                    onTimedRecoveryClick = {}
                 )
             }
         }
@@ -533,10 +571,12 @@ fun AccountCardEmptyPreview() {
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true,
-                        securedWith = null
+                        securedWith = null,
+                        timedRecovery = null
                     ),
                     onApplySecuritySettingsClick = {},
-                    onLockerDepositClick = { _, _ -> }
+                    onLockerDepositClick = { _, _ -> },
+                    onTimedRecoveryClick = {}
                 )
             }
         }
@@ -566,10 +606,12 @@ fun AccountCardLoadingPreview() {
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true,
-                    securedWith = null
+                    securedWith = null,
+                    timedRecovery = null
                 ),
                 onApplySecuritySettingsClick = {},
-                onLockerDepositClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> },
+                onTimedRecoveryClick = {}
             )
         }
     }

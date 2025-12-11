@@ -12,10 +12,12 @@ import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUs
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
-import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.delegates.WalletAccountTimedRecoveryDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -72,6 +74,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val accountLockersObserver = mockk<AccountLockersObserver>()
     private val accountLockersRepository = mock<AccountLockersRepository>()
     private val checkDeletedAccountsOnLedgerUseCase = mockk<CheckDeletedAccountsOnLedgerUseCase>()
+    private val acStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()
 
     private val sampleProfile = Profile.sample()
     private val sampleXrdResource = Resource.FungibleResource(
@@ -102,6 +105,10 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
             accountLockersObserver,
             accountLockersRepository,
             testDispatcher
+        ),
+        WalletAccountTimedRecoveryDelegate(
+            acStateDetailsObserver,
+            testDispatcher
         )
     )
 
@@ -124,6 +131,8 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         coEvery { p2PLinksRepository.showRelinkConnectors() } returns flowOf(false)
         every { homeCardsRepository.observeHomeCards() } returns flowOf(emptyList())
         every { accountLockersObserver.depositsByAccount } returns flowOf(emptyMap())
+        coEvery { acStateDetailsObserver.acStateByEntityAddress } returns flowOf(emptyMap())
+        coEvery { acStateDetailsObserver.cachedAcStates } returns emptyMap()
     }
 
     @Test

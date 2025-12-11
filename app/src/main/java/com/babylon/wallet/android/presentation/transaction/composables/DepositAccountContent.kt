@@ -51,7 +51,7 @@ fun DepositAccountContent(
     if (to.isNotEmpty()) {
         Column(modifier = modifier) {
             SectionTitle(
-                titleRes = R.string.interactionReview_depositsHeading,
+                title = stringResource(id = R.string.interactionReview_depositsHeading),
                 iconRes = DSR.ic_arrow_received_downward
             )
 

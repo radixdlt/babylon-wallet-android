@@ -15,10 +15,15 @@ class SecurifyEntityProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
 ) : PreviewTypeProcessor<DetailedManifestClass.SecurifyEntity> {
-    override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.SecurifyEntity): PreviewType {
+
+    override suspend fun process(
+        summary: ExecutionSummary,
+        classification: DetailedManifestClass.SecurifyEntity
+    ): PreviewType {
         val profile = getProfileUseCase()
 
-        val entity = when (val address = classification.entityAddress) {
+        val address = classification.entities.first()
+        val entity = when (address) {
             is AddressOfAccountOrPersona.Account -> profile.activeAccountsOnCurrentNetwork.find { it.address == address.v1 }
                 ?.asProfileEntity()
 
@@ -27,14 +32,12 @@ class SecurifyEntityProcessor @Inject constructor(
         } ?: error("Entity not found")
 
         val structure = sargonOsManager.sargonOs
-            .securityStructuresOfFactorSources()
-            .find {
-                it.metadata.id == classification.provisionalSecurityStructureMetadata.id
-            } ?: error("Structure not found")
+            .provisionalSecurityStructureOfFactorSourcesFromAddressOfAccountOrPersona(address)
 
-        return PreviewType.SecurifyEntity(
+        return PreviewType.UpdateSecurityStructure(
             entity = entity,
-            provisionalConfig = structure
+            provisionalConfig = structure,
+            operation = PreviewType.UpdateSecurityStructure.Operation.ApplySecurityStructure
         )
     }
 }

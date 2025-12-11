@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -18,10 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -29,6 +33,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dialogs.info.DSR
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.ShieldConfigView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -36,11 +42,15 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.SecurityStructureId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSample
 import com.radixdlt.sargon.newSecurityStructureOfFactorSourcesSampleOther
+import com.radixdlt.sargon.samples.sampleMainnet
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +60,9 @@ fun SecurityShieldDetailsScreen(
     onBackClick: () -> Unit,
     onApplyShieldClick: (SecurityStructureId) -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
-    onEditShield: () -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onEditShield: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -81,7 +93,9 @@ fun SecurityShieldDetailsScreen(
         onRenameSecurityShieldClick = viewModel::onRenameSecurityShieldClick,
         onFactorClick = onFactorClick,
         onEditFactorsClick = viewModel::onEditFactorsClick,
+        onTimedRecoveryClick = onTimedRecoveryClick,
         onApplyShieldClick = onApplyShieldClick,
+        onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
 
@@ -101,7 +115,9 @@ private fun SecurityShieldDetailsContent(
     onRenameSecurityShieldClick: () -> Unit,
     onFactorClick: (FactorSourceId) -> Unit,
     onEditFactorsClick: () -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     onApplyShieldClick: (SecurityStructureId) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -116,26 +132,68 @@ private fun SecurityShieldDetailsContent(
             )
         },
         bottomBar = {
-            if (state.securityStructureOfFactorSources != null && state.isEditable) {
+            if (state.securityStructureOfFactorSources != null) {
                 RadixBottomBar(
                     button = {
-                        RadixSecondaryButton(
+                        Column(
                             modifier = Modifier
-                                .padding(bottom = RadixTheme.dimensions.paddingDefault)
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(R.string.securityShields_editFactors),
-                            onClick = onEditFactorsClick
-                        )
+                                .padding(
+                                    bottom = if (state.isShieldApplied) {
+                                        0.dp
+                                    } else {
+                                        RadixTheme.dimensions.paddingDefault
+                                    }
+                                )
+                        ) {
+                            RadixSecondaryButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(R.string.securityShields_editFactors),
+                                enabled = state.isEditShieldEnabled,
+                                onClick = onEditFactorsClick
+                            )
+
+                            state.timedRecovery?.let { timedRecovery ->
+                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                                RadixSecondaryButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    text = when {
+                                        timedRecovery.remainingTime != null -> stringResource(
+                                            id = R.string.commonSecurityShields_recoveryIn,
+                                            timedRecovery.formattedTime.orEmpty()
+                                        )
+
+                                        else -> stringResource(id = R.string.commonSecurityShields_recoveryReadyToConfirm)
+                                    },
+                                    leadingContent = {
+                                        Icon(
+                                            modifier = Modifier.size(18.dp),
+                                            painter = painterResource(id = DSR.hourglass),
+                                            contentDescription = null,
+                                            tint = RadixTheme.colors.icon
+                                        )
+                                    },
+                                    onClick = { onTimedRecoveryClick(timedRecovery.entityAddress) }
+                                )
+                            }
+                        }
                     },
-                    additionalBottomContent = {
-                        RadixPrimaryButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.securityShields_apply),
-                            onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
-                        )
+                    additionalBottomContent = if (state.isShieldApplied) {
+                        null
+                    } else {
+                        {
+                            RadixPrimaryButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.securityShields_apply),
+                                onClick = { onApplyShieldClick(state.securityStructureOfFactorSources.metadata.id) }
+                            )
+                        }
                     }
                 )
             }
@@ -152,7 +210,7 @@ private fun SecurityShieldDetailsContent(
                 FullscreenCircularProgressContent()
             } else {
                 Column {
-                    if (state.isEditable) {
+                    if (!state.isShieldApplied) {
                         Text(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
                             text = state.securityShieldName,
@@ -179,7 +237,8 @@ private fun SecurityShieldDetailsContent(
                                 shape = RadixTheme.shapes.roundedRectMedium
                             ),
                         securityStructure = state.securityStructureOfFactorSources,
-                        onFactorClick = onFactorClick
+                        onFactorClick = onFactorClick,
+                        onInfoClick = onInfoClick
                     )
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -202,7 +261,9 @@ private fun SecurityShieldDetailsLightPreview(
             onFactorClick = {},
             onEditFactorsClick = {},
             onApplyShieldClick = {},
-            onBackClick = {}
+            onInfoClick = {},
+            onBackClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }
@@ -222,7 +283,9 @@ private fun SecurityShieldDetailsDarkPreview(
             onFactorClick = {},
             onEditFactorsClick = {},
             onApplyShieldClick = {},
-            onBackClick = {}
+            onInfoClick = {},
+            onBackClick = {},
+            onTimedRecoveryClick = {}
         )
     }
 }
@@ -235,16 +298,20 @@ class SecurityShieldDetailsPreviewProvider : PreviewParameterProvider<SecuritySh
             SecurityShieldDetailsViewModel.State(
                 securityShieldName = "My Shield",
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSample(),
-                isEditable = true
+                isShieldApplied = false
             ),
             SecurityShieldDetailsViewModel.State(
                 securityShieldName = "My Shield 2",
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-                isEditable = true
+                isShieldApplied = false
             ),
             SecurityShieldDetailsViewModel.State(
                 securityStructureOfFactorSources = newSecurityStructureOfFactorSourcesSampleOther(),
-                isEditable = false
+                isShieldApplied = true,
+                timedRecovery = TimedRecoveryDisplayData(
+                    remainingTime = 5.hours,
+                    entityAddress = AddressOfAccountOrPersona.sampleMainnet()
+                )
             )
         )
 }

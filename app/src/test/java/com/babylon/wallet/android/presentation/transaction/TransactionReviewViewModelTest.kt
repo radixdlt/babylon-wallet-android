@@ -27,15 +27,19 @@ import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.InitiateAccessControllerRecoveryProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDeletionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDepositSettingsProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ConfirmAccessControllerRecoveryProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.SecurifyEntityProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.StopAccessControllerRecoveryProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
@@ -137,6 +141,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val sargonOsManager = mockk<SargonOsManager>().also {
         every { it.sargonOs } returns sargonOs
     }
+    private val accessControllerStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()
     private val manifestSummaryToPreviewTypeAnalyser = ManifestSummaryToPreviewTypeAnalyser(
         resolveAssetsFromAddressUseCase,
         getProfileUseCase,
@@ -182,6 +187,15 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         ),
         securifyEntityProcessor = SecurifyEntityProcessor(
             getProfileUseCase = getProfileUseCase,
+            sargonOsManager = sargonOsManager
+        ),
+        initiateAccessControllerRecoveryProcessor = InitiateAccessControllerRecoveryProcessor(
+            sargonOsManager = sargonOsManager
+        ),
+        confirmAccessControllerRecoveryProcessor = ConfirmAccessControllerRecoveryProcessor(
+            sargonOsManager = sargonOsManager
+        ),
+        stopAccessControllerRecoveryProcessor = StopAccessControllerRecoveryProcessor(
             sargonOsManager = sargonOsManager
         )
     )
@@ -256,8 +270,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
-        coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { searchFeePayersUseCase(any(), any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
+        coEvery { signAndNotariseTransactionUseCase(any(), any()) } returns Result.success(notarizationResult)
+        coEvery { searchFeePayersUseCase(any(), any(), any(), any()) } returns Result.success(
+            TransactionFeePayers(
+                AccountAddress.sampleMainnet.random()
+            )
+        )
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
         coEvery { transactionStatusClient.observeTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
@@ -283,7 +301,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             )
         )
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
-        coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
+        coEvery { getFiatValueUseCase.forXrd() } returns Result.success(
+            FiatPrice(
+                "0.06".toDecimal192(),
+                SupportedCurrency.USD
+            )
+        )
     }
 
     override fun initVM(): TransactionReviewViewModel {
@@ -300,7 +323,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             fees = TransactionFeesDelegateImpl(
                 getProfileUseCase = getProfileUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
-                getFiatValueUseCase = getFiatValueUseCase
+                getFiatValueUseCase = getFiatValueUseCase,
+                accessControllerStateDetailsObserver = accessControllerStateDetailsObserver,
+                sargonOsManager = sargonOsManager,
+                dispatcher = coroutineDispatcher
             ),
             submit = TransactionSubmitDelegateImpl(
                 signAndNotarizeTransactionUseCase = signAndNotariseTransactionUseCase,
@@ -361,7 +387,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.failure(
+        coEvery { signAndNotariseTransactionUseCase(any(), any()) } returns Result.failure(
             RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value

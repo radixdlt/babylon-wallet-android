@@ -7,12 +7,13 @@ import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.IntentSignatures
 import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SignedIntent
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionHeader
@@ -38,6 +39,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
     @Suppress("LongParameterList")
     suspend operator fun invoke(
         manifest: TransactionManifest,
+        executionSummary: ExecutionSummary,
         networkId: NetworkId = manifest.networkId,
         message: Message = Message.None,
         lockFee: Decimal192 = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
@@ -64,6 +66,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
                     guarantees = guarantees
                 )
             },
+            executionSummary = executionSummary,
             message = message,
             notaryKey = notarySecretKey.toPublicKey(),
             tipPercentage = tipPercentage,
@@ -77,10 +80,42 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
         }
     }
 
+    suspend fun notarizeFaucetTransaction(
+        manifest: TransactionManifest
+    ): Result<NotarizationResult> {
+        val epochRange = transactionRepository.getLedgerEpoch().getOrElse {
+            return Result.failure(RadixWalletException.DappRequestException.GetEpoch)
+        }.let { epoch ->
+            epoch..<epoch + TransactionConfig.EPOCH_WINDOW
+        }
+        val notarySecretKey = Curve25519SecretKey.secureRandom()
+        val intent = TransactionIntent.from(
+            networkId = manifest.networkId,
+            manifest = manifest,
+            message = Message.None,
+            notaryPublicKey = notarySecretKey.toPublicKey(),
+            notaryIsSignatory = true,
+            tipPercentage = TransactionConfig.TIP_PERCENTAGE,
+            epochs = epochRange
+        )
+        val signedIntent = SignedIntent(
+            intent = intent,
+            intentSignatures = IntentSignatures(
+                signatures = emptyList()
+            )
+        )
+        return notarize(
+            signedIntent = signedIntent,
+            notarySecretKey = notarySecretKey,
+            endEpoch = epochRange.endExclusive
+        )
+    }
+
     @Suppress("LongParameterList")
     private suspend fun sign(
         networkId: NetworkId,
         manifest: TransactionManifest,
+        executionSummary: ExecutionSummary,
         message: Message,
         notaryKey: PublicKey,
         tipPercentage: UShort,
@@ -98,7 +133,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
 
         sargonOsManager.sargonOs.signTransaction(
             transactionIntent = intent,
-            roleKind = RoleKind.PRIMARY
+            executionSummary = executionSummary
         )
     }
 

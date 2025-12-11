@@ -7,7 +7,16 @@ import com.radixdlt.sargon.ThirdPartyDeposits
 sealed interface TransactionType {
 
     data class UpdateThirdPartyDeposits(val thirdPartyDeposits: ThirdPartyDeposits) : TransactionType
+
     data class DeleteAccount(val accountAddress: AccountAddress) : TransactionType
+
     data class SecurifyEntity(val entityAddress: AddressOfAccountOrPersona) : TransactionType
+
+    data class InitiateSecurityStructureRecovery(val entityAddress: AddressOfAccountOrPersona) : TransactionType
+
+    data class ConfirmSecurityStructureRecovery(val entityAddress: AddressOfAccountOrPersona) : TransactionType
+
+    data class StopSecurityStructureRecovery(val entityAddress: AddressOfAccountOrPersona) : TransactionType
+
     data object Generic : TransactionType
 }

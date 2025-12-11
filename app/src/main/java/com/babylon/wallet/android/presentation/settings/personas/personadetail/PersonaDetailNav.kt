@@ -40,7 +40,8 @@ fun NavGraphBuilder.personaDetailScreen(
     onDAppClick: (DApp) -> Unit,
     onFactorSourceCardClick: (FactorSourceId) -> Unit,
     onApplyShieldClick: (AddressOfAccountOrPersona) -> Unit,
-    onShieldClick: (AddressOfAccountOrPersona) -> Unit
+    onShieldClick: (AddressOfAccountOrPersona) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DETAIL,
@@ -69,7 +70,8 @@ fun NavGraphBuilder.personaDetailScreen(
             onDAppClick = onDAppClick,
             onFactorSourceCardClick = onFactorSourceCardClick,
             onApplyShieldClick = onApplyShieldClick,
-            onShieldClick = onShieldClick
+            onShieldClick = onShieldClick,
+            onTimedRecoveryClick = onTimedRecoveryClick
         )
     }
 }

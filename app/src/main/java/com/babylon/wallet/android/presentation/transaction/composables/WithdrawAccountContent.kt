@@ -37,7 +37,7 @@ fun WithdrawAccountContent(
                 .fillMaxWidth()
                 .padding(top = RadixTheme.dimensions.paddingDefault)
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            titleRes = R.string.interactionReview_withdrawalsHeading,
+            title = stringResource(id = R.string.interactionReview_withdrawalsHeading),
             iconRes = DSR.ic_arrow_up_right,
         )
         Column(

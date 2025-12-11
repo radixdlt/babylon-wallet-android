@@ -54,6 +54,7 @@ import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.ConfirmTimedRecoverySheet
 import com.babylon.wallet.android.presentation.transaction.composables.DeleteAccountTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
@@ -154,7 +155,9 @@ fun TransactionReviewScreen(
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning,
         onFailedSigningRestart = viewModel::onFailedSigningRestart,
         onFailedSigningCancel = viewModel::onFailedSigningCancel,
-        onInfoClick = onInfoClick
+        onInfoClick = onInfoClick,
+        onConfirmTimedRecoverySheetDismiss = viewModel::onConfirmTimedRecoverySheetDismiss,
+        onRestartSigningFromTimedRecoverySheet = viewModel::onRestartSigningFromTimedRecoverySheet
     )
 }
 
@@ -193,7 +196,9 @@ private fun TransactionReviewContent(
     onAcknowledgeRawTransactionWarning: () -> Unit,
     onFailedSigningRestart: () -> Unit,
     onFailedSigningCancel: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onConfirmTimedRecoverySheetDismiss: (Boolean) -> Unit,
+    onRestartSigningFromTimedRecoverySheet: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -357,8 +362,9 @@ private fun TransactionReviewContent(
                                 onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick
                             )
 
-                            is PreviewType.SecurifyEntity -> SecurifyEntityTypeContent(
-                                preview = preview
+                            is PreviewType.UpdateSecurityStructure -> SecurifyEntityTypeContent(
+                                preview = preview,
+                                onInfoClick = onInfoClick
                             )
 
                             else -> {}
@@ -532,7 +538,9 @@ private fun TransactionReviewContent(
                     onViewAdvancedModeClick = onViewAdvancedModeClick,
                     onFailedSigningRestart = onFailedSigningRestart,
                     onFailedSigningCancel = onFailedSigningCancel,
-                    onInfoClick = onInfoClick
+                    onInfoClick = onInfoClick,
+                    onConfirmTimedRecoverySheetDismiss = onConfirmTimedRecoverySheetDismiss,
+                    onRestartSigningFromTimedRecoverySheet = onRestartSigningFromTimedRecoverySheet
                 )
             },
             showDragHandle = true,
@@ -579,7 +587,9 @@ private fun BottomSheetContent(
     onViewAdvancedModeClick: () -> Unit,
     onFailedSigningRestart: () -> Unit,
     onFailedSigningCancel: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onInfoClick: (GlossaryItem) -> Unit,
+    onConfirmTimedRecoverySheetDismiss: (Boolean) -> Unit,
+    onRestartSigningFromTimedRecoverySheet: () -> Unit
 ) {
     when (sheetState) {
         is State.Sheet.CustomizeGuarantees -> {
@@ -627,6 +637,18 @@ private fun BottomSheetContent(
                 onCancelTransaction = onFailedSigningCancel
             )
         }
+
+        is State.Sheet.ConfirmTimedRecovery -> {
+            ConfirmTimedRecoverySheet(
+                modifier = modifier,
+                state = sheetState,
+                onDismiss = { onConfirmTimedRecoverySheetDismiss(false) },
+                onRestartSigning = onRestartSigningFromTimedRecoverySheet,
+                onConfirm = { onConfirmTimedRecoverySheetDismiss(true) },
+                onInfoClick = onInfoClick
+            )
+        }
+
         is State.Sheet.None -> {}
     }
 }
@@ -669,7 +691,9 @@ private fun TransactionPreviewContentPreviewLight(
             onFeePayerSelectionDismiss = {},
             onFailedSigningRestart = {},
             onFailedSigningCancel = {},
-            onInfoClick = {}
+            onInfoClick = {},
+            onConfirmTimedRecoverySheetDismiss = {},
+            onRestartSigningFromTimedRecoverySheet = {}
         )
     }
 }
@@ -712,7 +736,9 @@ private fun TransactionPreviewContentPreviewDark(
             onFeePayerSelectionDismiss = {},
             onFailedSigningRestart = {},
             onFailedSigningCancel = {},
-            onInfoClick = {}
+            onInfoClick = {},
+            onConfirmTimedRecoverySheetDismiss = {},
+            onRestartSigningFromTimedRecoverySheet = {}
         )
     }
 }

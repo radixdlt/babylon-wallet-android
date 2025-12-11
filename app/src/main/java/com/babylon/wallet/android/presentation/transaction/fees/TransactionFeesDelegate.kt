@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -11,11 +13,16 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.recoveryOrConfirmationRoleSignatureCount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AccountOrPersona
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
@@ -23,7 +30,9 @@ import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.toUnit
+import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
@@ -62,7 +71,10 @@ interface TransactionFeesDelegate {
 class TransactionFeesDelegateImpl @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase,
-    private val getFiatValueUseCase: GetFiatValueUseCase
+    private val getFiatValueUseCase: GetFiatValueUseCase,
+    private val accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver,
+    private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
     TransactionFeesDelegate {
 
@@ -85,9 +97,12 @@ class TransactionFeesDelegateImpl @Inject constructor(
         observeFeesChanges()
 
         return searchFeePayersUseCase(
-            feePayerCandidates = executionSummary.feePayerCandidates(),
+            feePayerCandidates = executionSummary.feePayerCandidates(transactionFees.transactionFeeToLock),
             xrdWithdrawals = _state.value.previewType.xrdWithdrawals(),
-            lockFee = transactionFees.defaultTransactionFee
+            lockFee = transactionFees.defaultTransactionFee,
+            excludedAccountAddresses = executionSummary.addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+                transactionFees.transactionFeeToLock
+            )
         ).onSuccess { feePayers ->
             _state.update { state ->
                 state.copy(
@@ -145,7 +160,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
                                 ),
                                 feesMode = data.value.latestFeesMode,
                                 transactionFees = requireNotNull(state.fees?.transactionFees),
-                                properties = requireNotNull(state.fees?.properties)
+                                properties = requireNotNull(state.fees.properties)
                             )
                         )
                     }
@@ -160,7 +175,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
                             ),
                             feesMode = data.value.latestFeesMode,
                             transactionFees = requireNotNull(state.fees?.transactionFees),
-                            properties = requireNotNull(state.fees?.properties)
+                            properties = requireNotNull(state.fees.properties)
                         )
                     )
                 }
@@ -192,7 +207,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val feesState = _state.value.fees ?: return
         val selectedFeePayerAccount = feesState.selectedFeePayerInput?.preselectedCandidate?.account ?: return
         val feePayers = data.value.feePayers ?: return
-        val signatureCount = data.value.transactionFees?.signatureCount ?: 0
 
         val updatedFeePayers = feePayers.copy(
             selectedAccountAddress = selectedFeePayerAccount.address,
@@ -201,27 +215,36 @@ class TransactionFeesDelegateImpl @Inject constructor(
         data.update { it.copy(feePayers = updatedFeePayers) }
 
         val customizeFeesSheet = _state.value.sheetState as? Sheet.CustomizeFees ?: return
-        val updatedSignatureCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
-            signatureCount
-        } else {
-            signatureCount + selectedFeePayerAccount.securityState.numberOfSignaturesForTransaction
-        }
 
-        data.update {
-            it.copy(
-                transactionFees = feesState.transactionFees.copy(
-                    signatureCount = updatedSignatureCount
-                )
-            )
-        }
-        _state.update {
-            it.copy(
-                sheetState = customizeFeesSheet.copy(
-                    feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                        feePayerCandidate = selectedFeePayerAccount
+        viewModelScope.launch {
+            val updatedSignatureCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
+                data.value.transactionFees?.signatureCount ?: 0
+            } else {
+                val recoveryOrConfirmationSignatureCount = (data.value.summary as? Summary.FromExecution)?.summary
+                    ?.recoveryOrConfirmationRoleSignatureCount ?: 0
+                val txSignerCount = data.value.analysis?.signers?.numberOfSignaturesForTransaction ?: 0
+
+                txSignerCount + selectedFeePayerAccount.securityState.numberOfSignaturesForTransaction +
+                    recoveryOrConfirmationSignatureCount
+            }
+
+            data.update {
+                it.copy(
+                    transactionFees = feesState.transactionFees.copy(
+                        signatureCount = updatedSignatureCount
                     )
                 )
-            )
+            }
+
+            _state.update {
+                it.copy(
+                    sheetState = customizeFeesSheet.copy(
+                        feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                            feePayerCandidate = selectedFeePayerAccount
+                        )
+                    )
+                )
+            }
         }
     }
 
@@ -373,9 +396,10 @@ class TransactionFeesDelegateImpl @Inject constructor(
             is PreviewType.Transaction -> from.associate {
                 it.account.address to getUsedXrdAmount(it)
             }
+
             is PreviewType.DeleteAccount -> mapOf(deletingAccount.address to to?.let { getUsedXrdAmount(it) }.orZero())
             is PreviewType.AccountsDepositSettings,
-            is PreviewType.SecurifyEntity,
+            is PreviewType.UpdateSecurityStructure,
             is PreviewType.NonConforming,
             is PreviewType.None,
             is PreviewType.UnacceptableManifest -> emptyMap()
@@ -397,12 +421,13 @@ class TransactionFeesDelegateImpl @Inject constructor(
             }
     }
 
-    private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
+    private suspend fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
         val executionSummary = (data.value.summary as? Summary.FromExecution)?.summary ?: error(
             "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
         )
+        val fee = data.value.transactionFees?.transactionFeeToLock.orZero()
 
-        val candidates = executionSummary.feePayerCandidates()
+        val candidates = executionSummary.feePayerCandidates(fee)
         return selectedAccountAddress?.let { candidates.contains(it) } ?: true
     }
 
@@ -424,7 +449,58 @@ class TransactionFeesDelegateImpl @Inject constructor(
         }
     }
 
-    private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
-        deposits.keys +
-        addressesOfAccountsRequiringAuth.toSet()
+    private suspend fun ExecutionSummary.feePayerCandidates(
+        fee: Decimal192
+    ): Set<AccountAddress> {
+        val addressesOfAccountsRequiringAcRecovery =
+            addressesOfAccountsRequiringAcRecovery()
+        val addressesOfAccountsRequiringAcRecoveryEligibleAsFeePayer = addressesOfAccountsRequiringAcRecovery -
+            addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+                addressesOfAccountsRequiringAcRecovery = addressesOfAccountsRequiringAcRecovery,
+                fee = fee
+            )
+
+        return withdrawals.keys +
+            deposits.keys +
+            addressesOfAccountsRequiringAuth.toSet() +
+            addressesOfAccountsRequiringAcRecoveryEligibleAsFeePayer
+    }
+
+    private suspend fun ExecutionSummary.addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+        fee: Decimal192
+    ): Set<AccountAddress> {
+        return addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+            addressesOfAccountsRequiringAcRecovery = addressesOfAccountsRequiringAcRecovery(),
+            fee = fee
+        )
+    }
+
+    private fun addressesOfAccountsRequiringAcRecoveryNotEligibleAsFeePayer(
+        addressesOfAccountsRequiringAcRecovery: Set<AccountAddress>,
+        fee: Decimal192
+    ): Set<AccountAddress> {
+        return addressesOfAccountsRequiringAcRecovery.mapNotNull { accountAddress ->
+            val acHasEnoughXrd = accessControllerStateDetailsObserver.cachedStateByAddress(
+                AddressOfAccountOrPersona.Account(accountAddress)
+            )?.xrdBalance.orZero() > fee
+            if (acHasEnoughXrd) {
+                null
+            } else {
+                accountAddress
+            }
+        }.toSet()
+    }
+
+    private suspend fun ExecutionSummary.addressesOfAccountsRequiringAcRecovery(): Set<AccountAddress> {
+        val acRecoveryClassification = detailedClassification as? DetailedManifestClass.AccessControllerRecovery
+        return acRecoveryClassification?.let { classification ->
+            sargonOsManager.callSafely(dispatcher) {
+                classification.acAddresses.mapNotNull { acAddress ->
+                    (entityByAccessControllerAddress(acAddress) as? AccountOrPersona.AccountEntity)?.v1?.address
+                }
+            }.onFailure { throwable ->
+                logger.w(throwable)
+            }.getOrNull()
+        }.orEmpty().toSet()
+    }
 }

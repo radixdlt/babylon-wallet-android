@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -80,6 +81,7 @@ fun WalletScreen(
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
+    onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -95,6 +97,7 @@ fun WalletScreen(
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onLockerDepositClick = viewModel::onLockerDepositClick,
+        onTimedRecoveryClick = { onNavigateToTimedRecovery(it) },
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose,
     )
@@ -170,6 +173,7 @@ private fun WalletContent(
     onMessageShown: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
     onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -228,6 +232,7 @@ private fun WalletContent(
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
                 onLockerDepositClick = onLockerDepositClick,
+                onTimedRecoveryClick = onTimedRecoveryClick,
                 onCardClick = onCardClick,
                 onCardCloseClick = onCardCloseClick
             )
@@ -255,6 +260,7 @@ private fun WalletAccountList(
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
     onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
+    onTimedRecoveryClick: (AddressOfAccountOrPersona) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -310,7 +316,8 @@ private fun WalletAccountList(
                     },
                 accountWithAssets = accountWithAssets,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
-                onLockerDepositClick = onLockerDepositClick
+                onLockerDepositClick = onLockerDepositClick,
+                onTimedRecoveryClick = onTimedRecoveryClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -342,6 +349,7 @@ private fun WalletContentPreview(
             onMessageShown = {},
             onApplySecuritySettingsClick = {},
             onLockerDepositClick = { _, _ -> },
+            onTimedRecoveryClick = {},
             onCardClick = {},
             onCardCloseClick = {}
         )

@@ -4,13 +4,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
+import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.SecurityStructureOfFactorSources
@@ -32,6 +35,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val shieldBuilderClient: SecurityShieldBuilderClient,
+    private val accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver,
     getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<SecurityShieldDetailsViewModel.State>(),
@@ -45,6 +49,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         getProfileUseCase.flow.distinctUntilChanged()
             .onEach { getSecurityStructuresOfFactorSources(args.input) }
             .launchIn(viewModelScope)
+        observeAccountRecoveryState()
     }
 
     private fun getSecurityStructuresOfFactorSources(input: SecurityShieldDetailsArgs.Input) {
@@ -63,7 +68,7 @@ class SecurityShieldDetailsViewModel @Inject constructor(
                     state.copy(
                         securityShieldName = securityStructureOfFactorSources.metadata.displayName.value,
                         securityStructureOfFactorSources = securityStructureOfFactorSources,
-                        isEditable = input is SecurityShieldDetailsArgs.Input.Id
+                        isShieldApplied = input is SecurityShieldDetailsArgs.Input.Address,
                     )
                 }
             }.onFailure {
@@ -130,9 +135,33 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val shield = state.value.securityStructureOfFactorSources ?: return
 
         viewModelScope.launch {
-            shieldBuilderClient.withExistingSecurityStructure(shield)
+            if (args.input is SecurityShieldDetailsArgs.Input.Address) {
+                shieldBuilderClient.withAppliedSecurityStructure(shield, args.input.value)
+            } else {
+                shieldBuilderClient.withExistingSecurityStructure(shield)
+            }
             sendEvent(Event.EditShield)
         }
+    }
+
+    private fun observeAccountRecoveryState() {
+        val address = (args.input as? SecurityShieldDetailsArgs.Input.Address)?.value ?: return
+
+        accessControllerStateDetailsObserver.acStateByEntityAddress
+            .onEach { states ->
+                val recoveryState = states[address]
+                _state.update { state ->
+                    state.copy(
+                        timedRecovery = recoveryState?.timedRecoveryState?.let {
+                            TimedRecoveryDisplayData(
+                                remainingTime = it.remainingTime,
+                                entityAddress = address
+                            )
+                        }
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     data class State(
@@ -141,8 +170,11 @@ class SecurityShieldDetailsViewModel @Inject constructor(
         val isRenameBottomSheetVisible: Boolean = false,
         val renameSecurityShieldInput: RenameSecurityShieldInput = RenameSecurityShieldInput(),
         val uiMessage: UiMessage? = null,
-        val isEditable: Boolean = false
+        val isShieldApplied: Boolean = false,
+        val timedRecovery: TimedRecoveryDisplayData? = null
     ) : UiState {
+
+        val isEditShieldEnabled: Boolean = timedRecovery == null
 
         data class RenameSecurityShieldInput(
             override val name: String = "",

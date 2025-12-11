@@ -8,6 +8,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.utils.AppsFlyerIntegrationManager
 import com.babylon.wallet.android.utils.logger.PersistentLogger
@@ -50,6 +51,9 @@ class RadixApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var persistentLoggerProvider: Lazy<PersistentLogger>
 
+    @Inject
+    lateinit var accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver
+
     override val workManagerConfiguration: Configuration =
         Configuration.Builder()
             .setWorkerFactory(EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory())
@@ -78,6 +82,7 @@ class RadixApplication : Application(), Configuration.Provider {
         override fun onStart(owner: LifecycleOwner) {
             super.onStart(owner)
             accountLockersObserver.startMonitoring()
+            accessControllerStateDetailsObserver.startMonitoring()
         }
 
         override fun onStop(owner: LifecycleOwner) {
@@ -86,6 +91,7 @@ class RadixApplication : Application(), Configuration.Provider {
             }
             super.onStop(owner)
             accountLockersObserver.stopMonitoring()
+            accessControllerStateDetailsObserver.stopMonitoring()
         }
     }
 

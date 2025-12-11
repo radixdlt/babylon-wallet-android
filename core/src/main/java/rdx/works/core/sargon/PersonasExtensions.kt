@@ -1,5 +1,6 @@
 package rdx.works.core.sargon
 
+import com.radixdlt.sargon.AccessControllerAddress
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
@@ -21,6 +22,9 @@ val Persona.isHidden: Boolean
 // Keeping this for parity with account.
 val Persona.isDeleted: Boolean
     get() = EntityFlag.TOMBSTONED_BY_USER in flags
+
+val Persona.securityStateAccessControllerAddress: AccessControllerAddress?
+    get() = (securityState as? EntitySecurityState.Securified)?.value?.accessControllerAddress
 
 @Suppress("LongParameterList")
 fun Persona.Companion.init(

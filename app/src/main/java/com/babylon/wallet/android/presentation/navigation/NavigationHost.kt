@@ -98,6 +98,7 @@ import com.babylon.wallet.android.presentation.settings.troubleshooting.accountr
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
+import com.babylon.wallet.android.presentation.timedrecovery.timedRecovery
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
@@ -293,7 +294,8 @@ fun NavigationHost(
             onDAppClick = { navController.dAppDetailScreen(dappDefinitionAddress = it) },
             onInfoLinkClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onMoreInfoClick = { navController.learnScreen() },
-            onMoreBlogPostsClick = { navController.blogPostsScreen() }
+            onMoreBlogPostsClick = { navController.blogPostsScreen() },
+            onNavigateToTimedRecovery = { navController.timedRecovery(it) }
         )
         account(
             onAccountPreferenceClick = { address ->
@@ -330,6 +332,9 @@ fun NavigationHost(
             },
             onInfoClick = { glossaryItem ->
                 navController.infoDialog(glossaryItem)
+            },
+            onNavigateToTimedRecovery = { address ->
+                navController.timedRecovery(address)
             }
         )
         requestAuthorizationDialog(
@@ -432,6 +437,9 @@ fun NavigationHost(
             },
             onShieldClick = {
                 navController.securityShieldDetails(it)
+            },
+            onTimedRecoveryClick = {
+                navController.timedRecovery(it)
             }
         )
         personaEditScreen(
@@ -554,6 +562,9 @@ fun NavigationHost(
             },
             onShieldClick = {
                 navController.securityShieldDetails(it)
+            },
+            onTimedRecoveryClick = {
+                navController.timedRecovery(it)
             }
         )
         deleteAccount(
@@ -737,6 +748,10 @@ fun NavigationHost(
             onDismiss = { navController.popBackStack() },
             onLedgerIdentified = { navController.setFactorSourceName() },
             onArculusIdentified = { navController.seedPhrase() }
+        )
+        timedRecovery(
+            onDismiss = { navController.popBackStack() },
+            onInfoClick = { navController.infoDialog(it) }
         )
     }
 }

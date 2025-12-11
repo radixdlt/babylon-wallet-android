@@ -7,7 +7,7 @@ import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import javax.inject.Inject
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "CyclomaticComplexMethod")
 class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val generalTransferProcessor: GeneralTransferProcessor,
     private val transferProcessor: TransferProcessor,
@@ -18,7 +18,10 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val validatorClaimProcessor: ValidatorClaimProcessor,
     private val validatorUnstakeProcessor: ValidatorUnstakeProcessor,
     private val accountDeletionProcessor: AccountDeletionProcessor,
-    private val securifyEntityProcessor: SecurifyEntityProcessor
+    private val securifyEntityProcessor: SecurifyEntityProcessor,
+    private val initiateAccessControllerRecoveryProcessor: InitiateAccessControllerRecoveryProcessor,
+    private val confirmAccessControllerRecoveryProcessor: ConfirmAccessControllerRecoveryProcessor,
+    private val stopAccessControllerRecoveryProcessor: StopAccessControllerRecoveryProcessor,
 ) : SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
@@ -39,6 +42,18 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.SecurifyEntity -> securifyEntityProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.AccessControllerConfirmTimedRecovery -> confirmAccessControllerRecoveryProcessor.process(
+                executionSummary,
+                manifestClass
+            )
+            is DetailedManifestClass.AccessControllerRecovery -> initiateAccessControllerRecoveryProcessor.process(
+                executionSummary,
+                manifestClass
+            )
+            is DetailedManifestClass.AccessControllerStopTimedRecovery -> stopAccessControllerRecoveryProcessor.process(
+                executionSummary,
+                manifestClass
+            )
         }
     }
 }
