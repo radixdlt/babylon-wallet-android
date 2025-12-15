@@ -70,9 +70,6 @@ class MainViewModel @Inject constructor(
 ) : StateViewModel<MainViewModel.State>(),
     OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
 
-    val observeP2PLinks
-        get() = incomingRequestsDelegate.observeP2PLinks
-
     val statusEvents = appEventBus.events
         .filterIsInstance<AppEvent.Status>()
 

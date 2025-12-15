@@ -54,6 +54,9 @@ class RadixApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver
 
+    @Inject
+    lateinit var appLifecycleObserver: com.babylon.wallet.android.utils.AppLifecycleObserver
+
     override val workManagerConfiguration: Configuration =
         Configuration.Builder()
             .setWorkerFactory(EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory())
@@ -61,19 +64,19 @@ class RadixApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        if (BuildConfig.DEBUG_MODE) {
-            Timber.plant(Timber.DebugTree())
-        }
 
         if (BuildConfig.FILE_LOGGER_ENABLED) {
             val logger = persistentLoggerProvider.get()
             Timber.plant(logger)
+        } else if (BuildConfig.DEBUG_MODE) {
+            Timber.plant(Timber.DebugTree())
         }
 
         Timber.i("Application created.")
 
         appsFlyerIntegrationManager.init()
         bootstrapHomeCards()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(appLifecycleObserver)
         ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver())
     }
 
