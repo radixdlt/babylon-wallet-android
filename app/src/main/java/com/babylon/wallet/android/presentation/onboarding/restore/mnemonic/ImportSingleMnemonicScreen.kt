@@ -68,7 +68,6 @@ private fun ImportSingleMnemonicsContent(
         isLoading = state.isLoading,
         uiMessage = state.uiMessage,
         factorSourceCard = state.factorSourceCard,
-        isOlympia = state.isOlympia,
         seedPhraseState = state.seedPhraseState,
         bottomBar = {
             RadixBottomBar(

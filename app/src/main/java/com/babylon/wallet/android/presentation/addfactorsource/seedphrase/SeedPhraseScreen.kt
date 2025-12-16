@@ -131,7 +131,7 @@ private fun SeedPhraseContent(
         focusedWordIndex = focusedWordIndex,
         numberOfWordsOptions = state.numberOfWordsOptions.toPersistentList(),
         showNumberOfWordsPicker = state.showNumberOfWordsPicker,
-        showAdvancedMode = state.isOlympiaRecovery,
+        showAdvancedMode = true,
         isEditingEnabled = state.isEditingEnabled,
         errorMessage = state.errorMessage,
         onDismiss = onDismiss,

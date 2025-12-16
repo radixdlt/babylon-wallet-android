@@ -87,6 +87,7 @@ fun SpotCheckDialog(
         onArculusPinChange = viewModel::onArculusPinChange,
         onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
         onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
+        onMnemonicPassphraseChanged = viewModel::onMnemonicPassphraseChanged,
         onInputConfirmed = viewModel::onInputConfirmed,
         onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry,
@@ -104,6 +105,7 @@ private fun SpotCheckBottomSheetContent(
     onArculusPinChange: (String) -> Unit,
     onForgotArculusPinClick: () -> Unit,
     onArculusInfoMessageDismiss: () -> Unit,
+    onMnemonicPassphraseChanged: (String) -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
@@ -196,6 +198,7 @@ private fun SpotCheckBottomSheetContent(
                             onFocusedWordChanged = {
                                 focusedWordIndex = it
                             },
+                            onPassphraseChanged = onMnemonicPassphraseChanged,
                             onConfirmed = onInputConfirmed,
                             onSkipClick = onIgnoreClick
                         )
@@ -253,6 +256,7 @@ private fun SpotCheckPreviewLight(
             onArculusPinChange = {},
             onForgotArculusPinClick = {},
             onArculusInfoMessageDismiss = {},
+            onMnemonicPassphraseChanged = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onIgnoreClick = {}
@@ -283,6 +287,7 @@ private fun SpotCheckPreviewDark(
             onArculusPinChange = {},
             onForgotArculusPinClick = {},
             onArculusInfoMessageDismiss = {},
+            onMnemonicPassphraseChanged = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onIgnoreClick = {}

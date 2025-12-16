@@ -21,7 +21,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileToCheck
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.supportsOlympia
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
@@ -244,9 +243,6 @@ class ImportMnemonicsViewModel @Inject constructor(
 
         val isPrimaryButtonEnabled: Boolean
             get() = seedPhraseState.isValidSeedPhrase() && !isSecondaryButtonLoading
-
-        val isOlympia: Boolean
-            get() = recoverableFactorSource?.factorSource?.supportsOlympia == true
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1

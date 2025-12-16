@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.factors
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.utils.callSafely
+import com.radixdlt.sargon.Bip39Passphrase
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -46,6 +47,10 @@ class MnemonicBuilderClient @Inject constructor(
                 )
             }
         )
+    }
+
+    suspend fun setPassphrase(passphrase: Bip39Passphrase) = executeMutating {
+        setPassphrase(passphrase)
     }
 
     suspend fun isFactorAlreadyInUse(kind: FactorSourceKind): Result<Boolean> = sargonOsManager.callSafely(dispatcher) {

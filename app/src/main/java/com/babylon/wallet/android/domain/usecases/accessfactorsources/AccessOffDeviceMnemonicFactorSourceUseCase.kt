@@ -4,6 +4,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.common.seedphrase.toMnemonicWithPassphraseOrNull
+import com.radixdlt.sargon.Bip39Passphrase
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
@@ -27,9 +28,10 @@ class AccessOffDeviceMnemonicFactorSourceUseCase @Inject constructor(
 
     suspend fun onSeedPhraseConfirmed(
         factorSourceId: FactorSourceIdFromHash,
-        words: List<SeedPhraseWord>
+        words: List<SeedPhraseWord>,
+        passphrase: Bip39Passphrase
     ): SeedPhraseValidity {
-        val seedPhrase = words.toMnemonicWithPassphraseOrNull() ?: return SeedPhraseValidity.InvalidMnemonic
+        val seedPhrase = words.toMnemonicWithPassphraseOrNull(passphrase) ?: return SeedPhraseValidity.InvalidMnemonic
 
         val generatedId = seedPhrase.factorSourceId(kind = FactorSourceKind.OFF_DEVICE_MNEMONIC)
 

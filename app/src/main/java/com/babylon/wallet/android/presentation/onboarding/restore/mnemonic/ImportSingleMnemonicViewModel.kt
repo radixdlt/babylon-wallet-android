@@ -28,7 +28,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.deviceFactorSources
-import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.ImportMnemonicUseCase
@@ -164,8 +163,7 @@ class ImportSingleMnemonicViewModel @Inject constructor(
                         accounts = linkedEntities?.accounts.orEmpty().toPersistentList(),
                         personas = linkedEntities?.personas.orEmpty().toPersistentList(),
                         hasHiddenEntities = linkedEntities.hasHiddenEntities
-                    ),
-                    isOlympia = factorSource.supportsOlympia
+                    )
                 )
             }
         }
@@ -175,7 +173,6 @@ class ImportSingleMnemonicViewModel @Inject constructor(
         val isLoading: Boolean,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
         val factorSourceCard: FactorSourceCard? = null,
-        val isOlympia: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isButtonLoading: Boolean = false
     ) : UiState {

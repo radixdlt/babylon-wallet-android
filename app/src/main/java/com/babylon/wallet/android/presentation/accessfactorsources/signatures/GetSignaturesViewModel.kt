@@ -185,6 +185,8 @@ class GetSignaturesViewModel @Inject constructor(
 
     fun onArculusInfoMessageDismiss() = accessDelegate.onArculusInfoMessageDismiss()
 
+    fun onMnemonicPassphraseChanged(value: String) = accessDelegate.onMnemonicPassphraseChanged(value)
+
     fun onRetry() = accessDelegate.onRetry()
 
     fun onMessageShown() = accessDelegate.onMessageShown()

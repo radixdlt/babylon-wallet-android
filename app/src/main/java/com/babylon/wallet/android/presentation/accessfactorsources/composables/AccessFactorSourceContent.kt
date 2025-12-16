@@ -316,6 +316,7 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
     skipOption: AccessFactorSourceSkipOption,
     onWordChanged: (Int, String) -> Unit,
     onFocusedWordChanged: (Int) -> Unit,
+    onPassphraseChanged: (String) -> Unit,
     onConfirmed: () -> Unit,
     onSkipClick: () -> Unit,
 ) {
@@ -332,11 +333,10 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 seedPhraseWords = seedPhraseInputState.inputWords,
-                bip39Passphrase = "",
+                bip39Passphrase = seedPhraseInputState.delegateState.bip39Passphrase,
                 onWordChanged = onWordChanged,
-                onPassphraseChanged = {},
+                onPassphraseChanged = onPassphraseChanged,
                 onFocusedWordIndexChanged = onFocusedWordChanged,
-                showAdvancedMode = false,
                 initiallyFocusedIndex = 0
             )
 
@@ -651,6 +651,7 @@ private fun PreviewContent(
                     seedPhraseValidity = SeedPhraseValidity.WrongMnemonic
                 ),
                 onWordChanged = delegate::onWordChanged,
+                onPassphraseChanged = delegate::onPassphraseChanged,
                 onFocusedWordChanged = {},
                 onConfirmed = {},
                 onSkipClick = {},

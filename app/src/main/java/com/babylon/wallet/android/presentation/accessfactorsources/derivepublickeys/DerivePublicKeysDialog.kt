@@ -89,6 +89,7 @@ fun DerivePublicKeysDialog(
         onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
         onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
         onInputConfirmed = viewModel::onInputConfirmed,
+        onMnemonicPassphraseChanged = viewModel::onMnemonicPassphraseChanged,
         onDismiss = viewModel::onDismiss,
         onRetryClick = viewModel::onRetry
     )
@@ -104,6 +105,7 @@ private fun DerivePublicKeysSheetContent(
     onArculusPinChange: (String) -> Unit,
     onForgotArculusPinClick: () -> Unit,
     onArculusInfoMessageDismiss: () -> Unit,
+    onMnemonicPassphraseChanged: (String) -> Unit,
     onInputConfirmed: () -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
@@ -192,6 +194,7 @@ private fun DerivePublicKeysSheetContent(
                             onFocusedWordChanged = {
                                 focusedWordIndex = it
                             },
+                            onPassphraseChanged = onMnemonicPassphraseChanged,
                             onSkipClick = {}
                         )
 
@@ -247,6 +250,7 @@ private fun DerivePublicKeyPreview(
             onArculusPinChange = {},
             onForgotArculusPinClick = {},
             onArculusInfoMessageDismiss = {},
+            onMnemonicPassphraseChanged = {},
             onRetryClick = {},
             onInputConfirmed = {}
         )
@@ -275,6 +279,7 @@ private fun DerivePublicKeyPreviewDark(
             onArculusPinChange = {},
             onForgotArculusPinClick = {},
             onArculusInfoMessageDismiss = {},
+            onMnemonicPassphraseChanged = {},
             onRetryClick = {},
             onInputConfirmed = {}
         )
