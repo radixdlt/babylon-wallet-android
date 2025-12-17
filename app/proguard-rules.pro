@@ -52,7 +52,14 @@
 # the RuntimeVisibleParameterAnnotations is for retrofit
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault, RuntimeVisibleParameterAnnotations
 
+# Keep WebRTC classes
 -keep class org.webrtc.**  { *; }
+-keep class org.jni_zero.** { *; }
+-keepclassmembers class org.jni_zero.** { *; }
+# Keep classes that declare native methods (helps JNI bridges)
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
 
 -keep class org.bouncycastle.**  { *; }
 
