@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.main.p2plinks
 
+import androidx.lifecycle.Lifecycle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -14,6 +15,7 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.main.MainViewModel.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.AppLifecycleObserver
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.RadixConnectPassword
 import kotlinx.coroutines.CoroutineScope
@@ -21,22 +23,20 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @Suppress("LongParameterList")
 class IncomingRequestsDelegate @Inject constructor(
@@ -46,14 +46,15 @@ class IncomingRequestsDelegate @Inject constructor(
     private val appEventBus: AppEventBus,
     private val getProfileUseCase: GetProfileUseCase,
     private val verifyDappUseCase: VerifyDAppUseCase,
-    private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase
+    private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
+    private val appLifecycleObserver: AppLifecycleObserver
 ) : ViewModelDelegateWithEvents<MainViewModel.State, Event>() {
 
     private var verifyingDappRequestJob: Job? = null
     private var incomingDappRequestsJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
-
-    val observeP2PLinks by lazy { observeP2PLinks() }
+    private var observeP2PLinksJob: Job? = null
+    private var observeAppLifecycleJob: Job? = null
 
     override fun invoke(
         scope: CoroutineScope,
@@ -62,6 +63,7 @@ class IncomingRequestsDelegate @Inject constructor(
     ) {
         super.invoke(scope, state, oneOffEventHandler)
         handleAllIncomingRequests()
+        observeP2PLinks()
     }
 
     fun verifyIncomingRequest(request: DappToWalletInteraction) {
@@ -118,33 +120,33 @@ class IncomingRequestsDelegate @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeP2PLinks(): SharedFlow<Unit> = getProfileUseCase.state
-        .flatMapLatest { profileState ->
-            /**
-             * Observe p2p links after the profile has been restored,
-             * otherwise skip the first value and observe only the upcoming changes.
-             * This ensures the p2p links connection is not being unnecessarily established,
-             * but is being established upon request (e.g when a new p2p link has been added),
-             * even if the profile has not yet been restored
-             */
-            when (profileState) {
-                is ProfileState.Loaded -> p2PLinksRepository.observeP2PLinks()
-                else -> p2PLinksRepository.observeP2PLinks().drop(1)
+    private fun observeP2PLinks() {
+        observeP2PLinksJob?.cancel()
+        observeP2PLinksJob = getProfileUseCase.state
+            .flatMapLatest { profileState ->
+                /**
+                 * Observe p2p links after the profile has been restored,
+                 * otherwise skip the first value and observe only the upcoming changes.
+                 * This ensures the p2p links connection is not being unnecessarily established,
+                 * but is being established upon request (e.g when a new p2p link has been added),
+                 * even if the profile has not yet been restored
+                 */
+                when (profileState) {
+                    is ProfileState.Loaded -> p2PLinksRepository.observeP2PLinks()
+                    else -> p2PLinksRepository.observeP2PLinks().drop(1)
+                }
             }
-        }
-        .map { p2pLinks ->
-            Timber.d("found ${p2pLinks.size} p2p links")
-            p2pLinks.asList().forEach { p2PLink ->
-                establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
+            .map { p2pLinks ->
+                Timber.d("found ${p2pLinks.size} p2p links")
+                p2pLinks.asList().forEach { p2PLink ->
+                    establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
+                }
             }
-        }
-        .onCompletion {
-            terminatePeerdroid()
-        }
-        .shareIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT)
-        )
+            .onCompletion {
+                terminatePeerdroid()
+            }
+            .launchIn(viewModelScope)
+    }
 
     private suspend fun establishLinkConnection(connectionPassword: RadixConnectPassword) {
         peerdroidClient.connect(connectionPassword)
@@ -178,10 +180,28 @@ class IncomingRequestsDelegate @Inject constructor(
                             }
                     }
                 }
+
+                reconnectOnAppForeground()
             }
             .onFailure { throwable ->
                 Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
             }
+    }
+
+    private fun reconnectOnAppForeground() {
+        observeAppLifecycleJob?.cancel()
+        observeAppLifecycleJob = appLifecycleObserver.lifecycleEvents.onEach { event ->
+            val isConnected = peerdroidClient.hasAtLeastOneConnection.firstOrNull() ?: false
+
+            when (event) {
+                Lifecycle.Event.ON_START -> if (isConnected) {
+                    Timber.d("P2P link connection is still active on app foreground")
+                } else {
+                    observeP2PLinks()
+                }
+                else -> null
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun terminatePeerdroid() {
@@ -205,7 +225,6 @@ class IncomingRequestsDelegate @Inject constructor(
 
     companion object {
 
-        private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private val REQUEST_HANDLING_DELAY = 300.milliseconds
     }
 }

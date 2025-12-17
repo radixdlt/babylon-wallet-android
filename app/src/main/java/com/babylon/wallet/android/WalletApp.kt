@@ -163,7 +163,6 @@ fun WalletApp(
             onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
             onHighPriorityScreen = mainViewModel::onHighPriorityScreen
         )
-        mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
         if (state.showDeviceNotSecureDialog) {
             NotSecureAlertDialog(finish = {
                 if (it) {

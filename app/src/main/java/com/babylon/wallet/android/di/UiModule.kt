@@ -14,10 +14,13 @@ import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxyImpl
 import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceIOHandler
 import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
 import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxyImpl
+import com.babylon.wallet.android.utils.AppLifecycleObserver
+import com.babylon.wallet.android.utils.AppLifecycleObserverImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -67,4 +70,10 @@ interface UiModule {
     fun bindNfcSessionProxy(
         impl: NfcSessionProxyImpl
     ): NfcSessionProxy
+
+    @Binds
+    @Singleton
+    fun bindAppLifecycleObserver(
+        impl: AppLifecycleObserverImpl
+    ): AppLifecycleObserver
 }
