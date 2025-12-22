@@ -76,7 +76,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
 
         val result = sut.onSeedPhraseConfirmed(
             factorSourceId = offDeviceMnemonicFs.id,
-            words = words
+            words = words,
+            passphrase = ""
         )
 
         assertEquals(
@@ -95,7 +96,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
 
         val result = sut.onSeedPhraseConfirmed(
             factorSourceId = validFactorSourceId,
-            words = words
+            words = words,
+            passphrase = ""
         )
 
         assertEquals(
@@ -121,7 +123,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
 
         val result = sut.onSeedPhraseConfirmed(
             factorSourceId = validFactorSourceId,
-            words = wordsOfDifferentMnemonic
+            words = wordsOfDifferentMnemonic,
+            passphrase = ""
         )
 
         assertEquals(
@@ -146,7 +149,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
 
         val result = sut.onSeedPhraseConfirmed(
             factorSourceId = invalidFactorSourceId,
-            words = words
+            words = words,
+            passphrase = ""
         )
 
         assertEquals(
@@ -178,7 +182,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         GlobalScope.launch {
             sut.onSeedPhraseConfirmed(
                 factorSourceId = offDeviceMnemonicFs.id,
-                words = words
+                words = words,
+                passphrase = ""
             )
         }
 
@@ -286,7 +291,8 @@ class AccessOffDeviceMnemonicFactorSourceUseCaseTest {
         GlobalScope.launch {
             sut.onSeedPhraseConfirmed(
                 factorSourceId = offDeviceMnemonicFs.id,
-                words = words
+                words = words,
+                passphrase = ""
             )
         }
 

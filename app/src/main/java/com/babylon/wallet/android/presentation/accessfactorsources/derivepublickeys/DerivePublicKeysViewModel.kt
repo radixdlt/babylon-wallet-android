@@ -95,6 +95,8 @@ class DerivePublicKeysViewModel @Inject constructor(
 
     fun onInputConfirmed() = accessDelegate.onInputConfirmed()
 
+    fun onMnemonicPassphraseChanged(value: String) = accessDelegate.onMnemonicPassphraseChanged(value)
+
     private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = withContext(defaultDispatcher) {
         when (factorSource) {
             is FactorSource.Device -> accessDeviceFactorSource.derivePublicKeys(

@@ -47,7 +47,6 @@ fun ImportMnemonicContentView(
     isLoading: Boolean,
     uiMessage: UiMessage?,
     factorSourceCard: FactorSourceCard?,
-    isOlympia: Boolean,
     seedPhraseState: SeedPhraseInputDelegate.State,
     bottomBar: @Composable () -> Unit,
     onBackClick: () -> Unit,
@@ -154,8 +153,7 @@ fun ImportMnemonicContentView(
                     onWordChanged = onWordChanged,
                     onPassphraseChanged = onPassphraseChanged,
                     onFocusedWordIndexChanged = { focusedWordIndex = it },
-                    initiallyFocusedIndex = 0,
-                    showAdvancedMode = isOlympia
+                    initiallyFocusedIndex = 0
                 )
 
                 val shouldDisplaySeedPhraseWarning = remember(seedPhraseState) {

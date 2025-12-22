@@ -128,6 +128,7 @@ class SeedPhraseViewModel @Inject constructor(
                         )
                     )
                 }
+                mnemonicBuilderClient.setPassphrase(seedPhraseInputDelegate.state.value.bip39Passphrase)
             }
 
             mnemonicBuilderClient.isFactorAlreadyInUse(input.kind)
@@ -205,7 +206,7 @@ class SeedPhraseViewModel @Inject constructor(
         val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState {
 
-        val isOlympiaRecovery = context is AddFactorSourceInput.Context.Recovery && context.isOlympia
+        private val isOlympiaRecovery = context is AddFactorSourceInput.Context.Recovery && context.isOlympia
         val isConfirmButtonEnabled = seedPhraseState.isInputComplete()
         val showNumberOfWordsPicker =
             isOlympiaRecovery || (factorSourceKind == FactorSourceKind.OFF_DEVICE_MNEMONIC && isEditingEnabled)

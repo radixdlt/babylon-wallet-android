@@ -149,7 +149,7 @@ private fun FactorSourceDetailsContent(
             modifier = Modifier.padding(padding)
         ) {
             Text(
-                text = "Manage Factor",
+                text = stringResource(id = R.string.factorSources_detail_manage),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.textSecondary,
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
@@ -171,13 +171,6 @@ private fun FactorSourceDetailsContent(
                 onForgotArculusPinClick = onForgotArculusPinClick
             )
 
-//            Text(
-//                text = "Test",
-//                style = RadixTheme.typography.body1Header,
-//                color = RadixTheme.colors.gray2,
-//                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
-//            )
-//
 //            DefaultSettingsItem(
 //                title = stringResource(id = R.string.factorSources_detail_spotCheck),
 //                subtitle = stringResource(id = R.string.factorSources_detail_testCanUse),

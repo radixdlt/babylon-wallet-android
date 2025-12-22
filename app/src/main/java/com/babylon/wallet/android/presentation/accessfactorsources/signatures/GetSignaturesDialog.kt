@@ -92,6 +92,7 @@ fun GetSignaturesDialog(
         onArculusPinChange = viewModel::onArculusPinChange,
         onForgotArculusPinClick = viewModel::onForgotArculusPinClick,
         onArculusInfoMessageDismiss = viewModel::onArculusInfoMessageDismiss,
+        onMnemonicPassphraseChanged = viewModel::onMnemonicPassphraseChanged,
         onRetryClick = viewModel::onRetry,
         onSkipClick = viewModel::onSkip
     )
@@ -108,6 +109,7 @@ private fun GetSignaturesBottomSheetContent(
     onForgotArculusPinClick: () -> Unit,
     onArculusInfoMessageDismiss: () -> Unit,
     onInputConfirmed: () -> Unit,
+    onMnemonicPassphraseChanged: (String) -> Unit,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
@@ -201,6 +203,7 @@ private fun GetSignaturesBottomSheetContent(
                             onFocusedWordChanged = {
                                 focusedWordIndex = it
                             },
+                            onPassphraseChanged = onMnemonicPassphraseChanged,
                             onConfirmed = onInputConfirmed,
                             onSkipClick = onSkipClick
                         )
@@ -267,6 +270,7 @@ private fun GetSignaturesPreviewLight(
             onArculusPinChange = {},
             onForgotArculusPinClick = {},
             onArculusInfoMessageDismiss = {},
+            onMnemonicPassphraseChanged = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}
@@ -300,6 +304,7 @@ private fun GetSignaturesPreviewDark(
             onArculusPinChange = {},
             onForgotArculusPinClick = {},
             onArculusInfoMessageDismiss = {},
+            onMnemonicPassphraseChanged = {},
             onRetryClick = {},
             onInputConfirmed = {},
             onSkipClick = {}

@@ -166,7 +166,8 @@ class AccessFactorSourceDelegate private constructor(
             is FactorSource.OffDeviceMnemonic -> {
                 val validity = accessOffDeviceMnemonicFactorSource.onSeedPhraseConfirmed(
                     factorSourceId = factorSource.value.id,
-                    words = _state.value.seedPhraseInputState.inputWords
+                    words = _state.value.seedPhraseInputState.inputWords,
+                    passphrase = _state.value.seedPhraseInputState.delegateState.bip39Passphrase
                 )
 
                 _state.update {
@@ -189,6 +190,10 @@ class AccessFactorSourceDelegate private constructor(
                 // The rest of the factor sources require no manual input
             }
         }
+    }
+
+    fun onMnemonicPassphraseChanged(value: String) {
+        seedPhraseInputDelegate.onPassphraseChanged(value)
     }
 
     fun onCancelAccess() {

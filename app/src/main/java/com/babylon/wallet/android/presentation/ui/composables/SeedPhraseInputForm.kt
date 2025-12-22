@@ -78,6 +78,7 @@ fun SeedPhraseInputForm(
                 value = bip39Passphrase,
                 leftLabel = LabelType.Default(stringResource(id = R.string.importMnemonic_passphrase)),
                 optionalHint = stringResource(id = R.string.importMnemonic_passphraseHint),
+                singleLine = true
             )
         }
 
