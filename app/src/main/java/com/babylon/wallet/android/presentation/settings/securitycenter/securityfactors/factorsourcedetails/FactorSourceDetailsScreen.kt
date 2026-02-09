@@ -180,9 +180,9 @@ private fun FactorSourceDetailsContent(
             )
 
             DefaultSettingsItem(
-                title = "Get New MFA Factor Instance",
-                subtitle = "Get New MFA Factor Instance",
-                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_check_circle_outline,
+                title = "MFA Signature Resource",
+                subtitle = "Derive a new public key for configuring authentication rules",
+                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key,
                 onClick = onNewMfaFactorInstanceClick
             )
             HorizontalDivider(color = RadixTheme.colors.divider)

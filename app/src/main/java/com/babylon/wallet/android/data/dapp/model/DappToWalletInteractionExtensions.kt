@@ -97,7 +97,8 @@ private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
     ),
     requestMetadata = metadata,
     kind = TransactionRequest.Kind.PreAuthorized(
-        expiration = SubintentExpiration.from(expiration)
+        expiration = SubintentExpiration.from(expiration),
+        header = header
     )
 )
 

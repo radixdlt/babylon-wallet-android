@@ -314,7 +314,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         return signSubintentUseCase(
             manifest = subintentManifest,
             message = transactionRequest.unvalidatedManifestData.plainMessage,
-            expiration = transactionRequestKind.expiration
+            expiration = transactionRequestKind.expiration,
+            header = transactionRequestKind.header
         ).mapCatching { signedSubintent ->
             // Respond to dApp or throw an error if it fails, preventing the transaction status polling
             val expiration = respondToIncomingRequestUseCase.respondWithSuccessSubintent(
