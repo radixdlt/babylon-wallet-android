@@ -55,6 +55,18 @@ android {
             }
         }
     }
+
+}
+
+// When the arculus-android-csdk submodule is not available, disable full flavor tasks
+if (findProject(':arculus-android-csdk:csdknative') == null) {
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Full")) {
+                task.enabled = false
+            }
+        }
+    }
 }
 
 dependencies {
