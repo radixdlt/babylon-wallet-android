@@ -113,3 +113,20 @@ runs:
       GPR_TOKEN: ${{ inputs.gpr_token }}
       RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
       GOOGLE_PLAY_DEPLOYER_JSON_FILE: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE }}
+
+  - name: Upload APK to GitHub Release
+    if: github.event_name == 'release'
+    shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      APK_PATH=$(find app/build/outputs/apk/full/release -name "*.apk" | head -1)
+      if [ -n "$APK_PATH" ]; then
+        VERSION_NAME=$(grep 'versionName' app/build.gradle | head -1 | sed 's/.*versionName "\(.*\)"/\1/')
+        APK_NAME="radix-wallet-${VERSION_NAME}.apk"
+        cp "$APK_PATH" "$APK_NAME"
+        gh release upload "${{ github.event.release.tag_name }}" "$APK_NAME" --clobber
+        echo "### APK attached to release: \`${APK_NAME}\` :package:" >> $GITHUB_STEP_SUMMARY
+      else
+        echo "::warning::No APK found to attach to release"
+      fi

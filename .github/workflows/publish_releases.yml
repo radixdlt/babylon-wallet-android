@@ -269,7 +269,7 @@ jobs:
     environment: pre-release
     permissions:
       id-token: write
-      contents: read
+      contents: write
       pull-requests: read
     steps:
       - name: Fetch Radixbot push commit token
@@ -331,7 +331,7 @@ jobs:
     environment: release
     permissions:
       id-token: write
-      contents: read
+      contents: write
       pull-requests: read
     steps:
       - name: Fetch Radixbot push commit token
