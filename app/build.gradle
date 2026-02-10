@@ -165,6 +165,16 @@ android {
             excludes += "META-INF/DEPENDENCIES"
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        full {
+            dimension "version"
+        }
+        light {
+            dimension "version"
+        }
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
     }
@@ -173,6 +183,11 @@ android {
             if (task.name.contains("Test") && task.name.contains("compile")) {
                 kotlinOptions.freeCompilerArgs += '-Xopt-in=com.radixdlt.sargon.annotation.UsesSampleValues'
             }
+        }
+    }
+    applicationVariants.configureEach { variant ->
+        if (variant.flavorName == "light") {
+            variant.buildConfigField("boolean", "CRASH_REPORTING_AVAILABLE", "false")
         }
     }
     namespace 'com.babylon.wallet.android'
@@ -280,9 +295,9 @@ dependencies {
     implementation project(path: ':profile')
     implementation project(path: ':designsystem')
 
-    // Analytics
-    implementation libs.appsFlyer
-    implementation libs.installReferrer
+    // Analytics (full flavor only)
+    fullImplementation libs.appsFlyer
+    fullImplementation libs.installReferrer
 
     testImplementation libs.junit
     testImplementation libs.mockk
