@@ -30,4 +30,6 @@ include ':webrtc-library'
 include ':designsystem'
 include ':profile'
 include ':core'
-include ':arculus-android-csdk:csdknative'
+if (file('arculus-android-csdk/csdknative').exists()) {
+    include ':arculus-android-csdk:csdknative'
+}

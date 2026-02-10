@@ -59,7 +59,9 @@ android {
 
 dependencies {
     api libs.sargonAndroid
-    fullImplementation project(path: ':arculus-android-csdk:csdknative')
+    if (findProject(':arculus-android-csdk:csdknative') != null) {
+        fullImplementation project(path: ':arculus-android-csdk:csdknative')
+    }
 
     implementation libs.ktorCore
     implementation libs.zxing
