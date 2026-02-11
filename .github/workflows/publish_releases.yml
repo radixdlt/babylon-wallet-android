@@ -324,6 +324,22 @@ jobs:
           gpr_token: ${{ env.GH_GPR_TOKEN }}
           role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
 
+      - name: Upload APK to GitHub Release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/full/release -name "*.apk" | head -1)
+          if [ -n "$APK_PATH" ]; then
+            VERSION_NAME=$(grep 'versionName' app/build.gradle | head -1 | sed 's/.*versionName "\(.*\)"/\1/')
+            APK_NAME="radix-wallet-${VERSION_NAME}.apk"
+            cp "$APK_PATH" "$APK_NAME"
+            gh release upload "${{ github.event.release.tag_name }}" "$APK_NAME" --clobber
+            echo "### APK attached to release: \`${APK_NAME}\` :package:" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::warning::No APK found to attach to release"
+          fi
+
   google_play_production_release:
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
     name: "Publish Google Play Production"
@@ -385,3 +401,19 @@ jobs:
           gpr_user: ${{ env.GH_GPR_USER }}
           gpr_token: ${{ env.GH_GPR_TOKEN }}
           role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+
+      - name: Upload APK to GitHub Release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/full/release -name "*.apk" | head -1)
+          if [ -n "$APK_PATH" ]; then
+            VERSION_NAME=$(grep 'versionName' app/build.gradle | head -1 | sed 's/.*versionName "\(.*\)"/\1/')
+            APK_NAME="radix-wallet-${VERSION_NAME}.apk"
+            cp "$APK_PATH" "$APK_NAME"
+            gh release upload "${{ github.event.release.tag_name }}" "$APK_NAME" --clobber
+            echo "### APK attached to release: \`${APK_NAME}\` :package:" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::warning::No APK found to attach to release"
+          fi
