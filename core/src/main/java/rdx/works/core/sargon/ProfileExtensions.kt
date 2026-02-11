@@ -30,6 +30,7 @@ import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.EntityFlags
 import com.radixdlt.sargon.extensions.FactorSources
+import com.radixdlt.sargon.extensions.MfaFactorInstances
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.ProfileNetworks
@@ -184,7 +185,8 @@ fun Profile.addAccounts(
                 accounts = Accounts(network.accounts + accounts).asList(),
                 authorizedDapps = network.authorizedDApps(),
                 personas = network.personas,
-                resourcePreferences = network.resourcePreferences
+                resourcePreferences = network.resourcePreferences,
+                mfaFactorInstances = network.mfaFactorInstances
             )
         }
     } else {
@@ -193,7 +195,8 @@ fun Profile.addAccounts(
             accounts = Accounts(accounts).asList(),
             authorizedDapps = AuthorizedDapps().asList(),
             personas = Personas().asList(),
-            resourcePreferences = ResourceAppPreferences().asList()
+            resourcePreferences = ResourceAppPreferences().asList(),
+            mfaFactorInstances = MfaFactorInstances().asList()
         )
     }
     val updatedProfile = copy(networks = ProfileNetworks(newNetworks).asList())

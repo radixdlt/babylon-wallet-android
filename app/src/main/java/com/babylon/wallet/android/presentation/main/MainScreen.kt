@@ -249,8 +249,10 @@ private fun MainContent(
     LaunchedEffect(state.selectedTab) {
         if (bottomNavController.currentBackStackEntry?.destination?.route != state.selectedTab.route) {
             bottomNavController.navigate(state.selectedTab.route) {
-                popUpTo(bottomNavController.graph.findStartDestination().id) {
-                    saveState = true
+                runCatching { bottomNavController.graph }.getOrNull()?.let { graph ->
+                    popUpTo(graph.findStartDestination().id) {
+                        saveState = true
+                    }
                 }
                 launchSingleTop = true
                 restoreState = true

@@ -77,8 +77,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 87
-        versionName "1.19.4"
+        versionCode 88
+        versionName "1.19.5"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
@@ -168,6 +168,7 @@ android {
     flavorDimensions "version"
     productFlavors {
         full {
+            isDefault = true
             dimension "version"
         }
         light {

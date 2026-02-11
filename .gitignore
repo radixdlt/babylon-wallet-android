@@ -44,3 +44,4 @@ app/jacoco.exec
 # Fastlane report
 fastlane/report.xml
 .idea/vcs.xml
+/.idea
