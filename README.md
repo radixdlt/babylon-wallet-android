@@ -104,6 +104,29 @@ We favour native/first-party libraries and keep third-party dependencies to a mi
 - Interactive update: `./gradlew versionCatalogUpdateLibraries --interactive` — generates a diff file. Review and remove any exclusions, then apply with `./gradlew versionCatalogApplyUpdatesLibraries`.
 - Dependency lock file: `dependencies.lock` — run `./gradlew compareDependencies` to verify, or `./gradlew generateDependenciesLockFile` to regenerate.
 
+## Publishing a release to Google Play
+
+Releases are published to Google Play via CI when a GitHub Release is created.
+
+### Alpha (internal testing)
+
+1. Go to **Releases → Create a new release** on GitHub.
+2. Create a new tag (e.g. `v1.20.0`), target the release branch, and check **Set as a pre-release**.
+3. Publish the release.
+
+This triggers the **Publish Google Play Alpha** job, which:
+- Bumps the version code/name via Fastlane
+- Builds and uploads the AAB to the Google Play **alpha** track
+- Builds the APK and attaches it to the GitHub Release as a downloadable asset
+
+### Production
+
+1. Go to **Releases → Create a new release** on GitHub.
+2. Create a new tag, target the release branch, and leave **Set as a pre-release** unchecked.
+3. Publish the release.
+
+This triggers the **Publish Google Play Production** job, which follows the same steps but uploads to the **production** track.
+
 ## Best practices
 
 - [Keep It Simple](https://imageio.forbes.com/specials-images/imageserve/6141f431cb79cea26593300b/Shortcut-From-Point-A-to-Point-B-Concept/960x0.jpg?format=jpg&width=960) — favour clarity over cleverness.
