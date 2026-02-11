@@ -115,7 +115,7 @@ runs:
       GOOGLE_PLAY_DEPLOYER_JSON_FILE: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE }}
 
   - name: Upload APK to GitHub Release
-    if: github.event_name == 'release'
+    if: always() && github.event_name == 'release'
     shell: bash
     env:
       GH_TOKEN: ${{ github.token }}
