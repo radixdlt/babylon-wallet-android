@@ -163,7 +163,8 @@ class GetSignaturesViewModelTest {
                 ),
                 personas = emptyList(),
                 authorizedDapps = emptyList(),
-                resourcePreferences = emptyList()
+                resourcePreferences = emptyList(),
+                mfaFactorInstances = emptyList()
             )
         )
     ).changeGatewayToNetworkId(NetworkId.MAINNET)

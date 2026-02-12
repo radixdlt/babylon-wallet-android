@@ -11,7 +11,6 @@ import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
@@ -21,11 +20,6 @@ import java.time.Instant
 
 class FakePreferenceManager : PreferencesManager {
 
-    private val _transactionCompleteCounter = MutableStateFlow(0)
-
-    private val _lastNPSSurveyInstant = MutableStateFlow<Instant?>(null)
-    override val surveyUuid: Flow<String>
-        get() = TODO("Not yet implemented")
     override val lastCloudBackupEvent: Flow<LastCloudBackupEvent?>
         get() = TODO("Not yet implemented")
     override val lastManualBackupInstant: Flow<Instant?>
@@ -40,8 +34,6 @@ class FakePreferenceManager : PreferencesManager {
         get() = TODO("Not yet implemented")
     override val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
         get() = TODO("Not yet implemented")
-    override val lastNPSSurveyInstant: Flow<Instant?>
-        get() = _lastNPSSurveyInstant
     override val lastSyncedAccountsWithCE: Flow<String?>
         get() = TODO("Not yet implemented")
     override val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
@@ -116,17 +108,6 @@ class FakePreferenceManager : PreferencesManager {
 
     override suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean) {
         TODO("Not yet implemented")
-    }
-
-    override val transactionCompleteCounter: Flow<Int>
-        get() = _transactionCompleteCounter
-
-    override suspend fun incrementTransactionCompleteCounter() {
-        _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)
-    }
-
-    override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
-        _lastNPSSurveyInstant.emit(npsSurveyInstant)
     }
 
     override suspend fun updateLastSyncedAccountsWithCE(accountsHash: String) {

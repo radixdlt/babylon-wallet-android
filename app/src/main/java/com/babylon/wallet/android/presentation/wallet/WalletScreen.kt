@@ -77,7 +77,6 @@ fun WalletScreen(
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
@@ -121,7 +120,6 @@ fun WalletScreen(
         when (popUpScreen) {
             WalletViewModel.PopUpScreen.RELINK_CONNECTORS -> onNavigateToRelinkConnectors()
             WalletViewModel.PopUpScreen.CONNECT_CLOUD_BACKUP -> onNavigateToConnectCloudBackup()
-            WalletViewModel.PopUpScreen.NPS_SURVEY -> showNPSSurvey()
             null -> return@LaunchedEffect
         }
     }

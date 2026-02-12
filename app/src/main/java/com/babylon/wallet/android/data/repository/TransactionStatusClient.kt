@@ -120,8 +120,6 @@ class TransactionStatusClient @Inject constructor(
             updateTransactionStatus(result)
 
             if (isSuccess) {
-                preferencesManager.incrementTransactionCompleteCounter()
-
                 if (transactionType is TransactionType.DeleteAccount) {
                     // Now that the success dialog has already been previewed, it is safe to show the deleted account success screen
                     appEventBus.sendEvent(AppEvent.AccountDeleted(transactionType.accountAddress))
@@ -144,7 +142,6 @@ class TransactionStatusClient @Inject constructor(
             updateTransactionStatus(result)
 
             if (result.result is PreAuthorizationStatusData.Status.Success) {
-                preferencesManager.incrementTransactionCompleteCounter()
                 appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
             }
         }

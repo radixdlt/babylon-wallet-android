@@ -108,8 +108,6 @@
 -if interface * { @retrofit2.http.* public *** *(...); }
 -keep,allowoptimization,allowshrinking,allowobfuscation class <3>
 
--keep class com.babylon.wallet.android.data.gateway.survey.** { *; }
-
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
 -keepclassmembers class * {
   @com.google.api.client.util.Key <fields>;

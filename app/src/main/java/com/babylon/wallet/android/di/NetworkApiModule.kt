@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
-import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.extensions.string
 import dagger.Module
@@ -104,13 +103,4 @@ object NetworkApiModule {
         jsonConverterFactory = jsonConverterFactory
     )
 
-    @Provides
-    fun provideNPSSurveyApi(
-        @GatewayHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Converter.Factory
-    ): NPSSurveyApi = buildApi(
-        baseUrl = BuildConfig.NPS_SURVEY_URL,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
 }

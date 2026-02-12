@@ -97,7 +97,6 @@ import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
-import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.timedrecovery.timedRecovery
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transaction.transactionReview
@@ -251,9 +250,6 @@ fun NavigationHost(
             },
             onNavigateToBootError = {
                 navController.navigateToBootError()
-            },
-            showNPSSurvey = {
-                navController.npsSurveyDialog()
             },
             onNavigateToRelinkConnectors = {
                 navController.relinkConnectors()
@@ -663,11 +659,6 @@ fun NavigationHost(
             }
         )
         infoDialog(
-            onDismiss = {
-                navController.popBackStack()
-            }
-        )
-        npsSurveyDialog(
             onDismiss = {
                 navController.popBackStack()
             }

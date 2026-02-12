@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.wallet
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.NPSSurveyState
-import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -93,7 +91,6 @@ class WalletViewModel @Inject constructor(
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
@@ -124,7 +121,6 @@ class WalletViewModel @Inject constructor(
         observePrompts()
         observeWalletAssets()
         observeGlobalAppEvents()
-        observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
         observeFactorSources()
@@ -184,15 +180,6 @@ class WalletViewModel @Inject constructor(
                     if (showRelinkConnectors) {
                         onNewPopUpScreen(PopUpScreen.RELINK_CONNECTORS)
                     }
-                }
-        }
-    }
-
-    private fun observeNpsSurveyState() {
-        viewModelScope.launch {
-            npsSurveyStateObserver.npsSurveyState.filterIsInstance<NPSSurveyState.Active>()
-                .collectLatest {
-                    onNewPopUpScreen(PopUpScreen.NPS_SURVEY)
                 }
         }
     }
@@ -272,10 +259,6 @@ class WalletViewModel @Inject constructor(
                 when (event) {
                     AppEvent.RefreshAssetsNeeded -> loadAssets(refreshType = RefreshType.WalletRefresh)
                     ImportedMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
-                    AppEvent.NPSSurveySubmitted -> {
-                        _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
-                    }
-
                     AppEvent.GenericSuccess -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.Success) }
                     }
@@ -353,8 +336,7 @@ class WalletViewModel @Inject constructor(
     enum class PopUpScreen(val order: Int) {
 
         RELINK_CONNECTORS(1),
-        CONNECT_CLOUD_BACKUP(2),
-        NPS_SURVEY(3)
+        CONNECT_CLOUD_BACKUP(2)
     }
 
     sealed interface RefreshType {
