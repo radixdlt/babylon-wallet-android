@@ -24,11 +24,6 @@ ext.keystoreProperties = { isDebug ->
     return loadFileProperties(fileName)
 }
 
-ext.secretProperties = {
-    def fileName = "../config/secrets/secrets.properties"
-    return loadFileProperties(fileName)
-}
-
 ext.loadFileProperties = { fileName ->
     try {
         def properties = new Properties()
@@ -38,18 +33,6 @@ ext.loadFileProperties = { fileName ->
     } catch (Exception ignored) {
         return null
     }
-}
-
-ext.buildConfigProperty = { properties, name ->
-    "\"${propertyOrEmpty(properties, name)}\""
-}
-
-ext.propertyOrEmpty = { properties, name ->
-    def fallback = ""
-    if (properties == null) return fallback
-
-    def property = properties[name]
-    return property != null ? property : fallback
 }
 
 android {
@@ -88,9 +71,6 @@ android {
         buildConfigField "String", "NPS_SURVEY_URL", '"https://dev-wallet-net-promoter-score.radixdlt.com/"'
         buildConfigField "String", "REFINER_FORM_UUID", '"281622a0-dc6b-11ee-8fd1-23c96056fbd2"'
         resValue "string", "app_name", "Radix Wallet"
-
-        def properties = secretProperties()
-        buildConfigField "String", "APPS_FLYER_DEV_KEY", buildConfigProperty(properties, 'appsFlyerDevKey')
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -295,10 +275,6 @@ dependencies {
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')
     implementation project(path: ':designsystem')
-
-    // Analytics (full flavor only)
-    fullImplementation libs.appsFlyer
-    fullImplementation libs.installReferrer
 
     testImplementation libs.junit
     testImplementation libs.mockk

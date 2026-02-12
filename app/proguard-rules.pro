@@ -110,11 +110,6 @@
 
 -keep class com.babylon.wallet.android.data.gateway.survey.** { *; }
 
-# AppsFlyer
--keep class com.appsflyer.** { *; }
--keep class kotlin.jvm.internal.** { *; }
--keep public class com.android.installreferrer.** { *; }
-
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
 -keepclassmembers class * {
   @com.google.api.client.util.Key <fields>;

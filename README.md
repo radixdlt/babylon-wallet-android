@@ -35,8 +35,8 @@ The project uses a **`version`** flavor dimension with two product flavors:
 
 | Flavor  | Description |
 |---------|-------------|
-| `full`  | Complete app with all features and 3rd-party integrations: AppsFlyer analytics, Firebase Crashlytics, and Arculus NFC card support. Requires access to the private `arculus-android-csdk` submodule. |
-| `light` | Stripped-down app without AppsFlyer, Firebase Crashlytics, or Arculus. Can be built without access to any private dependencies or submodules. |
+| `full`  | Complete app with all features and 3rd-party integrations: Firebase Crashlytics and Arculus NFC card support. Requires access to the private `arculus-android-csdk` submodule. |
+| `light` | Stripped-down app without Firebase Crashlytics or Arculus. Can be built without access to any private dependencies or submodules. |
 
 Combined with the existing build types, the available variants are:
 
