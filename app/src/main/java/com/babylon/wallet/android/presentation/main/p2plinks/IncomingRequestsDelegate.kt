@@ -50,7 +50,6 @@ class IncomingRequestsDelegate @Inject constructor(
     private val appLifecycleObserver: AppLifecycleObserver
 ) : ViewModelDelegateWithEvents<MainViewModel.State, Event>() {
 
-    private var verifyingDappRequestJob: Job? = null
     private var incomingDappRequestsJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
     private var observeP2PLinksJob: Job? = null
@@ -67,7 +66,7 @@ class IncomingRequestsDelegate @Inject constructor(
     }
 
     fun verifyIncomingRequest(request: DappToWalletInteraction) {
-        verifyingDappRequestJob = viewModelScope.launch {
+        viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
                     incomingRequestRepository.add(request)
@@ -208,8 +207,6 @@ class IncomingRequestsDelegate @Inject constructor(
         Timber.d("\uD83E\uDD16 Peerdroid is terminating")
         incomingDappRequestsJob?.cancel()
         incomingDappRequestsJob = null
-        verifyingDappRequestJob?.cancel()
-        verifyingDappRequestJob = null
         incomingDappRequestErrorsJob?.cancel()
         incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
