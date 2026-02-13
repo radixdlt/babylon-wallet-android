@@ -210,7 +210,6 @@ class IncomingRequestsDelegate @Inject constructor(
         incomingDappRequestErrorsJob?.cancel()
         incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
-        incomingRequestRepository.removeAll()
     }
 
     private fun reportFailure(error: Throwable) {
