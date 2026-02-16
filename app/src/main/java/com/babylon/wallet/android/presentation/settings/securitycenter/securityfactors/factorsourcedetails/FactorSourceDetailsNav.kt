@@ -27,6 +27,7 @@ fun NavController.factorSourceDetails(factorSourceId: FactorSourceId) {
     navigate("route_factor_source_details/${factorSourceId.toJson()}")
 }
 
+@Suppress("LongParameterList")
 fun NavGraphBuilder.factorSourceDetails(
     navigateToViewSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
     navigateToViewSeedPhraseRestore: () -> Unit,
