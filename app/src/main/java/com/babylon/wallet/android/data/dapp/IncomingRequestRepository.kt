@@ -29,8 +29,6 @@ interface IncomingRequestRepository {
 
     fun getRequest(requestId: String): DappToWalletInteraction?
 
-    fun removeAll()
-
     fun getAmountOfRequests(): Int
 
     suspend fun requestDeferred(requestId: String)
@@ -184,11 +182,6 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         }
         logger.d("\uD83D\uDDC2 get request $requestId")
         return (queueItem as? QueueItem.RequestItem)?.dappToWalletInteraction
-    }
-
-    override fun removeAll() {
-        // Remove all incoming requests only, high priority screen queue items are handled by backstack
-        requestQueue.removeIf { it is QueueItem.RequestItem }
     }
 
     override fun getAmountOfRequests() = requestQueue.filterNot { it is QueueItem.HighPriorityScreen }.size
