@@ -45,7 +45,6 @@ import com.radixdlt.sargon.extensions.isLegacy
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.unsecuredControllingFactorInstance
 import com.radixdlt.sargon.profileToDebugString
-import com.radixdlt.sargon.samples.sample
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
 import rdx.works.core.mapWhen
