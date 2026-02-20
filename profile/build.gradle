@@ -30,6 +30,7 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    kotlin.compilerOptions.freeCompilerArgs.add("-Xannotation-default-target=first-only")
     packagingOptions {
         resources {
             excludes += "META-INF/DEPENDENCIES"
