@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin
 import com.babylon.wallet.android.presentation.addfactorsource.arculus.createpin.createArculusPin
 import com.babylon.wallet.android.presentation.addfactorsource.kind.addFactorSourceKind
 import com.babylon.wallet.android.presentation.addfactorsource.name.setFactorSourceName
+import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.ImportMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
@@ -182,6 +183,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
             },
             toChangeArculusPin = navController::verifyArculusPin,
             toForgotArculusPin = navController::forgotArculusPin,
+            toAddress = navController::addressDetails,
             onBackClick = { navController.navigateUp() }
         )
         revealSeedPhrase(

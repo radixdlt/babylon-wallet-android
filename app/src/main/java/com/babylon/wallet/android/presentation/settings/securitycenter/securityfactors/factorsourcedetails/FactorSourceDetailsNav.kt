@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
@@ -26,11 +27,13 @@ fun NavController.factorSourceDetails(factorSourceId: FactorSourceId) {
     navigate("route_factor_source_details/${factorSourceId.toJson()}")
 }
 
+@Suppress("LongParameterList")
 fun NavGraphBuilder.factorSourceDetails(
     navigateToViewSeedPhrase: (factorSourceId: FactorSourceId.Hash) -> Unit,
     navigateToViewSeedPhraseRestore: () -> Unit,
     toChangeArculusPin: (FactorSourceId) -> Unit,
     toForgotArculusPin: (FactorSourceId) -> Unit,
+    toAddress: (ActionableAddress) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -54,6 +57,7 @@ fun NavGraphBuilder.factorSourceDetails(
             navigateToViewSeedPhraseRestore = navigateToViewSeedPhraseRestore,
             toChangeArculusPin = toChangeArculusPin,
             toForgotArculusPin = toForgotArculusPin,
+            toAddress = toAddress,
             onBackClick = onBackClick
         )
     }
