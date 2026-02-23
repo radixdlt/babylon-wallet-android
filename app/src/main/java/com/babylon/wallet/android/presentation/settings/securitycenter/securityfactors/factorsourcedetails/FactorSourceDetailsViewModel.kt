@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
@@ -18,6 +19,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
+import com.radixdlt.sargon.extensions.nonFungibleGlobalId
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -155,6 +157,33 @@ class FactorSourceDetailsViewModel @Inject constructor(
         }
     }
 
+    fun onNewMfaFactorInstanceClick() {
+        val currentFactorSource = state.value.factorSource ?: return
+
+        viewModelScope.launch {
+            sargonOsManager.callSafely(defaultDispatcher) {
+                val mfaFactorInstance = getNewMfaFactorInstance(currentFactorSource)
+                mfaFactorInstance.nonFungibleGlobalId()
+            }.onFailure {
+                _state.update { state ->
+                    state.copy(
+                        uiMessage = UiMessage.ErrorMessage(it)
+                    )
+                }
+            }.onSuccess {
+                sendEvent(
+                    Event.ShowAddress(
+                        ActionableAddress.GlobalId(
+                            address = it,
+                            isVisitableInDashboard = true,
+                            isOnlyLocalIdVisible = false
+                        )
+                    )
+                )
+            }
+        }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
@@ -186,5 +215,9 @@ class FactorSourceDetailsViewModel @Inject constructor(
         data class NavigateToSeedPhrase(val factorSourceId: FactorSourceId.Hash) : Event
 
         data object NavigateToSeedPhraseRestore : Event
+
+        data class ShowAddress(
+            val actionableAddress: ActionableAddress
+        ) : Event
     }
 }
