@@ -37,8 +37,6 @@ sealed interface AppEvent {
 
     data object BabylonFactorSourceDoesNotExist : AppEvent
 
-    data object NPSSurveySubmitted : AppEvent
-
     data object SecureFolderWarning : AppEvent
 
     data class DeferRequestHandling(val interactionId: String) : AppEvent

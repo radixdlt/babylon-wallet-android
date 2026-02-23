@@ -218,12 +218,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        /**
-         * AppsFlyer DeepLinkListener.onDeepLinking is not called when
-         * the app is running in the background and Application LaunchMode is not standard.
-         * The following line corrects this, as per AppsFlyer docs:
-         * https://dev.appsflyer.com/hc/docs/dl_android_unified_deep_linking
-         */
         setIntent(intent)
 
         intent.data?.let {

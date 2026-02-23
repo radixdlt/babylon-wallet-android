@@ -4,7 +4,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Epoch
@@ -17,13 +16,10 @@ import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.json.Json
 import rdx.works.core.BuildConfig
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.di.NonEncryptedPreferences
 import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
@@ -32,7 +28,6 @@ import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 interface PreferencesManager {
-    val surveyUuid: Flow<String>
     val lastCloudBackupEvent: Flow<LastCloudBackupEvent?>
     val lastManualBackupInstant: Flow<Instant?>
     val firstPersonaCreated: Flow<Boolean>
@@ -40,8 +35,6 @@ interface PreferencesManager {
     val isDeviceRootedDialogShown: Flow<Boolean>
     val isCrashReportingEnabled: Flow<Boolean>
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
-    val lastNPSSurveyInstant: Flow<Instant?>
-    val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
     val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
@@ -76,10 +69,6 @@ interface PreferencesManager {
 
     suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean)
 
-    suspend fun incrementTransactionCompleteCounter()
-
-    suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant)
-
     suspend fun updateLastSyncedAccountsWithCE(accountsHash: String)
 
     suspend fun removeLastSyncedAccountsWithCE()
@@ -101,18 +90,6 @@ interface PreferencesManager {
 class PreferencesManagerImpl @Inject constructor(
     @NonEncryptedPreferences private val dataStore: DataStore<Preferences>
 ) : PreferencesManager {
-
-    override val surveyUuid: Flow<String>
-        get() = dataStore.data.map { preferences ->
-            preferences[KEY_SURVEY_UUID]
-        }.onStart {
-            val existingUUID = dataStore.data.map { it[KEY_SURVEY_UUID] }.firstOrNull()
-            if (existingUUID.isNullOrEmpty()) {
-                dataStore.edit { preferences ->
-                    preferences[KEY_SURVEY_UUID] = UUIDGenerator.uuid().toString()
-                }
-            }
-        }.filterNotNull()
 
     override val lastCloudBackupEvent: Flow<LastCloudBackupEvent?> = dataStore.data
         .map { preferences ->
@@ -280,31 +257,6 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun incrementTransactionCompleteCounter() {
-        dataStore.edit { preferences ->
-            val oldValue = preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
-            preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] = oldValue + 1
-        }
-    }
-
-    override val lastNPSSurveyInstant: Flow<Instant?> = dataStore.data
-        .map { preferences ->
-            preferences[KEY_SHOW_NPS_SURVEY_INSTANT]?.let {
-                Instant.parse(it)
-            }
-        }
-
-    override val transactionCompleteCounter: Flow<Int>
-        get() = dataStore.data.map { preferences ->
-            preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
-        }
-
-    override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
-        dataStore.edit { preferences ->
-            preferences[KEY_SHOW_NPS_SURVEY_INSTANT] = npsSurveyInstant.toString()
-        }
-    }
-
     override suspend fun updateLastSyncedAccountsWithCE(accountsHash: String) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_SYNCED_ACCOUNTS_WITH_CE] = accountsHash
@@ -361,9 +313,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
         val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
         val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
-        val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
-        val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
-        val KEY_SURVEY_UUID = stringPreferencesKey("uuid")
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")

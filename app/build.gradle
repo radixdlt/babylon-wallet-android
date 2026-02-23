@@ -24,11 +24,6 @@ ext.keystoreProperties = { isDebug ->
     return loadFileProperties(fileName)
 }
 
-ext.secretProperties = {
-    def fileName = "../config/secrets/secrets.properties"
-    return loadFileProperties(fileName)
-}
-
 ext.loadFileProperties = { fileName ->
     try {
         def properties = new Properties()
@@ -38,18 +33,6 @@ ext.loadFileProperties = { fileName ->
     } catch (Exception ignored) {
         return null
     }
-}
-
-ext.buildConfigProperty = { properties, name ->
-    "\"${propertyOrEmpty(properties, name)}\""
-}
-
-ext.propertyOrEmpty = { properties, name ->
-    def fallback = ""
-    if (properties == null) return fallback
-
-    def property = properties[name]
-    return property != null ? property : fallback
 }
 
 android {
@@ -85,12 +68,7 @@ android {
         buildConfigField "boolean", "FILE_LOGGER_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
-        buildConfigField "String", "NPS_SURVEY_URL", '"https://dev-wallet-net-promoter-score.radixdlt.com/"'
-        buildConfigField "String", "REFINER_FORM_UUID", '"281622a0-dc6b-11ee-8fd1-23c96056fbd2"'
         resValue "string", "app_name", "Radix Wallet"
-
-        def properties = secretProperties()
-        buildConfigField "String", "APPS_FLYER_DEV_KEY", buildConfigProperty(properties, 'appsFlyerDevKey')
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -131,9 +109,7 @@ android {
             buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "true"
             buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
             buildConfigField "boolean", "FILE_LOGGER_ENABLED", "false"
-            buildConfigField "String", "NPS_SURVEY_URL", '"https://wallet-net-promoter-score.radixdlt.com/"'
             buildConfigField "String", "RCR_URL", '"https://radix-connect-relay.radixdlt.com/"'
-            buildConfigField "String", "REFINER_FORM_UUID", '"3432b6e0-dfad-11ee-a53c-95167f067d9c"'
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -165,6 +141,17 @@ android {
             excludes += "META-INF/DEPENDENCIES"
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        full {
+            isDefault = true
+            dimension "version"
+        }
+        light {
+            dimension "version"
+        }
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
     }
@@ -173,6 +160,11 @@ android {
             if (task.name.contains("Test") && task.name.contains("compile")) {
                 kotlinOptions.freeCompilerArgs += '-Xopt-in=com.radixdlt.sargon.annotation.UsesSampleValues'
             }
+        }
+    }
+    applicationVariants.configureEach { variant ->
+        if (variant.flavorName == "light") {
+            variant.buildConfigField("boolean", "CRASH_REPORTING_AVAILABLE", "false")
         }
     }
     namespace 'com.babylon.wallet.android'
@@ -279,10 +271,6 @@ dependencies {
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')
     implementation project(path: ':designsystem')
-
-    // Analytics
-    implementation libs.appsFlyer
-    implementation libs.installReferrer
 
     testImplementation libs.junit
     testImplementation libs.mockk

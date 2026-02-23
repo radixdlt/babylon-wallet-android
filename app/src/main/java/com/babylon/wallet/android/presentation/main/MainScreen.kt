@@ -51,7 +51,6 @@ fun MainScreen(
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
     onNavigateToBootError: () -> Unit,
-    showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
@@ -72,7 +71,6 @@ fun MainScreen(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToSecurityCenter = onNavigateToSecurityCenter,
-                showNPSSurvey = showNPSSurvey,
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                 onNavigateToLinkConnector = onNavigateToLinkConnector,
@@ -117,7 +115,6 @@ private fun MainContent(
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
@@ -213,7 +210,6 @@ private fun MainContent(
                     onAccountClick = onAccountClick,
                     onAccountCreationClick = onAccountCreationClick,
                     onNavigateToSecurityCenter = onNavigateToSecurityCenter,
-                    showNPSSurvey = showNPSSurvey,
                     onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                     onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
                     onNavigateToLinkConnector = onNavigateToLinkConnector,
@@ -249,8 +245,10 @@ private fun MainContent(
     LaunchedEffect(state.selectedTab) {
         if (bottomNavController.currentBackStackEntry?.destination?.route != state.selectedTab.route) {
             bottomNavController.navigate(state.selectedTab.route) {
-                popUpTo(bottomNavController.graph.findStartDestination().id) {
-                    saveState = true
+                runCatching { bottomNavController.graph }.getOrNull()?.let { graph ->
+                    popUpTo(graph.findStartDestination().id) {
+                        saveState = true
+                    }
                 }
                 launchSingleTop = true
                 restoreState = true

@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
-import com.babylon.wallet.android.utils.AppsFlyerIntegrationManager
 import com.babylon.wallet.android.utils.logger.PersistentLogger
 import dagger.Lazy
 import dagger.hilt.EntryPoint
@@ -31,9 +30,6 @@ class RadixApplication : Application(), Configuration.Provider {
     interface HiltWorkerFactoryEntryPoint {
         fun workerFactory(): HiltWorkerFactory
     }
-
-    @Inject
-    lateinit var appsFlyerIntegrationManager: AppsFlyerIntegrationManager
 
     @Inject
     @ApplicationScope
@@ -74,7 +70,6 @@ class RadixApplication : Application(), Configuration.Provider {
 
         Timber.i("Application created.")
 
-        appsFlyerIntegrationManager.init()
         bootstrapHomeCards()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifecycleObserver)
         ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver())

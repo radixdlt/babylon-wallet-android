@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.usecases.factorsources
 
 import com.babylon.wallet.android.domain.model.FactorSourceCategory
 import com.babylon.wallet.android.domain.model.FactorSourceKindsByCategory
+import com.babylon.wallet.android.utils.Flavors
 import com.radixdlt.sargon.FactorSourceKind
 import javax.inject.Inject
 
@@ -14,8 +15,8 @@ class GetFactorSourceKindsByCategoryUseCase @Inject constructor() {
         ),
         FactorSourceKindsByCategory(
             category = FactorSourceCategory.Hardware,
-            kinds = listOf(
-                FactorSourceKind.ARCULUS_CARD,
+            kinds = listOfNotNull(
+                FactorSourceKind.ARCULUS_CARD.takeIf { Flavors.isFullVersion() },
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
             )
         ),

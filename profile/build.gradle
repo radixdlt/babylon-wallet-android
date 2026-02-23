@@ -13,6 +13,7 @@ android {
     defaultConfig {
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
+        missingDimensionStrategy 'version', 'full'
     }
 
     buildTypes {

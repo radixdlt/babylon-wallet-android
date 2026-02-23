@@ -15,6 +15,7 @@ android {
         targetSdk rootProject.ext.targetSdk
 
         consumerProguardFiles "consumer-rules.pro"
+        missingDimensionStrategy 'version', 'full'
 
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server-dev.rdx-works-main.extratools.works/"'

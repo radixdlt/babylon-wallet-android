@@ -38,6 +38,16 @@ android {
         jvmTarget = '17'
     }
     kotlin.compilerOptions.freeCompilerArgs.add("-Xannotation-default-target=first-only")
+    flavorDimensions "version"
+    productFlavors {
+        full {
+            dimension "version"
+        }
+        light {
+            dimension "version"
+        }
+    }
+
     afterEvaluate {
         tasks.configureEach { task ->
             if (task.name.contains("Test") && task.name.contains("compile")) {
@@ -45,16 +55,30 @@ android {
             }
         }
     }
+
+}
+
+// When the arculus-android-csdk submodule is not available, disable full flavor tasks
+if (findProject(':arculus-android-csdk:csdknative') == null) {
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Full")) {
+                task.enabled = false
+            }
+        }
+    }
 }
 
 dependencies {
     api libs.sargonAndroid
-    implementation project(path: ':arculus-android-csdk:csdknative')
+    if (findProject(':arculus-android-csdk:csdknative') != null) {
+        fullImplementation project(path: ':arculus-android-csdk:csdknative')
+    }
 
     implementation libs.ktorCore
     implementation libs.zxing
     implementation libs.kotlinxSerialization
-    implementation libs.firebaseCrashlytics
+    fullImplementation libs.firebaseCrashlytics
     implementation libs.immutableCollections
 
     // Datastore

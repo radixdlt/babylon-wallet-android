@@ -49,8 +49,6 @@ zxing = "3.5.3"
 apacheCommonsValidator = "1.9.0"
 jsonAssert = "1.5.3"
 firebaseCrashlytics = "20.0.1"
-appsFlyer = "6.17.3"
-installReferrer = "2.2"
 playServicesAuth = "21.4.0"
 googleApiClient = "2.8.1"
 googleApiServicesDrive = "v3-rev20240123-2.0.0"
@@ -147,8 +145,6 @@ zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 apacheCommonsValidator = { module = "commons-validator:commons-validator", version.ref = "apacheCommonsValidator" }
 jsonAssert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonAssert" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "firebaseCrashlytics" }
-appsFlyer = { module = "com.appsflyer:af-android-sdk", version.ref = "appsFlyer" }
-installReferrer = { module = "com.android.installreferrer:installreferrer", version.ref = "installReferrer" }
 playServicesAuth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 googleApiClient = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
 googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }

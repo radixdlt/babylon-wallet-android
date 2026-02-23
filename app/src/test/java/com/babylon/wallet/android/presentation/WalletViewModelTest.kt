@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.NPSSurveyState
-import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.data.repository.locker.AccountLockersRepository
@@ -65,7 +63,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val checkMigrationToNewBackupSystemUseCase = mockk<CheckMigrationToNewBackupSystemUseCase>()
     private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
-    private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
@@ -94,7 +91,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         changeBalanceVisibilityUseCase,
         appEventBus,
         ensureBabylonFactorSourceExistUseCase,
-        npsSurveyStateObserver,
         p2PLinksRepository,
         checkMigrationToNewBackupSystemUseCase,
         testDispatcher,
@@ -127,7 +123,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         )
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
-        every { npsSurveyStateObserver.npsSurveyState } returns flowOf(NPSSurveyState.InActive)
         coEvery { p2PLinksRepository.showRelinkConnectors() } returns flowOf(false)
         every { homeCardsRepository.observeHomeCards() } returns flowOf(emptyList())
         every { accountLockersObserver.depositsByAccount } returns flowOf(emptyMap())

@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_ADDRESS
 import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_SUBJECT
+import com.babylon.wallet.android.utils.Flavors
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.domain.ThemeSelection
@@ -208,12 +209,12 @@ sealed interface SettingsItem {
         }
 
         companion object {
-            fun values() = setOf(
+            fun values() = setOfNotNull(
                 InspectProfile,
                 LinkConnectionStatusIndicator,
                 InspectCloudBackups,
                 SecurityFactorSamples,
-                ArculusTools
+                ArculusTools.takeIf { Flavors.isFullVersion() }
             )
         }
     }

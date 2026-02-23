@@ -95,22 +95,6 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
-      - name: Fetch AppsFlyer credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'unit-flyers'
-          secret_prefix: 'GH'
-          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
-          parse_json: true
-
-      - name: Output AppsFlyer secret to file
-        shell: bash
-        run: |
-          mkdir -p config/secrets/
-          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
-
       - name: Distribute Alpha to Firebase
         run: |
           git config user.name $GIT_USER
@@ -220,22 +204,6 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/keystore-asc"
           parse_json: false
 
-      - name: Fetch AppsFlyer credentials
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
-          app_name: 'wallet-android'
-          step_name: 'unit-flyers'
-          secret_prefix: 'GH'
-          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
-          parse_json: true
-
-      - name: Output AppsFlyer secret to file
-        shell: bash
-        run: |
-          mkdir -p config/secrets/
-          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
-
       - name: Decode release keystore credentials
         shell: bash
         run: |
@@ -269,7 +237,7 @@ jobs:
     environment: pre-release
     permissions:
       id-token: write
-      contents: read
+      contents: write
       pull-requests: read
     steps:
       - name: Fetch Radixbot push commit token
@@ -324,6 +292,22 @@ jobs:
           gpr_token: ${{ env.GH_GPR_TOKEN }}
           role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
 
+      - name: Upload APK to GitHub Release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/full/release -name "*.apk" | head -1)
+          if [ -n "$APK_PATH" ]; then
+            VERSION_NAME=$(grep 'versionName' app/build.gradle | head -1 | sed 's/.*versionName "\(.*\)"/\1/')
+            APK_NAME="radix-wallet-${VERSION_NAME}.apk"
+            cp "$APK_PATH" "$APK_NAME"
+            gh release upload "${{ github.event.release.tag_name }}" "$APK_NAME" --clobber
+            echo "### APK attached to release: \`${APK_NAME}\` :package:" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::warning::No APK found to attach to release"
+          fi
+
   google_play_production_release:
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
     name: "Publish Google Play Production"
@@ -331,7 +315,7 @@ jobs:
     environment: release
     permissions:
       id-token: write
-      contents: read
+      contents: write
       pull-requests: read
     steps:
       - name: Fetch Radixbot push commit token
@@ -385,3 +369,19 @@ jobs:
           gpr_user: ${{ env.GH_GPR_USER }}
           gpr_token: ${{ env.GH_GPR_TOKEN }}
           role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+
+      - name: Upload APK to GitHub Release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/full/release -name "*.apk" | head -1)
+          if [ -n "$APK_PATH" ]; then
+            VERSION_NAME=$(grep 'versionName' app/build.gradle | head -1 | sed 's/.*versionName "\(.*\)"/\1/')
+            APK_NAME="radix-wallet-${VERSION_NAME}.apk"
+            cp "$APK_PATH" "$APK_NAME"
+            gh release upload "${{ github.event.release.tag_name }}" "$APK_NAME" --clobber
+            echo "### APK attached to release: \`${APK_NAME}\` :package:" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::warning::No APK found to attach to release"
+          fi
