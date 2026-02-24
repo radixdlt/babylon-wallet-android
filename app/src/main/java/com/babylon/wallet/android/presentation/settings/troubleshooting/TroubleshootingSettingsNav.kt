@@ -15,7 +15,6 @@ import com.babylon.wallet.android.presentation.settings.troubleshooting.accountr
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.troubleshooting.manifest.sendTransactionManifest
 import com.babylon.wallet.android.presentation.settings.troubleshooting.reset.resetWalletScreen
-import com.babylon.wallet.android.presentation.transaction.transactionReview
 
 const val ROUTE_TROUBLESHOOTING_GRAPH = "settings_troubleshooting_graph"
 const val ROUTE_TROUBLESHOOTING_SCREEN = "settings_troubleshooting_screen"

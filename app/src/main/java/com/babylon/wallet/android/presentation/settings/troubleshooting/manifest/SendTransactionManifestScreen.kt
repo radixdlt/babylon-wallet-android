@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting.manifest
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,16 +23,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextFieldDefaults
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -132,57 +140,102 @@ private fun SendTransactionManifestContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Row(
+                modifier = Modifier.align(Alignment.End),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
             ) {
-                RadixSecondaryButton(
-                    text = "Copy",
-                    onClick = onCopyClick,
-                    enabled = state.isManifestNotBlank
-                )
-
-                RadixSecondaryButton(
+                Button(
                     text = "Paste",
+                    iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_add_override,
                     onClick = onPasteClick
                 )
 
-                RadixSecondaryButton(
+                Button(
                     text = "Clear",
+                    iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_close,
                     onClick = onClearClick,
                     enabled = state.isManifestNotBlank
+                )
+
+                Button(
+                    text = stringResource(R.string.common_copy),
+                    iconRes = R.drawable.ic_copy,
+                    onClick = onCopyClick
                 )
             }
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            OutlinedTextField(
-                modifier = Modifier.fillMaxSize(),
-                value = state.manifest,
-                onValueChange = onManifestChanged,
-                shape = RadixTheme.shapes.roundedRectSmall,
-                colors = RadixTextFieldDefaults.colors(),
-                placeholder = {
-                    Text(
-                        text = "Raw Transaction Manifest",
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp,
-                            color = RadixTheme.colors.textSecondary
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxSize(),
+                    value = state.manifest,
+                    onValueChange = onManifestChanged,
+                    shape = RadixTheme.shapes.roundedRectSmall,
+                    colors = RadixTextFieldDefaults.colors(),
+                    placeholder = {
+                        Text(
+                            text = "Raw Transaction Manifest",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 14.sp,
+                                color = RadixTheme.colors.textSecondary
+                            )
                         )
+                    },
+                    textStyle = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 14.sp,
+                        color = RadixTheme.colors.text
                     )
-                },
-                textStyle = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 14.sp,
-                    color = RadixTheme.colors.text
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun Button(
+    text: String,
+    modifier: Modifier = Modifier,
+    iconRes: Int? = null,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    Button(
+        modifier = modifier
+            .height(40.dp),
+        onClick = onClick,
+        shape = RadixTheme.shapes.roundedRectSmall,
+        elevation = null,
+        colors = ButtonColors(
+            containerColor = RadixTheme.colors.backgroundTertiary,
+            contentColor = RadixTheme.colors.icon,
+            disabledContainerColor = RadixTheme.colors.backgroundTertiary,
+            disabledContentColor = RadixTheme.colors.textTertiary
+        ),
+        enabled = enabled
+    ) {
+        iconRes?.let {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = it),
+                contentDescription = "copy"
             )
         }
+
+        Text(
+            modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXXSmall),
+            text = text,
+            style = RadixTheme.typography.body1Header
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SendTransactionManifestContentPreview(
+private fun SendTransactionManifestContentPreview(
     @PreviewParameter(SendTransactionManifestPreviewProvider::class) state: SendTransactionManifestViewModel.State
 ) {
     RadixWalletTheme {
