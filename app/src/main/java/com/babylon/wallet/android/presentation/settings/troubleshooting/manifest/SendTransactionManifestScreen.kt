@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.utils.copyToClipboard
 
 @Composable
 fun SendTransactionManifestScreen(
@@ -50,6 +51,12 @@ fun SendTransactionManifestScreen(
         onBackClick = onBackClick,
         onPreviewClick = viewModel::onPreviewClick,
         onManifestChanged = viewModel::onManifestChanged,
+        onCopyClick = {
+            context.copyToClipboard(
+                label = "Transaction Manifest",
+                value = state.manifest
+            )
+        },
         onPasteClick = {
             // Safely read the latest clipboard item
             val clip = clipboardManager?.primaryClip
@@ -70,6 +77,7 @@ private fun SendTransactionManifestContent(
     onBackClick: () -> Unit,
     onPreviewClick: () -> Unit,
     onManifestChanged: (String) -> Unit,
+    onCopyClick: () -> Unit,
     onPasteClick: () -> Unit,
     onClearClick: () -> Unit,
     onDismissErrorMessage: () -> Unit
@@ -124,18 +132,13 @@ private fun SendTransactionManifestContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
             ) {
-                if (state.lineCount > 0) {
-                    Text(
-                        modifier = Modifier
-                            .weight(1f)
-                            .align(Alignment.CenterVertically),
-                        text = "${state.lineCount} ${if (state.lineCount == 1) "line" else "lines"}",
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.textSecondary
-                    )
-                }
+                RadixSecondaryButton(
+                    text = "Copy",
+                    onClick = onCopyClick,
+                    enabled = state.isManifestNotBlank
+                )
 
                 RadixSecondaryButton(
                     text = "Paste",
@@ -148,6 +151,8 @@ private fun SendTransactionManifestContent(
                     enabled = state.isManifestNotBlank
                 )
             }
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             OutlinedTextField(
                 modifier = Modifier.fillMaxSize(),
@@ -187,6 +192,7 @@ fun SendTransactionManifestContentPreview(
             onBackClick = {},
             onPreviewClick = {},
             onManifestChanged = {},
+            onCopyClick = {},
             onPasteClick = {},
             onClearClick = {},
             onDismissErrorMessage = {}
@@ -199,8 +205,26 @@ class SendTransactionManifestPreviewProvider : PreviewParameterProvider<SendTran
     override val values: Sequence<SendTransactionManifestViewModel.State>
         get() = sequenceOf(
             SendTransactionManifestViewModel.State(
-                isLoading = false,
                 manifest = ""
+            ),
+            SendTransactionManifestViewModel.State(
+                manifest = "CALL_METHOD\n" +
+                    "    Address(\"account_tdx_2_129rq58xf8tzuu4zn0v705plfwm7xpdfv4ch2a4uvxalj0wzp45smye\")\n" +
+                    "    \"withdraw\"\n" +
+                    "    Address(\"resource_tdx_2_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxtfd2jc\")\n" +
+                    "    Decimal(\"123\")\n" +
+                    ";\n" +
+                    "TAKE_FROM_WORKTOP\n" +
+                    "    Address(\"resource_tdx_2_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxtfd2jc\")\n" +
+                    "    Decimal(\"123\")\n" +
+                    "    Bucket(\"bucket1\")\n" +
+                    ";\n" +
+                    "CALL_METHOD\n" +
+                    "    Address(\"account_tdx_2_129u84q4u37e3xsqxpe33stpwhuh7jh7t32pu0l4qe89ux2axtud3gs\")\n" +
+                    "    \"try_deposit_or_abort\"\n" +
+                    "    Bucket(\"bucket1\")\n" +
+                    "    Enum<0u8>()\n" +
+                    ";"
             )
         )
 }

@@ -39,7 +39,7 @@ class SendTransactionManifestViewModel @Inject constructor(
         }
     }
 
-    override fun initialState(): State = State(isLoading = true)
+    override fun initialState(): State = State()
 
     fun onPreviewClick() {
         viewModelScope.launch {
@@ -82,12 +82,10 @@ class SendTransactionManifestViewModel @Inject constructor(
     }
 
     data class State(
-        val isLoading: Boolean,
         val manifest: String = "",
         val errorMessage: UiMessage.ErrorMessage? = null
     ) : UiState {
 
         val isManifestNotBlank: Boolean = manifest.isNotBlank()
-        val lineCount: Int = if (manifest.isBlank()) 0 else manifest.lines().size
     }
 }
