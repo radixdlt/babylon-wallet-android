@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedC
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.preferences.preferencesNavGraph
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenterNavGraph
+import com.babylon.wallet.android.presentation.settings.troubleshooting.manifest.sendTransactionManifest
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingNavGraph
 
 fun NavGraphBuilder.settingsNavGraph(

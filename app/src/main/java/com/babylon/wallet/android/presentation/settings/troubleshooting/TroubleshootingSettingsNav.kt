@@ -13,7 +13,9 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.accountRecoveryScanSelection
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.importLegacyWalletScreen
+import com.babylon.wallet.android.presentation.settings.troubleshooting.manifest.sendTransactionManifest
 import com.babylon.wallet.android.presentation.settings.troubleshooting.reset.resetWalletScreen
+import com.babylon.wallet.android.presentation.transaction.transactionReview
 
 const val ROUTE_TROUBLESHOOTING_GRAPH = "settings_troubleshooting_graph"
 const val ROUTE_TROUBLESHOOTING_SCREEN = "settings_troubleshooting_screen"
@@ -62,6 +64,7 @@ fun NavGraphBuilder.troubleshootingNavGraph(
                     SettingsItem.Troubleshooting.AccountRecovery -> navController.accountRecoveryScanSelection()
                     SettingsItem.Troubleshooting.ImportFromLegacyWallet -> navController.importLegacyWalletScreen()
                     SettingsItem.Troubleshooting.FactoryReset -> navController.resetWalletScreen()
+                    SettingsItem.Troubleshooting.SendTransactionManifest -> navController.sendTransactionManifest()
                     else -> {}
                 }
             }
@@ -91,6 +94,11 @@ fun NavGraphBuilder.troubleshootingNavGraph(
                     factorSourceId = factorSourceId,
                     isOlympia = isForOlympia
                 )
+            }
+        )
+        sendTransactionManifest(
+            onBackClick = {
+                navController.popBackStack()
             }
         )
     }

@@ -43,6 +43,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
                 } else {
                     null
                 },
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.SendTransactionManifest),
                 TroubleshootingUiItem.ResetSection,
                 TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.FactoryReset)
             ).filterNotNull().toPersistentSet()
