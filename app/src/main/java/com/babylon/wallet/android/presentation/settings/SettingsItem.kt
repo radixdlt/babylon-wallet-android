@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.settings
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -70,6 +72,7 @@ sealed interface SettingsItem {
         data class BiometricsPin(
             val securityProblems: ImmutableSet<SecurityProblem> = persistentSetOf()
         ) : SecurityFactorsSettingsItem
+
         data object LedgerNano : SecurityFactorsSettingsItem
         data object ArculusCard : SecurityFactorsSettingsItem
         data object Password : SecurityFactorsSettingsItem
@@ -87,27 +90,26 @@ sealed interface SettingsItem {
 
         data object ExportLogs : Troubleshooting
         data object FactoryReset : Troubleshooting
+        data object SendTransactionManifest : Troubleshooting
 
-        @StringRes
-        fun titleRes(): Int {
-            return when (this) {
-                ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_title
-                AccountRecovery -> R.string.troubleshooting_accountScan_title
-                is ContactSupport -> R.string.troubleshooting_contactSupport_title
-                ExportLogs -> R.string.export_logs_title
-                FactoryReset -> R.string.troubleshooting_factoryReset_title
-            }
+        @Composable
+        fun title(): String = when (this) {
+            ImportFromLegacyWallet -> stringResource(id = R.string.troubleshooting_legacyImport_title)
+            AccountRecovery -> stringResource(id = R.string.troubleshooting_accountScan_title)
+            is ContactSupport -> stringResource(id = R.string.troubleshooting_contactSupport_title)
+            ExportLogs -> stringResource(id = R.string.export_logs_title)
+            FactoryReset -> stringResource(id = R.string.troubleshooting_factoryReset_title)
+            SendTransactionManifest -> "Submit Transaction Manifest"
         }
 
-        @StringRes
-        fun subtitleRes(): Int {
-            return when (this) {
-                ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_subtitle
-                AccountRecovery -> R.string.troubleshooting_accountScan_subtitle
-                is ContactSupport -> R.string.troubleshooting_contactSupport_subtitle
-                ExportLogs -> R.string.export_logs_message
-                FactoryReset -> R.string.troubleshooting_factoryReset_subtitle
-            }
+        @Composable
+        fun subtitle(): String = when (this) {
+            ImportFromLegacyWallet -> stringResource(id = R.string.troubleshooting_legacyImport_subtitle)
+            AccountRecovery -> stringResource(id = R.string.troubleshooting_accountScan_subtitle)
+            is ContactSupport -> stringResource(id = R.string.troubleshooting_contactSupport_subtitle)
+            ExportLogs -> stringResource(id = R.string.export_logs_message)
+            FactoryReset -> stringResource(id = R.string.troubleshooting_factoryReset_subtitle)
+            SendTransactionManifest -> "Enter a raw transaction manifest to preview and submit to the network."
         }
 
         @DrawableRes
@@ -118,6 +120,7 @@ sealed interface SettingsItem {
                 is ContactSupport -> DSR.ic_email
                 ExportLogs -> DSR.ic_app_settings
                 FactoryReset -> DSR.ic_factory_reset
+                SendTransactionManifest -> DSR.ic_manifest_expand
             }
         }
     }
@@ -166,6 +169,7 @@ sealed interface SettingsItem {
                 Gateways -> DSR.ic_gateways
                 EntityHiding,
                 AssetsHiding -> DSR.ic_entity_hiding
+
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
                 is AdvancedLock -> DSR.ic_lock

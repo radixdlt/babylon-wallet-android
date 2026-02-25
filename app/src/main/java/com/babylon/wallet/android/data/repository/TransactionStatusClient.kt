@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +39,6 @@ class TransactionStatusClient @Inject constructor(
     private val getTransactionStatusUseCase: GetTransactionStatusUseCase,
     private val getPreAuthorizationStatusUseCase: GetPreAuthorizationStatusUseCase,
     private val appEventBus: AppEventBus,
-    private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
     private val accessControllerStateDetailsObserver: AccessControllerStateDetailsObserver,
     private val updateProvisionalShieldUseCase: UpdateProvisionalShieldUseCase,

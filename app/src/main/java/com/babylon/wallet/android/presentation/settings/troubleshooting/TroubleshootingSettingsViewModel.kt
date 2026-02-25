@@ -32,6 +32,8 @@ class TroubleshootingSettingsViewModel @Inject constructor(
                 TroubleshootingUiItem.RecoverySection,
                 TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.AccountRecovery),
                 TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ImportFromLegacyWallet),
+                TroubleshootingUiItem.TransactionSection,
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.SendTransactionManifest),
                 TroubleshootingUiItem.SupportSection,
                 TroubleshootingUiItem.Setting(
                     SettingsItem.Troubleshooting.ContactSupport(
@@ -72,6 +74,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
 
 sealed interface TroubleshootingUiItem {
     data object RecoverySection : TroubleshootingUiItem
+    data object TransactionSection : TroubleshootingUiItem
     data object SupportSection : TroubleshootingUiItem
     data object ResetSection : TroubleshootingUiItem
     data class Setting(val item: SettingsItem.Troubleshooting) : TroubleshootingUiItem

@@ -96,6 +96,10 @@ private fun TroubleshootingSettingsContent(
                                 SectionHeader(title = stringResource(id = R.string.troubleshooting_accountRecovery))
                             }
 
+                            TroubleshootingUiItem.TransactionSection -> {
+                                SectionHeader(title = "Transaction")
+                            }
+
                             TroubleshootingUiItem.SupportSection -> {
                                 SectionHeader(title = stringResource(id = R.string.troubleshooting_support))
                             }
@@ -108,14 +112,15 @@ private fun TroubleshootingSettingsContent(
                                 val context = LocalContext.current
                                 val item = troubleshootingItem.item
                                 DefaultSettingsItem(
-                                    title = stringResource(id = item.titleRes()),
+                                    title = item.title(),
                                     leadingIconRes = item.getIcon(),
-                                    subtitle = stringResource(id = item.subtitleRes()),
+                                    subtitle = item.subtitle(),
                                     onClick = {
                                         when (item) {
                                             is Troubleshooting.ContactSupport -> {
                                                 context.openEmail(item.supportAddress, item.subject, item.body)
                                             }
+
                                             else -> {
                                                 onSettingItemClick(item)
                                             }

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.di
 
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
 import com.babylon.wallet.android.data.gateway.apis.StateApi
@@ -102,5 +101,4 @@ object NetworkApiModule {
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
-
 }
