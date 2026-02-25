@@ -119,7 +119,8 @@ private fun SendTransactionManifestContent(
                             ),
                         text = "Transaction Preview",
                         onClick = onPreviewClick,
-                        enabled = state.isManifestNotBlank
+                        enabled = state.isManifestNotBlank,
+                        isLoading = state.isTxPreviewLoading
                     )
                 }
             )

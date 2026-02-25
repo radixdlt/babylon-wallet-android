@@ -96,6 +96,10 @@ private fun TroubleshootingSettingsContent(
                                 SectionHeader(title = stringResource(id = R.string.troubleshooting_accountRecovery))
                             }
 
+                            TroubleshootingUiItem.TransactionSection -> {
+                                SectionHeader(title = "Transaction")
+                            }
+
                             TroubleshootingUiItem.SupportSection -> {
                                 SectionHeader(title = stringResource(id = R.string.troubleshooting_support))
                             }
@@ -116,6 +120,7 @@ private fun TroubleshootingSettingsContent(
                                             is Troubleshooting.ContactSupport -> {
                                                 context.openEmail(item.supportAddress, item.subject, item.body)
                                             }
+
                                             else -> {
                                                 onSettingItemClick(item)
                                             }

@@ -42,6 +42,7 @@ class SendTransactionManifestViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onPreviewClick() {
+        _state.update { state -> state.copy(isTxPreviewLoading = true) }
         viewModelScope.launch {
             runCatching {
                 val manifest = TransactionManifest.init(
@@ -57,6 +58,7 @@ class SendTransactionManifestViewModel @Inject constructor(
                 incomingRequestRepository.add(it)
             }
         }
+        _state.update { state -> state.copy(isTxPreviewLoading = false) }
     }
 
     fun onManifestChanged(value: String) {
@@ -83,7 +85,8 @@ class SendTransactionManifestViewModel @Inject constructor(
 
     data class State(
         val manifest: String = "",
-        val errorMessage: UiMessage.ErrorMessage? = null
+        val errorMessage: UiMessage.ErrorMessage? = null,
+        val isTxPreviewLoading: Boolean = false
     ) : UiState {
 
         val isManifestNotBlank: Boolean = manifest.isNotBlank()
