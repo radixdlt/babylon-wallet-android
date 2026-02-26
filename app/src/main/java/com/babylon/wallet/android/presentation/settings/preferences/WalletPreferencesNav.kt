@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.settings.preferences.assetshiding
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
+import com.babylon.wallet.android.presentation.settings.preferences.ss.signalingServers
 import com.babylon.wallet.android.presentation.settings.preferences.theme.themeSelection
 
 const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
@@ -54,6 +55,9 @@ fun NavGraphBuilder.preferencesNavGraph(
         themeSelection {
             navController.popBackStack()
         }
+        signalingServers(
+            onBackClick = navController::popBackStack
+        )
     }
 }
 
@@ -101,6 +105,10 @@ fun NavGraphBuilder.walletPreferencesScreen(
                     is SettingsItem.WalletPreferences.ThemePreference -> {
                         navController.themeSelection()
                     }
+
+                    SettingsItem.WalletPreferences.SignalingServers -> {
+                        navController.signalingServers()
+                    }
                 }
             },
             onBackClick = {
@@ -143,3 +151,4 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
         )
     }
 }
+

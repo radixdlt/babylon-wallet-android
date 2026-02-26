@@ -17,7 +17,6 @@ import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NfcTagDriver
-import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.Module
@@ -63,16 +62,6 @@ object ApplicationModule {
     ): BackupManager {
         return BackupManager(applicationContext)
     }
-
-    @Provides
-    @Singleton
-    fun provideRadixConnectMobile(
-        @ApplicationContext context: Context,
-        @GatewayHttpClient httpClient: OkHttpClient
-    ): RadixConnectMobile = RadixConnectMobile.init(
-        context = context,
-        okHttpClient = httpClient
-    )
 
     @Provides
     @Singleton
