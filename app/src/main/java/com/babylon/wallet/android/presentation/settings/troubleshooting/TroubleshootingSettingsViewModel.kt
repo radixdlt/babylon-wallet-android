@@ -32,8 +32,8 @@ class TroubleshootingSettingsViewModel @Inject constructor(
                 TroubleshootingUiItem.RecoverySection,
                 TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.AccountRecovery),
                 TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ImportFromLegacyWallet),
-                TroubleshootingUiItem.TransactionSection,
-                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.SendTransactionManifest),
+//                TroubleshootingUiItem.TransactionSection,
+//                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.SendTransactionManifest),
                 TroubleshootingUiItem.SupportSection,
                 TroubleshootingUiItem.Setting(
                     SettingsItem.Troubleshooting.ContactSupport(
