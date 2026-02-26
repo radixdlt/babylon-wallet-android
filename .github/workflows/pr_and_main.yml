@@ -95,7 +95,7 @@ jobs:
           encodedString: ${{ env.GH_CRASHLYTICS_GOOGLE_SERVICES_JSON_FILE_BASE64 }}
 
       - name: "Run unit tests"
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testFullDebugUnitTest
         env:
           GPR_USER: ${{ env.GH_GPR_USER }}
           GPR_TOKEN: ${{ env.GH_GPR_TOKEN }}
