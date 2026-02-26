@@ -1,5 +1,5 @@
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testFullDebugUnitTest']) {
 
     reports {
         xml.required = true
@@ -48,5 +48,5 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
 
     sourceDirectories.setFrom(files([mainSrc]))
     classDirectories.setFrom(files([kotlinClasses]))
-    executionData.from = files("${project.buildDir}/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+    executionData.from = files("${project.buildDir}/outputs/unit_test_code_coverage/debugUnitTest/testFullDebugUnitTest.exec")
 }
