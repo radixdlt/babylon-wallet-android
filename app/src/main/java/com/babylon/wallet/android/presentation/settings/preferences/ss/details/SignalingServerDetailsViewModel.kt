@@ -39,22 +39,7 @@ class SignalingServerDetailsViewModel @Inject constructor(
                 )
             }
         } else {
-            viewModelScope.launch {
-                sargonOsManager.callSafely(defaultDispatcher) {
-                    p2pTransportProfiles().all.firstOrNull { it.id == args.id }
-                        ?: error("Server with ${args.id} id not found")
-                }.onFailure {
-                    onError(it)
-                }.onSuccess {
-                    _state.update { state ->
-                        state.copy(
-                            mode = Mode.Edit(
-                                p2pTransportProfile = it
-                            )
-                        )
-                    }
-                }
-            }
+            loadDetails()
         }
     }
 
@@ -70,7 +55,7 @@ class SignalingServerDetailsViewModel @Inject constructor(
                 onError(it)
             }.onSuccess { changed ->
                 if (changed) {
-                    // TODO update UI to show as current
+                    loadDetails()
                 } else {
                     onError("Failed to change server")
                 }
@@ -124,6 +109,30 @@ class SignalingServerDetailsViewModel @Inject constructor(
         // TODO implement
     }
 
+    private fun loadDetails() {
+        viewModelScope.launch {
+            sargonOsManager.callSafely(defaultDispatcher) {
+                val servers = p2pTransportProfiles()
+                val server = servers.all.firstOrNull { it.id == args.id }
+                    ?: error("Server with ${args.id} id not found")
+                val isCurrent = server == servers.current
+
+                Mode.Edit(
+                    p2pTransportProfile = server,
+                    isCurrent = isCurrent
+                )
+            }.onFailure {
+                onError(it)
+            }.onSuccess { mode ->
+                _state.update { state ->
+                    state.copy(
+                        mode = mode
+                    )
+                }
+            }
+        }
+    }
+
     private fun onError(message: String) {
         onError(Throwable(message))
     }
@@ -147,7 +156,8 @@ class SignalingServerDetailsViewModel @Inject constructor(
         sealed interface Mode {
 
             data class Edit(
-                val p2pTransportProfile: P2pTransportProfile
+                val p2pTransportProfile: P2pTransportProfile,
+                val isCurrent: Boolean
             ) : Mode
 
             object Add : Mode

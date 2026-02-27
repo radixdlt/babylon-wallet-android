@@ -10,18 +10,24 @@ import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SignalingServersViewModel @Inject constructor(
+    private val getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SignalingServersViewModel.State>() {
 
     init {
-        loadServers()
+        getProfileUseCase.flow.onEach {
+            loadServers()
+        }.launchIn(viewModelScope)
     }
 
     override fun initialState(): State = State()

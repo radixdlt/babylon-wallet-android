@@ -127,15 +127,17 @@ private fun SignalingServerDetailsContent(
                     )
                 },
                 additionalBottomContent = {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                    if (state.editMode?.isCurrent == false) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = "Mark as current",
-                        onClick = onChangeCurrentClick
-                    )
+                        RadixSecondaryButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = "Mark as current",
+                            onClick = onChangeCurrentClick
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
@@ -234,7 +236,8 @@ class SignalingServerDetailsPreviewProvider : PreviewParameterProvider<Signaling
         get() = sequenceOf(
             SignalingServerDetailsViewModel.State(
                 mode = SignalingServerDetailsViewModel.State.Mode.Edit(
-                    p2pTransportProfile = P2pTransportProfile.sample()
+                    p2pTransportProfile = P2pTransportProfile.sample(),
+                    isCurrent = true
                 )
             ),
             SignalingServerDetailsViewModel.State(
