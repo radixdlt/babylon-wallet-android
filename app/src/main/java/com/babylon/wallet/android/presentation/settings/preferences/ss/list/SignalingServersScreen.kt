@@ -1,8 +1,7 @@
-package com.babylon.wallet.android.presentation.settings.preferences.ss
+package com.babylon.wallet.android.presentation.settings.preferences.ss.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,19 +22,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -48,17 +42,18 @@ import com.radixdlt.sargon.samples.sample
 @Composable
 fun SignalingServersScreen(
     viewModel: SignalingServersViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onServerClick: (P2pTransportProfile) -> Unit,
+    onAddServerClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SignalingServersContent(
         state = state,
         onBackClick = onBackClick,
-        onAddClick = viewModel::onAddClick,
-        onItemClick = viewModel::onItemClick,
-        onDeleteItemClick = viewModel::onDeleteItemClick,
-        onDeleteConfirmationDismissed = viewModel::onDeleteConfirmationDismissed
+        onAddClick = onAddServerClick,
+        onItemClick = onServerClick,
+        onDismissErrorMessage = viewModel::onDismissErrorMessage
     )
 }
 
@@ -68,29 +63,13 @@ private fun SignalingServersContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
-    onItemClick: (SignalingServersViewModel.State.UiItem) -> Unit,
-    onDeleteItemClick: (SignalingServersViewModel.State.UiItem) -> Unit,
-    onDeleteConfirmationDismissed: (Boolean) -> Unit
+    onItemClick: (P2pTransportProfile) -> Unit,
+    onDismissErrorMessage: () -> Unit
 ) {
-    state.itemToDelete?.let {
-        BasicPromptAlertDialog(
-            finish = onDeleteConfirmationDismissed,
-            title = {
-                Text(
-                    text = "Remove Signaling Server",
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.text
-                )
-            },
-            message = {
-                Text(
-                    text = "You will no longer be able to connect to this signaling server.",
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.text
-                )
-            },
-            confirmText = stringResource(id = R.string.common_remove),
-            confirmTextColor = RadixTheme.colors.error
+    state.errorMessage?.let {
+        ErrorAlertDialog(
+            errorMessage = it,
+            cancel = onDismissErrorMessage
         )
     }
 
@@ -126,13 +105,60 @@ private fun SignalingServersContent(
                 )
             }
 
+            state.current?.let {
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                        text = "Current",
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.text,
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .background(color = RadixTheme.colors.card)
+                            .padding(
+                                start = RadixTheme.dimensions.paddingDefault,
+                                end = RadixTheme.dimensions.paddingSmall,
+                                top = RadixTheme.dimensions.paddingDefault,
+                                bottom = RadixTheme.dimensions.paddingDefault
+                            )
+                    ) {
+                        SignalingServerView(
+                            item = it,
+                            modifier = Modifier
+                                .throttleClickable { onItemClick(it) }
+                                .fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+            }
+
+            if (state.items.isNotEmpty()) {
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                        text = "Others",
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.text,
+                    )
+                }
+            }
+
             itemsIndexed(state.items) { index, item ->
                 Column(
                     modifier = Modifier.background(color = RadixTheme.colors.card)
                 ) {
                     SignalingServerView(
                         item = item,
-                        onDeleteClick = onDeleteItemClick,
                         modifier = Modifier
                             .throttleClickable { onItemClick(item) }
                             .fillMaxWidth()
@@ -172,8 +198,7 @@ private fun SignalingServersContent(
 
 @Composable
 private fun SignalingServerView(
-    item: SignalingServersViewModel.State.UiItem,
-    onDeleteClick: (SignalingServersViewModel.State.UiItem) -> Unit,
+    item: P2pTransportProfile,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -181,22 +206,11 @@ private fun SignalingServerView(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
-        if (item.selected) {
-            Icon(
-                modifier = Modifier.width(24.dp),
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
-                contentDescription = null,
-                tint = RadixTheme.colors.icon
-            )
-        } else {
-            Box(modifier = Modifier.width(24.dp))
-        }
-
         Column(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = item.server.name,
+                text = item.name,
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.text,
                 maxLines = 1,
@@ -204,7 +218,7 @@ private fun SignalingServerView(
             )
 
             Text(
-                text = item.url,
+                text = item.signalingServer,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.textSecondary,
                 maxLines = 1,
@@ -212,19 +226,11 @@ private fun SignalingServerView(
             )
         }
 
-        IconButton(
-            onClick = {
-                onDeleteClick(item)
-            }
-        ) {
-            Icon(
-                painter = painterResource(
-                    id = DSR.ic_delete_outline
-                ),
-                tint = RadixTheme.colors.icon,
-                contentDescription = null
-            )
-        }
+        Icon(
+            painter = painterResource(id = DSR.ic_chevron_right),
+            contentDescription = null,
+            tint = RadixTheme.colors.iconTertiary
+        )
     }
 }
 
@@ -240,8 +246,7 @@ private fun SignalingServersPreview(
             onBackClick = {},
             onAddClick = {},
             onItemClick = {},
-            onDeleteItemClick = {},
-            onDeleteConfirmationDismissed = {}
+            onDismissErrorMessage = {}
         )
     }
 }
@@ -252,12 +257,8 @@ class SignalingServersPreviewProvider : PreviewParameterProvider<SignalingServer
     override val values: Sequence<SignalingServersViewModel.State>
         get() = sequenceOf(
             SignalingServersViewModel.State(
-                items = P2pTransportProfile.sample.all.mapIndexed { index, item ->
-                    SignalingServersViewModel.State.UiItem(
-                        server = item,
-                        selected = index == 0
-                    )
-                }
+                current = P2pTransportProfile.sample(),
+                items = listOf(P2pTransportProfile.sample.other())
             ),
             SignalingServersViewModel.State()
         )
