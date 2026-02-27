@@ -18,7 +18,8 @@ class ProcessDeepLinkUseCase @Inject constructor(
     suspend operator fun invoke(deepLink: String): Result<DeepLinkProcessingResult> {
         return runCatching {
             val profileFinishedOnboarding = getProfileUseCase.finishedOnboardingProfile() != null
-            val sessionRequest = sargonOsManager.sargonOs.radixConnectMobile().handleDeepLink(deepLink)
+            val sessionRequest = sargonOsManager.sargonOs.radixConnectMobile()
+                .handleDeepLink(deepLink)
             val request = sessionRequest.interaction.toDomainModel(
                 remoteEntityId = RemoteEntityID.RadixMobileConnectRemoteSession(
                     id = sessionRequest.sessionId.toString(),

@@ -30,9 +30,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -218,23 +220,24 @@ class MainViewModel @Inject constructor(
     }
 
     fun handleDeepLink(deepLink: Uri) {
-        viewModelScope.launch {
-            processDeepLinkUseCase(deepLink.toString()).onSuccess { result ->
-                when (result) {
-                    is DeepLinkProcessingResult.Processed -> {
-                        incomingRequestsDelegate.verifyIncomingRequest(result.request)
-                    }
+        sargonOsManager.sargonState.filter { it is SargonOsState.Booted }
+            .onEach {
+                processDeepLinkUseCase(deepLink.toString()).onSuccess { result ->
+                    when (result) {
+                        is DeepLinkProcessingResult.Processed -> {
+                            incomingRequestsDelegate.verifyIncomingRequest(result.request)
+                        }
 
-                    DeepLinkProcessingResult.Buffered -> {
-                        _state.update {
-                            it.copy(showMobileConnectWarning = true)
+                        DeepLinkProcessingResult.Buffered -> {
+                            _state.update {
+                                it.copy(showMobileConnectWarning = true)
+                            }
                         }
                     }
+                }.onFailure { error ->
+                    Timber.d(error)
                 }
-            }.onFailure { error ->
-                Timber.d(error)
-            }
-        }
+            }.launchIn(viewModelScope)
     }
 
     fun onMobileConnectWarningShown() {
