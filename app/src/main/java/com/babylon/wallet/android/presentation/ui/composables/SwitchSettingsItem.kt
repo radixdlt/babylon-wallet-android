@@ -122,7 +122,7 @@ fun SwitchSettingsItem(
 ) {
     SwitchSettingsItem(
         modifier = modifier,
-        title = stringResource(id=titleRes),
+        title = stringResource(id = titleRes),
         checked = checked,
         onCheckedChange = onCheckedChange,
         iconResource = iconResource,

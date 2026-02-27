@@ -40,7 +40,7 @@ class SignalingServersViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onAddClick() {
-        //TODO navigate to add
+        // TODO navigate to add
     }
 
     fun onItemClick(item: State.UiItem) {
@@ -49,7 +49,7 @@ class SignalingServersViewModel @Inject constructor(
                 val updatedServers = profile().appPreferences.p2pTransportProfiles
                 updatedServers.changeCurrent(item.server)
 
-                //TODO update profile
+                // TODO update profile
 
                 _state.update { state ->
                     state.copy(
@@ -83,7 +83,7 @@ class SignalingServersViewModel @Inject constructor(
                     val updatedServers = profile().appPreferences.p2pTransportProfiles
                     updatedServers.remove(itemToDelete)
 
-                    //TODO update profile
+                    // TODO update profile
 
                     _state.update { state ->
                         state.copy(

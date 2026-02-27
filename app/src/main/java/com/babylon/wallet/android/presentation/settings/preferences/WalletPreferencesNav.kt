@@ -151,4 +151,3 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
         )
     }
 }
-
