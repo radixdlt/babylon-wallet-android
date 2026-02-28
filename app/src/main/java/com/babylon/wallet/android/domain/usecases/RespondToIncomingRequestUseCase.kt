@@ -7,7 +7,6 @@ import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.Instant
-import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.RadixConnectMobileWalletResponse
 import com.radixdlt.sargon.SessionId
 import com.radixdlt.sargon.SignedSubintent
@@ -20,14 +19,15 @@ import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
 import com.radixdlt.sargon.extensions.toJson
 import com.radixdlt.sargon.newWalletToDappInteractionPreAuthorizationResponseItems
+import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
 class RespondToIncomingRequestUseCase @Inject constructor(
+    private val sargonOsManager: SargonOsManager,
     private val dAppMessenger: DappMessenger,
-    private val radixConnectMobile: RadixConnectMobile,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
@@ -53,9 +53,13 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
             is RemoteEntityID.RadixMobileConnectRemoteSession -> {
                 runCatching {
-                    radixConnectMobile.sendDappInteractionResponse(
-                        RadixConnectMobileWalletResponse(SessionId.fromString(request.remoteEntityId.id), payload)
-                    )
+                    sargonOsManager.sargonOs.radixConnectMobile()
+                        .sendDappInteractionResponse(
+                            walletResponse = RadixConnectMobileWalletResponse(
+                                sessionId = SessionId.fromString(request.remoteEntityId.id),
+                                response = payload
+                            )
+                        )
                 }.onFailure {
                     Timber.d(it, "Failed to send failure response to Radix Mobile Connect")
                 }.mapCatching {
@@ -83,12 +87,13 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
             is RemoteEntityID.RadixMobileConnectRemoteSession -> {
                 runCatching {
-                    radixConnectMobile.sendDappInteractionResponse(
-                        RadixConnectMobileWalletResponse(
-                            sessionId = SessionId.fromString(request.remoteEntityId.id),
-                            response = response
+                    sargonOsManager.sargonOs.radixConnectMobile()
+                        .sendDappInteractionResponse(
+                            RadixConnectMobileWalletResponse(
+                                sessionId = SessionId.fromString(request.remoteEntityId.id),
+                                response = response
+                            )
                         )
-                    )
                 }.fold(onSuccess = {
                     Result.success(
                         IncomingRequestResponse.SuccessRadixMobileConnect
@@ -153,12 +158,13 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
         is RemoteEntityID.RadixMobileConnectRemoteSession -> {
             runCatching {
-                radixConnectMobile.sendDappInteractionResponse(
-                    RadixConnectMobileWalletResponse(
-                        sessionId = SessionId.fromString(request.remoteEntityId.id),
-                        response = payload
+                sargonOsManager.sargonOs.radixConnectMobile()
+                    .sendDappInteractionResponse(
+                        RadixConnectMobileWalletResponse(
+                            sessionId = SessionId.fromString(request.remoteEntityId.id),
+                            response = payload
+                        )
                     )
-                )
             }.mapCatching {
                 IncomingRequestResponse.SuccessRadixMobileConnect
             }

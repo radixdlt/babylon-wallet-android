@@ -130,36 +130,42 @@ sealed interface SettingsItem {
         data object EntityHiding : WalletPreferences
         data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
+        data object SignalingServers : WalletPreferences
+        data object RelayServices : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
         data class AdvancedLock(val enabled: Boolean) : WalletPreferences
         data class ThemePreference(val selection: ThemeSelection) : WalletPreferences
 
-        @StringRes
-        fun titleRes(): Int {
+        @Composable
+        fun title(): String {
             return when (this) {
-                DepositGuarantees -> R.string.preferences_depositGuarantees_title
-                Gateways -> R.string.preferences_gateways
-                is DeveloperMode -> R.string.appSettings_developerMode_title
-                EntityHiding -> R.string.preferences_hiddenEntities_title
-                AssetsHiding -> R.string.preferences_hiddenAssets_title
-                is CrashReporting -> R.string.appSettings_crashReporting_title
-                is AdvancedLock -> R.string.preferences_advancedLock_title
-                is ThemePreference -> R.string.preferences_themeSelection_title
+                DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_title)
+                Gateways -> stringResource(id = R.string.preferences_gateways)
+                SignalingServers -> "Signaling Servers"
+                RelayServices -> "Radix Connect Relay Services"
+                is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_title)
+                EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_title)
+                AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_title)
+                is CrashReporting -> stringResource(id = R.string.appSettings_crashReporting_title)
+                is AdvancedLock -> stringResource(id = R.string.preferences_advancedLock_title)
+                is ThemePreference -> stringResource(id = R.string.preferences_themeSelection_title)
             }
         }
 
-        @StringRes
-        fun subtitleRes(): Int? {
+        @Composable
+        fun subtitle(): String? {
             return when (this) {
-                DepositGuarantees -> R.string.preferences_depositGuarantees_subtitle
+                DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_subtitle)
                 Gateways -> null
-                is DeveloperMode -> R.string.appSettings_developerMode_subtitle
-                EntityHiding -> R.string.preferences_hiddenEntities_subtitle
-                AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
+                SignalingServers -> "Manage signaling server and ICE profile options."
+                RelayServices -> "Manage Radix Connect Relay services."
+                is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_subtitle)
+                EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_subtitle)
+                AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_subtitle)
                 is CrashReporting -> null
-                is AdvancedLock -> R.string.preferences_advancedLockAndroid_subtitle
-                is ThemePreference -> R.string.preferences_themeSelection_subtitle
+                is AdvancedLock -> stringResource(id = R.string.preferences_advancedLockAndroid_subtitle)
+                is ThemePreference -> stringResource(id = R.string.preferences_themeSelection_subtitle)
             }
         }
 
@@ -171,6 +177,8 @@ sealed interface SettingsItem {
                 AssetsHiding -> DSR.ic_entity_hiding
 
                 DepositGuarantees -> DSR.ic_filter_list
+                SignalingServers -> DSR.ic_sensors
+                RelayServices -> DSR.ic_sensors
                 is DeveloperMode -> DSR.ic_developer_mode
                 is AdvancedLock -> DSR.ic_lock
                 is ThemePreference -> DSR.ic_app_theme

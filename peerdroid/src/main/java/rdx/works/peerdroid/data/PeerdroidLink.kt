@@ -2,6 +2,7 @@ package rdx.works.peerdroid.data
 
 import android.content.Context
 import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -50,6 +51,7 @@ interface PeerdroidLink {
      */
     suspend fun addConnection(
         p2pLink: P2pLink,
+        p2pTransportProfile: P2pTransportProfile,
         connectionListener: ConnectionListener
     ): Result<Unit>
 
@@ -86,7 +88,7 @@ internal class PeerdroidLinkImpl(
 ) : PeerdroidLink {
 
     private val webSocketClient = WebSocketClient(applicationContext)
-    private val webRtcManager = WebRtcManager(applicationContext)
+    private lateinit var webRtcManager: WebRtcManager
 
     private var webSocketClientJob: Job? = null
     private var webRtcManagerJob: Job? = null
@@ -102,6 +104,7 @@ internal class PeerdroidLinkImpl(
 
     override suspend fun addConnection(
         p2pLink: P2pLink,
+        p2pTransportProfile: P2pTransportProfile,
         connectionListener: PeerdroidLink.ConnectionListener
     ): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
@@ -110,6 +113,8 @@ internal class PeerdroidLinkImpl(
         // get connection id from encryption key
         val connectionId = ConnectionIdHolder(p2pLink)
         Timber.tag("LinkingCE").d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
+
+        webRtcManager = WebRtcManager(applicationContext, p2pTransportProfile)
 
         withContext(ioDispatcher) {
             observePeerConnectionUntilEstablished(connectionId.id, connectionListener)

@@ -17,7 +17,11 @@ import com.babylon.wallet.android.presentation.settings.preferences.assetshiding
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
+import com.babylon.wallet.android.presentation.settings.preferences.rs.relayServices
+import com.babylon.wallet.android.presentation.settings.preferences.ss.details.signalingServerDetails
+import com.babylon.wallet.android.presentation.settings.preferences.ss.list.signalingServers
 import com.babylon.wallet.android.presentation.settings.preferences.theme.themeSelection
+import com.radixdlt.sargon.extensions.id
 
 const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
 const val ROUTE_WALLET_PREFERENCES_GRAPH = "settings_wallet_preferences_graph"
@@ -54,6 +58,21 @@ fun NavGraphBuilder.preferencesNavGraph(
         themeSelection {
             navController.popBackStack()
         }
+        signalingServers(
+            onBackClick = navController::popBackStack,
+            onServerClick = {
+                navController.signalingServerDetails(it.id)
+            },
+            onAddServerClick = {
+                navController.signalingServerDetails(null)
+            }
+        )
+        signalingServerDetails(
+            onBackClick = navController::popBackStack
+        )
+        relayServices(
+            onBackClick = navController::popBackStack
+        )
     }
 }
 
@@ -100,6 +119,14 @@ fun NavGraphBuilder.walletPreferencesScreen(
 
                     is SettingsItem.WalletPreferences.ThemePreference -> {
                         navController.themeSelection()
+                    }
+
+                    SettingsItem.WalletPreferences.SignalingServers -> {
+                        navController.signalingServers()
+                    }
+
+                    SettingsItem.WalletPreferences.RelayServices -> {
+                        navController.relayServices()
                     }
                 }
             },
