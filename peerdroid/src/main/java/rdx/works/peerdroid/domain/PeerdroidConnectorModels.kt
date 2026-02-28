@@ -1,6 +1,7 @@
 package rdx.works.peerdroid.domain
 
 import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.clientID
@@ -28,7 +29,8 @@ value class RemoteClientHolder(
 
 internal data class WebSocketHolder(
     val webSocketClient: WebSocketClient,
-    val listenMessagesJob: Job
+    val listenMessagesJob: Job,
+    val p2pTransportProfile: P2pTransportProfile
 )
 
 internal data class PeerConnectionHolder(

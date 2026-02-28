@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.main.MainViewModel.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.AppLifecycleObserver
+import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.RadixConnectPassword
 import kotlinx.coroutines.CoroutineScope
@@ -135,10 +136,20 @@ class IncomingRequestsDelegate @Inject constructor(
                     else -> p2PLinksRepository.observeP2PLinks().drop(1)
                 }
             }
-            .map { p2pLinks ->
+            .flatMapLatest { p2pLinks ->
+                getProfileUseCase.flow.map { profile ->
+                    p2pLinks to profile.appPreferences.p2pTransportProfiles.current
+                }
+            }
+            .map { p2pLinksAndP2pTransportProfile ->
+                val p2pLinks = p2pLinksAndP2pTransportProfile.first
                 Timber.d("found ${p2pLinks.size} p2p links")
+
                 p2pLinks.asList().forEach { p2PLink ->
-                    establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
+                    establishLinkConnection(
+                        p2pTransportProfile = p2pLinksAndP2pTransportProfile.second,
+                        connectionPassword = p2PLink.connectionPassword
+                    )
                 }
             }
             .onCompletion {
@@ -147,8 +158,11 @@ class IncomingRequestsDelegate @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private suspend fun establishLinkConnection(connectionPassword: RadixConnectPassword) {
-        peerdroidClient.connect(connectionPassword)
+    private suspend fun establishLinkConnection(
+        p2pTransportProfile: P2pTransportProfile,
+        connectionPassword: RadixConnectPassword
+    ) {
+        peerdroidClient.connect(p2pTransportProfile, connectionPassword)
             .onSuccess {
                 if (incomingDappRequestsJob == null) {
                     Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
@@ -198,6 +212,7 @@ class IncomingRequestsDelegate @Inject constructor(
                 } else {
                     observeP2PLinks()
                 }
+
                 else -> null
             }
         }.launchIn(viewModelScope)

@@ -1,6 +1,7 @@
 package rdx.works.peerdroid.data.webrtc
 
 import android.content.Context
+import com.radixdlt.sargon.P2pTransportProfile
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -10,7 +11,6 @@ import org.webrtc.DataChannel
 import org.webrtc.MediaConstraints
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
-import rdx.works.peerdroid.BuildConfig
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -22,25 +22,10 @@ import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingLoca
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingRemoteDescription
 import timber.log.Timber
 
-private val STUN_SERVERS_LIST = listOf(
-    "stun:stun.l.google.com:19302",
-    "stun:stun1.l.google.com:19302",
-    "stun:stun2.l.google.com:19302",
-    "stun:stun3.l.google.com:19302",
-    "stun:stun4.l.google.com:19302"
-)
-private val TURN_DEV_SERVERS_LIST = listOf(
-    "turn:turn-dev-udp.rdx-works-main.extratools.works:80?transport=udp",
-    "turn:turn-dev-tcp.rdx-works-main.extratools.works:80?transport=tcp"
-)
-private val TURN_SERVERS_LIST = listOf(
-    "turn:turn-udp.radixdlt.com:80?transport=udp",
-    "turn:turn-tcp.radixdlt.com:80?transport=tcp"
-)
-private const val TURN_SERVER_USERNAME = "username"
-private const val TURN_SERVER_PASSWORD = "password"
-
-internal class WebRtcManager(applicationContext: Context) {
+internal class WebRtcManager(
+    applicationContext: Context,
+    p2pTransportProfile: P2pTransportProfile
+) {
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
@@ -51,21 +36,17 @@ internal class WebRtcManager(applicationContext: Context) {
     // STUN servers are used to find the public facing IP address of each peer
     private val stunUrls = PeerConnection
         .IceServer
-        .builder(STUN_SERVERS_LIST)
+        .builder(p2pTransportProfile.stun.urls)
         .createIceServer()
 
     // if STUN servers fail, then a TURN server is used instead as a proxy fallback
     private val turnUrls = PeerConnection
         .IceServer
-        .builder(
-            if (BuildConfig.DEBUG_MODE) {
-                TURN_DEV_SERVERS_LIST
-            } else {
-                TURN_SERVERS_LIST
-            }
-        )
-        .setUsername(TURN_SERVER_USERNAME)
-        .setPassword(TURN_SERVER_PASSWORD)
+        .builder(p2pTransportProfile.turn.urls)
+        .apply {
+            p2pTransportProfile.turn.username?.let { setUsername(it) }
+            p2pTransportProfile.turn.credential?.let { setPassword(it) }
+        }
         .createIceServer()
 
     // DtlsSrtpKeyAgreement is for peer connection and IceRestart for offer.
@@ -99,6 +80,7 @@ internal class WebRtcManager(applicationContext: Context) {
 
     init {
         Timber.d("🔌 initialize WebRtcManager")
+        Timber.d("🔌 p2p transport profile: $p2pTransportProfile")
     }
 
     fun createPeerConnection(remoteClientId: String): Flow<PeerConnectionEvent> {
@@ -118,7 +100,8 @@ internal class WebRtcManager(applicationContext: Context) {
             this.peerConnection = it
             Timber.d("🔌 created a peer connection: $peerConnection for remote client: $remoteClientId")
         } ?: Timber.e("🔌 failed to create a peer connection")
-        return this.peerConnection ?: throw UninitializedPropertyAccessException("property peerConnection has not been initialized")
+        return this.peerConnection
+            ?: throw UninitializedPropertyAccessException("property peerConnection has not been initialized")
     }
 
     private fun createRtcDataChannel(remoteClientId: String) {
@@ -171,6 +154,7 @@ internal class WebRtcManager(applicationContext: Context) {
     }
 
     fun getDataChannel(): DataChannel {
-        return dataChannel ?: throw UninitializedPropertyAccessException("property dataChannel has not been initialized")
+        return dataChannel
+            ?: throw UninitializedPropertyAccessException("property dataChannel has not been initialized")
     }
 }

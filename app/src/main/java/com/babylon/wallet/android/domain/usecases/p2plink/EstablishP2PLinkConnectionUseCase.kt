@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.usecases.p2plink
 
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
+import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.Entropy32Bytes
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.P2pLink
@@ -11,7 +12,11 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.messageHash
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.os.SargonOsManager
+import kotlinx.coroutines.CoroutineDispatcher
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.then
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PeerdroidLink
 import rdx.works.profile.datastore.EncryptedPreferencesManager
@@ -23,7 +28,9 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
     private val peerdroidLink: PeerdroidLink,
     private val p2PLinksRepository: P2PLinksRepository,
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val sargonOsManager: SargonOsManager,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
     suspend fun update(payload: LinkConnectionPayload): Result<Unit> {
@@ -48,36 +55,42 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
 
     @OptIn(ExperimentalStdlibApi::class)
     private suspend fun addConnection(p2pLink: P2pLink): Result<Unit> {
-        return peerdroidLink.addConnection(
-            p2pLink = p2pLink,
-            connectionListener = object : PeerdroidLink.ConnectionListener {
+        return sargonOsManager.callSafely(dispatcher) {
+            p2pTransportProfiles().current
+        }.then { p2pTransportProfile ->
+            peerdroidLink.addConnection(
+                p2pLink = p2pLink,
+                p2pTransportProfile = p2pTransportProfile,
+                connectionListener = object : PeerdroidLink.ConnectionListener {
 
-                override suspend fun completeLinking(connectionId: String): Result<Unit> {
-                    val walletClientKeyBytes = encryptedPreferencesManager.getP2PLinksWalletPrivateKey()
-                        ?.hexToByteArray()
-                        ?: run {
-                            val newPrivateKey = newRandomPrivateKey()
-                            encryptedPreferencesManager.saveP2PLinksWalletPrivateKey(newPrivateKey.toHexString())
-                            newPrivateKey
-                        }
-                    val walletClientKey = Curve25519SecretKey(Exactly32Bytes.init(walletClientKeyBytes.toBagOfBytes()))
+                    override suspend fun completeLinking(connectionId: String): Result<Unit> {
+                        val walletClientKeyBytes = encryptedPreferencesManager.getP2PLinksWalletPrivateKey()
+                            ?.hexToByteArray()
+                            ?: run {
+                                val newPrivateKey = newRandomPrivateKey()
+                                encryptedPreferencesManager.saveP2PLinksWalletPrivateKey(newPrivateKey.toHexString())
+                                newPrivateKey
+                            }
+                        val walletClientKey =
+                            Curve25519SecretKey(Exactly32Bytes.init(walletClientKeyBytes.toBagOfBytes()))
 
-                    Timber.tag("LinkingCE").d("send link client message")
-                    val linkClientInteraction = PeerdroidLink.LinkClientExchangeInteraction(
-                        publicKey = walletClientKey.toPublicKey(),
-                        signature = walletClientKey.sign(
-                            hash = p2pLink.connectionPassword.messageHash()
-                        ).asGeneral()
-                    )
+                        Timber.tag("LinkingCE").d("send link client message")
+                        val linkClientInteraction = PeerdroidLink.LinkClientExchangeInteraction(
+                            publicKey = walletClientKey.toPublicKey(),
+                            signature = walletClientKey.sign(
+                                hash = p2pLink.connectionPassword.messageHash()
+                            ).asGeneral()
+                        )
 
-                    return peerdroidLink.sendMessage(connectionId, linkClientInteraction)
-                        .onSuccess {
-                            preferencesManager.removeLastSyncedAccountsWithCE()
-                            p2PLinksRepository.addOrUpdateP2PLink(p2pLink)
-                        }
+                        return peerdroidLink.sendMessage(connectionId, linkClientInteraction)
+                            .onSuccess {
+                                preferencesManager.removeLastSyncedAccountsWithCE()
+                                p2PLinksRepository.addOrUpdateP2PLink(p2pLink)
+                            }
+                    }
                 }
-            }
-        ).onSuccess {
+            )
+        }.onSuccess {
             Timber.tag("LinkingCE").d("Successfully connected to remote peer.")
         }.onFailure {
             Timber.tag("LinkingCE").d("Failed to connect to remote peer.")
