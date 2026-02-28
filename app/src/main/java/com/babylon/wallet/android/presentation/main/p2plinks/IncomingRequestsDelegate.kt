@@ -25,6 +25,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -141,6 +142,7 @@ class IncomingRequestsDelegate @Inject constructor(
                     p2pLinks to profile.appPreferences.p2pTransportProfiles.current
                 }
             }
+            .distinctUntilChanged()
             .map { p2pLinksAndP2pTransportProfile ->
                 val p2pLinks = p2pLinksAndP2pTransportProfile.first
                 Timber.d("found ${p2pLinks.size} p2p links")

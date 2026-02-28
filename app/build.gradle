@@ -109,7 +109,6 @@ android {
             buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "true"
             buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
             buildConfigField "boolean", "FILE_LOGGER_ENABLED", "false"
-            buildConfigField "String", "RCR_URL", '"https://radix-connect-relay.radixdlt.com/"'
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

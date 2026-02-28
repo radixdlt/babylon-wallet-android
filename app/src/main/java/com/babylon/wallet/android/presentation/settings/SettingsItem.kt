@@ -143,7 +143,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_title)
                 Gateways -> stringResource(id = R.string.preferences_gateways)
                 SignalingServers -> "Signaling Servers"
-                RelayServices -> "Relay Services"
+                RelayServices -> "Radix Connect Relay Services"
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_title)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_title)
                 AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_title)
@@ -159,7 +159,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_subtitle)
                 Gateways -> null
                 SignalingServers -> "Manage signaling server and ICE profile options."
-                RelayServices -> "Manage relay services."
+                RelayServices -> "Manage Radix Connect Relay services."
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_subtitle)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_subtitle)
                 AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_subtitle)
