@@ -19,7 +19,7 @@ class SignalingServerDetailsNavArgs(
 ) {
 
     constructor(savedStateHandle: SavedStateHandle) : this(
-        savedStateHandle.get<String>(ARG_ID),
+        savedStateHandle.get<String?>(ARG_ID).takeIf { it != "null"}
     )
 }
 
