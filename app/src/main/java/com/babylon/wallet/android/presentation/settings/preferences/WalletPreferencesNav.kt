@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.settings.preferences.assetshiding
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
+import com.babylon.wallet.android.presentation.settings.preferences.rs.relayServices
 import com.babylon.wallet.android.presentation.settings.preferences.ss.details.signalingServerDetails
 import com.babylon.wallet.android.presentation.settings.preferences.ss.list.signalingServers
 import com.babylon.wallet.android.presentation.settings.preferences.theme.themeSelection
@@ -69,6 +70,9 @@ fun NavGraphBuilder.preferencesNavGraph(
         signalingServerDetails(
             onBackClick = navController::popBackStack
         )
+        relayServices(
+            onBackClick = navController::popBackStack
+        )
     }
 }
 
@@ -119,6 +123,10 @@ fun NavGraphBuilder.walletPreferencesScreen(
 
                     SettingsItem.WalletPreferences.SignalingServers -> {
                         navController.signalingServers()
+                    }
+
+                    SettingsItem.WalletPreferences.RelayServices -> {
+                        navController.relayServices()
                     }
                 }
             },

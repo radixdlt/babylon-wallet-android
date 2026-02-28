@@ -131,6 +131,7 @@ sealed interface SettingsItem {
         data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
         data object SignalingServers : WalletPreferences
+        data object RelayServices : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
         data class AdvancedLock(val enabled: Boolean) : WalletPreferences
@@ -142,6 +143,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_title)
                 Gateways -> stringResource(id = R.string.preferences_gateways)
                 SignalingServers -> "Signaling Servers"
+                RelayServices -> "Relay Services"
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_title)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_title)
                 AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_title)
@@ -157,6 +159,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_subtitle)
                 Gateways -> null
                 SignalingServers -> "Manage signaling server and ICE profile options."
+                RelayServices -> "Manage relay services."
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_subtitle)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_subtitle)
                 AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_subtitle)
@@ -175,6 +178,7 @@ sealed interface SettingsItem {
 
                 DepositGuarantees -> DSR.ic_filter_list
                 SignalingServers -> DSR.ic_sensors
+                RelayServices -> DSR.ic_sensors
                 is DeveloperMode -> DSR.ic_developer_mode
                 is AdvancedLock -> DSR.ic_lock
                 is ThemePreference -> DSR.ic_app_theme

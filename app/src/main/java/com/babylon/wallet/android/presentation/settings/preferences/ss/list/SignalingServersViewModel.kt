@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SignalingServersViewModel @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase,
+    getProfileUseCase: GetProfileUseCase,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SignalingServersViewModel.State>() {
