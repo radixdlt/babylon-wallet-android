@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +48,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
@@ -70,7 +73,8 @@ fun RelayServicesScreen(
         onItemClick = viewModel::onItemClick,
         onDismissErrorMessage = viewModel::onDismissErrorMessage,
         onAddClick = { viewModel.setAddSheetVisible(true) },
-        onDeleteItemClick = viewModel::onDeleteItemClick
+        onDeleteItemClick = viewModel::onDeleteItemClick,
+        onDeleteConfirmationDismissed = viewModel::onDeleteConfirmationDismissed
     )
 
     state.addInput?.let { input ->
@@ -92,7 +96,8 @@ private fun RelayServicesContent(
     onItemClick: (RelayServicesViewModel.State.UiItem) -> Unit,
     onDeleteItemClick: (RelayServicesViewModel.State.UiItem) -> Unit,
     onAddClick: () -> Unit,
-    onDismissErrorMessage: () -> Unit
+    onDismissErrorMessage: () -> Unit,
+    onDeleteConfirmationDismissed: (Boolean) -> Unit
 ) {
     state.errorMessage?.let {
         ErrorAlertDialog(
@@ -101,12 +106,34 @@ private fun RelayServicesContent(
         )
     }
 
+    state.itemToDelete?.let {
+        BasicPromptAlertDialog(
+            finish = onDeleteConfirmationDismissed,
+            title = {
+                Text(
+                    text = "Remove Relay Service",
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.text
+                )
+            },
+            message = {
+                Text(
+                    text = "You will no longer be able to connect to this relay service.",
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.text
+                )
+            },
+            confirmText = stringResource(id = R.string.common_remove),
+            confirmTextColor = RadixTheme.colors.error
+        )
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = "Relay Services",
+                    title = "Radix Connect Relay Services",
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
@@ -129,7 +156,7 @@ private fun RelayServicesContent(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingMedium
                     ),
-                    text = "Choose and manage relay services used for WalletConnect P2P.",
+                    text = "Choose and manage Radix Connect Relay services used for mobile to mobile connection.",
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.textSecondary
                 )
@@ -232,14 +259,16 @@ private fun RelayServiceView(
             )
         }
 
-        IconButton(
-            onClick = onDeleteClick
-        ) {
-            Icon(
-                painter = painterResource(id = DSR.ic_delete_outline),
-                tint = RadixTheme.colors.icon,
-                contentDescription = null
-            )
+        if (!item.isCurrent) {
+            IconButton(
+                onClick = onDeleteClick
+            ) {
+                Icon(
+                    painter = painterResource(id = DSR.ic_delete_outline),
+                    tint = RadixTheme.colors.icon,
+                    contentDescription = null
+                )
+            }
         }
     }
 }
@@ -295,7 +324,10 @@ private fun AddRelayServiceSheet(
                 onValueChanged = onNameChanged,
                 value = input.name,
                 hint = "Enter name",
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    capitalization = KeyboardCapitalization.Words
+                )
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -342,6 +374,7 @@ private fun RelayServicesPreview(
             onItemClick = {},
             onDeleteItemClick = {},
             onDismissErrorMessage = {},
+            onDeleteConfirmationDismissed = {}
         )
     }
 }

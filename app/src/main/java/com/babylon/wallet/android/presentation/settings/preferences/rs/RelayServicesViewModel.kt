@@ -46,9 +46,10 @@ class RelayServicesViewModel @Inject constructor(
 
     fun onAddConfirmed() {
         viewModelScope.launch {
-            val newUrl = state.value.addInput?.url
-                ?.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled)
-                ?: return@launch
+            val addInput = state.value.addInput ?: return@launch
+            val newUrl = addInput.url.sanitizeAndValidateGatewayUrl(
+                isDevModeEnabled = state.value.isDeveloperModeEnabled
+            ) ?: return@launch
 
             _state.update { state ->
                 state.copy(
@@ -59,10 +60,11 @@ class RelayServicesViewModel @Inject constructor(
             }
 
             sargonOsManager.callSafely(defaultDispatcher) {
-                // todo add relay service
-                RelayService(
-                    name = state.value.addInput?.name ?: "",
-                    url = newUrl.toUrl()
+                addRelayService(
+                    RelayService(
+                        name = addInput.name,
+                        url = newUrl.toUrl()
+                    )
                 )
                 setAddSheetVisible(false)
             }.onFailure {
@@ -80,12 +82,10 @@ class RelayServicesViewModel @Inject constructor(
     }
 
     fun onDeleteItemClick(item: State.UiItem) {
-        viewModelScope.launch {
-            sargonOsManager.callSafely(defaultDispatcher) {
-                // todo delete relay service
-            }.onFailure {
-                onError(it)
-            }
+        _state.update { state ->
+            state.copy(
+                itemToDelete = item
+            )
         }
     }
 
@@ -125,6 +125,30 @@ class RelayServicesViewModel @Inject constructor(
         }
     }
 
+    fun onDeleteConfirmationDismissed(confirmed: Boolean) {
+        val itemToDelete = state.value.itemToDelete ?: return
+
+        _state.update { state ->
+            state.copy(
+                itemToDelete = null
+            )
+        }
+
+        if (confirmed) {
+            viewModelScope.launch {
+                sargonOsManager.callSafely(defaultDispatcher) {
+                    deleteRelayService(itemToDelete.relayService)
+                }.onFailure {
+                    onError(it)
+                }.onSuccess { deleted ->
+                    if (!deleted) {
+                        onError("Failed to delete relay service")
+                    }
+                }
+            }
+        }
+    }
+
     private fun observeServices() {
         getProfileUseCase.flow
             .onEach { profile ->
@@ -145,6 +169,10 @@ class RelayServicesViewModel @Inject constructor(
             }.launchIn(viewModelScope)
     }
 
+    private fun onError(message: String) {
+        onError(Throwable(message))
+    }
+
     private fun onError(throwable: Throwable) {
         _state.update { state ->
             state.copy(
@@ -157,7 +185,8 @@ class RelayServicesViewModel @Inject constructor(
         val items: List<UiItem> = emptyList(),
         val isDeveloperModeEnabled: Boolean = false,
         val errorMessage: UiMessage.ErrorMessage? = null,
-        val addInput: AddInput? = null
+        val addInput: AddInput? = null,
+        val itemToDelete: UiItem? = null
     ) : UiState {
 
         data class UiItem(

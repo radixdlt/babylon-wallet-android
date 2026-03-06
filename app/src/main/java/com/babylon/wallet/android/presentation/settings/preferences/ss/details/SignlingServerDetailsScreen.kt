@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -47,6 +48,8 @@ import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.copyToClipboard
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.persistentListOf
 
@@ -230,7 +233,12 @@ private fun SignalingServerDetailsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 title = "Signaling Server Url"
             ) {
+                val context = LocalContext.current
+
                 RadixTextField(
+                    modifier = Modifier.throttleClickable {
+                        context.copyToClipboard("Signaling Server Url", state.url)
+                    },
                     value = state.url,
                     enabled = !state.isInEditMode,
                     onValueChanged = onSignalingServerUrlChanged,
@@ -238,7 +246,14 @@ private fun SignalingServerDetailsContent(
                         disabledContainerColor = RadixTheme.colors.textFieldBackground,
                         disabledTextColor = RadixTheme.colors.text,
                         disabledBorderColor = RadixTheme.colors.textFieldBorder
-                    )
+                    ),
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = DSR.ic_copy),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.icon
+                        )
+                    }
                 )
             }
 
@@ -473,7 +488,7 @@ class SignalingServerDetailsPreviewProvider : PreviewParameterProvider<Signaling
             SignalingServerDetailsViewModel.State(
                 isInEditMode = true,
                 name = "Radix Production",
-                url = "wss://signaling-server.radixdlt.com/",
+                url = "wss://signaling-server-dev.rdx-works-main.extratools.works/",
                 stunUrls = persistentListOf(
                     "stun:stun.l.google.com:19302",
                 ),
@@ -486,15 +501,14 @@ class SignalingServerDetailsPreviewProvider : PreviewParameterProvider<Signaling
             ),
             SignalingServerDetailsViewModel.State(
                 isInEditMode = true,
-                name = "Radix Production",
-                url = "wss://signaling-server.radixdlt.com/",
+                name = "Radix Development",
+                url = "wss://signaling-server-dev.rdx-works-main.extratools.works/",
                 stunUrls = persistentListOf(
                     "stun:stun.l.google.com:19302",
                     "stun:stun.l.google.com:19302",
                     "stun:stun.l.google.com:19302"
                 ),
                 turnUrls = persistentListOf(
-                    "turn:turn-udp.radixdlt.com:80?transport=udp",
                     "turn:turn-udp.radixdlt.com:80?transport=udp",
                     "turn:turn-udp.radixdlt.com:80?transport=udp",
                 ),
