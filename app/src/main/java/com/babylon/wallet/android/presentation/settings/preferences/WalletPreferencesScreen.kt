@@ -132,8 +132,8 @@ private fun WalletPreferencesContent(
                                             .background(RadixTheme.colors.background)
                                             .fillMaxWidth()
                                             .padding(all = RadixTheme.dimensions.paddingDefault),
-                                        titleRes = item.titleRes(),
-                                        subtitleRes = R.string.appSettings_developerMode_subtitle, // appSettingsItem.subtitleRes(),
+                                        title = item.title(),
+                                        subtitle = stringResource(id = R.string.appSettings_developerMode_subtitle),
                                         iconResource = item.getIcon(),
                                         checked = item.enabled,
                                         onCheckedChange = onDeveloperModeToggled
@@ -146,7 +146,7 @@ private fun WalletPreferencesContent(
                                             .background(RadixTheme.colors.background)
                                             .fillMaxWidth()
                                             .padding(all = RadixTheme.dimensions.paddingDefault),
-                                        titleRes = item.titleRes(),
+                                        title = item.title(),
                                         iconResource = item.getIcon(),
                                         checked = item.enabled,
                                         onCheckedChange = { selected ->
@@ -165,8 +165,8 @@ private fun WalletPreferencesContent(
                                             .background(RadixTheme.colors.background)
                                             .fillMaxWidth()
                                             .padding(all = RadixTheme.dimensions.paddingDefault),
-                                        titleRes = item.titleRes(),
-                                        subtitleRes = item.subtitleRes(),
+                                        title = item.title(),
+                                        subtitle = item.subtitle(),
                                         iconResource = item.getIcon(),
                                         checked = item.enabled,
                                         onCheckedChange = { checked ->
@@ -185,10 +185,9 @@ private fun WalletPreferencesContent(
                                         modifier = Modifier
                                             .background(RadixTheme.colors.background)
                                             .fillMaxWidth(),
-                                        title = stringResource(id = item.titleRes()),
+                                        title = item.title(),
                                         leadingIconRes = item.getIcon(),
-                                        subtitle = item.subtitleRes()
-                                            ?.let { stringResource(id = it) },
+                                        subtitle = item.subtitle(),
                                         onClick = {
                                             onWalletPreferenceItemClick(item)
                                         }

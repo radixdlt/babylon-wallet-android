@@ -3,6 +3,7 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
+import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.RadixConnectPassword
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
@@ -58,7 +59,10 @@ interface PeerdroidConnector {
 
     val peerConnectionStatus: Flow<Map<String, PeerConnectionStatus>>
 
-    suspend fun connectToConnectorExtension(encryptionKey: RadixConnectPassword): Result<Unit>
+    suspend fun connectToConnectorExtension(
+        p2pTransportProfile: P2pTransportProfile,
+        encryptionKey: RadixConnectPassword
+    ): Result<Unit>
 
     suspend fun deleteConnector(connectionId: ConnectionIdHolder)
 
@@ -106,11 +110,16 @@ internal class PeerdroidConnectorImpl(
     override val peerConnectionStatus: Flow<Map<String, PeerConnectionStatus>>
         get() = _peerConnectionStatus
 
-    override suspend fun connectToConnectorExtension(encryptionKey: RadixConnectPassword): Result<Unit> {
+    override suspend fun connectToConnectorExtension(
+        p2pTransportProfile: P2pTransportProfile,
+        encryptionKey: RadixConnectPassword
+    ): Result<Unit> {
         val connectionId = ConnectionIdHolder(encryptionKey)
 
         return withContext(ioDispatcher) {
-            if (mapOfWebSockets.containsKey(connectionId)) {
+            if (mapOfWebSockets.containsKey(connectionId) &&
+                p2pTransportProfile == mapOfWebSockets[connectionId]?.p2pTransportProfile
+            ) {
                 Timber.d("⚙️ already tried to establish a link connection with connectionId: $connectionId")
                 return@withContext Result.success(Unit)
             }
@@ -121,10 +130,11 @@ internal class PeerdroidConnectorImpl(
                 connectionId = connectionId,
                 encryptionKey = encryptionKey
             ).onSuccess {
-                val job = listenForMessagesFromRemoteClients(connectionId, webSocketClient)
+                val job = listenForMessagesFromRemoteClients(p2pTransportProfile, connectionId, webSocketClient)
                 mapOfWebSockets[connectionId] = WebSocketHolder(
                     webSocketClient = webSocketClient,
-                    listenMessagesJob = job
+                    listenMessagesJob = job,
+                    p2pTransportProfile = p2pTransportProfile
                 )
             }.onFailure {
                 Timber.e("⚙️ failed to establish a link connection with connectionId: $connectionId")
@@ -236,6 +246,7 @@ internal class PeerdroidConnectorImpl(
     }
 
     private fun listenForMessagesFromRemoteClients(
+        p2pTransportProfile: P2pTransportProfile,
         connectionId: ConnectionIdHolder,
         webSocketClient: WebSocketClient
     ): Job {
@@ -253,6 +264,7 @@ internal class PeerdroidConnectorImpl(
                                 val peerConnectionReadyForNegotiationDeferred = CompletableDeferred<Unit>()
                                 val remoteClientHolder = RemoteClientHolder(id = signalingServerMessage.remoteClientId)
                                 val peerConnectionHolder = createAndObservePeerConnectionForRemoteClient(
+                                    p2pTransportProfile = p2pTransportProfile,
                                     remoteClientHolder = remoteClientHolder,
                                     connectionId = connectionId,
                                     renegotiationDeferred = peerConnectionReadyForNegotiationDeferred
@@ -297,11 +309,12 @@ internal class PeerdroidConnectorImpl(
 
     @Suppress("LongMethod")
     private fun createAndObservePeerConnectionForRemoteClient(
+        p2pTransportProfile: P2pTransportProfile,
         remoteClientHolder: RemoteClientHolder,
         connectionId: ConnectionIdHolder,
         renegotiationDeferred: CompletableDeferred<Unit>
     ): PeerConnectionHolder {
-        val webRtcManager = WebRtcManager(applicationContext)
+        val webRtcManager = WebRtcManager(applicationContext, p2pTransportProfile)
         val job = webRtcManager.createPeerConnection(remoteClientId = remoteClientHolder.id)
             .onStart { // for debugging
                 Timber.d("⚙️ ⚡ start observing webrtc events for remote client: $remoteClientHolder")

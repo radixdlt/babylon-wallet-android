@@ -336,22 +336,24 @@ fun ErrorAlertDialog(
                 textAlign = TextAlign.End
             )
         },
-        dismissButton = commonException?.let { error ->
-            {
-                RadixTextButton(
-                    text = stringResource(R.string.error_emailSupportButtonTitle),
-                    onClick = {
-                        context.openEmail(
-                            recipientAddress = Constants.RADIX_SUPPORT_EMAIL_ADDRESS,
-                            subject = Constants.RADIX_SUPPORT_EMAIL_SUBJECT,
-                            body = error.mailReportMessage()
-                        )
-                        cancel()
-                    },
-                    textAlign = TextAlign.End
-                )
-            }
-        },
+        dismissButton = commonException
+            ?.takeIf { Constants.RADIX_SUPPORT_EMAIL_ADDRESS.isNotBlank() }
+            ?.let { error ->
+                {
+                    RadixTextButton(
+                        text = stringResource(R.string.error_emailSupportButtonTitle),
+                        onClick = {
+                            context.openEmail(
+                                recipientAddress = Constants.RADIX_SUPPORT_EMAIL_ADDRESS,
+                                subject = Constants.RADIX_SUPPORT_EMAIL_SUBJECT,
+                                body = error.mailReportMessage()
+                            )
+                            cancel()
+                        },
+                        textAlign = TextAlign.End
+                    )
+                }
+            },
         title = (title ?: errorMessage.getTitle())?.let {
             {
                 Text(

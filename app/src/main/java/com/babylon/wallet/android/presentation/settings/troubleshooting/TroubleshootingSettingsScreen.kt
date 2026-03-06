@@ -29,7 +29,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.utils.openEmail
+import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 
@@ -116,9 +116,9 @@ private fun TroubleshootingSettingsContent(
                                     leadingIconRes = item.getIcon(),
                                     subtitle = item.subtitle(),
                                     onClick = {
-                                        when (item) {
+                                            when (item) {
                                             is Troubleshooting.ContactSupport -> {
-                                                context.openEmail(item.supportAddress, item.subject, item.body)
+                                                context.openUrl(item.url)
                                             }
 
                                             else -> {

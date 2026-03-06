@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
@@ -39,7 +40,10 @@ interface PeerdroidClient {
 
     val openConnectionIds: Flow<Set<String>>
 
-    suspend fun connect(connectionPassword: RadixConnectPassword): Result<Unit>
+    suspend fun connect(
+        p2pTransportProfile: P2pTransportProfile,
+        connectionPassword: RadixConnectPassword
+    ): Result<Unit>
 
     suspend fun sendMessage(
         remoteConnectorId: String,
@@ -81,8 +85,14 @@ class PeerdroidClientImpl @Inject constructor(
                 statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
             }
 
-    override suspend fun connect(connectionPassword: RadixConnectPassword): Result<Unit> {
-        return peerdroidConnector.connectToConnectorExtension(encryptionKey = connectionPassword)
+    override suspend fun connect(
+        p2pTransportProfile: P2pTransportProfile,
+        connectionPassword: RadixConnectPassword
+    ): Result<Unit> {
+        return peerdroidConnector.connectToConnectorExtension(
+            p2pTransportProfile = p2pTransportProfile,
+            encryptionKey = connectionPassword
+        )
     }
 
     override suspend fun sendMessage(
@@ -190,6 +200,7 @@ class PeerdroidClientImpl @Inject constructor(
                     Timber.e("Failed to parse incoming ledger interaction with serialization exception: ${error.localizedMessage}")
                     IncomingMessage.ParsingError
                 }
+
                 else -> {
                     Timber.e("Failed to parse ledger response: ${error.localizedMessage}")
                     IncomingMessage.Error(RadixWalletException.DappRequestException.InvalidRequestChallenge)

@@ -29,12 +29,12 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 @Composable
 fun SwitchSettingsItem(
     modifier: Modifier = Modifier,
-    @StringRes titleRes: Int,
+    title: String,
     checked: Boolean,
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
     icon: @Composable (() -> Unit)? = null,
-    @StringRes subtitleRes: Int? = null,
+    subtitle: String? = null,
     subtitleTextColor: Color = RadixTheme.colors.text,
     isLoading: Boolean = false
 ) {
@@ -53,14 +53,14 @@ fun SwitchSettingsItem(
         }
         Column(Modifier.weight(1f)) {
             Text(
-                text = stringResource(id = titleRes),
+                text = title,
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.text
             )
-            subtitleRes?.let {
+            subtitle?.let {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = stringResource(id = subtitleRes),
+                    text = subtitle,
                     style = RadixTheme.typography.body1Regular,
                     color = subtitleTextColor
                 )
@@ -88,6 +88,31 @@ fun SwitchSettingsItem(
 
 @Composable
 fun SwitchSettingsItem(
+    modifier: Modifier = Modifier,
+    @StringRes titleRes: Int,
+    checked: Boolean,
+    enabled: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit,
+    icon: @Composable (() -> Unit)? = null,
+    @StringRes subtitleRes: Int? = null,
+    subtitleTextColor: Color = RadixTheme.colors.text,
+    isLoading: Boolean = false
+) {
+    SwitchSettingsItem(
+        modifier = modifier,
+        title = stringResource(id = titleRes),
+        checked = checked,
+        enabled = enabled,
+        onCheckedChange = onCheckedChange,
+        icon = icon,
+        subtitle = subtitleRes?.let { stringResource(id = it) },
+        subtitleTextColor = subtitleTextColor,
+        isLoading = isLoading
+    )
+}
+
+@Composable
+fun SwitchSettingsItem(
     @StringRes titleRes: Int,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -97,7 +122,26 @@ fun SwitchSettingsItem(
 ) {
     SwitchSettingsItem(
         modifier = modifier,
-        titleRes = titleRes,
+        title = stringResource(id = titleRes),
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        iconResource = iconResource,
+        subtitle = subtitleRes?.let { stringResource(id = it) }
+    )
+}
+
+@Composable
+fun SwitchSettingsItem(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    @DrawableRes iconResource: Int? = null,
+    subtitle: String? = null,
+) {
+    SwitchSettingsItem(
+        modifier = modifier,
+        title = title,
         checked = checked,
         onCheckedChange = onCheckedChange,
         icon = iconResource?.let {
@@ -109,7 +153,7 @@ fun SwitchSettingsItem(
                 )
             }
         },
-        subtitleRes = subtitleRes
+        subtitle = subtitle
     )
 }
 

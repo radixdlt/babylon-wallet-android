@@ -50,13 +50,13 @@ fun IncompatibleProfileScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
                 is Event.ProfileDeleted -> onProfileDeleted()
                 is Event.OnSendLogsToSupport -> activity.openEmail(
                     recipientAddress = Constants.RADIX_SUPPORT_EMAIL_ADDRESS,
                     subject = Constants.RADIX_SUPPORT_EMAIL_SUBJECT,
-                    body = it.body
+                    body = event.body
                 )
             }
         }
@@ -126,14 +126,13 @@ private fun IncompatibleWalletContent(
                             contentColor = RadixTheme.colors.textButton
                         )
 
-                        if (state.incompatibleCause != null) {
+                        if (state.incompatibleCause != null && Constants.RADIX_SUPPORT_EMAIL_ADDRESS.isNotBlank()) {
                             RadixTextButton(
                                 text = stringResource(id = R.string.troubleshooting_contactSupport_title),
                                 onClick = onSendLogs,
                                 contentColor = RadixTheme.colors.textButton
                             )
                         }
-
                         RadixTextButton(
                             text = stringResource(id = R.string.splash_incompatibleProfileVersionAlert_delete),
                             onClick = onDeleteProfile,

@@ -159,6 +159,8 @@ data class WalletPreferencesUiState(
                 ),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.SignalingServers),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.RelayServices),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))
             )
         )

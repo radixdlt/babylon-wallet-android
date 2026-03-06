@@ -191,7 +191,8 @@ class GatewaysViewModel @Inject constructor(
         ) {
 
             enum class Failure {
-                AlreadyExist, ErrorWhileAdding
+                AlreadyExist,
+                ErrorWhileAdding
             }
         }
     }

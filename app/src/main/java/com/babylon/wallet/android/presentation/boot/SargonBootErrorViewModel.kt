@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,6 +37,7 @@ class SargonBootErrorViewModel @Inject constructor(
                 .filterIsInstance<SargonOsState.BootError>()
                 .firstOrNull()
                 ?.error
+                ?.also { Timber.e(it) }
 
             _state.update { it.copy(bootErrorMessage = UiMessage.ErrorMessage(bootError)) }
         }
