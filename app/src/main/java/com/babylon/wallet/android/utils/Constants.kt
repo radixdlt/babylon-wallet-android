@@ -9,8 +9,9 @@ object Constants {
     const val WALLET_INTERACTION_VERSION = 2L
     const val FEES_FIAT_VALUE_PRECISION = 3
 
-    const val RADIX_SUPPORT_EMAIL_ADDRESS = "hello@radixdlt.com"
+    const val RADIX_SUPPORT_EMAIL_ADDRESS = ""
     const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"
+    const val RADIX_SUPPORT_TELEGRAM_URL = "https://t.me/radix_dlt"
 
     const val RAD_QUEST_URL = "https://radquest.io?wallet=ready"
     const val RADIX_DOMAINS_URL = "https://docs.xrd.domains/#/wiki/records/namelets"

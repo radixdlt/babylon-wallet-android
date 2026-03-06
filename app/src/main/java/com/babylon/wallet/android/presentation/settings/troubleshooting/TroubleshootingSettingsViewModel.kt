@@ -6,7 +6,6 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.logger.PersistentLogger
 import com.radixdlt.sargon.NetworkId
 import dagger.Lazy
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TroubleshootingSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val persistentLoggerProvider: Lazy<PersistentLogger>
 ) : StateViewModel<TroubleShootingUiState>() {
 
@@ -35,11 +33,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
                 TroubleshootingUiItem.TransactionSection,
                 TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.SendTransactionManifest),
                 TroubleshootingUiItem.SupportSection,
-                TroubleshootingUiItem.Setting(
-                    SettingsItem.Troubleshooting.ContactSupport(
-                        body = deviceCapabilityHelper.supportEmailTemplate
-                    )
-                ),
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ContactSupport()),
                 if (BuildConfig.FILE_LOGGER_ENABLED) {
                     TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ExportLogs)
                 } else {

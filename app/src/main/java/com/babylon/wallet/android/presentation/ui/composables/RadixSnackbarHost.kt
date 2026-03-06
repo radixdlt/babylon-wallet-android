@@ -71,6 +71,7 @@ fun SnackbarUIMessage(
                     ?.error as? CommonException
                 )
                 ?.mailReportMessage()
+                ?.takeIf { Constants.RADIX_SUPPORT_EMAIL_ADDRESS.isNotBlank() }
 
             if (supportMessage != null) {
                 ActionLabel(
@@ -84,7 +85,6 @@ fun SnackbarUIMessage(
 
         LaunchedEffect(message.id, errorMessage, actionLabel) {
             val encodedLabel = Json.encodeToString(actionLabel)
-
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 actionLabel = encodedLabel,
@@ -158,6 +158,7 @@ private fun RadixSnackbar(
                                 )
                                 snackbarData.performAction()
                             }
+
                             ActionType.Ok -> {
                                 snackbarData.dismiss()
                             }

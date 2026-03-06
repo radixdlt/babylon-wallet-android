@@ -115,11 +115,13 @@ private fun SargonBootErrorContentContent(
                             contentColor = RadixTheme.colors.textButton
                         )
 
-                        RadixTextButton(
-                            text = stringResource(id = R.string.troubleshooting_contactSupport_title),
-                            onClick = onSendLogs,
-                            contentColor = RadixTheme.colors.textButton
-                        )
+                        if (Constants.RADIX_SUPPORT_EMAIL_ADDRESS.isNotBlank()) {
+                            RadixTextButton(
+                                text = stringResource(id = R.string.troubleshooting_contactSupport_title),
+                                onClick = onSendLogs,
+                                contentColor = RadixTheme.colors.textButton
+                            )
+                        }
                     }
                 }
             }

@@ -7,8 +7,7 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_ADDRESS
-import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_SUBJECT
+import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_TELEGRAM_URL
 import com.babylon.wallet.android.utils.Flavors
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
@@ -83,9 +82,7 @@ sealed interface SettingsItem {
         data object AccountRecovery : Troubleshooting
         data object ImportFromLegacyWallet : Troubleshooting
         data class ContactSupport(
-            val body: String,
-            val supportAddress: String = RADIX_SUPPORT_EMAIL_ADDRESS,
-            val subject: String = RADIX_SUPPORT_EMAIL_SUBJECT
+            val url: String = RADIX_SUPPORT_TELEGRAM_URL
         ) : Troubleshooting
 
         data object ExportLogs : Troubleshooting
@@ -117,7 +114,7 @@ sealed interface SettingsItem {
             return when (this) {
                 ImportFromLegacyWallet -> DSR.ic_recovery
                 AccountRecovery -> DSR.ic_recovery
-                is ContactSupport -> DSR.ic_email
+                is ContactSupport -> DSR.ic_telegram_logo
                 ExportLogs -> DSR.ic_app_settings
                 FactoryReset -> DSR.ic_factory_reset
                 SendTransactionManifest -> DSR.ic_manifest_expand
