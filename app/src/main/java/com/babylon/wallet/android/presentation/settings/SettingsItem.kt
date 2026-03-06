@@ -114,7 +114,7 @@ sealed interface SettingsItem {
             return when (this) {
                 ImportFromLegacyWallet -> DSR.ic_recovery
                 AccountRecovery -> DSR.ic_recovery
-                is ContactSupport -> DSR.ic_telegram_logo
+                is ContactSupport -> R.drawable.ic_add_message
                 ExportLogs -> DSR.ic_app_settings
                 FactoryReset -> DSR.ic_factory_reset
                 SendTransactionManifest -> DSR.ic_manifest_expand
