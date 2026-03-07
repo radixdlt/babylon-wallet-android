@@ -122,7 +122,8 @@ internal class PeerdroidLinkImpl(
             // and now establish the web socket
             webSocketClient.initSession(
                 connectionId = connectionId,
-                encryptionKey = p2pLink.connectionPassword
+                encryptionKey = p2pLink.connectionPassword,
+                signalingServerUrl = p2pTransportProfile.signalingServer
             )
                 .onSuccess {
                     listenForIncomingMessagesFromSignalingServer(webSocketClient)

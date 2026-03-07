@@ -128,7 +128,8 @@ internal class PeerdroidConnectorImpl(
             val webSocketClient = WebSocketClient(applicationContext)
             webSocketClient.initSession(
                 connectionId = connectionId,
-                encryptionKey = encryptionKey
+                encryptionKey = encryptionKey,
+                signalingServerUrl = p2pTransportProfile.signalingServer
             ).onSuccess {
                 val job = listenForMessagesFromRemoteClients(p2pTransportProfile, connectionId, webSocketClient)
                 mapOfWebSockets[connectionId] = WebSocketHolder(

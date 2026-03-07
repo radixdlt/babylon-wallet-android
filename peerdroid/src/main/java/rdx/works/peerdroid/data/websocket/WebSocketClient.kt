@@ -30,7 +30,6 @@ import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
-import rdx.works.peerdroid.BuildConfig
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -74,7 +73,8 @@ internal class WebSocketClient(applicationContext: Context) {
 
     suspend fun initSession(
         connectionId: ConnectionIdHolder,
-        encryptionKey: RadixConnectPassword
+        encryptionKey: RadixConnectPassword,
+        signalingServerUrl: String
     ): Result<Unit> {
         return try {
             this.encryptionKey = encryptionKey.value.bytes.toByteArray()
@@ -83,7 +83,7 @@ internal class WebSocketClient(applicationContext: Context) {
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
             socket = httpClientEntryPoint.provideHttpClient().webSocketSession {
-                url("${BuildConfig.SIGNALING_SERVER_URL}${connectionId.id}?source=wallet&target=extension")
+                url("${signalingServerUrl}${connectionId.id}?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
                 Timber.d("🛰 successfully connected to signaling server")

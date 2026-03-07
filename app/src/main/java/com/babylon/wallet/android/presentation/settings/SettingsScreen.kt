@@ -171,10 +171,6 @@ private fun DebugBuildInformation(
             dependencyName = "Scrypto",
             dependencyVersion = "#${buildInfo.sargonInfo.dependencies.scryptoRadixEngine.displayable()}"
         )
-        VersionInformation(
-            dependencyName = "SigServer",
-            dependencyVersion = buildInfo.SIGNALING_SERVER
-        )
     }
 }
 

@@ -18,7 +18,6 @@ android {
         missingDimensionStrategy 'version', 'full'
 
         buildConfigField "boolean", "DEBUG_MODE", "true"
-        buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server-dev.rdx-works-main.extratools.works/"'
     }
 
     buildTypes {
@@ -27,7 +26,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField "boolean", "DEBUG_MODE", "false"
-            buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server.radixdlt.com/"'
         }
     }
     compileOptions {

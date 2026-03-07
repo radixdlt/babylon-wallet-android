@@ -63,12 +63,6 @@ object ApplicationModule {
         return BackupManager(applicationContext)
     }
 
-//    @Provides
-//    @Singleton
-//    fun provideRadixConnectMobile(
-//        sargonOsManager: SargonOsManager
-//    ): RadixConnectMobile = sargonOsManager.sargonOs.radixConnectMobile()
-
     @Provides
     @Singleton
     fun provideHomeCardsObserverWrapper(): HomeCardsObserverWrapper = HomeCardsObserverWrapperImpl()
