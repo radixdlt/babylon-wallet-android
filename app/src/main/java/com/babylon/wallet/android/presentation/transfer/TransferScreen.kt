@@ -49,6 +49,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -81,6 +82,13 @@ fun TransferScreen(
         onReceiverChanged = viewModel::onReceiverChanged,
         onErrorMessageShown = viewModel::onErrorMessageShown,
         onOwnedAccountSelected = viewModel::onOwnedAccountSelected,
+        onRecipientTabSelected = viewModel::onRecipientTabSelected,
+        onAddressBookEntrySelected = viewModel::onAddressBookEntrySelected,
+        onStoreManualRecipientInAddressBookToggled = viewModel::onStoreManualRecipientInAddressBookToggled,
+        onAddAddressBookInputDismissed = viewModel::onAddAddressBookInputDismissed,
+        onAddAddressBookNameChanged = viewModel::onAddAddressBookNameChanged,
+        onAddAddressBookNoteChanged = viewModel::onAddAddressBookNoteChanged,
+        onAddAddressBookSaveClick = viewModel::onAddAddressBookSaveClick,
         onChooseAccountForSkeleton = viewModel::onChooseAccountForSkeleton,
         onChooseAccountSubmitted = viewModel::onChooseAccountSubmitted,
         addAccountClick = viewModel::addAccountClick,
@@ -118,6 +126,13 @@ fun TransferContent(
     onReceiverChanged: (String) -> Unit,
     onErrorMessageShown: () -> Unit,
     onOwnedAccountSelected: (Account) -> Unit,
+    onRecipientTabSelected: (State.Sheet.ChooseAccounts.RecipientTab) -> Unit,
+    onAddressBookEntrySelected: (AddressBookEntry) -> Unit,
+    onStoreManualRecipientInAddressBookToggled: () -> Unit,
+    onAddAddressBookInputDismissed: () -> Unit,
+    onAddAddressBookNameChanged: (String) -> Unit,
+    onAddAddressBookNoteChanged: (String) -> Unit,
+    onAddAddressBookSaveClick: () -> Unit,
     onChooseAccountForSkeleton: (TargetAccount) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     addAccountClick: () -> Unit,
@@ -376,7 +391,14 @@ fun TransferContent(
                         onQrCodeIconClick = onQrCodeIconClick,
                         cancelQrScan = cancelQrScan,
                         onReceiverChanged = onReceiverChanged,
-                        onErrorMessageShown = onErrorMessageShown
+                        onErrorMessageShown = onErrorMessageShown,
+                        onRecipientTabSelected = onRecipientTabSelected,
+                        onAddressBookEntrySelected = onAddressBookEntrySelected,
+                        onStoreManualRecipientInAddressBookToggled = onStoreManualRecipientInAddressBookToggled,
+                        onAddAddressBookInputDismissed = onAddAddressBookInputDismissed,
+                        onAddAddressBookNameChanged = onAddAddressBookNameChanged,
+                        onAddAddressBookNoteChanged = onAddAddressBookNoteChanged,
+                        onAddAddressBookSaveClick = onAddAddressBookSaveClick
                     )
                 }
 
@@ -417,6 +439,13 @@ fun TransferContentPreview() {
             onReceiverChanged = {},
             onErrorMessageShown = {},
             onOwnedAccountSelected = {},
+            onRecipientTabSelected = {},
+            onAddressBookEntrySelected = {},
+            onStoreManualRecipientInAddressBookToggled = {},
+            onAddAddressBookInputDismissed = {},
+            onAddAddressBookNameChanged = {},
+            onAddAddressBookNoteChanged = {},
+            onAddAddressBookSaveClick = {},
             onChooseAccountForSkeleton = {},
             onChooseAccountSubmitted = {},
             addAccountClick = {},

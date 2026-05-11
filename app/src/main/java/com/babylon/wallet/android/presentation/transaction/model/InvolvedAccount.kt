@@ -12,5 +12,8 @@ sealed interface InvolvedAccount {
             get() = account.address
     }
 
-    data class Other(override val address: AccountAddress) : InvolvedAccount
+    data class Other(
+        override val address: AccountAddress,
+        val addressBookName: String? = null
+    ) : InvolvedAccount
 }

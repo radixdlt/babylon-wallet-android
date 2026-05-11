@@ -113,9 +113,10 @@ fun TargetAccountCard(
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
                         text = when (val input = targetAccount.resolvedInput) {
-                            is TargetAccount.Other.ResolvedInput.AccountInput -> stringResource(
-                                id = R.string.assetTransfer_accountList_externalAccountName
-                            )
+                            is TargetAccount.Other.ResolvedInput.AccountInput ->
+                                targetAccount.addressBookName ?: stringResource(
+                                    id = R.string.assetTransfer_accountList_externalAccountName
+                                )
                             is TargetAccount.Other.ResolvedInput.DomainInput -> input.receiver.domain.domain
                             null -> ""
                         },

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.wallet
 import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
@@ -227,7 +228,13 @@ class WalletViewModel @Inject constructor(
                     _state.update { it.onPricesReceived(prices = prices) }
                 }.onFailure { error ->
                     Timber.w(error)
-                    _state.update { it.disableFiatPrices() }
+                    _state.update {
+                        if (error is FiatPriceRepository.PricesUnavailableOnCurrentNetwork) {
+                            it.disableFiatPrices()
+                        } else {
+                            it.onPricesError()
+                        }
+                    }
                 }
             }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
@@ -484,6 +491,15 @@ class WalletViewModel @Inject constructor(
             refreshType = RefreshType.None,
             prices = PricesState.Enabled(
                 pricesPerAccount = prices
+            )
+        )
+
+        fun onPricesError(): State = copy(
+            refreshType = RefreshType.None,
+            prices = PricesState.Enabled(
+                pricesPerAccount = accountsWithAssets.orEmpty().associate {
+                    it.account.address to null
+                }
             )
         )
 

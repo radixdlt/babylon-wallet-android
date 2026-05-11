@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
-import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.extensions.string
@@ -16,7 +15,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import rdx.works.core.di.DynamicGatewayHttpClient
-import rdx.works.core.di.GatewayHttpClient
 import rdx.works.core.di.ShortTimeoutDynamicGatewayHttpClient
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.default
@@ -88,16 +86,6 @@ object NetworkApiModule {
         profileRepository: ProfileRepository
     ): StreamApi = buildApi(
         baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
-
-    @Provides
-    fun provideTokenPriceApi(
-        @GatewayHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Converter.Factory
-    ): TokenPriceApi = buildApi(
-        baseUrl = TokenPriceApi.BASE_URL,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )

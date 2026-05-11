@@ -124,11 +124,13 @@ sealed interface SettingsItem {
 
     sealed interface WalletPreferences {
         data object DepositGuarantees : WalletPreferences
+        data object AddressBook : WalletPreferences
         data object EntityHiding : WalletPreferences
         data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
         data object SignalingServers : WalletPreferences
         data object RelayServices : WalletPreferences
+        data object TokenPriceServices : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
         data class AdvancedLock(val enabled: Boolean) : WalletPreferences
@@ -138,9 +140,11 @@ sealed interface SettingsItem {
         fun title(): String {
             return when (this) {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_title)
+                AddressBook -> stringResource(id = R.string.preferences_addressBook_title)
                 Gateways -> stringResource(id = R.string.preferences_gateways)
                 SignalingServers -> "Signaling Servers"
                 RelayServices -> "Radix Connect Relay Services"
+                TokenPriceServices -> stringResource(id = R.string.preferences_tokenPriceServices_title)
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_title)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_title)
                 AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_title)
@@ -154,9 +158,11 @@ sealed interface SettingsItem {
         fun subtitle(): String? {
             return when (this) {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_subtitle)
+                AddressBook -> stringResource(id = R.string.preferences_addressBook_subtitle)
                 Gateways -> null
                 SignalingServers -> "Manage signaling server and ICE profile options."
                 RelayServices -> "Manage Radix Connect Relay services."
+                TokenPriceServices -> stringResource(id = R.string.preferences_tokenPriceServices_subtitle)
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_subtitle)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_subtitle)
                 AssetsHiding -> stringResource(id = R.string.preferences_hiddenAssets_subtitle)
@@ -174,8 +180,10 @@ sealed interface SettingsItem {
                 AssetsHiding -> DSR.ic_entity_hiding
 
                 DepositGuarantees -> DSR.ic_filter_list
+                AddressBook -> DSR.ic_address_book
                 SignalingServers -> DSR.ic_sensors
                 RelayServices -> DSR.ic_sensors
+                TokenPriceServices -> DSR.ic_token_price_services
                 is DeveloperMode -> DSR.ic_developer_mode
                 is AdvancedLock -> DSR.ic_lock
                 is ThemePreference -> DSR.ic_app_theme

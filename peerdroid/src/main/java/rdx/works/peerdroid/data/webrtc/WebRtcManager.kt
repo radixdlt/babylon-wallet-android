@@ -33,21 +33,7 @@ internal class WebRtcManager(
         fun providePeerConnectionFactory(): PeerConnectionFactory
     }
 
-    // STUN servers are used to find the public facing IP address of each peer
-    private val stunUrls = PeerConnection
-        .IceServer
-        .builder(p2pTransportProfile.stun.urls)
-        .createIceServer()
-
-    // if STUN servers fail, then a TURN server is used instead as a proxy fallback
-    private val turnUrls = PeerConnection
-        .IceServer
-        .builder(p2pTransportProfile.turn.urls)
-        .apply {
-            p2pTransportProfile.turn.username?.let { setUsername(it) }
-            p2pTransportProfile.turn.credential?.let { setPassword(it) }
-        }
-        .createIceServer()
+    private val iceServers = createIceServers(p2pTransportProfile)
 
     // DtlsSrtpKeyAgreement is for peer connection and IceRestart for offer.
     private val mediaConstraints = MediaConstraints().apply {
@@ -56,9 +42,9 @@ internal class WebRtcManager(
     }
 
     private val rtcConfiguration = PeerConnection.RTCConfiguration(
-        listOf(stunUrls, turnUrls)
+        iceServers
     ).apply {
-        iceServers = listOf(stunUrls, turnUrls)
+        iceServers = this@WebRtcManager.iceServers
         sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
         continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
     }
@@ -157,4 +143,29 @@ internal class WebRtcManager(
         return dataChannel
             ?: throw UninitializedPropertyAccessException("property dataChannel has not been initialized")
     }
+}
+
+internal fun createIceServers(
+    p2pTransportProfile: P2pTransportProfile
+): List<PeerConnection.IceServer> {
+    val stunServer = PeerConnection
+        .IceServer
+        .builder(p2pTransportProfile.stun.urls)
+        .createIceServer()
+
+    val turnUrls = p2pTransportProfile.turn.urls
+    if (turnUrls.isEmpty()) {
+        return listOf(stunServer)
+    }
+
+    val turnServer = PeerConnection
+        .IceServer
+        .builder(turnUrls)
+        .apply {
+            p2pTransportProfile.turn.username?.let { setUsername(it) }
+            p2pTransportProfile.turn.credential?.let { setPassword(it) }
+        }
+        .createIceServer()
+
+    return listOf(stunServer, turnServer)
 }

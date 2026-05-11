@@ -29,7 +29,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.RenameBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.ArculusCardFactorSource
@@ -50,7 +49,6 @@ fun FactorSourceDetailsScreen(
     navigateToViewSeedPhraseRestore: () -> Unit,
     toChangeArculusPin: (FactorSourceId) -> Unit,
     toForgotArculusPin: (FactorSourceId) -> Unit,
-    toAddress: (ActionableAddress) -> Unit,
     onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -68,10 +66,6 @@ fun FactorSourceDetailsScreen(
 
                 FactorSourceDetailsViewModel.Event.NavigateBack -> {
                     onBackClick()
-                }
-
-                is FactorSourceDetailsViewModel.Event.ShowAddress -> {
-                    toAddress(event.actionableAddress)
                 }
             }
         }
@@ -92,7 +86,6 @@ fun FactorSourceDetailsScreen(
         onForgotArculusPinClick = { toForgotArculusPin(requireNotNull(state.factorSource?.id)) },
         onMessageShown = viewModel::onMessageShown,
         onSpotCheckClick = viewModel::onSpotCheckClick,
-        onNewMfaFactorInstanceClick = viewModel::onNewMfaFactorInstanceClick,
         onBackClick = onBackClick
     )
 
@@ -121,7 +114,6 @@ private fun FactorSourceDetailsContent(
     onForgotArculusPinClick: () -> Unit,
     @Suppress("UNUSED_PARAMETER")
     onSpotCheckClick: () -> Unit,
-    onNewMfaFactorInstanceClick: () -> Unit,
     onMessageShown: () -> Unit,
     onBackClick: () -> Unit,
 ) {
@@ -178,14 +170,6 @@ private fun FactorSourceDetailsContent(
                 onChangeArculusPinClick = onChangeArculusPinClick,
                 onForgotArculusPinClick = onForgotArculusPinClick
             )
-
-            DefaultSettingsItem(
-                title = "MFA Signature Resource",
-                subtitle = "Derive a new public key for configuring authentication rules",
-                leadingIconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key,
-                onClick = onNewMfaFactorInstanceClick
-            )
-            HorizontalDivider(color = RadixTheme.colors.divider)
 
 //            DefaultSettingsItem(
 //                title = stringResource(id = R.string.factorSources_detail_spotCheck),
@@ -262,7 +246,6 @@ private fun FactorSourceDetailsPreview(
             onForgotArculusPinClick = {},
             onMessageShown = {},
             onSpotCheckClick = {},
-            onNewMfaFactorInstanceClick = {},
             onBackClick = {}
         )
     }

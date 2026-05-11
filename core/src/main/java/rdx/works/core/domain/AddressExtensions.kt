@@ -1,11 +1,16 @@
 package rdx.works.core.domain
 
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
+
+fun Address.Companion.validatedOnNetworkOrNull(validating: String, networkId: NetworkId) = runCatching {
+    Address.init(validating)
+}.getOrNull()?.takeIf { it.networkId == networkId }
 
 fun AccountAddress.Companion.validatedOnNetworkOrNull(validating: String, networkId: NetworkId) = runCatching {
     AccountAddress.init(validating)

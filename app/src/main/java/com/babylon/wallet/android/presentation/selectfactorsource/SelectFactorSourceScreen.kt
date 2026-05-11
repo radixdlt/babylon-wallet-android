@@ -162,6 +162,7 @@ private fun SelectFactorSourceContent(
 private fun SelectFactorSourceInput.Context.description() = when (this) {
     SelectFactorSourceInput.Context.CreateAccount -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToCreateAccount)
     SelectFactorSourceInput.Context.CreatePersona -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToCreatePersona)
+    SelectFactorSourceInput.Context.MfaFactorInstance -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToDeriveMfaSignatureResource)
     is SelectFactorSourceInput.Context.AccountRecovery -> stringResource(id = R.string.addFactorSource_chooseSecurityFactorToRecover)
 }
 

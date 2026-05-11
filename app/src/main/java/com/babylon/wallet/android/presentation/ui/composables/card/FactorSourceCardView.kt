@@ -95,7 +95,7 @@ fun FactorSourceCardView(
     item: FactorSourceCard,
     isOutlined: Boolean = false,
     castsShadow: Boolean = true,
-    containerColor: Color = RadixTheme.colors.cardSecondary,
+    containerColor: Color = RadixTheme.colors.card,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(

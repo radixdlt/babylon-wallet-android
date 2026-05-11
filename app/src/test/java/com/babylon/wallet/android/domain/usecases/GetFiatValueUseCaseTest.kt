@@ -1,22 +1,18 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.fakes.FiatPriceRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.FiatCurrency
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.SargonOs
 import com.radixdlt.sargon.extensions.floor
 import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.os.SargonOsManager
-import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -28,6 +24,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 class GetFiatValueUseCaseTest {
@@ -37,23 +37,16 @@ class GetFiatValueUseCaseTest {
 
     private val tokenPriceRepositoryFake = FiatPriceRepositoryFake()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val sargonOs = mockk<SargonOs>()
-    private val sargonOsManager = mockk<SargonOsManager>().also {
-        every { it.sargonOs } returns sargonOs
-    }
     private val getFiatValueUseCase = GetFiatValueUseCase(
-        mainnetFiatPriceRepository = tokenPriceRepositoryFake,
-        testnetFiatPriceRepository = mockk(),
+        fiatPriceRepository = tokenPriceRepositoryFake,
         stateRepository = StateRepositoryFake(),
-        getCurrentGatewayUseCase = getCurrentGatewayUseCase,
-        ioDispatcher = testDispatcher,
-        sargonOsManager = sargonOsManager
+        getCurrentGatewayUseCase = getCurrentGatewayUseCase
     )
 
     @Before
     fun setUp() {
-        coEvery { getCurrentGatewayUseCase() } returns Gateway.mainnet
-        coEvery { sargonOs.fetchNftFiatValues(any(), FiatCurrency.USD, any()) } returns emptyMap()
+        tokenPriceRepositoryFake.nftFiatPricesResult = Result.success(emptyMap())
+        io.mockk.coEvery { getCurrentGatewayUseCase() } returns Gateway.mainnet
     }
 
     @Test
@@ -201,7 +194,48 @@ class GetFiatValueUseCaseTest {
         }
     }
 
+    @Test
+    fun `given an account with nfts when nft price fetch fails then balance excludes nft prices`() = testScope.runTest {
+        val expectedTotalFiatValueOfAccount = 110481686.85645.toDecimal192()
+        val accountWithAssets = mockAccountsWithMockAssets[0].withOwnedNft()
+        tokenPriceRepositoryFake.nftFiatPricesResult = Result.failure(RuntimeException("nft prices failed"))
+
+        val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
+
+        assertEquals(expectedTotalFiatValueOfAccount, assetPricesForAccount.total().floor(decimalPlaces = 5u))
+        assertTrue(assetPricesForAccount.none { it.asset is Asset.NonFungible })
+    }
+
+    @Test
+    fun `given accounts with nfts when nft price fetch fails then wallet balance excludes nft prices`() = testScope.runTest {
+        val expectedTotalFiatValueOfWallet = 111355847.11897.toDecimal192()
+        val accountsWithAssets = listOf(
+            mockAccountsWithMockAssets[0].withOwnedNft(),
+            mockAccountsWithMockAssets[1]
+        )
+        tokenPriceRepositoryFake.nftFiatPricesResult = Result.failure(RuntimeException("nft prices failed"))
+
+        val pricesByAccount = getFiatValueUseCase.forAccounts(
+            accountsWithAssets = accountsWithAssets,
+            isRefreshing = false
+        ).getOrThrow()
+
+        val actualTotalFiatValueOfWallet = pricesByAccount.values.flatten().total().floor(decimalPlaces = 5u)
+        assertEquals(expectedTotalFiatValueOfWallet, actualTotalFiatValueOfWallet)
+        assertTrue(pricesByAccount.values.flatten().none { it.asset is Asset.NonFungible })
+    }
+
+    private fun AccountWithAssets.withOwnedNft(): AccountWithAssets = copy(
+        assets = assets?.let { currentAssets ->
+            currentAssets.copy(
+                nonFungibles = currentAssets.nonFungibles + NonFungibleCollection(
+                    Resource.NonFungibleResource.sampleMainnet()
+                )
+            )
+        }
+    )
+
+    private fun List<AssetPrice>.total(): Decimal192 = map { assetPrice ->
+        assetPrice.price?.price.orZero()
+    }.sumOf { it }
 }
-
-
-
