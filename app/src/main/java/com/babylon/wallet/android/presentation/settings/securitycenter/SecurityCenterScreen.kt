@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +56,7 @@ fun SecurityCenterScreen(
     toSecurityShields: () -> Unit,
     toCreateSecurityShield: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
+    onMfaFactorInstanceClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
     onRecoverEntitiesClick: () -> Unit,
     onBackupEntities: () -> Unit,
@@ -65,6 +68,7 @@ fun SecurityCenterScreen(
         onBackClick = onBackClick,
         onSecurityShieldsClick = viewModel::onSecurityShieldsClick,
         onSecurityFactorsClick = onSecurityFactorsClick,
+        onMfaFactorInstanceClick = onMfaFactorInstanceClick,
         onBackupConfigurationClick = onBackupConfigurationClick,
         onRecoverEntitiesClick = onRecoverEntitiesClick,
         onBackupEntities = onBackupEntities
@@ -87,6 +91,7 @@ private fun SecurityCenterContent(
     onBackClick: () -> Unit,
     onSecurityShieldsClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
+    onMfaFactorInstanceClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
     onRecoverEntitiesClick: () -> Unit,
     onBackupEntities: () -> Unit
@@ -217,6 +222,16 @@ private fun SecurityCenterContent(
                     positiveStatus = stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
                 )
 
+                SecurityCenterCard(
+                    onClick = onMfaFactorInstanceClick,
+                    title = stringResource(id = R.string.factorSources_detail_mfaSignatureResourceTitle),
+                    subtitle = stringResource(id = R.string.factorSources_detail_mfaSignatureResourceSubtitle),
+                    iconRes = DSR.ic_security_key,
+                    iconSize = 56.dp,
+                    needsAction = false,
+                    positiveStatus = null
+                )
+
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
         }
@@ -305,6 +320,8 @@ private fun SecurityCenterCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     @DrawableRes iconRes: Int,
+    iconSize: Dp = 80.dp,
+    iconContainerSize: Dp = 80.dp,
     title: String,
     subtitle: String,
     needsAction: Boolean,
@@ -331,11 +348,17 @@ private fun SecurityCenterCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
     ) {
-        Image(
-            modifier = Modifier.size(80.dp),
-            painter = painterResource(id = iconRes),
-            contentDescription = null
-        )
+        Box(
+            modifier = Modifier
+                .size(iconContainerSize),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                modifier = Modifier.size(iconSize),
+                painter = painterResource(id = iconRes),
+                contentDescription = null
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -390,6 +413,7 @@ fun SecurityCenterNoProblemsPreview() {
             onBackClick = {},
             onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
+            onMfaFactorInstanceClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
             onBackupEntities = {}
@@ -413,6 +437,7 @@ fun SecurityCenterWithSecurityProblem5Preview() {
             onBackClick = {},
             onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
+            onMfaFactorInstanceClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
             onBackupEntities = {}
@@ -436,6 +461,7 @@ fun SecurityCenterWithSecurityProblem9Preview() {
             onBackClick = {},
             onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
+            onMfaFactorInstanceClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
             onBackupEntities = {}
@@ -465,6 +491,7 @@ fun SecurityCenterWithSecurityProblems2And7Preview() {
             onBackClick = {},
             onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
+            onMfaFactorInstanceClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
             onBackupEntities = {}
@@ -495,6 +522,7 @@ fun SecurityCenterWithSecurityProblems2And7And9AndOnlyHiddenEntitiesPreview() {
             onBackClick = {},
             onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
+            onMfaFactorInstanceClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
             onBackupEntities = {}

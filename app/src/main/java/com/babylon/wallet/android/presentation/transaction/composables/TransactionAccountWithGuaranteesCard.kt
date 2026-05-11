@@ -80,9 +80,9 @@ fun TransactionAccountWithGuaranteesCard(
         ) {
             Text(
                 text = when (val involvedAccount = guaranteeItem.account) {
-                    is InvolvedAccount.Other -> stringResource(
-                        id = com.babylon.wallet.android.R.string.interactionReview_externalAccountName
-                    )
+                    is InvolvedAccount.Other -> involvedAccount.addressBookName
+                        ?.takeIf { it.isNotBlank() }
+                        ?: stringResource(id = com.babylon.wallet.android.R.string.interactionReview_externalAccountName)
                     is InvolvedAccount.Owned -> involvedAccount.account.displayName.value
                 },
                 style = RadixTheme.typography.body1Header,

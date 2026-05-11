@@ -149,7 +149,7 @@ class AccountViewModel @Inject constructor(
             ).onSuccess { assetsPrices ->
                 _state.update { it.onPricesReceived(prices = assetsPrices) }
             }.onFailure { error ->
-                if (error is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                if (error is FiatPriceRepository.PricesUnavailableOnCurrentNetwork) {
                     _state.update { it.onPricesDisabled() }
                 } else {
                     Timber.e("Failed to fetch prices for account: ${error.message}")

@@ -240,7 +240,9 @@ fun AccountCardHeader(
     ) {
         Text(
             text = when (account) {
-                is InvolvedAccount.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
+                is InvolvedAccount.Other -> account.addressBookName
+                    ?.takeIf { it.isNotBlank() }
+                    ?: stringResource(id = R.string.interactionReview_externalAccountName)
                 is InvolvedAccount.Owned -> account.account.displayName.value
             },
             style = RadixTheme.typography.body1Header,

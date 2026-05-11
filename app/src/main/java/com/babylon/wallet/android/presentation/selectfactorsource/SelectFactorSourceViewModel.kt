@@ -74,7 +74,8 @@ class SelectFactorSourceViewModel @Inject constructor(
         }.filter { factorSource ->
             when (val context = input.context) {
                 SelectFactorSourceInput.Context.CreateAccount,
-                SelectFactorSourceInput.Context.CreatePersona -> factorSource.supportsBabylon
+                SelectFactorSourceInput.Context.CreatePersona,
+                SelectFactorSourceInput.Context.MfaFactorInstance -> factorSource.supportsBabylon
 
                 is SelectFactorSourceInput.Context.AccountRecovery -> if (context.isOlympia) {
                     factorSource.supportsOlympia
@@ -127,7 +128,8 @@ class SelectFactorSourceViewModel @Inject constructor(
                         )
 
                         SelectFactorSourceInput.Context.CreateAccount,
-                        SelectFactorSourceInput.Context.CreatePersona -> AddFactorSourceInput.Context.New
+                        SelectFactorSourceInput.Context.CreatePersona,
+                        SelectFactorSourceInput.Context.MfaFactorInstance -> AddFactorSourceInput.Context.New
                     }
                 )
             )?.value?.let { addedFactorSourceId ->

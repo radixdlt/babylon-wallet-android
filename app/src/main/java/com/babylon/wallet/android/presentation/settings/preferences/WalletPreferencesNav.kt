@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.account.createaccount.createAccou
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.preferences.addressbook.addressBook
+import com.babylon.wallet.android.presentation.settings.preferences.addressbook.addressBook as addressBookRoute
 import com.babylon.wallet.android.presentation.settings.preferences.assetshiding.hiddenAssetsScreen
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
@@ -21,6 +23,7 @@ import com.babylon.wallet.android.presentation.settings.preferences.rs.relayServ
 import com.babylon.wallet.android.presentation.settings.preferences.ss.details.signalingServerDetails
 import com.babylon.wallet.android.presentation.settings.preferences.ss.list.signalingServers
 import com.babylon.wallet.android.presentation.settings.preferences.theme.themeSelection
+import com.babylon.wallet.android.presentation.settings.preferences.tokenpriceservices.tokenPriceServices
 import com.radixdlt.sargon.extensions.id
 
 const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
@@ -73,6 +76,12 @@ fun NavGraphBuilder.preferencesNavGraph(
         relayServices(
             onBackClick = navController::popBackStack
         )
+        tokenPriceServices(
+            onBackClick = navController::popBackStack
+        )
+        addressBookRoute(
+            onBackClick = navController::popBackStack
+        )
     }
 }
 
@@ -117,6 +126,10 @@ fun NavGraphBuilder.walletPreferencesScreen(
                         navController.depositGuaranteesScreen()
                     }
 
+                    SettingsItem.WalletPreferences.AddressBook -> {
+                        navController.addressBook()
+                    }
+
                     is SettingsItem.WalletPreferences.ThemePreference -> {
                         navController.themeSelection()
                     }
@@ -127,6 +140,10 @@ fun NavGraphBuilder.walletPreferencesScreen(
 
                     SettingsItem.WalletPreferences.RelayServices -> {
                         navController.relayServices()
+                    }
+
+                    SettingsItem.WalletPreferences.TokenPriceServices -> {
+                        navController.tokenPriceServices()
                     }
                 }
             },

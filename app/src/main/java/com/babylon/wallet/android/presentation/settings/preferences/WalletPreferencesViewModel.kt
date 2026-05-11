@@ -150,6 +150,7 @@ data class WalletPreferencesUiState(
         val default = WalletPreferencesUiState(
             settings = persistentSetOf(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DepositGuarantees),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AddressBook),
                 PreferencesUiItem.DisplaySection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AssetsHiding),
@@ -161,6 +162,7 @@ data class WalletPreferencesUiState(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.SignalingServers),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.RelayServices),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.TokenPriceServices),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))
             )
         )

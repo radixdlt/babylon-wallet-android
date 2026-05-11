@@ -75,5 +75,7 @@ private fun CommonException.publicMessage(context: Context) = when (this) {
     is CommonException.GwMissingResponseItem -> context.getString(R.string.error_rns_unknownDomain)
 
     is CommonException.RnsUnsupportedNetwork -> context.getString(R.string.error_transactionFailure_network)
+    is CommonException.AddressBookEntryAlreadyExists ->
+        context.getString(R.string.addressBook_entryForm_duplicateAddress, alias)
     else -> context.getString(R.string.common_somethingWentWrong)
 }

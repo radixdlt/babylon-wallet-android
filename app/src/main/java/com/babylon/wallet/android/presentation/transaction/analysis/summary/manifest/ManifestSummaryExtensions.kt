@@ -26,7 +26,9 @@ import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.sargon.accountAddressOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.toResourceOrNonFungible
 
 /**
@@ -133,7 +135,11 @@ private fun AccountAddress.toInvolvedAccount(profile: Profile): InvolvedAccount 
     return if (profileAccount != null) {
         InvolvedAccount.Owned(profileAccount)
     } else {
-        InvolvedAccount.Other(this)
+        val addressBookName = profile.currentNetwork?.addressBook
+            ?.firstOrNull { it.accountAddressOrNull == this }
+            ?.name
+            ?.value
+        InvolvedAccount.Other(address = this, addressBookName = addressBookName)
     }
 }
 

@@ -27,10 +27,7 @@ import com.babylon.wallet.android.data.repository.state.StateRepositoryImpl
 import com.babylon.wallet.android.data.repository.stream.StreamRepository
 import com.babylon.wallet.android.data.repository.stream.StreamRepositoryImpl
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import com.babylon.wallet.android.data.repository.tokenprice.Mainnet
-import com.babylon.wallet.android.data.repository.tokenprice.MainnetFiatPriceRepository
-import com.babylon.wallet.android.data.repository.tokenprice.Testnet
-import com.babylon.wallet.android.data.repository.tokenprice.TestnetFiatPriceRepository
+import com.babylon.wallet.android.data.repository.tokenprice.SargonFiatPriceRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepositoryImpl
 import com.babylon.wallet.android.utils.AppEventBus
@@ -74,15 +71,8 @@ interface DataModule {
     ): NetworkInfoRepository
 
     @Binds
-    @Mainnet
-    fun bindMainnetFiatPriceRepository(
-        tokenPriceRepository: MainnetFiatPriceRepository
-    ): FiatPriceRepository
-
-    @Binds
-    @Testnet
-    fun bindTestnetFiatPriceRepository(
-        tokenPriceRepository: TestnetFiatPriceRepository
+    fun bindFiatPriceRepository(
+        tokenPriceRepository: SargonFiatPriceRepository
     ): FiatPriceRepository
 
     @Binds

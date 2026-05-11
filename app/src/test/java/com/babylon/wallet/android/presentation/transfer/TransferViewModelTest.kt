@@ -48,6 +48,8 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.addressbook.AddAddressBookEntryUseCase
+import rdx.works.profile.domain.addressbook.GetAccountAddressBookEntriesOnCurrentNetworkUseCase
 
 @ExperimentalCoroutinesApi
 class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
@@ -63,6 +65,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getAccountDepositResourceRulesUseCase = mockk<GetAccountDepositResourceRulesUseCase>()
     private val resolveRadixDomainUseCase = mockk<ResolveRadixDomainUseCase>()
     private val isValidRadixDomainUseCase = mockk<IsValidRadixDomainUseCase>()
+    private val getAccountAddressBookEntriesOnCurrentNetworkUseCase = mockk<GetAccountAddressBookEntriesOnCurrentNetworkUseCase>()
+    private val addAddressBookEntryUseCase = mockk<AddAddressBookEntryUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
@@ -82,7 +86,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
                 getProfileUseCase = getProfileUseCase,
                 getWalletAssetsUseCase = getWalletAssetsUseCase,
                 resolveRadixDomainUseCase = resolveRadixDomainUseCase,
-                isValidRadixDomainUseCase = isValidRadixDomainUseCase
+                isValidRadixDomainUseCase = isValidRadixDomainUseCase,
+                getAccountAddressBookEntriesOnCurrentNetworkUseCase = getAccountAddressBookEntriesOnCurrentNetworkUseCase,
+                addAddressBookEntryUseCase = addAddressBookEntryUseCase
             ),
             assetsChooserDelegate = AssetsChooserDelegate(
                 getWalletAssetsUseCase = getWalletAssetsUseCase,
@@ -106,6 +112,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         coEvery { getAccountDepositResourceRulesUseCase.invoke(any()) } returns emptySet()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address.string
         every { getWalletAssetsUseCase.observe(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
+        coEvery { getAccountAddressBookEntriesOnCurrentNetworkUseCase.invoke() } returns emptyList()
+        coEvery { addAddressBookEntryUseCase.invoke(any(), any(), any()) } returns true
     }
 
     @Test
@@ -196,27 +204,19 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         skeleton: TargetAccount.Skeleton
     ) {
         viewModel.onChooseAccountForSkeleton(skeleton)
-        assertEquals(
-            TransferViewModel.State.Sheet.ChooseAccounts(
-                selectedAccount = skeleton,
-                ownedAccounts = persistentListOf(),
-                isResolving = false
-            ),
-            awaitItem().sheet
-        )
+        val initialSheet = awaitItem().sheet as TransferViewModel.State.Sheet.ChooseAccounts
+        assertEquals(skeleton, initialSheet.selectedAccount)
+        assertEquals(persistentListOf<Account>(), initialSheet.ownedAccounts)
+        assertFalse(initialSheet.isResolving)
 
         val remainingAccounts = otherAccounts.filterNot { account ->
             viewModel.state.value.targetAccounts.any { it.address == account.address }
         }
         if (remainingAccounts.isNotEmpty()) {
-            assertEquals(
-                TransferViewModel.State.Sheet.ChooseAccounts(
-                    selectedAccount = skeleton,
-                    ownedAccounts = remainingAccounts.toPersistentList(),
-                    isResolving = false
-                ),
-                awaitItem().sheet
-            )
+            val updatedSheet = awaitItem().sheet as TransferViewModel.State.Sheet.ChooseAccounts
+            assertEquals(skeleton, updatedSheet.selectedAccount)
+            assertEquals(remainingAccounts.toPersistentList(), updatedSheet.ownedAccounts)
+            assertFalse(updatedSheet.isResolving)
         }
     }
 
@@ -262,7 +262,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             TargetAccount.Other(
                 typed = address,
                 validity = TargetAccount.Other.InputValidity.VALID,
-                resolvedInput = null,
+                resolvedInput = TargetAccount.Other.ResolvedInput.AccountInput(
+                    accountAddress = AccountAddress.init(address)
+                ),
                 id = skeletonAccount.id
             )
         )
@@ -291,4 +293,3 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         awaitItem()
     }
 }
-

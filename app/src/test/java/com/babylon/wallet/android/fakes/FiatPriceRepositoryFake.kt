@@ -11,6 +11,7 @@ import com.babylon.wallet.android.mockdata.mockResourceAddress3
 import com.babylon.wallet.android.mockdata.mockResourceAddress4
 import com.babylon.wallet.android.mockdata.mockResourceAddress5
 import com.babylon.wallet.android.mockdata.mockResourceAddressXRD
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.FiatPrice
@@ -18,11 +19,7 @@ import rdx.works.core.domain.assets.SupportedCurrency
 
 class FiatPriceRepositoryFake : FiatPriceRepository {
 
-    override suspend fun updateFiatPrices(
-        currency: SupportedCurrency
-    ): Result<Unit> {
-        return Result.success(Unit)
-    }
+    var nftFiatPricesResult: Result<Map<NonFungibleGlobalId, FiatPrice>> = Result.success(emptyMap())
 
     override suspend fun getFiatPrices(
         addresses: Set<FiatPriceRepository.PriceRequestAddress>,
@@ -36,6 +33,12 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
 
         return Result.success(results)
     }
+
+    override suspend fun getNftFiatPrices(
+        nftIds: List<NonFungibleGlobalId>,
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
+    ): Result<Map<NonFungibleGlobalId, FiatPrice>> = nftFiatPricesResult
 
     private val fiatPrices = mapOf(
         mockResourceAddressXRD to FiatPrice(

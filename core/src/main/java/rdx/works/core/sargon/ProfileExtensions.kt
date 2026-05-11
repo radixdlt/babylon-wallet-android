@@ -186,6 +186,8 @@ fun Profile.addAccounts(
                 authorizedDapps = network.authorizedDApps(),
                 personas = network.personas,
                 resourcePreferences = network.resourcePreferences,
+                addressBook = network.addressBook,
+                tokenPriceServices = network.tokenPriceServices,
                 mfaFactorInstances = network.mfaFactorInstances
             )
         }
@@ -196,6 +198,8 @@ fun Profile.addAccounts(
             authorizedDapps = AuthorizedDapps().asList(),
             personas = Personas().asList(),
             resourcePreferences = ResourceAppPreferences().asList(),
+            addressBook = emptyList(),
+            tokenPriceServices = emptyList(),
             mfaFactorInstances = MfaFactorInstances().asList()
         )
     }

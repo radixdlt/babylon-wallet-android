@@ -18,6 +18,7 @@ import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestD
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
@@ -54,6 +55,7 @@ import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.accountAddressOrNull
 import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -217,6 +219,30 @@ class TransferViewModel @Inject constructor(
     fun onErrorMessageShown() = accountsChooserDelegate.onErrorMessageShown()
 
     fun onOwnedAccountSelected(account: Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
+
+    fun onRecipientTabSelected(tab: State.Sheet.ChooseAccounts.RecipientTab) = accountsChooserDelegate.onRecipientTabSelected(tab)
+
+    fun onAddressBookEntrySelected(entry: AddressBookEntry) {
+        viewModelScope.launch {
+            accountsChooserDelegate.onAddressBookEntrySelected(entry)
+            loadAccountDepositResourceRules()
+        }
+    }
+
+    fun onStoreManualRecipientInAddressBookToggled() = accountsChooserDelegate.onStoreManualRecipientInAddressBookToggled()
+
+    fun onAddAddressBookInputDismissed() = accountsChooserDelegate.onAddAddressBookInputDismissed()
+
+    fun onAddAddressBookNameChanged(name: String) = accountsChooserDelegate.onAddAddressBookNameChanged(name)
+
+    fun onAddAddressBookNoteChanged(note: String) = accountsChooserDelegate.onAddAddressBookNoteChanged(note)
+
+    fun onAddAddressBookSaveClick() {
+        viewModelScope.launch {
+            accountsChooserDelegate.onAddAddressBookSaveClick()
+            loadAccountDepositResourceRules()
+        }
+    }
 
     fun onChooseAccountSubmitted() {
         viewModelScope.launch {
@@ -449,7 +475,13 @@ class TransferViewModel @Inject constructor(
                 val ownedAccounts: PersistentList<Account>,
                 val mode: Mode = Mode.Chooser,
                 val uiMessage: UiMessage.ErrorMessage? = null,
-                val isResolving: Boolean
+                val isResolving: Boolean,
+                val selectedTab: RecipientTab = RecipientTab.MyAccounts,
+                val addressBookEntries: PersistentList<AddressBookEntry> = persistentListOf(),
+                val filteredAccountAddresses: PersistentList<AccountAddress> = persistentListOf(),
+                val storeManualRecipientInAddressBook: Boolean = false,
+                val pendingExternalAccountAddressToSelect: AccountAddress? = null,
+                val addAddressBookInput: AddAddressBookInput? = null
             ) : Sheet {
 
                 val isOwnedAccountsEnabled: Boolean
@@ -470,6 +502,50 @@ class TransferViewModel @Inject constructor(
 
                 fun isOwnedAccountSelected(account: Account) =
                     (selectedAccount as? TargetAccount.Owned)?.account == account
+
+                val validatedManualAccountAddress: AccountAddress?
+                    get() = ((selectedAccount as? TargetAccount.Other)
+                        ?.resolvedInput as? TargetAccount.Other.ResolvedInput.AccountInput)
+                        ?.accountAddress
+
+                val matchingAddressBookEntryForManualAddress: AddressBookEntry?
+                    get() {
+                        val address = validatedManualAccountAddress ?: return null
+                        return addressBookEntries.firstOrNull { it.accountAddressOrNull == address }
+                    }
+
+                val canStoreValidatedManualRecipientInAddressBook: Boolean
+                    get() {
+                        val address = validatedManualAccountAddress ?: return false
+                        if (matchingAddressBookEntryForManualAddress != null) return false
+                        return ownedAccounts.none { it.address == address }
+                    }
+
+                val selectableAddressBookEntries: List<AddressBookEntry>
+                    get() = addressBookEntries.filter { entry ->
+                        filteredAccountAddresses.none { it == entry.accountAddressOrNull }
+                    }
+
+                enum class RecipientTab {
+                    MyAccounts,
+                    AddressBook
+                }
+
+                data class AddAddressBookInput(
+                    val address: AccountAddress,
+                    val name: String = "",
+                    val note: String = "",
+                    val isSaving: Boolean = false
+                ) {
+                    val trimmedName: String
+                        get() = name.trim()
+
+                    val trimmedNote: String?
+                        get() = note.trim().takeIf { it.isNotEmpty() }
+
+                    val isValid: Boolean
+                        get() = trimmedName.isNotEmpty()
+                }
 
                 enum class Mode {
                     Chooser,
@@ -656,6 +732,7 @@ sealed class TargetAccount {
         val resolvedInput: ResolvedInput?,
         val validity: InputValidity,
         override val id: String,
+        val addressBookName: String? = null,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: AccountAddress? = resolvedInput?.let { input ->

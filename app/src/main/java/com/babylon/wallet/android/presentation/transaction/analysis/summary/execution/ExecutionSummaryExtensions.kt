@@ -38,7 +38,9 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.sargon.accountAddressOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.toResourceOrNonFungible
 
 /**
@@ -163,6 +165,7 @@ fun ExecutionSummary.resolveWithdrawsAndDeposits(
     val defaultDepositGuarantee = profile.appPreferences.transaction.defaultDepositGuarantee
 
     val withdrawsPerAccount = resolveAccounts(
+        profile = profile,
         profileAccounts = involvedAccounts,
         resourceIndicators = withdrawals,
         onLedgerAssets = onLedgerAssets,
@@ -170,6 +173,7 @@ fun ExecutionSummary.resolveWithdrawsAndDeposits(
     ).sortedWith(AccountWithTransferables.Companion.Sorter(profile))
 
     val depositsPerAccount = resolveAccounts(
+        profile = profile,
         profileAccounts = involvedAccounts,
         resourceIndicators = deposits,
         onLedgerAssets = onLedgerAssets,
@@ -439,6 +443,7 @@ private fun ExecutionSummary.resolveTransferable(
 }
 
 private fun ExecutionSummary.resolveAccounts(
+    profile: Profile,
     profileAccounts: Accounts,
     resourceIndicators: Map<AccountAddress, List<ResourceIndicator>>,
     onLedgerAssets: List<Asset>,
@@ -453,9 +458,16 @@ private fun ExecutionSummary.resolveAccounts(
     }
 
     val profileAccount = profileAccounts.getBy(entry.key)
+    val addressBookName = profile.currentNetwork?.addressBook
+        ?.firstOrNull { it.accountAddressOrNull == entry.key }
+        ?.name
+        ?.value
 
     AccountWithTransferables(
-        account = profileAccount?.let { InvolvedAccount.Owned(it) } ?: InvolvedAccount.Other(entry.key),
+        account = profileAccount?.let { InvolvedAccount.Owned(it) } ?: InvolvedAccount.Other(
+            address = entry.key,
+            addressBookName = addressBookName
+        ),
         transferables = transferables
     )
 }

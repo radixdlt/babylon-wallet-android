@@ -92,6 +92,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         override fun getMessage(): String {
             val message = when (error) {
                 is ProfileException -> return error.toUserFriendlyMessage()
+                is CommonException.AddressBookEntryAlreadyExists -> return error.toMessage(includeSupportMessage = false)
                 is CommonException -> return error.toMessage()
                 else -> error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
             }

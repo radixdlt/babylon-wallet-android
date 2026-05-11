@@ -18,6 +18,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.Impo
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.importMnemonics
 import com.babylon.wallet.android.presentation.selectfactorsource.selectFactorSource
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.mfafactorinstance.mfaFactorInstance
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.arculusCards
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.changepin.changeArculusPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.arculuscard.forgotpin.forgotArculusPin
@@ -81,6 +82,9 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 },
                 onSecurityFactorsClick = {
                     navController.securityFactorTypes()
+                },
+                onMfaFactorInstanceClick = {
+                    navController.mfaFactorInstance()
                 },
                 onBackupConfigurationClick = {
                     navController.backupScreen()
@@ -183,7 +187,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
             },
             toChangeArculusPin = navController::verifyArculusPin,
             toForgotArculusPin = navController::forgotArculusPin,
-            toAddress = navController::addressDetails,
+            onBackClick = { navController.navigateUp() }
+        )
+        mfaFactorInstance(
+            toAddressDetails = navController::addressDetails,
+            toFactorSourceDetails = { navController.factorSourceDetails(it) },
             onBackClick = { navController.navigateUp() }
         )
         revealSeedPhrase(

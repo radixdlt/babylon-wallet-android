@@ -65,7 +65,7 @@ class AssetsChooserDelegate @Inject constructor(
                             }
                         }
                         .onFailure { exception ->
-                            if (exception is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                            if (exception is FiatPriceRepository.PricesUnavailableOnCurrentNetwork) {
                                 disableFiatPrices()
                             }
                             updateSheetState { state ->

@@ -26,6 +26,8 @@ sealed interface SelectFactorSourceInput {
 
         data object CreatePersona : Context
 
+        data object MfaFactorInstance : Context
+
         data class AccountRecovery(
             val isOlympia: Boolean
         ) : Context

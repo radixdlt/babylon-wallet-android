@@ -123,7 +123,7 @@ class AssetDialogViewModel @Inject constructor(
                                 }
                             }
                             .onFailure {
-                                if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                                if (it is FiatPriceRepository.PricesUnavailableOnCurrentNetwork) {
                                     disableFiatPrices()
                                 }
                                 _state.update { state ->

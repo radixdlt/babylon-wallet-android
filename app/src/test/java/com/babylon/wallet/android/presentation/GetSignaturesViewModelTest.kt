@@ -147,6 +147,7 @@ class GetSignaturesViewModelTest {
                 personas = emptyList(),
                 authorizedDapps = emptyList(),
                 resourcePreferences = emptyList(),
+                addressBook = emptyList(),
                 mfaFactorInstances = emptyList()
             )
         )
@@ -470,4 +471,3 @@ class GetSignaturesViewModelTest {
         )
     }
 }
-
