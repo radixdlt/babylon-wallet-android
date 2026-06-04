@@ -41,11 +41,11 @@ class RNSRepositoryImpl @Inject constructor(
         applicationScope.launch {
             profileRepository
                 .profile
-                .map { it.currentGateway.network.id }
+                .map { it.currentGateway }
                 .distinctUntilChanged()
-                .collect { networkId ->
+                .collect { gateway ->
                     runCatching {
-                        RadixNameService(networkingDriver, networkId)
+                        RadixNameService(networkingDriver, gateway)
                     }.onSuccess { service ->
                         nameServiceState.update { RNSState.Instantiated(service) }
                     }.onFailure { error ->
