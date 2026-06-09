@@ -56,7 +56,8 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
+import com.radixdlt.sargon.extensions.stokenet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -65,7 +66,7 @@ import kotlinx.coroutines.flow.flow
 fun GatewaysScreen(
     modifier: Modifier = Modifier,
     viewModel: GatewaysViewModel,
-    onCreateAccount: (NetworkId) -> Unit,
+    onCreateAccount: (Gateway) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit,
 ) {
@@ -100,7 +101,7 @@ private fun GatewaysContent(
     onGatewayClick: (Gateway) -> Unit,
     onAddGatewayClick: () -> Unit,
     oneOffEvent: Flow<GatewaysViewModel.Event>,
-    onCreateAccount: (NetworkId) -> Unit,
+    onCreateAccount: (Gateway) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -108,7 +109,7 @@ private fun GatewaysContent(
         oneOffEvent.collect {
             when (it) {
                 is GatewaysViewModel.Event.CreateAccountOnNetwork -> {
-                    onCreateAccount(it.networkId)
+                    onCreateAccount(it.gateway)
                 }
             }
         }
@@ -374,19 +375,15 @@ private fun GatewaysScreenPreview() {
     RadixWalletTheme {
         GatewaysContent(
             state = GatewaysViewModel.State(
-                currentGateway = Gateway.forNetwork(NetworkId.MAINNET),
+                currentGateway = Gateway.mainnet,
                 gatewayList = persistentListOf(
                     GatewaysViewModel.State.GatewayUiItem(
-                        gateway = Gateway.forNetwork(NetworkId.STOKENET),
+                        gateway = Gateway.stokenet,
                         selected = false
                     ),
                     GatewaysViewModel.State.GatewayUiItem(
-                        gateway = Gateway.forNetwork(NetworkId.MAINNET),
+                        gateway = Gateway.mainnet,
                         selected = true
-                    ),
-                    GatewaysViewModel.State.GatewayUiItem(
-                        gateway = Gateway.forNetwork(NetworkId.HAMMUNET),
-                        selected = false
                     )
                 )
             ),

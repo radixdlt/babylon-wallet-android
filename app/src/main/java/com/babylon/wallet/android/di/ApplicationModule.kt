@@ -13,11 +13,13 @@ import com.babylon.wallet.android.presentation.nfc.common.NfcSessionProxy
 import com.babylon.wallet.android.presentation.sargonInteractors.NFCTagInteractor
 import com.babylon.wallet.android.presentation.sargonInteractors.WalletInteractor
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NfcTagDriver
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.Module
 import dagger.Provides
@@ -79,7 +81,7 @@ object ApplicationModule {
          * For now we'll only use MainNet as it's enough to fulfill all the scenarios
          * regarding Home Cards initialized from dApps and RadQuest deep link
          */
-        networkId = NetworkId.MAINNET,
+        gateway = Gateway.mainnet,
         dataStore = dataStore,
         observer = observer
     )

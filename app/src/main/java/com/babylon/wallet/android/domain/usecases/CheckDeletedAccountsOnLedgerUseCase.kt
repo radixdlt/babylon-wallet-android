@@ -18,7 +18,6 @@ class CheckDeletedAccountsOnLedgerUseCase @Inject constructor(
         accountAddresses: List<AccountAddress>
     ) = runCatching {
         sargonOsManager.sargonOs.checkAccountsDeletedOnLedger(
-            networkId = networkId,
             accountAddresses = accountAddresses
         )
     }

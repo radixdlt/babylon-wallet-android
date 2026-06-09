@@ -389,7 +389,7 @@ class RelayServicesPreviewProvider : PreviewParameterProvider<RelayServicesViewM
                     RelayServicesViewModel.State.UiItem(
                         RelayService(
                             name = "Relay Service 1",
-                            url = "https://test.com".toUrl()
+                            url = "https://test.com"
                         ),
                         isCurrent = true
                     )

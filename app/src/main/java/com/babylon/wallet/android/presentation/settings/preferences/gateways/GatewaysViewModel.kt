@@ -151,7 +151,7 @@ class GatewaysViewModel @Inject constructor(
         if (isGatewayChanged) {
             setAddGatewaySheetVisible(false)
         } else {
-            sendEvent(Event.CreateAccountOnNetwork(gateway.network.id))
+            sendEvent(Event.CreateAccountOnNetwork(gateway))
         }
     }
 
@@ -160,7 +160,7 @@ class GatewaysViewModel @Inject constructor(
     }
 
     internal sealed interface Event : OneOffEvent {
-        data class CreateAccountOnNetwork(val networkId: NetworkId) : Event
+        data class CreateAccountOnNetwork(val gateway: Gateway) : Event
     }
 
     data class State(
