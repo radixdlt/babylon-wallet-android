@@ -63,7 +63,7 @@ class RelayServicesViewModel @Inject constructor(
                 addRelayService(
                     RelayService(
                         name = addInput.name,
-                        url = newUrl.toUrl()
+                        url = newUrl
                     )
                 )
                 setAddSheetVisible(false)

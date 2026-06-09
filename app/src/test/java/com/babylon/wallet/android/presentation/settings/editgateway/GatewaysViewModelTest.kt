@@ -30,6 +30,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GatewaysViewModelTest {
@@ -103,6 +104,7 @@ class GatewaysViewModelTest {
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
             assert(item is GatewaysViewModel.Event.CreateAccountOnNetwork)
+            assertEquals(gateway, (item as GatewaysViewModel.Event.CreateAccountOnNetwork).gateway)
         }
     }
 

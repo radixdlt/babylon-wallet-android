@@ -34,10 +34,10 @@ import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
+import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -50,7 +50,7 @@ class CreateAccountViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val deleteWalletUseCase: DeleteWalletUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val switchNetworkUseCase: SwitchNetworkUseCase,
+    private val changeGatewayIfNetworkExistUseCase: ChangeGatewayIfNetworkExistUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
@@ -86,7 +86,7 @@ class CreateAccountViewModel @Inject constructor(
                 return@launch
             }
 
-            val networkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
+            val networkId = args.gatewayToSwitch?.network?.id ?: getProfileUseCase().currentGateway.network.id
             val name = DisplayName.init(state.value.accountName.trim())
 
             if (isFirstTime) {
@@ -188,8 +188,8 @@ class CreateAccountViewModel @Inject constructor(
             }
 
     private suspend fun onAccountCreated(account: Account) {
-        if (args.networkIdToSwitch != null) {
-            switchNetworkUseCase(networkId = args.networkIdToSwitch)
+        args.gatewayToSwitch?.let { gateway ->
+            changeGatewayIfNetworkExistUseCase(gateway)
         }
 
         syncAccountThirdPartyDepositsWithLedger(account = account)

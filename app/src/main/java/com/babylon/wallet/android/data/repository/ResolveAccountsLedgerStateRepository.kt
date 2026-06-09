@@ -32,7 +32,6 @@ class ResolveAccountsLedgerStateRepository @Inject constructor(
 
         val statuses = mutableMapOf<AccountAddress, Status>()
         val accountAddressesWithDeletedStatus = sargonOsManager.sargonOs.checkAccountsDeletedOnLedger(
-            networkId = networkId,
             accountAddresses = accounts.map { it.address }
         )
         accounts.forEach { account ->

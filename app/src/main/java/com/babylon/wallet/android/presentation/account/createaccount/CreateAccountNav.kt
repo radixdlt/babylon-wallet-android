@@ -1,7 +1,10 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -13,41 +16,52 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 
-private const val ARG_NETWORK_ID_TO_SWITCH = "arg_network_id_to_switch"
+private const val ARG_GATEWAY_TO_SWITCH = "arg_gateway_to_switch"
 
 const val ROUTE_CREATE_ACCOUNT = "create_account_route" +
     "?$ARG_REQUEST_SOURCE={$ARG_REQUEST_SOURCE}" +
-    "&$ARG_NETWORK_ID_TO_SWITCH={$ARG_NETWORK_ID_TO_SWITCH}"
+    "&$ARG_GATEWAY_TO_SWITCH={$ARG_GATEWAY_TO_SWITCH}"
 
 internal class CreateAccountNavArgs(
     val requestSource: CreateAccountRequestSource?,
-    val networkIdToSwitch: NetworkId?
+    val gatewayToSwitch: Gateway?
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE),
-        savedStateHandle.get<Byte?>(ARG_NETWORK_ID_TO_SWITCH)?.let {
-            NetworkId.init(discriminant = it.toUByte())
-        },
+        savedStateHandle.get<GatewayToSwitchParam>(ARG_GATEWAY_TO_SWITCH)?.toGateway(),
     )
 }
 
 fun NavController.createAccountScreen(
     requestSource: CreateAccountRequestSource = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
-    networkIdToSwitch: NetworkId? = null,
+    gatewayToSwitch: Gateway? = null,
     popToRoute: String? = null
 ) {
-    val route = "create_account_route" +
-        "?$ARG_REQUEST_SOURCE=$requestSource" +
-        "&$ARG_NETWORK_ID_TO_SWITCH=${networkIdToSwitch?.discriminant?.toByte()}"
+    val gatewayArg = gatewayToSwitch?.let {
+        Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(GatewayToSwitchParam.from(it)))
+    }
+    val route = buildString {
+        append("create_account_route")
+        append("?$ARG_REQUEST_SOURCE=$requestSource")
+        gatewayArg?.let {
+            append("&$ARG_GATEWAY_TO_SWITCH=$it")
+        }
+    }
 
     navigate(route = route) {
         if (requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled) {
@@ -78,8 +92,8 @@ fun NavGraphBuilder.createAccountScreen(
                 type = NavType.EnumType(CreateAccountRequestSource::class.java)
                 defaultValue = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
             },
-            navArgument(ARG_NETWORK_ID_TO_SWITCH) {
-                type = OptionalNetworkIdParamType()
+            navArgument(ARG_GATEWAY_TO_SWITCH) {
+                type = OptionalGatewayParamType()
                 nullable = true
             }
         ),
@@ -112,21 +126,44 @@ fun NavGraphBuilder.createAccountScreen(
     }
 }
 
-private class OptionalNetworkIdParamType : NavType<NetworkId>(
+@Keep
+@Serializable
+@Parcelize
+private data class GatewayToSwitchParam(
+    val url: String,
+    val networkIdDiscriminant: Byte
+) : Parcelable {
+
+    fun toGateway(): Gateway = Gateway.init(
+        url = url,
+        networkId = NetworkId.init(discriminant = networkIdDiscriminant.toUByte())
+    )
+
+    companion object {
+        fun from(gateway: Gateway) = GatewayToSwitchParam(
+            url = gateway.string,
+            networkIdDiscriminant = gateway.network.id.discriminant.toByte()
+        )
+    }
+}
+
+private class OptionalGatewayParamType : NavType<GatewayToSwitchParam>(
     isNullableAllowed = true
 ) {
-    override fun get(bundle: Bundle, key: String): NetworkId? = if (bundle.containsKey(key)) {
-        NetworkId.init(discriminant = bundle.getByte(key).toUByte())
-    } else {
-        null
+    override fun get(bundle: Bundle, key: String): GatewayToSwitchParam? {
+        return BundleCompat.getParcelable(
+            bundle,
+            key,
+            GatewayToSwitchParam::class.java
+        )
     }
 
-    override fun parseValue(value: String): NetworkId {
-        return NetworkId.init(discriminant = value.toByte().toUByte())
+    override fun parseValue(value: String): GatewayToSwitchParam {
+        return Serializer.kotlinxSerializationJson.decodeFromString(value)
     }
 
-    override fun put(bundle: Bundle, key: String, value: NetworkId) {
-        bundle.putByte(key, value.discriminant.toByte())
+    override fun put(bundle: Bundle, key: String, value: GatewayToSwitchParam) {
+        bundle.putParcelable(key, value)
     }
 }
 
