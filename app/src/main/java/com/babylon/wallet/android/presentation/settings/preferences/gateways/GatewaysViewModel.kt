@@ -117,20 +117,23 @@ class GatewaysViewModel @Inject constructor(
                 )
             }
 
-            getNetworkInfoUseCase(newUrl)
-                .onSuccess { info ->
-                    addGatewayUseCase(Gateway.init(newUrl, info.id))
-                    setAddGatewaySheetVisible(false)
-                }.onFailure {
-                    _state.update { state ->
-                        state.copy(
-                            addGatewayInput = state.addGatewayInput?.copy(
-                                failure = State.AddGatewayInput.Failure.ErrorWhileAdding,
-                                isLoading = false
-                            )
+            runCatching {
+                val info = getNetworkInfoUseCase(newUrl).getOrThrow()
+                addGatewayUseCase(Gateway.init(newUrl, info.id))
+            }.onSuccess {
+                setAddGatewaySheetVisible(false)
+            }.onFailure { error ->
+                _state.update { state ->
+                    state.copy(
+                        addGatewayInput = state.addGatewayInput?.copy(
+                            failure = State.AddGatewayInput.Failure.ErrorWhileAdding(
+                                message = "URL: $newUrl\n\n${error.stackTraceToString()}"
+                            ),
+                            isLoading = false
                         )
-                    }
+                    )
                 }
+            }
         }
     }
 
@@ -190,9 +193,9 @@ class GatewaysViewModel @Inject constructor(
             val failure: Failure? = null
         ) {
 
-            enum class Failure {
-                AlreadyExist,
-                ErrorWhileAdding
+            sealed interface Failure {
+                data object AlreadyExist : Failure
+                data class ErrorWhileAdding(val message: String) : Failure
             }
         }
     }

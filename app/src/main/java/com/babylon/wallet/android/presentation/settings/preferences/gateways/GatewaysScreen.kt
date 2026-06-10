@@ -258,9 +258,7 @@ private fun AddGatewaySheet(
                     GatewaysViewModel.State.AddGatewayInput.Failure.AlreadyExist -> stringResource(
                         id = R.string.gateways_addNewGateway_errorDuplicateURL
                     )
-                    GatewaysViewModel.State.AddGatewayInput.Failure.ErrorWhileAdding -> stringResource(
-                        id = R.string.gateways_addNewGateway_establishingConnectionErrorMessage
-                    )
+                    is GatewaysViewModel.State.AddGatewayInput.Failure.ErrorWhileAdding -> input.failure.message
 
                     else -> null
                 }
