@@ -150,7 +150,13 @@ data class AssetsViewState(
 enum class NFTsViewMode {
     Full,
     Grid,
-    Row
+    Row;
+
+    fun next(): NFTsViewMode = when (this) {
+        Full -> Grid
+        Grid -> Row
+        Row -> Full
+    }
 }
 
 sealed interface AssetsViewAction {

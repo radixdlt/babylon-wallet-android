@@ -560,12 +560,6 @@ private fun NFTViewModeIcon(
     }
 }
 
-private fun NFTsViewMode.next(): NFTsViewMode = when (this) {
-    NFTsViewMode.Full -> NFTsViewMode.Grid
-    NFTsViewMode.Grid -> NFTsViewMode.Row
-    NFTsViewMode.Row -> NFTsViewMode.Full
-}
-
 @Composable
 private fun NonFungibleResourceGridItem(
     collection: Resource.NonFungibleResource,
