@@ -44,3 +44,5 @@ app/jacoco.exec
 fastlane/report.xml
 .idea/vcs.xml
 /.idea
+
+.gradle_explorer2/

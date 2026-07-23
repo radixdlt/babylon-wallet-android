@@ -5,9 +5,14 @@ import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestDa
 import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
+import com.babylon.wallet.android.presentation.transfer.BadgeRequirementStatus
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.AccountForDisplay
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.PerAssetFungibleResource
@@ -17,6 +22,7 @@ import com.radixdlt.sargon.PerAssetTransfers
 import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.RequiredBadge
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransferRecipient
 import com.radixdlt.sargon.extensions.from
@@ -36,20 +42,25 @@ class PrepareManifestDelegate @Inject constructor(
         val fromAccount = _state.value.fromAccount ?: return
         val accountsAbleToSign = _state.value.targetAccounts.filterAccountsAbleToSign()
 
+        val requiredBadges = when (_state.value.badgeRequirementStatus) {
+            is BadgeRequirementStatus.Success -> _state.value.resolvedRequiredBadges
+            else -> emptyList()
+        }
+
         runCatching {
-            TransactionManifest.perAssetTransfers(
+            val manifest = TransactionManifest.perAssetTransfers(
                 transfers = PerAssetTransfers(
                     fromAccount = fromAccount.address,
                     fungibleResources = _state.value.toFungibleTransfers(accountsAbleToSign),
                     nonFungibleResources = _state.value.toNonFungibleTransfers(accountsAbleToSign)
-                )
+                ),
+                requiredBadges = requiredBadges
             )
-        }.map { manifest ->
-            UnvalidatedManifestData.from(
+            val request = UnvalidatedManifestData.from(
                 manifest = manifest,
                 message = (_state.value.messageState as? TransferViewModel.State.Message.Added)?.message
             ).prepareInternalTransactionRequest()
-        }.onSuccess { request ->
+
             _state.update { it.copy(transferRequestId = request.interactionId) }
             Timber.d("Manifest for ${request.interactionId} prepared:\n${request.unvalidatedManifestData.instructions}")
             incomingRequestRepository.add(request)

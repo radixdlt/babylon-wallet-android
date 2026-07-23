@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSo
 import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceOutput
 import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.DisplayName
@@ -95,7 +96,7 @@ internal class MfaFactorInstanceViewModelTest : StateViewModelTest<MfaFactorInst
         every { usedResource.mfaFactorInstance } returns mfaFactorInstance
 
         val addressBookEntry = mockk<AddressBookEntry>()
-        every { addressBookEntry.address } returns unknownAddress
+        every { addressBookEntry.address } returns Address.Account(v1 = unknownAddress)
         every { addressBookEntry.name } returns DisplayName("Address Book")
 
         coEvery { sargonOs.usedMfaSignatureResourcesWithAccountsCurrentNetwork() } returns listOf(usedResource)

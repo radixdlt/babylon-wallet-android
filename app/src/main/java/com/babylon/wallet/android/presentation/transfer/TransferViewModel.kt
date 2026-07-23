@@ -1,9 +1,12 @@
 package com.babylon.wallet.android.presentation.transfer
 
+import androidx.savedstate.SavedStateRegistryOwner
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
 import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWithdrawerBadgeRequirementsUseCase
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -21,6 +24,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.RequiredBadge
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.RnsDomainConfiguredReceiver
 import com.radixdlt.sargon.extensions.asGeneral
@@ -44,6 +48,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -68,6 +75,7 @@ class TransferViewModel @Inject constructor(
     private val assetsChooserDelegate: AssetsChooserDelegate,
     private val prepareManifestDelegate: PrepareManifestDelegate,
     private val getAccountDepositResourceRulesUseCase: GetAccountDepositResourceRulesUseCase,
+    private val getWithdrawerBadgeRequirementsUseCase: GetWithdrawerBadgeRequirementsUseCase,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -87,6 +95,57 @@ class TransferViewModel @Inject constructor(
                 it.copy(fromAccount = sourceAccount)
             }
         }
+
+        viewModelScope.launch {
+            _state
+                .map { state ->
+                    val fromAccount = state.fromAccount
+                    val spendingAddresses = state.targetAccounts.flatMap { targetAccount ->
+                        targetAccount.spendingAssets.map { it.resourceAddress }
+                    }.toSet()
+                    fromAccount to spendingAddresses
+                }
+                .distinctUntilChanged()
+                .collectLatest { (fromAccount, spendingAddresses) ->
+                    if (fromAccount != null && spendingAddresses.isNotEmpty()) {
+                        checkWithdrawerBadgeRequirements(fromAccount, spendingAddresses)
+                    } else {
+                        _state.update {
+                            it.copy(
+                                badgeRequirementStatus = BadgeRequirementStatus.None,
+                                resolvedRequiredBadges = emptyList()
+                            )
+                        }
+                    }
+                }
+        }
+    }
+
+    private suspend fun checkWithdrawerBadgeRequirements(
+        fromAccount: Account,
+        spendingAddresses: Set<ResourceAddress>
+    ) {
+        _state.update { it.copy(badgeRequirementStatus = BadgeRequirementStatus.Loading) }
+
+        getWithdrawerBadgeRequirementsUseCase(fromAccount, spendingAddresses)
+            .onSuccess { badgeResult ->
+                _state.update {
+                    it.copy(
+                        badgeRequirementStatus = badgeResult.status,
+                        resolvedRequiredBadges = badgeResult.badges
+                    )
+                }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        badgeRequirementStatus = BadgeRequirementStatus.Error(
+                            resource = null,
+                            reason = BadgeRequirementStatus.Error.Reason.RuleParsingError
+                        ),
+                        resolvedRequiredBadges = emptyList()
+                    )
+                }
+            }
     }
 
     // Transfer flow
@@ -333,7 +392,9 @@ class TransferViewModel @Inject constructor(
         val error: UiMessage? = null,
         val maxXrdError: MaxAmountMessage? = null,
         val transferRequestId: String? = null,
-        val accountDepositResourceRulesSet: NetworkContent<ImmutableSet<AccountDepositResourceRules>> = NetworkContent.None
+        val accountDepositResourceRulesSet: NetworkContent<ImmutableSet<AccountDepositResourceRules>> = NetworkContent.None,
+        val badgeRequirementStatus: BadgeRequirementStatus = BadgeRequirementStatus.None,
+        val resolvedRequiredBadges: List<RequiredBadge> = emptyList()
     ) : UiState {
 
         private val canDepositToAllTargetAccounts: Boolean
@@ -351,7 +412,9 @@ class TransferViewModel @Inject constructor(
 
         val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all {
             it.isValidForSubmission
-        } && canDepositToAllTargetAccounts
+        } && canDepositToAllTargetAccounts &&
+            badgeRequirementStatus !is BadgeRequirementStatus.Loading &&
+            badgeRequirementStatus !is BadgeRequirementStatus.Error
 
         fun addSkeleton(): State = copy(
             targetAccounts = targetAccounts.toMutableList().apply {

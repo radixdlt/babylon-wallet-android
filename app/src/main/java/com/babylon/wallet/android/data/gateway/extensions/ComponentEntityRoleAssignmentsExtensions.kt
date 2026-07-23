@@ -147,6 +147,26 @@ private fun ComponentEntityRoleAssignmentEntry.parsedAssignment(owner: Component
     }
 }
 
+fun ComponentEntityRoleAssignments.getWithdrawerRequiredBadgeAddress(): String? {
+    val withdrawerEntry = propertyEntries.find { it.roleKey.name == "withdrawer" } ?: return null
+    val rule = when (withdrawerEntry.assignment.resolution) {
+        RoleAssignmentResolution.Explicit -> withdrawerEntry.assignment.explicitRule
+        RoleAssignmentResolution.Owner -> owner.rule
+    }
+    if (rule?.type != AccessRule.Type.Protected) return null
+    return rule.getRequiredBadgeAddress()
+}
+
+fun ComponentEntityRoleAssignments.getWithdrawerRequiredBadgeNonFungibleLocalId(): String? {
+    val withdrawerEntry = propertyEntries.find { it.roleKey.name == "withdrawer" } ?: return null
+    val rule = when (withdrawerEntry.assignment.resolution) {
+        RoleAssignmentResolution.Explicit -> withdrawerEntry.assignment.explicitRule
+        RoleAssignmentResolution.Owner -> owner.rule
+    }
+    if (rule?.type != AccessRule.Type.Protected) return null
+    return rule.getRequiredBadgeNonFungibleLocalId()
+}
+
 private enum class Assignment {
     NONE,
     ANYONE,

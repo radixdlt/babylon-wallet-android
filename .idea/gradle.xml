@@ -4,6 +4,24 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/sargon/jvm" name="Sargon JVM">
+                <projects>
+                  <project path="$PROJECT_DIR$/sargon/examples/android" />
+                  <project path="$PROJECT_DIR$/sargon/jvm" />
+                  <project path="$PROJECT_DIR$/sargon/jvm/sargon-android" />
+                </projects>
+              </build>
+              <build path="$PROJECT_DIR$/sargon/jvm/buildSrc" name="buildSrc">
+                <projects>
+                  <project path="$PROJECT_DIR$/sargon/jvm/buildSrc" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
@@ -11,12 +29,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/arculus-android-csdk" />
-            <option value="$PROJECT_DIR$/arculus-android-csdk/csdknative" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/designsystem" />
             <option value="$PROJECT_DIR$/peerdroid" />
             <option value="$PROJECT_DIR$/profile" />
+            <option value="$PROJECT_DIR$/sargon/examples/android" />
+            <option value="$PROJECT_DIR$/sargon/jvm" />
+            <option value="$PROJECT_DIR$/sargon/jvm/buildSrc" />
+            <option value="$PROJECT_DIR$/sargon/jvm/sargon-android" />
             <option value="$PROJECT_DIR$/webrtc-library" />
           </set>
         </option>

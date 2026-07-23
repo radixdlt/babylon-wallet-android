@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/arculus-android-csdk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/sargon" vcs="Git" />
   </component>
 </project>

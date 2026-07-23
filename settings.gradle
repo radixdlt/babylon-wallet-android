@@ -34,3 +34,11 @@ include ':core'
 if (file('arculus-android-csdk/csdknative').exists()) {
     include ':arculus-android-csdk:csdknative'
 }
+
+includeBuild('sargon/jvm') {
+    dependencySubstitution {
+        substitute module('com.radixdlt.sargon:sargon-android') using project(':sargon-android')
+        substitute module('com.radixdlt.sargon:sargon-desktop-bins') using project(':sargon-android')
+    }
+}
+
