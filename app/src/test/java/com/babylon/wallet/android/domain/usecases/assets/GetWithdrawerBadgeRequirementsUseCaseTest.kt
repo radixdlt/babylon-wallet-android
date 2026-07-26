@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.transfer.BadgeRequirementStatus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.RequiredBadge
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -92,7 +92,7 @@ class GetWithdrawerBadgeRequirementsUseCaseTest {
 
         assertEquals(BadgeRequirementStatus.Success(badgeToken.resource), result.status)
         assertEquals(1, result.badges.size)
-        val badge = result.badges.first() as RequiredBadge.Fungible
+        val badge = result.badges.first() as ResourceSpecifier.Fungible
         assertEquals(badgeAddress, badge.resourceAddress)
         assertEquals(Decimal192.init("1"), badge.amount)
     }
@@ -249,7 +249,7 @@ class GetWithdrawerBadgeRequirementsUseCaseTest {
 
         assertEquals(BadgeRequirementStatus.Success(badgeResource), result.status)
         assertEquals(1, result.badges.size)
-        val badge = result.badges.first() as RequiredBadge.NonFungible
+        val badge = result.badges.first() as ResourceSpecifier.NonFungible
         assertEquals(badgeAddress, badge.resourceAddress)
         assertEquals(listOf(localId), badge.ids)
     }
@@ -310,7 +310,7 @@ class GetWithdrawerBadgeRequirementsUseCaseTest {
 
         assertEquals(BadgeRequirementStatus.Success(badgeResource), result.status)
         assertEquals(1, result.badges.size)
-        val badge = result.badges.first() as RequiredBadge.NonFungible
+        val badge = result.badges.first() as ResourceSpecifier.NonFungible
         assertEquals(badgeAddress, badge.resourceAddress)
         assertEquals(listOf(targetLocalId), badge.ids)
     }

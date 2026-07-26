@@ -22,7 +22,7 @@ import com.radixdlt.sargon.PerAssetTransfers
 import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.RequiredBadge
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransferRecipient
 import com.radixdlt.sargon.extensions.from

@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.presentation.transfer.BadgeRequirementStatus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.RequiredBadge
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.orZero
@@ -72,7 +72,7 @@ class GetWithdrawerBadgeRequirementsUseCase @Inject constructor(
                 }
             }
 
-            val resolvedBadges = mutableListOf<RequiredBadge>()
+            val resolvedBadges = mutableListOf<ResourceSpecifier>()
             var overallStatus: BadgeRequirementStatus = BadgeRequirementStatus.None
             var errorResource: Resource? = null
             var errorReason: BadgeRequirementStatus.Error.Reason? = null
@@ -91,7 +91,7 @@ class GetWithdrawerBadgeRequirementsUseCase @Inject constructor(
                         if (ownedToken != null) {
                             val ownedAmount = ownedToken.resource.ownedAmount.orZero()
                             if (ownedAmount > 0.toDecimal192()) {
-                                resolvedBadges.add(RequiredBadge.Fungible(spec.resourceAddress, 1.toDecimal192()))
+                                resolvedBadges.add(ResourceSpecifier.Fungible(spec.resourceAddress, 1.toDecimal192()))
                                 if (overallStatus is BadgeRequirementStatus.None) {
                                     overallStatus = BadgeRequirementStatus.Success(resource)
                                 }
@@ -118,13 +118,13 @@ class GetWithdrawerBadgeRequirementsUseCase @Inject constructor(
                                 val targetId = spec.localId
                                 if (targetId != null) {
                                     if (ownedItems.any { it.localId == targetId }) {
-                                        resolvedBadges.add(RequiredBadge.NonFungible(spec.resourceAddress, listOf(targetId)))
+                                        resolvedBadges.add(ResourceSpecifier.NonFungible(spec.resourceAddress, listOf(targetId)))
                                         if (overallStatus is BadgeRequirementStatus.None) {
                                             overallStatus = BadgeRequirementStatus.Success(resource)
                                         }
                                     }
                                 } else {
-                                    resolvedBadges.add(RequiredBadge.NonFungible(spec.resourceAddress, listOf(ownedItems.first().localId)))
+                                    resolvedBadges.add(ResourceSpecifier.NonFungible(spec.resourceAddress, listOf(ownedItems.first().localId)))
                                     if (overallStatus is BadgeRequirementStatus.None) {
                                         overallStatus = BadgeRequirementStatus.Success(resource)
                                     }
@@ -153,7 +153,7 @@ class GetWithdrawerBadgeRequirementsUseCase @Inject constructor(
 
     data class BadgeResult(
         val status: BadgeRequirementStatus,
-        val badges: List<RequiredBadge>
+        val badges: List<ResourceSpecifier>
     )
 }
 

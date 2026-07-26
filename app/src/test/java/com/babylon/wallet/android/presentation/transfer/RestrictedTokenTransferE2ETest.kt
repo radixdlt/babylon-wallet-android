@@ -27,7 +27,7 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.RequiredBadge
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.PerAssetTransfers
 import com.radixdlt.sargon.extensions.forNetwork
@@ -274,7 +274,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -292,7 +292,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.NonFungible(dummyBadgeAddress, emptyList()))
+                badges = listOf(ResourceSpecifier.NonFungible(dummyBadgeAddress, emptyList()))
             )
         )
         val viewModel = vm.value
@@ -337,7 +337,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -354,7 +354,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.NonFungible(dummyBadgeAddress, emptyList()))
+                badges = listOf(ResourceSpecifier.NonFungible(dummyBadgeAddress, emptyList()))
             )
         )
         val viewModel = vm.value
@@ -371,7 +371,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -388,7 +388,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.NonFungible(dummyBadgeAddress, emptyList()))
+                badges = listOf(ResourceSpecifier.NonFungible(dummyBadgeAddress, emptyList()))
             )
         )
         val viewModel = vm.value
@@ -405,7 +405,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -423,7 +423,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
 
     @Test
     fun testF3_manifestInject_01_singleBadgeProof() = runTest {
-        val requiredBadges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+        val requiredBadges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
         val transfers = PerAssetTransfers(fromAccount = fromAccount.address, fungibleResources = emptyList(), nonFungibleResources = emptyList())
         val manifest = manifestPerAssetTransfers(transfers, requiredBadges)
         assertTrue(manifest.instructions.contains("create_proof_of_amount"))
@@ -432,8 +432,8 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
     @Test
     fun testF3_manifestInject_02_multipleBadgesProof() = runTest {
         val requiredBadges = listOf(
-            RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")),
-            RequiredBadge.NonFungible(dummyResourceAddress, emptyList())
+            ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")),
+            ResourceSpecifier.NonFungible(dummyResourceAddress, emptyList())
         )
         val transfers = PerAssetTransfers(fromAccount = fromAccount.address, fungibleResources = emptyList(), nonFungibleResources = emptyList())
         val manifest = manifestPerAssetTransfers(transfers, requiredBadges)
@@ -443,7 +443,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
 
     @Test
     fun testF3_manifestInject_03_noProofWhenNoBadge() = runTest {
-        val requiredBadges = emptyList<RequiredBadge>()
+        val requiredBadges = emptyList<ResourceSpecifier>()
         val transfers = PerAssetTransfers(fromAccount = fromAccount.address, fungibleResources = emptyList(), nonFungibleResources = emptyList())
         val manifest = manifestPerAssetTransfers(transfers, requiredBadges)
         assertTrue(manifest.instructions.isEmpty())
@@ -526,7 +526,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -617,7 +617,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -897,7 +897,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
 
     @Test
     fun testF3_boundary_02_maxRequiredBadgesProof() = runTest {
-        val badges = (1..10).map { RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")) }
+        val badges = (1..10).map { ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")) }
         val transfers = PerAssetTransfers(fromAccount = fromAccount.address, fungibleResources = emptyList(), nonFungibleResources = emptyList())
         val manifest = manifestPerAssetTransfers(transfers, badges)
         assertNotNull(manifest)
@@ -905,7 +905,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
 
     @Test
     fun testF3_boundary_03_withdrawingFromMultipleAccounts() = runTest {
-        val requiredBadges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+        val requiredBadges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
         val transfers = PerAssetTransfers(fromAccount = fromAccount.address, fungibleResources = emptyList(), nonFungibleResources = emptyList())
         val manifest = manifestPerAssetTransfers(transfers, requiredBadges)
         assertTrue(manifest.instructions.contains(fromAccount.address.string))
@@ -961,7 +961,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -1070,7 +1070,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
             Result.success(
                 GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                     status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                    badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                    badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
                 )
             )
         }
@@ -1218,7 +1218,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -1267,7 +1267,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -1288,7 +1288,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value
@@ -1336,7 +1336,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
             coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
                 GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                     status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                    badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                    badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
                 )
             )
 
@@ -1360,7 +1360,7 @@ class RestrictedTokenTransferE2ETest : StateViewModelTest<TransferViewModel>() {
         coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
             GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
                 status = BadgeRequirementStatus.Success(dummyBadgeAddress),
-                badges = listOf(RequiredBadge.Fungible(dummyBadgeAddress, Decimal192.init("1")))
+                badges = listOf(ResourceSpecifier.Fungible(dummyBadgeAddress, Decimal192.init("1")))
             )
         )
         val viewModel = vm.value

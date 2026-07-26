@@ -24,7 +24,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.RequiredBadge
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.RnsDomainConfiguredReceiver
 import com.radixdlt.sargon.extensions.asGeneral
@@ -394,7 +394,7 @@ class TransferViewModel @Inject constructor(
         val transferRequestId: String? = null,
         val accountDepositResourceRulesSet: NetworkContent<ImmutableSet<AccountDepositResourceRules>> = NetworkContent.None,
         val badgeRequirementStatus: BadgeRequirementStatus = BadgeRequirementStatus.None,
-        val resolvedRequiredBadges: List<RequiredBadge> = emptyList()
+        val resolvedRequiredBadges: List<ResourceSpecifier> = emptyList()
     ) : UiState {
 
         private val canDepositToAllTargetAccounts: Boolean
