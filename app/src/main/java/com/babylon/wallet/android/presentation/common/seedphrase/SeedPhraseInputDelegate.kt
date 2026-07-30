@@ -144,7 +144,7 @@ class SeedPhraseInputDelegate(
             get() = seedPhraseWords.all { it.valid }
 
         fun isInputComplete(): Boolean {
-            if (isInputEmpty) return false
+            if (seedPhraseWords.isEmpty() || isInputEmpty) return false
 
             return seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid || it.state == SeedPhraseWord.State.ValidDisabled }
         }

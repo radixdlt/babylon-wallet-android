@@ -1,13 +1,14 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessedFactorSource
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.AccessOutcome
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -20,7 +21,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
 import com.radixdlt.sargon.NetworkId
@@ -29,7 +29,6 @@ import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -47,7 +46,6 @@ class GetSignaturesViewModel @Inject constructor(
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
     private val accessPasswordFactorSourceUseCase: AccessPasswordFactorSourceUseCase,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     getProfileUseCase: GetProfileUseCase
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
@@ -69,9 +67,9 @@ class GetSignaturesViewModel @Inject constructor(
         viewModelScope = viewModelScope,
         id = proxyInput.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
+        accessDeviceFactorSource = accessDeviceFactorSource,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
-        defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,
         onFailCallback = this::onFailCallback
@@ -97,32 +95,34 @@ class GetSignaturesViewModel @Inject constructor(
             }.launchIn(viewModelScope)
     }
 
-    private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
-        is FactorSource.Device -> accessDeviceFactorSource.signMono(
-            factorSource = factorSource,
+    private suspend fun onAccess(factorSource: AccessedFactorSource): Result<AccessOutcome> = when (factorSource) {
+        is AccessedFactorSource.Device -> accessDeviceFactorSource.signMono(
+            factorSource = factorSource.factorSource,
+            input = proxyInput,
+            mnemonicWithPassphrase = factorSource.mnemonicWithPassphrase
+        )
+
+        is AccessedFactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
+            factorSource = factorSource.factorSource,
             input = proxyInput
         )
 
-        is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.signMono(
-            factorSource = factorSource,
+        is AccessedFactorSource.ArculusCard -> accessArculusFactorSourceUseCase.signMono(
+            factorSource = factorSource.factorSource,
+            input = proxyInput
+        )
+        is AccessedFactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
+            factorSource = factorSource.factorSource,
             input = proxyInput
         )
 
-        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.signMono(
-            factorSource = factorSource,
-            input = proxyInput
-        )
-        is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.signMono(
-            factorSource = factorSource,
-            input = proxyInput
-        )
-
-        is FactorSource.Password -> accessPasswordFactorSourceUseCase.signMono(
-            factorSource = factorSource,
+        is AccessedFactorSource.Password -> accessPasswordFactorSourceUseCase.signMono(
+            factorSource = factorSource.factorSource,
             input = proxyInput
         )
     }.map { perFactorOutcome ->
         finishWithSuccess(perFactorOutcome)
+        AccessOutcome.Completed
     }
 
     private suspend fun onDismissCallback() {
@@ -176,6 +176,8 @@ class GetSignaturesViewModel @Inject constructor(
     fun onDismiss() = accessDelegate.onDismiss()
 
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) = accessDelegate.onSeedPhraseWordChanged(wordIndex, word)
+
+    fun onPassphraseChanged(passphrase: String) = accessDelegate.onPassphraseChanged(passphrase)
 
     fun onPasswordTyped(password: String) = accessDelegate.onPasswordTyped(password)
 

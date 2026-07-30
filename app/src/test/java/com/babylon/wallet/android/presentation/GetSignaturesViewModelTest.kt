@@ -338,14 +338,27 @@ class GetSignaturesViewModelTest {
 
     @Test
     fun `when one device factor source is received, mono signing is resolved`() = testScope.runTest {
-        coEvery { accessDeviceFactorSource.signMono(any(), any()) } coAnswers {
+        val input = signaturesPerInput.keys.first()
+        coEvery {
+            accessDeviceFactorSource.loadMnemonic(deviceFactorSource1.asGeneral())
+        } coAnswers {
+            delay(50)
+            Result.success(deviceMnemonic)
+        }
+        coEvery {
+            accessDeviceFactorSource.signMono(
+                factorSource = deviceFactorSource1.asGeneral(),
+                input = input,
+                mnemonicWithPassphrase = deviceMnemonic
+            )
+        } coAnswers {
             delay(50)
             Result.success(
                 signaturesPerInput.values.first()
             )
         }
 
-        val vm = initVM(input = signaturesPerInput.keys.first())
+        val vm = initVM(input = input)
         vm.state.test {
             assertEquals(
                 GetSignaturesViewModel.State(
@@ -364,6 +377,21 @@ class GetSignaturesViewModelTest {
                     signPurpose = GetSignaturesViewModel.Purpose.TransactionIntents,
                     accessState = AccessFactorSourceDelegate.State(
                         isAccessInProgress = true,
+                        accessMode = AccessFactorSourceDelegate.State.AccessMode.LoadingDeviceMnemonic,
+                        factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
+                            factorSource = deviceFactorSource1.asGeneral()
+                        )
+                    ),
+                    isMfaEnabled = false
+                ),
+                awaitItem()
+            )
+            assertEquals(
+                GetSignaturesViewModel.State(
+                    signPurpose = GetSignaturesViewModel.Purpose.TransactionIntents,
+                    accessState = AccessFactorSourceDelegate.State(
+                        isAccessInProgress = true,
+                        accessMode = AccessFactorSourceDelegate.State.AccessMode.Completed,
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
                             factorSource = deviceFactorSource1.asGeneral()
                         )
@@ -377,6 +405,7 @@ class GetSignaturesViewModelTest {
                     signPurpose = GetSignaturesViewModel.Purpose.TransactionIntents,
                     accessState = AccessFactorSourceDelegate.State(
                         isAccessInProgress = false,
+                        accessMode = AccessFactorSourceDelegate.State.AccessMode.Completed,
                         factorSourceToAccess = AccessFactorSourceDelegate.State.FactorSourcesToAccess.Mono(
                             factorSource = deviceFactorSource1.asGeneral()
                         )
@@ -388,7 +417,7 @@ class GetSignaturesViewModelTest {
             ensureAllEventsConsumed()
             coVerify {
                 accessFactorSourcesIOHandler.setOutput(
-                        output = signaturesPerInput.values.toList()[0]
+                    output = signaturesPerInput.values.toList()[0]
                 )
             }
         }
@@ -463,7 +492,6 @@ class GetSignaturesViewModelTest {
             accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
             accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
             accessPasswordFactorSourceUseCase = accessPasswordFactorSourceUseCase,
-            defaultDispatcher = testDispatcher,
             getProfileUseCase = GetProfileUseCase(
                 profileRepository = FakeProfileRepository(sampleProfile),
                 dispatcher = testDispatcher
