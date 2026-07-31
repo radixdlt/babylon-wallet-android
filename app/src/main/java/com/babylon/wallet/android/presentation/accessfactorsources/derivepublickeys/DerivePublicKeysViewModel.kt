@@ -7,7 +7,9 @@ import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDevi
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessedFactorSource
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.AccessOutcome
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcePurpose
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -18,10 +20,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.DerivationPurpose
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.toUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
@@ -50,9 +50,9 @@ class DerivePublicKeysViewModel @Inject constructor(
         viewModelScope = viewModelScope,
         id = proxyInput.request.factorSourceId.asGeneral(),
         getProfileUseCase = getProfileUseCase,
+        accessDeviceFactorSource = accessDeviceFactorSource,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
-        defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,
         onFailCallback = this::onDismissCallback
@@ -81,6 +81,8 @@ class DerivePublicKeysViewModel @Inject constructor(
 
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) = accessDelegate.onSeedPhraseWordChanged(wordIndex, word)
 
+    fun onPassphraseChanged(passphrase: String) = accessDelegate.onPassphraseChanged(passphrase)
+
     fun onPasswordTyped(password: String) = accessDelegate.onPasswordTyped(password)
 
     fun onArculusPinChange(pin: String) = accessDelegate.onArculusPinChange(pin)
@@ -95,31 +97,33 @@ class DerivePublicKeysViewModel @Inject constructor(
 
     fun onInputConfirmed() = accessDelegate.onInputConfirmed()
 
-    private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = withContext(defaultDispatcher) {
+    private suspend fun onAccess(factorSource: AccessedFactorSource): Result<AccessOutcome> = withContext(defaultDispatcher) {
         when (factorSource) {
-            is FactorSource.Device -> accessDeviceFactorSource.derivePublicKeys(
-                factorSource = factorSource,
+            is AccessedFactorSource.Device -> accessDeviceFactorSource.derivePublicKeys(
+                factorSource = factorSource.factorSource,
+                input = proxyInput.request,
+                mnemonicWithPassphrase = factorSource.mnemonicWithPassphrase
+            )
+            is AccessedFactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.derivePublicKeys(
+                factorSource = factorSource.factorSource,
                 input = proxyInput.request
             )
-            is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.derivePublicKeys(
-                factorSource = factorSource,
+            is AccessedFactorSource.ArculusCard -> accessArculusFactorSourceUseCase.derivePublicKeys(
+                factorSource = factorSource.factorSource,
                 input = proxyInput.request
             )
-            is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.derivePublicKeys(
-                factorSource = factorSource,
+            is AccessedFactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.derivePublicKeys(
+                factorSource = factorSource.factorSource,
                 input = proxyInput.request
             )
-            is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.derivePublicKeys(
-                factorSource = factorSource,
-                input = proxyInput.request
-            )
-            is FactorSource.Password -> accessPasswordFactorSourceUseCase.derivePublicKeys(
-                factorSource = factorSource,
+            is AccessedFactorSource.Password -> accessPasswordFactorSourceUseCase.derivePublicKeys(
+                factorSource = factorSource.factorSource,
                 input = proxyInput.request
             )
         }.mapCatching { factorInstances ->
             finishWithSuccess(factorInstances)
-        }.toUnit()
+            AccessOutcome.Completed
+        }
     }
 
     private suspend fun onDismissCallback() {
@@ -128,7 +132,9 @@ class DerivePublicKeysViewModel @Inject constructor(
         accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.DerivedPublicKeys.Rejected)
     }
 
-    private suspend fun finishWithSuccess(factorInstances: List<HierarchicalDeterministicFactorInstance>) {
+    private suspend fun finishWithSuccess(
+        factorInstances: List<HierarchicalDeterministicFactorInstance>
+    ) {
         sendEvent(Event.Completed)
         accessFactorSourcesIOHandler.setOutput(
             AccessFactorSourcesOutput.DerivedPublicKeys.Success(

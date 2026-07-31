@@ -1,18 +1,18 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.spotcheck
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessLedgerHardwareWalletFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessPasswordFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessedFactorSource
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.AccessOutcome
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceSkipOption
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.Event
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -21,7 +21,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SpotCheckResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -37,7 +36,6 @@ class SpotCheckViewModel @Inject constructor(
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
     private val accessPasswordFactorSourceUseCase: AccessPasswordFactorSourceUseCase,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     getProfileUseCase: GetProfileUseCase,
 ) : StateViewModel<SpotCheckViewModel.State>(),
     OneOffEventHandler<SpotCheckViewModel.Event> by OneOffEventHandlerImpl() {
@@ -48,9 +46,9 @@ class SpotCheckViewModel @Inject constructor(
         viewModelScope = viewModelScope,
         factorSource = proxyInput.factorSource,
         getProfileUseCase = getProfileUseCase,
+        accessDeviceFactorSource = accessDeviceFactorSource,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
-        defaultDispatcher = defaultDispatcher,
         onAccessCallback = this::onAccess,
         onDismissCallback = this::onDismissCallback,
         onFailCallback = {}
@@ -71,16 +69,22 @@ class SpotCheckViewModel @Inject constructor(
         accessState = accessDelegate.state.value,
     )
 
-    private suspend fun onAccess(factorSource: FactorSource): Result<Unit> = when (factorSource) {
-        is FactorSource.Device -> accessDeviceFactorSource.spotCheck(factorSource = factorSource)
-        is FactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.spotCheck(factorSource = factorSource)
-        is FactorSource.ArculusCard -> accessArculusFactorSourceUseCase.spotCheck(factorSource = factorSource)
-        is FactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.spotCheck(factorSource = factorSource)
-        is FactorSource.Password -> accessPasswordFactorSourceUseCase.spotCheck(factorSource = factorSource)
+    private suspend fun onAccess(factorSource: AccessedFactorSource): Result<AccessOutcome> = when (factorSource) {
+        is AccessedFactorSource.Device -> accessDeviceFactorSource.spotCheck(
+            factorSource = factorSource.factorSource,
+            mnemonicWithPassphrase = factorSource.mnemonicWithPassphrase
+        )
+        is AccessedFactorSource.Ledger -> accessLedgerHardwareWalletFactorSource.spotCheck(factorSource.factorSource)
+        is AccessedFactorSource.ArculusCard -> accessArculusFactorSourceUseCase.spotCheck(factorSource.factorSource)
+        is AccessedFactorSource.OffDeviceMnemonic -> accessOffDeviceMnemonicFactorSource.spotCheck(factorSource.factorSource)
+        is AccessedFactorSource.Password -> accessPasswordFactorSourceUseCase.spotCheck(factorSource.factorSource)
     }.map { isValidated ->
         if (isValidated) {
             sendEvent(event = Event.Completed)
             accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SpotCheckOutput.Completed(response = SpotCheckResponse.VALID))
+            AccessOutcome.Completed
+        } else {
+            AccessOutcome.Retryable
         }
     }
 
@@ -93,6 +97,8 @@ class SpotCheckViewModel @Inject constructor(
     fun onDismiss() = accessDelegate.onDismiss()
 
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) = accessDelegate.onSeedPhraseWordChanged(wordIndex, word)
+
+    fun onPassphraseChanged(passphrase: String) = accessDelegate.onPassphraseChanged(passphrase)
 
     fun onPasswordTyped(password: String) = accessDelegate.onPasswordTyped(password)
 

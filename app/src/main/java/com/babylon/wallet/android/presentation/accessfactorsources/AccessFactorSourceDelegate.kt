@@ -3,8 +3,10 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessArculusFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.accessfactorsources.AccessOffDeviceMnemonicFactorSourceUseCase.SeedPhraseValidity
+import com.babylon.wallet.android.domain.usecases.accessfactorsources.DeviceMnemonicLoadError
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceDelegate.State.FactorSourcesToAccess
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -16,34 +18,36 @@ import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.SpotCheckInput
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.isManualCancellation
+import com.radixdlt.sargon.extensions.spotCheck
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
 
 @Suppress("LongParameterList", "TooManyFunctions")
 class AccessFactorSourceDelegate private constructor(
     private val viewModelScope: CoroutineScope,
     private val input: DelegateInput,
     private val getProfileUseCase: GetProfileUseCase,
+    private val accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
     private val accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
     private val accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
-    private val defaultDispatcher: CoroutineDispatcher,
-    private val onAccessCallback: suspend (FactorSource) -> Result<Unit>,
+    private val onAccessCallback: suspend (AccessedFactorSource) -> Result<AccessOutcome>,
     private val onDismissCallback: suspend () -> Unit,
     private val onFailCallback: suspend () -> Unit,
 ) {
@@ -52,19 +56,19 @@ class AccessFactorSourceDelegate private constructor(
         viewModelScope: CoroutineScope,
         id: FactorSourceId,
         getProfileUseCase: GetProfileUseCase,
+        accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
         accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
         accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
-        defaultDispatcher: CoroutineDispatcher,
-        onAccessCallback: suspend (FactorSource) -> Result<Unit>,
+        onAccessCallback: suspend (AccessedFactorSource) -> Result<AccessOutcome>,
         onDismissCallback: suspend () -> Unit,
         onFailCallback: suspend () -> Unit,
     ) : this(
         viewModelScope = viewModelScope,
         input = DelegateInput.WithFactorSourceId(factorSourceId = id),
         getProfileUseCase = getProfileUseCase,
+        accessDeviceFactorSource = accessDeviceFactorSource,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
-        defaultDispatcher = defaultDispatcher,
         onAccessCallback = onAccessCallback,
         onDismissCallback = onDismissCallback,
         onFailCallback = onFailCallback,
@@ -74,19 +78,19 @@ class AccessFactorSourceDelegate private constructor(
         viewModelScope: CoroutineScope,
         factorSource: FactorSource,
         getProfileUseCase: GetProfileUseCase,
+        accessDeviceFactorSource: AccessDeviceFactorSourceUseCase,
         accessOffDeviceMnemonicFactorSource: AccessOffDeviceMnemonicFactorSourceUseCase,
         accessArculusFactorSourceUseCase: AccessArculusFactorSourceUseCase,
-        defaultDispatcher: CoroutineDispatcher,
-        onAccessCallback: suspend (FactorSource) -> Result<Unit>,
+        onAccessCallback: suspend (AccessedFactorSource) -> Result<AccessOutcome>,
         onDismissCallback: suspend () -> Unit,
         onFailCallback: suspend () -> Unit,
     ) : this(
         viewModelScope = viewModelScope,
         input = DelegateInput.WithFactorSource(factorSource = factorSource),
         getProfileUseCase = getProfileUseCase,
+        accessDeviceFactorSource = accessDeviceFactorSource,
         accessOffDeviceMnemonicFactorSource = accessOffDeviceMnemonicFactorSource,
         accessArculusFactorSourceUseCase = accessArculusFactorSourceUseCase,
-        defaultDispatcher = defaultDispatcher,
         onAccessCallback = onAccessCallback,
         onDismissCallback = onDismissCallback,
         onFailCallback = onFailCallback,
@@ -104,6 +108,7 @@ class AccessFactorSourceDelegate private constructor(
         get() = _state.asStateFlow()
 
     private var accessJob: Job? = null
+    private var manualInputJob: Job? = null
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     init {
@@ -114,13 +119,19 @@ class AccessFactorSourceDelegate private constructor(
             }
         }
 
-        viewModelScope.launch {
-            seedPhraseInputDelegate.state.collect { delegateState ->
+        seedPhraseInputDelegate.state
+            .onEach { delegateState ->
                 _state.update {
-                    it.copy(seedPhraseInputState = it.seedPhraseInputState.copy(delegateState = delegateState))
+                    it.copy(
+                        seedPhraseInputState = it.seedPhraseInputState.copy(
+                            delegateState = delegateState,
+                            isConfirmButtonEnabled = delegateState.isInputComplete(),
+                            seedPhraseValidity = null
+                        )
+                    )
                 }
             }
-        }
+            .launchIn(viewModelScope)
     }
 
     fun onDismiss() = viewModelScope.launch {
@@ -129,6 +140,10 @@ class AccessFactorSourceDelegate private constructor(
 
     fun onSeedPhraseWordChanged(wordIndex: Int, word: String) {
         seedPhraseInputDelegate.onWordChanged(wordIndex, word)
+    }
+
+    fun onPassphraseChanged(passphrase: String) {
+        seedPhraseInputDelegate.onPassphraseChanged(passphrase)
     }
 
     fun onPasswordTyped(password: String) {
@@ -148,6 +163,7 @@ class AccessFactorSourceDelegate private constructor(
     }
 
     fun onRetry() {
+        if (_state.value.accessMode != State.AccessMode.Automatic) return
         val factorSource = _state.value.factorSource ?: return
 
         accessJob?.cancel()
@@ -160,39 +176,58 @@ class AccessFactorSourceDelegate private constructor(
         _state.update { it.copy(errorMessage = null) }
     }
 
-    fun onInputConfirmed() = viewModelScope.launch {
-        val factorSource = _state.value.factorSource ?: return@launch
-        when (factorSource) {
-            is FactorSource.OffDeviceMnemonic -> {
-                val validity = accessOffDeviceMnemonicFactorSource.onSeedPhraseConfirmed(
-                    factorSourceId = factorSource.value.id,
-                    words = _state.value.seedPhraseInputState.inputWords
+    fun onInputConfirmed() {
+        if (manualInputJob?.isActive == true) return
+        val seedPhraseInputState = seedPhraseInputDelegate.state.value
+        manualInputJob = viewModelScope.launch {
+            val factorSource = _state.value.factorSource ?: return@launch
+            when (factorSource) {
+                is FactorSource.OffDeviceMnemonic -> {
+                    val validity = accessOffDeviceMnemonicFactorSource.onSeedPhraseConfirmed(
+                        factorSourceId = factorSource.value.id,
+                        words = seedPhraseInputState.seedPhraseWords
+                    )
+
+                    _state.update {
+                        it.copy(
+                            seedPhraseInputState = it.seedPhraseInputState.copy(
+                                seedPhraseValidity = validity,
+                                isConfirmButtonEnabled = validity == SeedPhraseValidity.Valid
+                            )
+                        )
+                    }
+                }
+
+                is FactorSource.Device -> confirmDeviceMnemonic(
+                    factorSource = factorSource,
+                    seedPhraseInputState = seedPhraseInputState
                 )
 
-                _state.update {
-                    it.copy(
-                        seedPhraseInputState = it.seedPhraseInputState.copy(
-                            seedPhraseValidity = validity,
-                            isConfirmButtonEnabled = validity == SeedPhraseValidity.Valid
-                        )
-                    )
+                is FactorSource.ArculusCard -> {
+                    accessArculusFactorSourceUseCase.onPinForSigningConfirmed(_state.value.arculusPinState.input)
+                    access(factorSource)
                 }
-            }
 
-            is FactorSource.ArculusCard -> {
-                accessArculusFactorSourceUseCase.onPinForSigningConfirmed(_state.value.arculusPinState.input)
-                access(factorSource)
-            }
-
-            is FactorSource.Password -> TODO("Future implementation")
-            else -> {
-                // The rest of the factor sources require no manual input
+                is FactorSource.Password -> TODO("Future implementation")
+                else -> {
+                    // The rest of the factor sources require no manual input
+                }
             }
         }
     }
 
     fun onCancelAccess() {
         accessJob?.cancel()
+        manualInputJob?.cancel()
+        seedPhraseInputDelegate.reset()
+        _state.update {
+            it.copy(
+                isAccessInProgress = false,
+                accessMode = State.AccessMode.Completed,
+                deviceMnemonicPersistence = null,
+                seedPhraseInputState = State.SeedPhraseInputState()
+            )
+        }
     }
 
     private suspend fun resolveFactorSourcesAndAccess(id: FactorSourceId) {
@@ -216,63 +251,186 @@ class AccessFactorSourceDelegate private constructor(
             )
         }
 
-        if (factorSource is FactorSource.OffDeviceMnemonic) {
-            setupSeedPhraseInput(factorSource)
+        when (factorSource) {
+            is FactorSource.Device -> {
+                loadDeviceMnemonic(factorSource)
+                return
+            }
+
+            is FactorSource.OffDeviceMnemonic -> setupSeedPhraseInput(factorSource)
+            else -> Unit
         }
 
-        onAccessCallback(factorSource)
-            .onSuccess {
-                _state.update { state -> state.copy(isAccessInProgress = false) }
-            }.onFailure { error ->
-                val errorMessageToShow =
-                    if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
-                        null
-                    } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
-                        null
-                    } else if (error is CommonException.HostInteractionAborted) {
-                        null
-                    } else {
-                        UiMessage.ErrorMessage(error)
+        val result = onAccessCallback(factorSource.asAccessed())
+        currentCoroutineContext().ensureActive()
+        handleAccessResult(result)
+    }
+
+    private suspend fun skipSigning() {
+        onCancelAccess()
+        onDismissCallback()
+    }
+
+    private suspend fun loadDeviceMnemonic(factorSource: FactorSource.Device) {
+        _state.update { it.copy(accessMode = State.AccessMode.LoadingDeviceMnemonic) }
+        val result = accessDeviceFactorSource.loadMnemonic(factorSource)
+        currentCoroutineContext().ensureActive()
+        result
+            .onSuccess { mnemonicWithPassphrase ->
+                if (!factorSource.matches(mnemonicWithPassphrase)) {
+                    setupDeviceMnemonicInput(
+                        factorSource = factorSource,
+                        persistence = State.DeviceMnemonicPersistence.Ephemeral
+                    )
+                    return@onSuccess
+                }
+                _state.update { it.copy(accessMode = State.AccessMode.Completed) }
+                val accessResult = onAccessCallback(
+                    AccessedFactorSource.Device(
+                        factorSource = factorSource,
+                        mnemonicWithPassphrase = mnemonicWithPassphrase
+                    )
+                )
+                currentCoroutineContext().ensureActive()
+                handleAccessResult(accessResult)
+            }
+            .onFailure { error ->
+                when (error) {
+                    is DeviceMnemonicLoadError.CancelledByUser -> {
+                        _state.update {
+                            it.copy(
+                                isAccessInProgress = false,
+                                accessMode = State.AccessMode.Automatic
+                            )
+                        }
                     }
 
-                _state.update {
-                    it.copy(
-                        isAccessInProgress = false,
-                        errorMessage = errorMessageToShow,
-                        arculusPinState = it.arculusPinState.copy(
-                            input = ""
-                        )
+                    DeviceMnemonicLoadError.Missing -> setupDeviceMnemonicInput(
+                        factorSource = factorSource,
+                        persistence = State.DeviceMnemonicPersistence.SaveAfterValidation
                     )
+
+                    is DeviceMnemonicLoadError.ReadFailure -> setupDeviceMnemonicInput(
+                        factorSource = factorSource,
+                        persistence = State.DeviceMnemonicPersistence.Ephemeral
+                    )
+
+                    else -> handleAccessFailure(error)
                 }
             }
     }
 
-    private suspend fun skipSigning() {
-        accessJob?.cancel()
-        onDismissCallback()
+    private fun setupDeviceMnemonicInput(
+        factorSource: FactorSource.Device,
+        persistence: State.DeviceMnemonicPersistence
+    ) {
+        seedPhraseInputDelegate.setSeedPhraseSize(factorSource.value.hint.mnemonicWordCount)
+        _state.update {
+            it.copy(
+                isAccessInProgress = false,
+                accessMode = State.AccessMode.ManualDeviceMnemonic,
+                deviceMnemonicPersistence = persistence
+            )
+        }
+    }
+
+    private suspend fun confirmDeviceMnemonic(
+        factorSource: FactorSource.Device,
+        seedPhraseInputState: SeedPhraseInputDelegate.State
+    ) {
+        if (_state.value.accessMode != State.AccessMode.ManualDeviceMnemonic) return
+        val mnemonicWithPassphrase = runCatching {
+            seedPhraseInputState.toMnemonicWithPassphrase()
+        }.getOrElse {
+            updateSeedPhraseValidity(SeedPhraseValidity.InvalidMnemonic)
+            return
+        }
+
+        if (!factorSource.matches(mnemonicWithPassphrase)) {
+            updateSeedPhraseValidity(SeedPhraseValidity.WrongMnemonic)
+            return
+        }
+
+        _state.update {
+            it.copy(
+                isAccessInProgress = true,
+                accessMode = State.AccessMode.Completed
+            )
+        }
+        if (_state.value.deviceMnemonicPersistence == State.DeviceMnemonicPersistence.SaveAfterValidation) {
+            val saveResult = accessDeviceFactorSource.saveMnemonic(factorSource, mnemonicWithPassphrase)
+            currentCoroutineContext().ensureActive()
+            saveResult.onFailure { Timber.w(it, "Failed to save a recovered Device mnemonic") }
+        }
+        seedPhraseInputDelegate.reset()
+        val accessResult = onAccessCallback(
+            AccessedFactorSource.Device(
+                factorSource = factorSource,
+                mnemonicWithPassphrase = mnemonicWithPassphrase
+            )
+        )
+        currentCoroutineContext().ensureActive()
+        handleAccessResult(accessResult)
+    }
+
+    private fun updateSeedPhraseValidity(validity: SeedPhraseValidity) {
+        _state.update {
+            it.copy(
+                seedPhraseInputState = it.seedPhraseInputState.copy(
+                    seedPhraseValidity = validity,
+                    isConfirmButtonEnabled = false
+                )
+            )
+        }
+    }
+
+    private fun handleAccessResult(result: Result<AccessOutcome>) {
+        result.onSuccess { outcome ->
+            _state.update { state ->
+                state.copy(
+                    isAccessInProgress = false,
+                    accessMode = when (outcome) {
+                        AccessOutcome.Completed -> if (state.factorSource is FactorSource.Device) {
+                            State.AccessMode.Completed
+                        } else {
+                            state.accessMode
+                        }
+                        AccessOutcome.Retryable -> State.AccessMode.Automatic
+                    }
+                )
+            }
+        }.onFailure(::handleAccessFailure)
+    }
+
+    private fun handleAccessFailure(error: Throwable) {
+        val errorMessageToShow =
+            if (error is SecureStorageAccessException && error.errorKind.isManualCancellation()) {
+                null
+            } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
+                null
+            } else if (error is CommonException.HostInteractionAborted) {
+                null
+            } else {
+                UiMessage.ErrorMessage(error)
+            }
+
+        _state.update {
+            it.copy(
+                isAccessInProgress = false,
+                accessMode = if (it.accessMode == State.AccessMode.Completed) {
+                    State.AccessMode.Automatic
+                } else {
+                    it.accessMode
+                },
+                errorMessage = errorMessageToShow,
+                arculusPinState = it.arculusPinState.copy(input = "")
+            )
+        }
     }
 
     private fun setupSeedPhraseInput(factorSource: FactorSource.OffDeviceMnemonic) {
         // First set the input to the correct word count
         seedPhraseInputDelegate.setSeedPhraseSize(factorSource.value.hint.wordCount)
-
-        // Then start observing the changes to the input, to enable/disable the confirm button
-        _state
-            .filter { it.factorSource is FactorSource.OffDeviceMnemonic }
-            .distinctUntilChanged { old, new -> old.seedPhraseInputState.delegateState == new.seedPhraseInputState.delegateState }
-            .onEach { newState ->
-                val isComplete = newState.seedPhraseInputState.delegateState.isInputComplete()
-                _state.update {
-                    it.copy(
-                        seedPhraseInputState = it.seedPhraseInputState.copy(
-                            isConfirmButtonEnabled = isComplete,
-                            seedPhraseValidity = null
-                        )
-                    )
-                }
-            }
-            .flowOn(defaultDispatcher)
-            .launchIn(viewModelScope)
     }
 
     private sealed interface DelegateInput {
@@ -281,9 +439,22 @@ class AccessFactorSourceDelegate private constructor(
         data class WithFactorSourceId(val factorSourceId: FactorSourceId) : DelegateInput
     }
 
+    enum class AccessOutcome {
+        Completed,
+        Retryable
+    }
+
+    private fun FactorSource.Device.matches(
+        mnemonicWithPassphrase: MnemonicWithPassphrase
+    ): Boolean = spotCheck(
+        input = SpotCheckInput.Software(mnemonicWithPassphrase = mnemonicWithPassphrase)
+    )
+
     data class State(
         val factorSourceToAccess: FactorSourcesToAccess,
         private val isAccessInProgress: Boolean = false,
+        val accessMode: AccessMode = AccessMode.Automatic,
+        val deviceMnemonicPersistence: DeviceMnemonicPersistence? = null,
         val errorMessage: UiMessage.ErrorMessage? = null,
         val seedPhraseInputState: SeedPhraseInputState = SeedPhraseInputState(),
         val passwordState: PasswordState = PasswordState(),
@@ -297,7 +468,10 @@ class AccessFactorSourceDelegate private constructor(
         }
 
         val isRetryEnabled: Boolean
-            get() = !isAccessInProgress || allowRetryWhenAccessInProgress
+            get() = accessMode == AccessMode.Automatic && (!isAccessInProgress || allowRetryWhenAccessInProgress)
+
+        val isManualDeviceMnemonic: Boolean
+            get() = accessMode == AccessMode.ManualDeviceMnemonic
 
         val factorSource: FactorSource? = when (factorSourceToAccess) {
             is FactorSourcesToAccess.Mono -> factorSourceToAccess.factorSource
@@ -346,6 +520,18 @@ class AccessFactorSourceDelegate private constructor(
         ) {
 
             val isConfirmButtonEnabled: Boolean = input.length == ARCULUS_PIN_LENGTH
+        }
+
+        enum class AccessMode {
+            Automatic,
+            LoadingDeviceMnemonic,
+            ManualDeviceMnemonic,
+            Completed
+        }
+
+        enum class DeviceMnemonicPersistence {
+            Ephemeral,
+            SaveAfterValidation
         }
     }
 }

@@ -28,6 +28,8 @@ import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import junit.framework.TestCase.fail
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -49,6 +51,85 @@ class AccessDeviceFactorSourceUseCaseTest {
         mnemonicRepository = mnemonicRepository,
         updateFactorSourceLastUsedUseCase = updateFactorSourceLastUsedUseCase
     )
+
+    @Test
+    fun loadMnemonicPreservesCancellationFromExistenceCheck() = runTest {
+        coEvery {
+            mnemonicRepository.mnemonicExist(key = device.id.asGeneral())
+        } throws CancellationException("Cancelled")
+
+        assertCancellationPreserved {
+            sut.loadMnemonic(factorSource = device.asGeneral())
+        }
+    }
+
+    @Test
+    fun loadMnemonicPreservesCancellationReturnedByRead() = runTest {
+        coEvery {
+            mnemonicRepository.mnemonicExist(key = device.id.asGeneral())
+        } returns true
+        coEvery {
+            mnemonicRepository.readMnemonic(key = device.id.asGeneral())
+        } returns Result.failure(CancellationException("Cancelled"))
+
+        assertCancellationPreserved {
+            sut.loadMnemonic(factorSource = device.asGeneral())
+        }
+    }
+
+    @Test
+    fun saveMnemonicPreservesCancellationReturnedByRepository() = runTest {
+        coEvery {
+            mnemonicRepository.saveMnemonic(
+                key = device.id.asGeneral(),
+                mnemonicWithPassphrase = mnemonicWithPassphrase
+            )
+        } returns Result.failure(CancellationException("Cancelled"))
+
+        assertCancellationPreserved {
+            sut.saveMnemonic(
+                factorSource = device.asGeneral(),
+                mnemonicWithPassphrase = mnemonicWithPassphrase
+            )
+        }
+    }
+
+    @Test
+    fun accessMethodsPreserveCancellationFromLastUsedUpdate() = runTest {
+        mockMnemonicAccess(
+            id = device.id,
+            mnemonicInRepository = mnemonicWithPassphrase
+        )
+        coEvery {
+            updateFactorSourceLastUsedUseCase(factorSourceId = device.id.asGeneral())
+        } throws CancellationException("Cancelled")
+
+        assertCancellationPreserved {
+            sut.derivePublicKeys(
+                factorSource = device.asGeneral(),
+                input = KeyDerivationRequestPerFactorSource(
+                    factorSourceId = device.id,
+                    derivationPaths = emptyList()
+                )
+            )
+        }
+        assertCancellationPreserved {
+            sut.signMono(
+                factorSource = device.asGeneral(),
+                input = AccessFactorSourcesInput.SignTransaction(
+                    factorSourceId = device.id,
+                    input = PerFactorSourceInputOfTransactionIntent(
+                        factorSourceId = device.id,
+                        perTransaction = emptyList(),
+                        invalidTransactionsIfNeglected = emptyList()
+                    )
+                )
+            )
+        }
+        assertCancellationPreserved {
+            sut.spotCheck(factorSource = device.asGeneral())
+        }
+    }
 
     @Test
     fun derivePublicKeysFailsDueToNoBiometrics() = runTest {
@@ -377,6 +458,15 @@ class AccessDeviceFactorSourceUseCaseTest {
                     errorMessage = "User cancelled"
                 )
             )
+        }
+    }
+
+    private suspend fun assertCancellationPreserved(block: suspend () -> Unit) {
+        try {
+            block()
+            fail("Expected cancellation to be preserved")
+        } catch (_: CancellationException) {
+            // Expected
         }
     }
 }

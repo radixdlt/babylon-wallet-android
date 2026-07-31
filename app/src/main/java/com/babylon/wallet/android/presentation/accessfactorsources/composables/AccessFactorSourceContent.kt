@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -82,7 +84,14 @@ fun AccessDeviceFactorSourceContent(
     purpose: AccessFactorSourcePurpose,
     factorSource: DeviceFactorSource?,
     isRetryEnabled: Boolean,
+    isManualMnemonicInput: Boolean = false,
+    seedPhraseInputState: AccessFactorSourceDelegate.State.SeedPhraseInputState =
+        AccessFactorSourceDelegate.State.SeedPhraseInputState(),
     skipOption: AccessFactorSourceSkipOption,
+    onWordChanged: (Int, String) -> Unit = { _, _ -> },
+    onPassphraseChanged: (String) -> Unit = {},
+    onFocusedWordChanged: (Int) -> Unit = {},
+    onConfirmed: () -> Unit = {},
     onRetryClick: () -> Unit,
     onSkipClick: () -> Unit
 ) {
@@ -92,12 +101,35 @@ fun AccessDeviceFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.DEVICE,
         factorActions = {
-            AccessContentRetryButton(
-                modifier = Modifier
-                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                isEnabled = isRetryEnabled,
-                onClick = onRetryClick
-            )
+            if (isManualMnemonicInput) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                        .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(R.string.factorSourceActions_device_mnemonicUnavailableMessage),
+                    color = RadixTheme.colors.text,
+                    style = RadixTheme.typography.body1Regular,
+                    textAlign = TextAlign.Center
+                )
+
+                AccessMnemonicInput(
+                    seedPhraseInputState = seedPhraseInputState,
+                    bip39Passphrase = seedPhraseInputState.delegateState.bip39Passphrase,
+                    showAdvancedMode = true,
+                    onWordChanged = onWordChanged,
+                    onPassphraseChanged = onPassphraseChanged,
+                    onFocusedWordChanged = onFocusedWordChanged,
+                    onConfirmed = onConfirmed
+                )
+            } else {
+                AccessContentRetryButton(
+                    modifier = Modifier
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    isEnabled = isRetryEnabled,
+                    onClick = onRetryClick
+                )
+            }
 
             SkipOption(
                 skipOption = skipOption,
@@ -325,48 +357,14 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
         factorSource = factorSource?.asGeneral(),
         factorSourceKind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
         factorActions = {
-            SecureScreen()
-
-            SeedPhraseInputForm(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                seedPhraseWords = seedPhraseInputState.inputWords,
+            AccessMnemonicInput(
+                seedPhraseInputState = seedPhraseInputState,
                 bip39Passphrase = "",
+                showAdvancedMode = false,
                 onWordChanged = onWordChanged,
                 onPassphraseChanged = {},
-                onFocusedWordIndexChanged = onFocusedWordChanged,
-                showAdvancedMode = false,
-                initiallyFocusedIndex = 0
-            )
-
-            AnimatedVisibility(
-                visible = seedPhraseInputState.errorInSeedPhrase
-            ) {
-                WarningText(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                    text = AnnotatedString(
-                        text = when (seedPhraseInputState.seedPhraseValidity) {
-                            SeedPhraseValidity.InvalidMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_invalid)
-                            SeedPhraseValidity.WrongMnemonic -> stringResource(R.string.factorSourceActions_offDeviceMnemonic_wrong)
-                            else -> ""
-                        }
-                    ),
-                    contentColor = RadixTheme.colors.error,
-                    textStyle = RadixTheme.typography.body2HighImportance
-                )
-            }
-
-            RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.common_confirm),
-                enabled = seedPhraseInputState.isConfirmButtonEnabled,
-                onClick = onConfirmed
+                onFocusedWordChanged = onFocusedWordChanged,
+                onConfirmed = onConfirmed
             )
 
             SkipOption(
@@ -374,6 +372,63 @@ fun AccessOffDeviceMnemonicFactorSourceContent(
                 onClick = onSkipClick
             )
         }
+    )
+}
+
+@Composable
+private fun AccessMnemonicInput(
+    seedPhraseInputState: AccessFactorSourceDelegate.State.SeedPhraseInputState,
+    bip39Passphrase: String,
+    showAdvancedMode: Boolean,
+    onWordChanged: (Int, String) -> Unit,
+    onPassphraseChanged: (String) -> Unit,
+    onFocusedWordChanged: (Int) -> Unit,
+    onConfirmed: () -> Unit
+) {
+    SecureScreen()
+
+    SeedPhraseInputForm(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+        seedPhraseWords = seedPhraseInputState.inputWords,
+        bip39Passphrase = bip39Passphrase,
+        onWordChanged = onWordChanged,
+        onPassphraseChanged = onPassphraseChanged,
+        onFocusedWordIndexChanged = onFocusedWordChanged,
+        showAdvancedMode = showAdvancedMode,
+        initiallyFocusedIndex = 0
+    )
+
+    AnimatedVisibility(visible = seedPhraseInputState.errorInSeedPhrase) {
+        WarningText(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            text = AnnotatedString(
+                text = when (seedPhraseInputState.seedPhraseValidity) {
+                    SeedPhraseValidity.InvalidMnemonic -> stringResource(
+                        R.string.factorSourceActions_offDeviceMnemonic_invalid
+                    )
+                    SeedPhraseValidity.WrongMnemonic -> stringResource(
+                        R.string.factorSourceActions_offDeviceMnemonic_wrong
+                    )
+                    else -> ""
+                }
+            ),
+            contentColor = RadixTheme.colors.error,
+            textStyle = RadixTheme.typography.body2HighImportance
+        )
+    }
+
+    RadixPrimaryButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(bottom = RadixTheme.dimensions.paddingDefault),
+        text = stringResource(R.string.common_confirm),
+        enabled = seedPhraseInputState.isConfirmButtonEnabled,
+        onClick = onConfirmed
     )
 }
 

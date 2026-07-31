@@ -23,9 +23,13 @@ import com.radixdlt.sargon.extensions.getSubintentSignatures
 import com.radixdlt.sargon.extensions.getTransactionSignatures
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.mapError
 import com.radixdlt.sargon.extensions.spotCheck
 import com.radixdlt.sargon.os.driver.BiometricsFailure
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.UpdateFactorSourceLastUsedUseCase
@@ -39,37 +43,65 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
     override suspend fun derivePublicKeys(
         factorSource: FactorSource.Device,
         input: KeyDerivationRequestPerFactorSource
-    ): Result<List<HierarchicalDeterministicFactorInstance>> = readMnemonic(factorSourceId = factorSource.value.id)
+    ): Result<List<HierarchicalDeterministicFactorInstance>> = loadMnemonic(factorSource)
+        .mapError { it.toAccessError(factorSource.value.id) }
         .mapCatching { mnemonicWithPassphrase ->
-            input.derivationPaths.map { derivationPath ->
-                HierarchicalDeterministicFactorInstance(
-                    factorSourceId = factorSource.value.id,
-                    publicKey = mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
-                )
-            }
-        }.onSuccess {
-            updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+            derivePublicKeys(factorSource, input, mnemonicWithPassphrase).getOrThrow()
         }
+        .rethrowCancellation()
+
+    suspend fun derivePublicKeys(
+        factorSource: FactorSource.Device,
+        input: KeyDerivationRequestPerFactorSource,
+        mnemonicWithPassphrase: MnemonicWithPassphrase
+    ): Result<List<HierarchicalDeterministicFactorInstance>> = runCatching {
+        input.derivationPaths.map { derivationPath ->
+            HierarchicalDeterministicFactorInstance(
+                factorSourceId = factorSource.value.id,
+                publicKey = mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
+            )
+        }
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+    }
 
     override suspend fun signMono(
         factorSource: FactorSource.Device,
         input: AccessFactorSourcesInput.Sign
     ): Result<AccessFactorSourcesOutput.Sign> {
-        return readMnemonic(factorSourceId = factorSource.value.id)
+        return loadMnemonic(factorSource)
+            .mapError { it.toAccessError(factorSource.value.id) }
             .mapCatching { mnemonic ->
-                when (input) {
-                    is AccessFactorSourcesInput.SignTransaction -> mnemonic.signTransaction(input.input)
-                    is AccessFactorSourcesInput.SignSubintent -> mnemonic.signSubintent(input.input)
-                    is AccessFactorSourcesInput.SignAuth -> mnemonic.signAuth(input.input)
-                }
-            }.onSuccess {
-                updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+                signMono(factorSource, input, mnemonic).getOrThrow()
             }
+            .rethrowCancellation()
     }
 
-    override suspend fun spotCheck(factorSource: FactorSource.Device): Result<Boolean> = readMnemonic(
-        factorSourceId = factorSource.value.id
-    ).mapCatching { mnemonicWithPassphrase ->
+    suspend fun signMono(
+        factorSource: FactorSource.Device,
+        input: AccessFactorSourcesInput.Sign,
+        mnemonicWithPassphrase: MnemonicWithPassphrase
+    ): Result<AccessFactorSourcesOutput.Sign> = runCatching {
+        when (input) {
+            is AccessFactorSourcesInput.SignTransaction -> mnemonicWithPassphrase.signTransaction(input.input)
+            is AccessFactorSourcesInput.SignSubintent -> mnemonicWithPassphrase.signSubintent(input.input)
+            is AccessFactorSourcesInput.SignAuth -> mnemonicWithPassphrase.signAuth(input.input)
+        }
+    }.onSuccess {
+        updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
+    }
+
+    override suspend fun spotCheck(factorSource: FactorSource.Device): Result<Boolean> = loadMnemonic(factorSource)
+        .mapError { it.toAccessError(factorSource.value.id) }
+        .mapCatching { mnemonicWithPassphrase ->
+            spotCheck(factorSource, mnemonicWithPassphrase).getOrThrow()
+        }
+        .rethrowCancellation()
+
+    suspend fun spotCheck(
+        factorSource: FactorSource.Device,
+        mnemonicWithPassphrase: MnemonicWithPassphrase
+    ): Result<Boolean> = runCatching {
         factorSource.spotCheck(
             input = SpotCheckInput.Software(mnemonicWithPassphrase = mnemonicWithPassphrase)
         )
@@ -77,27 +109,87 @@ class AccessDeviceFactorSourceUseCase @Inject constructor(
         updateFactorSourceLastUsedUseCase(factorSourceId = factorSource.id)
     }
 
-    private suspend fun readMnemonic(factorSourceId: FactorSourceIdFromHash): Result<MnemonicWithPassphrase> {
-        if (!mnemonicRepository.mnemonicExist(key = factorSourceId.asGeneral())) {
-            return Result.failure(CommonException.UnableToLoadMnemonicFromSecureStorage(badValue = factorSourceId.body.hex))
+    suspend fun loadMnemonic(factorSource: FactorSource.Device): Result<MnemonicWithPassphrase> {
+        val factorSourceId = factorSource.value.id
+        val mnemonicExists = try {
+            mnemonicRepository.mnemonicExist(key = factorSourceId.asGeneral())
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            return Result.failure(DeviceMnemonicLoadError.ReadFailure(error))
+        }
+        currentCoroutineContext().ensureActive()
+        if (!mnemonicExists) {
+            return Result.failure(DeviceMnemonicLoadError.Missing)
         }
 
-        return mnemonicRepository.readMnemonic(key = factorSourceId.asGeneral())
+        val result = mnemonicRepository.readMnemonic(key = factorSourceId.asGeneral())
+            .rethrowCancellation()
+        currentCoroutineContext().ensureActive()
+        return result
             .mapError { error ->
                 when (error) {
-                    is BiometricsFailure -> error.toCommonException(
-                        key = SecureStorageKey.DeviceFactorSourceMnemonic(factorSourceId)
+                    is BiometricsFailure -> {
+                        val accessError = error.toCommonException(
+                            key = SecureStorageKey.DeviceFactorSourceMnemonic(factorSourceId)
+                        )
+                        if (
+                            accessError is CommonException.SecureStorageAccessException &&
+                            accessError.errorKind.isManualCancellation()
+                        ) {
+                            DeviceMnemonicLoadError.CancelledByUser(accessError)
+                        } else {
+                            DeviceMnemonicLoadError.ReadFailure(accessError)
+                        }
+                    }
+
+                    ProfileException.NoMnemonic -> DeviceMnemonicLoadError.Missing
+
+                    ProfileException.SecureStorageAccess -> DeviceMnemonicLoadError.ReadFailure(
+                        CommonException.SecureStorageReadException(error.toString())
                     )
 
-                    ProfileException.NoMnemonic -> CommonException.UnableToLoadMnemonicFromSecureStorage(
-                        badValue = factorSourceId.body.hex
+                    else -> DeviceMnemonicLoadError.ReadFailure(
+                        CommonException.Unknown("Device factor source access error: $error")
                     )
-
-                    ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException(error.toString())
-                    else -> CommonException.Unknown("Device factor source access error: $error")
                 }
             }
     }
+
+    suspend fun saveMnemonic(
+        factorSource: FactorSource.Device,
+        mnemonicWithPassphrase: MnemonicWithPassphrase
+    ): Result<Unit> {
+        val result = mnemonicRepository.saveMnemonic(
+            key = factorSource.value.id.asGeneral(),
+            mnemonicWithPassphrase = mnemonicWithPassphrase
+        ).rethrowCancellation()
+        currentCoroutineContext().ensureActive()
+        return result
+    }
+}
+
+sealed class DeviceMnemonicLoadError(cause: Throwable? = null) : Exception(cause) {
+    data object Missing : DeviceMnemonicLoadError()
+
+    class CancelledByUser(cause: Throwable) : DeviceMnemonicLoadError(cause)
+
+    class ReadFailure(cause: Throwable) : DeviceMnemonicLoadError(cause)
+}
+
+private fun Throwable.toAccessError(factorSourceId: FactorSourceIdFromHash): Throwable = when (this) {
+    DeviceMnemonicLoadError.Missing -> CommonException.UnableToLoadMnemonicFromSecureStorage(
+        badValue = factorSourceId.body.hex
+    )
+
+    is DeviceMnemonicLoadError.CancelledByUser,
+    is DeviceMnemonicLoadError.ReadFailure -> cause ?: this
+
+    else -> this
+}
+
+private fun <T> Result<T>.rethrowCancellation(): Result<T> = onFailure { error ->
+    if (error is CancellationException) throw error
 }
 
 fun MnemonicWithPassphrase.signTransaction(
