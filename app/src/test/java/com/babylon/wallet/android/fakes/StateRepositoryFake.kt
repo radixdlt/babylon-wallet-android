@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.fakes
 
+import com.babylon.wallet.android.data.gateway.model.AccessRule
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.Account
@@ -107,4 +108,8 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>): Result<Unit> {
         return Result.success(Unit)
     }
+
+    override suspend fun getResourcesWithWithdrawerRules(
+        addresses: Set<ResourceAddress>
+    ): Result<Map<ResourceAddress, AccessRule>> = Result.failure(RuntimeException("Not implemented"))
 }

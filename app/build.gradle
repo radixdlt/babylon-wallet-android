@@ -143,10 +143,10 @@ android {
     flavorDimensions "version"
     productFlavors {
         full {
-            isDefault = true
             dimension "version"
         }
         light {
+            isDefault = true
             dimension "version"
         }
     }
@@ -277,7 +277,7 @@ dependencies {
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
     testImplementation libs.turbine
-
+    testImplementation 'net.java.dev.jna:jna:5.18.1'
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
     androidTestImplementation libs.espressoIntents
@@ -325,3 +325,15 @@ task buildDefaultLanguage {
     }
 }
 preBuild.dependsOn buildDefaultLanguage
+
+// When the arculus-android-csdk submodule is not available, disable full flavor tasks
+if (findProject(':arculus-android-csdk:csdknative') == null) {
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Full")) {
+                task.enabled = false
+            }
+        }
+    }
+}
+

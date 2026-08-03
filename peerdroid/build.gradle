@@ -15,7 +15,7 @@ android {
         targetSdk rootProject.ext.targetSdk
 
         consumerProguardFiles "consumer-rules.pro"
-        missingDimensionStrategy 'version', 'full'
+        missingDimensionStrategy 'version', 'light'
 
         buildConfigField "boolean", "DEBUG_MODE", "true"
     }

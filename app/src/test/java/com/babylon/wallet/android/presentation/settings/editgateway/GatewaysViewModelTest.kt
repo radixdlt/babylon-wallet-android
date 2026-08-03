@@ -30,7 +30,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GatewaysViewModelTest {

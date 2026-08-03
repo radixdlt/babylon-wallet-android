@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.usecases.ResolveRadixDomainUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWithdrawerBadgeRequirementsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -67,6 +68,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val isValidRadixDomainUseCase = mockk<IsValidRadixDomainUseCase>()
     private val getAccountAddressBookEntriesOnCurrentNetworkUseCase = mockk<GetAccountAddressBookEntriesOnCurrentNetworkUseCase>()
     private val addAddressBookEntryUseCase = mockk<AddAddressBookEntryUseCase>()
+    private val getWithdrawerBadgeRequirementsUseCase = mockk<GetWithdrawerBadgeRequirementsUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
@@ -102,7 +104,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
                 mnemonicRepository = mnemonicRepository
             ),
             savedStateHandle = savedStateHandle,
-            getAccountDepositResourceRulesUseCase = getAccountDepositResourceRulesUseCase
+            getAccountDepositResourceRulesUseCase = getAccountDepositResourceRulesUseCase,
+            getWithdrawerBadgeRequirementsUseCase = getWithdrawerBadgeRequirementsUseCase
         )
     }
 
@@ -110,6 +113,12 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     override fun setUp() = runTest {
         super.setUp()
         coEvery { getAccountDepositResourceRulesUseCase.invoke(any()) } returns emptySet()
+        coEvery { getWithdrawerBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
+            GetWithdrawerBadgeRequirementsUseCase.BadgeResult(
+                status = BadgeRequirementStatus.None,
+                badges = emptyList()
+            )
+        )
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address.string
         every { getWalletAssetsUseCase.observe(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
         coEvery { getAccountAddressBookEntriesOnCurrentNetworkUseCase.invoke() } returns emptyList()

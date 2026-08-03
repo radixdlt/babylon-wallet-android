@@ -1902,4 +1902,13 @@ Cancel to stop the recovery and keep your current security setup.</string>
   <string name="confirmAccountRecovery_description">Starts the Shield update process. Requires a confirmation transaction when wait period is over.</string>
   <string name="confirmAccountRecovery_confirmInLabel">You can confirm in</string>
   <string name="confirmAccountRecovery_useButton">Use Emergency Fallback</string>
+  <string name="assetTransfer_badge_checking">Checking badge requirements...</string>
+  <string name="assetTransfer_badge_success_title">Badge Verification Successful</string>
+  <string name="assetTransfer_badge_success_message">You have the required badge to transfer these restricted tokens.</string>
+  <string name="assetTransfer_badge_error_missing_title">Missing Required Badge</string>
+  <string name="assetTransfer_badge_error_insufficient_title">Insufficient Badge Balance</string>
+  <string name="assetTransfer_badge_error_parsing_title">Rule Verification Failed</string>
+  <string name="assetTransfer_badge_error_missing_message">You do not own the required badge to transfer this restricted token.</string>
+  <string name="assetTransfer_badge_error_insufficient_message">Your balance is insufficient to fulfill the required badge rule.</string>
+  <string name="assetTransfer_badge_error_parsing_message">Failed to parse transfer rules for this restricted token.</string>
 </resources>

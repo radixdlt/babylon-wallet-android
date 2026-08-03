@@ -61,6 +61,10 @@ import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 import kotlin.collections.map
 import kotlin.collections.orEmpty
+import com.babylon.wallet.android.data.gateway.generated.models.RoleAssignmentResolution
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.model.AccessRule
 
 @Suppress("TooManyFunctions")
 interface StateRepository {
@@ -136,6 +140,10 @@ interface StateRepository {
     ): Result<Unit>
 
     suspend fun clearCachedState(): Result<Unit>
+
+    suspend fun getResourcesWithWithdrawerRules(
+        addresses: Set<ResourceAddress>
+    ): Result<Map<ResourceAddress, AccessRule>>
 
     sealed class Error(cause: Throwable) : Exception(cause) {
         data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
@@ -435,6 +443,40 @@ class StateRepositoryImpl @Inject constructor(
                     resourceEntity
                 }.toResource(amount)
             }
+        }
+    }
+
+    override suspend fun getResourcesWithWithdrawerRules(
+        addresses: Set<ResourceAddress>
+    ): Result<Map<ResourceAddress, AccessRule>> = withContext(dispatcher) {
+        runCatching {
+            val rulesMap = mutableMapOf<ResourceAddress, AccessRule>()
+            stateApi.paginateDetails(
+                addresses = addresses.map { it.string }.toSet(),
+                metadataKeys = ExplicitMetadataKey.forAssets,
+                onPage = { page ->
+                    page.items.forEach { item ->
+                        val resourceAddress = ResourceAddress.init(item.address)
+                        val details = item.details
+                        val roleAssignments = when (details) {
+                            is StateEntityDetailsResponseFungibleResourceDetails -> details.roleAssignments
+                            is StateEntityDetailsResponseNonFungibleResourceDetails -> details.roleAssignments
+                            else -> null
+                        }
+                        val withdrawerEntry = roleAssignments?.propertyEntries?.find { it.roleKey.name == "withdrawer" }
+                        val withdrawerRule = withdrawerEntry?.let { entry ->
+                            when (entry.assignment.resolution) {
+                                RoleAssignmentResolution.Explicit -> entry.assignment.explicitRule
+                                RoleAssignmentResolution.Owner -> roleAssignments.owner.rule
+                            }
+                        }
+                        if (withdrawerRule != null) {
+                            rulesMap[resourceAddress] = withdrawerRule
+                        }
+                    }
+                }
+            )
+            rulesMap
         }
     }
 
