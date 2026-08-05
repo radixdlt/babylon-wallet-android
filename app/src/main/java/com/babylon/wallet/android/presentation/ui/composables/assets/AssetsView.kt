@@ -102,10 +102,22 @@ data class AssetsViewState(
     val selectedTab: AssetsTab,
     val collapsedCollections: Map<String, Boolean>,
     val fetchingNFTsPerCollection: Set<ResourceAddress>,
+    val nftsViewMode: NFTsViewMode = NFTsViewMode.Full,
+    val openedNFTCollectionId: String? = null,
 ) {
     fun isCollapsed(collectionId: String) = collapsedCollections.getOrDefault(collectionId, true)
 
     fun onCollectionToggle(collectionId: String): AssetsViewState {
+        if (selectedTab == AssetsTab.Nfts) {
+            return copy(
+                openedNFTCollectionId = if (openedNFTCollectionId == collectionId) {
+                    null
+                } else {
+                    collectionId
+                }
+            )
+        }
+
         val isCollapsed = isCollapsed(collectionId)
         val collapsedCollections = collapsedCollections.toMutableMap().apply {
             this[collectionId] = !isCollapsed
@@ -127,9 +139,23 @@ data class AssetsViewState(
             return AssetsViewState(
                 selectedTab = selectedTab,
                 collapsedCollections = emptyMap(),
-                fetchingNFTsPerCollection = emptySet()
+                fetchingNFTsPerCollection = emptySet(),
+                nftsViewMode = NFTsViewMode.Full,
+                openedNFTCollectionId = null
             )
         }
+    }
+}
+
+enum class NFTsViewMode {
+    Full,
+    Grid,
+    Row;
+
+    fun next(): NFTsViewMode = when (this) {
+        Full -> Grid
+        Grid -> Row
+        Row -> Full
     }
 }
 
@@ -139,6 +165,7 @@ sealed interface AssetsViewAction {
     val onCollectionClick: (String) -> Unit
     val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
     val onStakesRequest: () -> Unit
+    val onNFTsViewModeClick: (NFTsViewMode) -> Unit
 
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
@@ -150,6 +177,7 @@ sealed interface AssetsViewAction {
         override val onCollectionClick: (String) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit,
+        override val onNFTsViewModeClick: (NFTsViewMode) -> Unit,
     ) : AssetsViewAction
 
     data class Selection(
@@ -161,6 +189,7 @@ sealed interface AssetsViewAction {
         override val onCollectionClick: (String) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit,
+        override val onNFTsViewModeClick: (NFTsViewMode) -> Unit,
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: ResourceAddress) = selectedResources.contains(resourceAddress)
@@ -187,7 +216,8 @@ fun AssetsViewWithLoadingAssets() {
                     onClaimClick = {},
                     onStakesRequest = {},
                     onCollectionClick = {},
-                    onTabClick = {}
+                    onTabClick = {},
+                    onNFTsViewModeClick = {}
                 ),
                 onInfoClick = {}
             )
@@ -213,7 +243,8 @@ fun AssetsViewWithEmptyAssets() {
                     onClaimClick = {},
                     onStakesRequest = {},
                     onCollectionClick = {},
-                    onTabClick = {}
+                    onTabClick = {},
+                    onNFTsViewModeClick = {}
                 ),
                 onInfoClick = {}
             )
@@ -272,6 +303,9 @@ fun AssetsViewWithAssets() {
                     },
                     onCollectionClick = {
                         state = state.onCollectionToggle(it)
+                    },
+                    onNFTsViewModeClick = {
+                        state = state.copy(nftsViewMode = it)
                     }
                 ),
                 onInfoClick = {}
