@@ -247,10 +247,13 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             lockFee = fees.transactionFees.transactionFeeToLock,
             tipPercentage = fees.transactionFees.tipPercentageForTransaction,
             notarySecretKey = data.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = data.value.feePayers?.selectedAccountAddress,
-            guarantees = buildGuarantees(
-                deposits = (_state.value.previewType as? PreviewType.Transaction)?.to.orEmpty()
-            )
+            feePayerAddress = data.value.feePayers?.selectedAccountAddress
+            // No guarantees here: prepareSummary() already inserted them into this manifest
+            // (addAssertions). Passing them again inserts every assertion a second time at
+            // indexes computed for the manifest without them, which puts all but the first
+            // one before the instruction that produces its resource, and the manifest then
+            // fails static analysis (AssertionCannotBeSatisfied) as soon as a transaction
+            // has two or more guaranteed deposits.
         ).then { notarizationResult ->
             val signedManifest = notarizationResult.notarizedTransaction.signedIntent.intent.manifest
 
