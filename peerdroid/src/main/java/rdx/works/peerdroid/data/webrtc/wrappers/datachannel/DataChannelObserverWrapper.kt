@@ -22,6 +22,10 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelMessage> = callbackFlow {
         override fun onStateChange() {
             val state = this@eventFlow.state()
             trySend(DataChannelMessage.StateChanged(state = state))
+            // A closed channel sends nothing more: its flow ends with it, and so does whoever reads it.
+            if (state == DataChannel.State.CLOSED) {
+                channel.close()
+            }
         }
 
         override fun onMessage(p0: DataChannel.Buffer?) {

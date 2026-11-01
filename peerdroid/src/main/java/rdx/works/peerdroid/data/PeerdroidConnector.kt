@@ -9,28 +9,24 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
+import rdx.works.peerdroid.data.webrtc.DataChannelReaders
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -93,8 +89,8 @@ internal class PeerdroidConnectorImpl(
     // One DataChannel for each CE (browser) and CE will forward the messages to the right client (dApp) based on the request id.
     private val mapOfDataChannels = ConcurrentHashMap<ConnectionIdHolder, DataChannelHolder>()
 
-    // every time a new data channel opens it will be added in the dataChannelMessagesFromRemoteClients
-    private val dataChannelObserver = MutableStateFlow<DataChannelWrapper?>(null)
+    // Every open data channel's reader, all handing their messages to dataChannelMessagesFromRemoteClients.
+    private val readers = DataChannelReaders(applicationScope + ioDispatcher)
 
     private val isAnyChannelConnected = MutableStateFlow(false)
 
@@ -158,15 +154,16 @@ internal class PeerdroidConnectorImpl(
             dataChannelsForTermination.forEach { dataChannelHolder ->
                 dataChannelHolder.dataChannel.close()
             }
-            // close and remove the peer connections and their jobs for this connection id
-            val peerConnectionsForTermination = mapOfPeerConnections.values.filter { peerConnectionHolder ->
+            // close and remove the peer connections, their jobs and their readers for this connection id
+            val peerConnectionsForTermination = mapOfPeerConnections.filterValues { peerConnectionHolder ->
                 peerConnectionHolder.connectionIdHolder == connectionId
             }
-            peerConnectionsForTermination.forEach { peerConnectionHolder ->
+            peerConnectionsForTermination.forEach { (remoteClientHolder, peerConnectionHolder) ->
+                readers.stop(remoteClientHolder)
                 peerConnectionHolder.observePeerConnectionJob.cancel()
                 peerConnectionHolder.webRtcManager.close()
             }
-            mapOfPeerConnections.values.removeAll(peerConnectionsForTermination.toSet())
+            mapOfPeerConnections.keys.removeAll(peerConnectionsForTermination.keys)
             mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
             updatePeerConnectionStatus(connectionId = connectionId, isOpen = false, isDeleted = true)
             Timber.d("⚙️ \uD83D\uDDD1️ link connection with connectionId: ${connectionId.id} deleted ✅")
@@ -182,6 +179,7 @@ internal class PeerdroidConnectorImpl(
             }
             mapOfWebSockets.clear()
 
+            readers.stopAll()
             mapOfDataChannels.values.forEach { dataChannelHolder ->
                 dataChannelHolder.dataChannel.close()
             }
@@ -197,21 +195,8 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-    // here we merge all the incoming messages
-    // from the opened data channels into a single flow
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val dataChannelMessagesFromRemoteClients = merge(
-        dataChannelObserver
-            .mapNotNull {
-                it
-            }
-            .flatMapMerge { dataChannel ->
-                dataChannel.dataChannelEvents
-            }
-            .onCompletion {
-                dataChannelObserver.value = null
-            }
-    ).flowOn(ioDispatcher).shareIn(scope = applicationScope, started = SharingStarted.WhileSubscribed())
+    // The incoming messages of every open data channel, in one flow (see DataChannelReaders).
+    override val dataChannelMessagesFromRemoteClients: SharedFlow<DataChannelWrapperEvent> = readers.messages
 
     override suspend fun sendDataChannelMessageToRemoteClient(
         remoteConnectorId: String,
@@ -350,9 +335,10 @@ internal class PeerdroidConnectorImpl(
                             connectionIdHolder = connectionId,
                             webRtcDataChannel = webRtcManager.getDataChannel()
                         )
-                        dataChannelObserver.value = dataChannel
+                        readers.start(remoteClient = remoteClientHolder, events = dataChannel.dataChannelEvents)
                         mapOfDataChannels[connectionId] = DataChannelHolder(
                             connectionIdHolder = connectionId,
+                            remoteClientHolder = remoteClientHolder,
                             dataChannel = dataChannel
                         )
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
@@ -393,8 +379,12 @@ internal class PeerdroidConnectorImpl(
         connectionId: ConnectionIdHolder
     ) {
         Timber.d("⚙️ \uD83D\uDEAB terminating link connection for remote client: $remoteClientHolder")
-        val dataChannelHolder = mapOfDataChannels.remove(connectionId)
+        readers.stop(remoteClientHolder)
+        // The link's data channel, only if it is this connection's: a connection that went away after the link's
+        // next one opened must not take the next one's channel with it (its own closes with its peer connection).
+        val dataChannelHolder = mapOfDataChannels[connectionId]?.takeIf { it.remoteClientHolder == remoteClientHolder }
         dataChannelHolder?.let {
+            mapOfDataChannels.remove(connectionId, dataChannelHolder)
             dataChannelHolder.dataChannel.close()
         }
         val peerConnectionHolder = mapOfPeerConnections.remove(remoteClientHolder)
