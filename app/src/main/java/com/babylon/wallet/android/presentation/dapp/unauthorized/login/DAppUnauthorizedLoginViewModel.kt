@@ -44,6 +44,7 @@ import rdx.works.core.sargon.fields
 import rdx.works.core.sargon.toPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -66,6 +67,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
     private lateinit var request: WalletUnauthorizedRequest
+
+    // A screen of the flow can still be tapped while it closes: the dApp hears the rejection once.
+    private val rejected = AtomicBoolean(false)
 
     init {
         viewModelScope.launch {
@@ -186,6 +190,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     fun onUserRejectedRequest() {
+        if (!rejected.compareAndSet(false, true)) return
         viewModelScope.launch {
             incomingRequestRepository.requestHandled(requestId = args.interactionId)
             respondToIncomingRequestUseCase.respondWithFailure(request, DappWalletInteractionErrorType.REJECTED_BY_USER)

@@ -65,6 +65,7 @@ import rdx.works.core.sargon.updateDAppAuthorizedPersonaSharedAccounts
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltViewModel
@@ -85,6 +86,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val args = DAppAuthorizedLoginArgs(savedStateHandle)
 
     private lateinit var request: WalletAuthorizedRequest
+
+    // A screen of the flow can still be tapped while it closes: the dApp hears the rejection once.
+    private val rejected = AtomicBoolean(false)
 
     private var authorizedDapp: AuthorizedDapp? = null
     private var editedDapp: AuthorizedDapp? = null
@@ -669,6 +673,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     fun onAbortDappLogin(walletWalletErrorType: DappWalletInteractionErrorType = DappWalletInteractionErrorType.REJECTED_BY_USER) {
+        if (!rejected.compareAndSet(false, true)) return
         viewModelScope.launch {
             sendEvent(Event.CloseLoginFlow)
             incomingRequestRepository.requestHandled(request.interactionId)

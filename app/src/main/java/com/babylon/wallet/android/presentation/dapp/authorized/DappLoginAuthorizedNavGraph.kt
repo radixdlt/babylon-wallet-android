@@ -29,7 +29,9 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
         dAppLoginAuthorized(
             navController,
             onBackClick = {
-                navController.popBackStack()
+                // The whole flow: the screen it was about to show (choosing a persona, say) may already be on top of
+                // it, and popping only that left this one, empty, with no way out.
+                navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
             },
             onNavigateToSelectPersona = { authorizedRequestInteractionId, dappDefinitionAddress ->
                 navController.selectPersona(authorizedRequestInteractionId, dappDefinitionAddress)
