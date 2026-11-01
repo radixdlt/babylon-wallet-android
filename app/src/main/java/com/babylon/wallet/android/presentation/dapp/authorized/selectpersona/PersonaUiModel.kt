@@ -16,12 +16,32 @@ data class PersonaUiModel(
     val lastUsedOnTimestamp: Long = 0,
     val requiredPersonaFields: RequiredPersonaFields = RequiredPersonaFields(listOf())
 ) {
+    /**
+     * The kinds of data the request needs and this persona does not have enough of: a name, or as
+     * many email addresses and phone numbers as asked for. Sharing goes on only without any, or it
+     * would fail half way (and it used to close the app).
+     */
     fun missingFieldKinds(): PersistentList<PersonaDataField.Kind> {
-        val requiredFieldKinds = requiredPersonaFields.fields.map { it.kind }
-        return requiredFieldKinds.minus(
-            persona.personaData.fields.map { it.value.kind }.toSet()
-        ).sortedBy { it.ordinal }.toPersistentList()
+        val data = persona.personaData
+        return requiredPersonaFields.fields
+            .filter { required ->
+                val held = when (required.kind) {
+                    PersonaDataField.Kind.Name -> if (data.name != null) Int.MAX_VALUE else 0
+                    PersonaDataField.Kind.EmailAddress -> data.emailAddresses.collection.size
+                    PersonaDataField.Kind.PhoneNumber -> data.phoneNumbers.collection.size
+                    else -> 0
+                }
+                held < required.numberOfValues.quantity.coerceAtLeast(1)
+            }
+            .map { it.kind }
+            .distinct()
+            .sortedBy { it.ordinal }
+            .toPersistentList()
     }
+
+    /** Whether this persona has all the data the request needs. */
+    val hasRequiredData: Boolean
+        get() = missingFieldKinds().isEmpty()
 
     fun personalInfoFormatted(): String {
         return buildString {
