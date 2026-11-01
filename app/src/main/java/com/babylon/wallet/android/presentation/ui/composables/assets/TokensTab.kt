@@ -349,7 +349,8 @@ private fun TokensTabPreview() {
                     onClaimClick = {},
                     onStakesRequest = {},
                     onCollectionClick = {},
-                    onTabClick = {}
+                    onTabClick = {},
+                    onNFTsViewModeClick = {}
                 ),
                 onInfoClick = {}
             )

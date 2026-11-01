@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -191,7 +192,10 @@ object Thumbnail {
         nft: Resource.NonFungibleResource.Item,
         cropped: Boolean = true, // When false the NFT will appear in full height
         cornerRadius: Dp = NFTCornerRadius,
-        maxAspectRatio: Float = NFTAspectRatio
+        maxAspectRatio: Float = NFTAspectRatio,
+        forcedAspectRatio: Float? = null,
+        contentScale: ContentScale? = null,
+        backgroundColor: Color = RadixTheme.colors.backgroundTertiary
     ) {
         NFT(
             modifier = modifier,
@@ -199,7 +203,10 @@ object Thumbnail {
             localId = nft.localId.formatted(),
             cropped = cropped,
             cornerRadius = cornerRadius,
-            maxAspectRatio = maxAspectRatio
+            maxAspectRatio = maxAspectRatio,
+            forcedAspectRatio = forcedAspectRatio,
+            contentScale = contentScale,
+            backgroundColor = backgroundColor
         )
     }
 
@@ -210,7 +217,10 @@ object Thumbnail {
         localId: String?,
         cropped: Boolean = true, // When false the NFT will appear in full height
         cornerRadius: Dp = NFTCornerRadius,
-        maxAspectRatio: Float = NFTAspectRatio
+        maxAspectRatio: Float = NFTAspectRatio,
+        forcedAspectRatio: Float? = null,
+        contentScale: ContentScale? = null,
+        backgroundColor: Color = RadixTheme.colors.backgroundTertiary
     ) {
         if (image != null) {
             val context = LocalContext.current
@@ -229,7 +239,10 @@ object Thumbnail {
             var painterState: AsyncImagePainter.State by remember(image) { mutableStateOf(AsyncImagePainter.State.Empty) }
             val density = LocalDensity.current
             SubcomposeAsyncImage(
-                modifier = modifier,
+                modifier = modifier.applyIf(
+                    condition = forcedAspectRatio != null,
+                    modifier = Modifier.aspectRatio(forcedAspectRatio ?: 1f)
+                ),
                 model = request,
                 contentDescription = localId,
                 onState = { painterState = it }
@@ -238,11 +251,17 @@ object Thumbnail {
                     modifier = Modifier
                         .clip(RoundedCornerShape(cornerRadius))
                         .applyIf(
-                            condition = painterState !is AsyncImagePainter.State.Success,
-                            modifier = Modifier.background(RadixTheme.colors.backgroundTertiary)
+                            condition = forcedAspectRatio != null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(backgroundColor)
                         )
                         .applyIf(
-                            condition = cropped,
+                            condition = painterState !is AsyncImagePainter.State.Success,
+                            modifier = Modifier.background(backgroundColor)
+                        )
+                        .applyIf(
+                            condition = cropped && forcedAspectRatio == null,
                             modifier = when (val state = painterState) {
                                 is AsyncImagePainter.State.Empty -> Modifier
                                 is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
@@ -271,7 +290,7 @@ object Thumbnail {
                             }
                         )
                         .applyIf(
-                            condition = !cropped,
+                            condition = !cropped && forcedAspectRatio == null,
                             modifier = when (painterState) {
                                 is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
                                 else -> Modifier.wrapContentHeight()
@@ -279,7 +298,7 @@ object Thumbnail {
                         ),
                     painter = painter,
                     contentDescription = null,
-                    contentScale = when (painterState) {
+                    contentScale = contentScale ?: when (painterState) {
                         is AsyncImagePainter.State.Error -> CustomContentScale.standard(density)
                         else -> if (cropped) ContentScale.Crop else ContentScale.FillWidth
                     }
