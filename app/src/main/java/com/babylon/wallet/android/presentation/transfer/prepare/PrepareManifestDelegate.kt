@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestDa
 import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
+import com.babylon.wallet.android.presentation.transfer.BadgeRequirementStatus
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
@@ -42,7 +43,11 @@ class PrepareManifestDelegate @Inject constructor(
                     fromAccount = fromAccount.address,
                     fungibleResources = _state.value.toFungibleTransfers(accountsAbleToSign),
                     nonFungibleResources = _state.value.toNonFungibleTransfers(accountsAbleToSign)
-                )
+                ),
+                // The proofs of the badges restricted tokens need, found by Sargon.
+                requiredBadges = _state.value.resolvedRequiredBadges.takeIf {
+                    _state.value.badgeRequirementStatus is BadgeRequirementStatus.Success
+                }.orEmpty()
             )
         }.map { manifest ->
             UnvalidatedManifestData.from(

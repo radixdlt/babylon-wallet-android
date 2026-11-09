@@ -354,6 +354,15 @@ fun TransferContent(
 
                 val isEnabled = remember(state) { state.isSubmitEnabled }
 
+                if (state.badgeRequirementStatus != BadgeRequirementStatus.None) {
+                    BadgeRequirementCard(
+                        status = state.badgeRequirementStatus,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = RadixTheme.dimensions.paddingDefault)
+                    )
+                }
+
                 RadixPrimaryButton(
                     text = stringResource(id = R.string.assetTransfer_sendTransferButton),
                     onClick = onTransferSubmit,
@@ -361,7 +370,7 @@ fun TransferContent(
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
                     enabled = isEnabled,
-                    isLoading = state.isLoadingAccountDepositResourceRules
+                    isLoading = state.isLoadingAccountDepositResourceRules || state.badgeRequirementStatus == BadgeRequirementStatus.Loading
                 )
             }
         }
