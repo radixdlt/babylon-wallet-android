@@ -22,12 +22,10 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.core.KeystoreManager
 import rdx.works.core.di.ApplicationScope
 import rdx.works.core.di.EncryptedPreferences
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.sargon.canBackupToCloud
-import rdx.works.core.then
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import timber.log.Timber
@@ -61,7 +59,6 @@ val ProfileRepository.profile: Flow<Profile>
 @Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val keystoreManager: KeystoreManager,
     private val cloudBackupSyncExecutor: CloudBackupSyncExecutor,
     private val sargonOsManager: SargonOsManager,
     private val hostInfoRepository: HostInfoRepository,
@@ -138,10 +135,6 @@ class ProfileRepositoryImpl @Inject constructor(
             // Useful when the profile could not be booted
             withContext(ioDispatcher) {
                 preferences.edit { prefs -> prefs.clear() }
-            }
-        }.then {
-            keystoreManager.resetMnemonicKeySpecWhenInvalidated().onFailure { error ->
-                Timber.w(error, "Failed to reset encryption keys")
             }
         }
     }

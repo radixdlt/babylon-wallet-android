@@ -12,7 +12,6 @@ import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.core.KeystoreManager
 import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
@@ -22,7 +21,6 @@ class DeriveProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
     private val sargonOsManager: SargonOsManager,
-    private val keystoreManager: KeystoreManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -33,8 +31,6 @@ class DeriveProfileUseCase @Inject constructor(
         is ProfileState.Loaded -> Result.success(Unit)
         else -> withContext(defaultDispatcher) {
             val sargonOs = sargonOsManager.sargonOs
-
-            keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
             runCatching {
                 val hostInfo = sargonOs.resolveHostInfo()

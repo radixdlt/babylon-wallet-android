@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -12,6 +13,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,6 +64,33 @@ fun MainScreen(
     onNavigateToTimedRecovery: (AddressOfAccountOrPersona) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    if (state.showProtectionUpdate && !state.isAppLocked) {
+        AlertDialog(
+            onDismissRequest = viewModel::deferProtectionUpdate,
+            title = { Text(stringResource(R.string.mnemonicProtection_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        when {
+                            state.isUpdatingProtection -> R.string.mnemonicProtection_updating
+                            state.protectionUpdateFailed -> R.string.mnemonicProtection_incomplete
+                            else -> R.string.mnemonicProtection_explanation
+                        }
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::updateMnemonicProtection, enabled = !state.isUpdatingProtection) {
+                    Text(stringResource(R.string.mnemonicProtection_update))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::deferProtectionUpdate, enabled = !state.isUpdatingProtection) {
+                    Text(stringResource(R.string.mnemonicProtection_later))
+                }
+            }
+        )
+    }
     when (state.initialAppState) {
         is AppState.Wallet -> {
             MainContent(

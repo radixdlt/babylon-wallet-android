@@ -29,7 +29,6 @@ import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.FirstAccountCreationStatusManager
@@ -55,7 +54,6 @@ class CreateAccountViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
     private val sargonOsManager: SargonOsManager,
-    private val keystoreManager: KeystoreManager,
     private val selectFactorSourceProxy: SelectFactorSourceProxy
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
@@ -138,7 +136,6 @@ class CreateAccountViewModel @Inject constructor(
 
     private suspend fun createWallet(): Result<Unit> {
         val sargonOs = sargonOsManager.sargonOs
-        keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
         return runCatching {
             sargonOs.newWallet()

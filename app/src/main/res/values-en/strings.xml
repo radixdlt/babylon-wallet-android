@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="mnemonicProtection_title">Update seed phrase protection</string>
+  <string name="mnemonicProtection_explanation">This update strengthens protection for seed phrases stored on this device. Android may ask you to confirm your identity more than once. Keep the wallet open until the update finishes.</string>
+  <string name="mnemonicProtection_updating">Updating protection. Confirm your identity when Android asks and keep the wallet open.</string>
+  <string name="mnemonicProtection_incomplete">The update is not complete. Your seed phrases are still saved, and completed updates will be kept. Try again now or finish later.</string>
+  <string name="mnemonicProtection_update">Update protection</string>
+  <string name="mnemonicProtection_later">Later</string>
   <string name="homePage_securityPromptBackup">Please write down seed phrase to ensure Account control</string>
   <string name="homePage_securityPromptRecover">Seed phrase required - begin entry</string>
   <string name="homePage_backedUpMnemonicHeading">I have written down this seed phrase</string>
