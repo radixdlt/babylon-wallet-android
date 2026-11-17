@@ -37,13 +37,9 @@ class SignSubintentUseCase @Inject constructor(
         expiration: SubintentExpiration,
         header: DappToWalletInteractionSubintentHeader?
     ) = runCatching {
-        val preparedManifest = sargonOsManager.sargonOs.modifySubintentManifest(
-            subintentManifest = manifest,
-            guarantees = emptyList()
-        )
         sargonOsManager.sargonOs.createSubintent(
             intentDiscriminator = IntentDiscriminator.random(),
-            subintentManifest = preparedManifest,
+            subintentManifest = manifest,
             expiration = expiration.toDAppInteraction(),
             message = message,
             header = header
