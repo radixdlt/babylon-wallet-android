@@ -223,7 +223,8 @@ data class DataChannelWrapper(
             "📯 DataChannelWrapper of ${this.webRtcDataChannel} close for remote connector: " +
                 "${connectionIdHolder.id} 🔻 and with remote client id ${this.webRtcDataChannel.label()}"
         )
-        webRtcDataChannel.unregisterObserver()
+        // The observer is left to the channel's event flow, which unregisters it when it ends (the channel closing
+        // ends it): unregistering it here first kept that flow, and the reader collecting it, alive for good.
         webRtcDataChannel.close()
         Timber.d(
             "📯 ${this.webRtcDataChannel} state: ${this.webRtcDataChannel.state()}, for remote connector: " +
