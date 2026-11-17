@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.factorSourceById
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.FirstAccountCreationStatusManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -54,7 +55,8 @@ class CreateAccountViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
     private val sargonOsManager: SargonOsManager,
-    private val selectFactorSourceProxy: SelectFactorSourceProxy
+    private val selectFactorSourceProxy: SelectFactorSourceProxy,
+    private val mnemonicRepository: MnemonicRepository
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -138,6 +140,7 @@ class CreateAccountViewModel @Inject constructor(
         val sargonOs = sargonOsManager.sargonOs
 
         return runCatching {
+            mnemonicRepository.clearInvalidatedMnemonics().getOrThrow()
             sargonOs.newWallet()
         }.onSuccess {
             // Since we choose to create a new profile, this is the time

@@ -15,12 +15,14 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.MnemonicRepository
 import javax.inject.Inject
 
 class DeriveProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
     private val sargonOsManager: SargonOsManager,
+    private val mnemonicRepository: MnemonicRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -33,6 +35,7 @@ class DeriveProfileUseCase @Inject constructor(
             val sargonOs = sargonOsManager.sargonOs
 
             runCatching {
+                mnemonicRepository.clearInvalidatedMnemonics().getOrThrow()
                 val hostInfo = sargonOs.resolveHostInfo()
 
                 sargonOs.newWalletWithDerivedBdfs(

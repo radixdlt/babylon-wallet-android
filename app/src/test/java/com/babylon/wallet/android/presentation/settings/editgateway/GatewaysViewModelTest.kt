@@ -9,7 +9,8 @@ import com.babylon.wallet.android.utils.isValidUrl
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -30,7 +31,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GatewaysViewModelTest {
@@ -46,7 +47,7 @@ class GatewaysViewModelTest {
     private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet)
 
     @Before
     fun setUp() = runTest {
@@ -84,7 +85,7 @@ class GatewaysViewModelTest {
 
     @Test
     fun `adding network triggers network save`() = runTest {
-        val sampleUrl = Gateway.forNetwork(NetworkId.MAINNET).url.toString()
+        val sampleUrl = Gateway.mainnet.url.toString()
         vm.setAddGatewaySheetVisible(true)
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
@@ -95,7 +96,7 @@ class GatewaysViewModelTest {
 
     @Test
     fun `network switch calls for create account`() = runTest {
-        val gateway = Gateway.forNetwork(NetworkId.KISHARNET)
+        val gateway = Gateway.init(url = "https://kisharnet.example.com", networkId = NetworkId.KISHARNET)
         val sampleUrl = gateway.url.toString()
         vm.onNewUrlChanged(sampleUrl)
         coEvery { changeGatewayIfNetworkExistUseCase(gateway) } returns false
@@ -110,7 +111,7 @@ class GatewaysViewModelTest {
 
     @Test
     fun `network switch calls changes gateway when there are accounts present`() = runTest {
-        val gateway = Gateway.forNetwork(NetworkId.KISHARNET)
+        val gateway = Gateway.init(url = "https://kisharnet.example.com", networkId = NetworkId.KISHARNET)
         val sampleUrl = gateway.url.toString()
         vm.onNewUrlChanged(sampleUrl)
         coEvery { changeGatewayIfNetworkExistUseCase(gateway) } returns true
@@ -137,7 +138,7 @@ class GatewaysViewModelTest {
         coEvery { getNetworkInfoUseCase(any()) } returns Result.failure(
             Throwable()
         )
-        val sampleUrl = Gateway.forNetwork(NetworkId.NEBUNET).url.toString()
+        val sampleUrl = Gateway.init(url = "https://nebunet.example.com", networkId = NetworkId.NEBUNET).url.toString()
         vm.setAddGatewaySheetVisible(true)
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()

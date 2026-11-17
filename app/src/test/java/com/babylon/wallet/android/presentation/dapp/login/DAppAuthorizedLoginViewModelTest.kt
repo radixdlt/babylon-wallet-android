@@ -31,7 +31,7 @@ import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import com.radixdlt.sargon.samples.sample
@@ -66,7 +66,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
-    private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
+    private val sampleProfile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities().let { profile ->
         val network = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
         val persona = network.personas.first()
         profile.copy(
@@ -194,7 +194,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         super.setUp()
         every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
-        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.mainnet
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
         coEvery { getProfileUseCase() } returns sampleProfile
         coEvery { incomingRequestRepository.getRequest(any()) } returns requestWithNonExistingDappAddress

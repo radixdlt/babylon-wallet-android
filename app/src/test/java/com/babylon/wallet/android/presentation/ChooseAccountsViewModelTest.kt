@@ -15,7 +15,7 @@ import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import com.radixdlt.sargon.samples.sample
 import io.mockk.mockk
@@ -42,7 +42,7 @@ class ChooseAccountsViewModelTest {
 
     private val profileRepository = FakeProfileRepository(
         profile = Profile.sample()
-            .changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+            .changeGateway(Gateway.mainnet)
             .unHideAllEntities() // Default profile sample has hidden entities.
     )
     private val getProfileUseCase = GetProfileUseCase(profileRepository, coroutineRule.dispatcher)

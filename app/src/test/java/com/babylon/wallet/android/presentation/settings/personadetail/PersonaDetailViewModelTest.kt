@@ -15,7 +15,7 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -50,7 +50,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val eventBus = mockk<AppEventBus>()
     private val acStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()
 
-    val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    val profile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities()
     val persona = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
 
     override fun initVM(): PersonaDetailViewModel {

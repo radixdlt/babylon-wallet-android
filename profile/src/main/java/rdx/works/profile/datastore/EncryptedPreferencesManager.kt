@@ -70,6 +70,8 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun clearInvalidatedMnemonics(): Result<Unit> = mnemonicStorage.clearInvalidatedMnemonics()
+
     suspend fun keyExist(key: String): Boolean {
         if (key.startsWith("mnemonic")) {
             return mnemonicStorage.contains(key)

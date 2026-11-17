@@ -30,7 +30,7 @@ import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.atLeast
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -62,7 +62,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val getValidatedDAppWebsiteUseCase = mockk<GetValidatedDAppWebsiteUseCase>()
     private val changeLockerDepositsVisibilityUseCase = mockk<ChangeLockerDepositsVisibilityUseCase>()
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities().let {
         val mainnet = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
         it.copy(
             networks = it.networks.asIdentifiable().updateOrAppend(

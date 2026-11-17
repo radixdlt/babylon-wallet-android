@@ -7,7 +7,7 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.Flow
@@ -74,7 +74,7 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override fun getBackedUpFactorSourceIds(): Flow<Set<FactorSourceId.Hash>> {
-        val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+        val profile = Profile.sample().changeGateway(Gateway.mainnet)
         return flowOf(
             profile.factorSources
                 .filter {

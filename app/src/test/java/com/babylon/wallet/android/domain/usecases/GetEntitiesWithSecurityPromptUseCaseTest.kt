@@ -9,7 +9,7 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.every
@@ -39,7 +39,7 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet)
     private val mnemonicRepositoryMock = mockk<MnemonicRepository>()
     private val getBackupStateUseCaseMock = mockk<GetBackupStateUseCase>()
     private val checkKeystoreIntegrityUseCase = mockk<CheckKeystoreIntegrityUseCase>().apply {

@@ -28,6 +28,7 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
         if (deviceFactorSources.isEmpty()) return
 
         try {
+            mnemonicRepository.clearInvalidatedMnemonics().getOrThrow()
             val missing = deviceFactorSources.any {
                 !mnemonicRepository.mnemonicExist(it.value.id.asGeneral())
             }

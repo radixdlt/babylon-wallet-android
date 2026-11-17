@@ -31,6 +31,8 @@ class MnemonicRepository @Inject constructor(
         }
     }
 
+    suspend fun clearInvalidatedMnemonics(): Result<Unit> = encryptedPreferencesManager.clearInvalidatedMnemonics()
+
     @Suppress("SwallowedException")
     suspend fun mnemonicExist(key: FactorSourceId.Hash): Boolean {
         return encryptedPreferencesManager.keyExist("mnemonic${key.value.body.hex}")

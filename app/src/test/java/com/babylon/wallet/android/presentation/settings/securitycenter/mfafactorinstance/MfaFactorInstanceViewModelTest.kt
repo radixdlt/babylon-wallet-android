@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSo
 import com.babylon.wallet.android.presentation.selectfactorsource.SelectFactorSourceProxy
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorInstance
@@ -19,7 +20,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.SargonOs
 import com.radixdlt.sargon.UsedMfaSignatureResourceWithAccounts
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.nonFungibleGlobalId
 import com.radixdlt.sargon.os.SargonOsManager
@@ -54,7 +55,7 @@ internal class MfaFactorInstanceViewModelTest : StateViewModelTest<MfaFactorInst
     private val getAddressBookEntriesOnCurrentNetworkUseCase = mockk<GetAddressBookEntriesOnCurrentNetworkUseCase>()
 
     private val profile = Profile.sample()
-        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+        .changeGateway(Gateway.mainnet)
         .unHideAllEntities()
 
     override fun initVM(): MfaFactorInstanceViewModel = MfaFactorInstanceViewModel(
@@ -95,7 +96,7 @@ internal class MfaFactorInstanceViewModelTest : StateViewModelTest<MfaFactorInst
         every { usedResource.mfaFactorInstance } returns mfaFactorInstance
 
         val addressBookEntry = mockk<AddressBookEntry>()
-        every { addressBookEntry.address } returns unknownAddress
+        every { addressBookEntry.address } returns Address.Account(unknownAddress)
         every { addressBookEntry.name } returns DisplayName("Address Book")
 
         coEvery { sargonOs.usedMfaSignatureResourcesWithAccountsCurrentNetwork() } returns listOf(usedResource)

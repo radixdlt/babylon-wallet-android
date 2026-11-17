@@ -23,7 +23,7 @@ import com.radixdlt.sargon.PersonaDataNameVariant
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileNetworks
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -51,7 +51,7 @@ internal class PersonaDataOngoingViewModelTest {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities().let {
         val network = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.let { network ->
             val persona = network.personas.first().copy(
                 personaData = PersonaData(

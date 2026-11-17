@@ -8,7 +8,7 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -26,7 +26,7 @@ class SearchFeePayersUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities()
     private val account1 = profile.activeAccountsOnCurrentNetwork[0]
     private val profileUseCase = GetProfileUseCase(
         profileRepository = FakeProfileRepository(profile),
