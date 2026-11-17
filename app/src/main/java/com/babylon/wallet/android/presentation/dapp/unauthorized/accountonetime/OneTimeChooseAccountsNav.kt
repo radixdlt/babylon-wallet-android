@@ -4,7 +4,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -15,6 +14,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
+import com.babylon.wallet.android.utils.graphEntryWhileAlive
 
 @VisibleForTesting
 internal const val ARG_NUMBER_OF_ACCOUNTS = "arg_number_of_accounts"
@@ -83,9 +83,7 @@ fun NavGraphBuilder.oneTimeChooseAccounts(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
-        val parentEntry = remember(it) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH)
-        }
+        val parentEntry = navController.graphEntryWhileAlive(it, ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH) ?: return@composable
         val sharedVM = hiltViewModel<DAppUnauthorizedLoginViewModel>(parentEntry)
         OneTimeChooseAccountsScreen(
             viewModel = hiltViewModel(),

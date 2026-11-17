@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -17,6 +16,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.AR
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.ARG_CAN_NAVIGATE_BACK
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.ARG_ENTITIES_FOR_PROOF
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
+import com.babylon.wallet.android.utils.graphEntryWhileAlive
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -65,9 +65,7 @@ fun NavGraphBuilder.verifyPersona(
             }
         }
     ) { navBackStackEntry ->
-        val parentEntry = remember(navBackStackEntry) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
-        }
+        val parentEntry = navController.graphEntryWhileAlive(navBackStackEntry, ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH) ?: return@composable
         val sharedViewModel = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
 
         VerifyPersonaScreen(

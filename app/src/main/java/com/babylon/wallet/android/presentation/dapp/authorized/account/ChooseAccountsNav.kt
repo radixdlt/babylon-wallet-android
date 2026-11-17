@@ -5,7 +5,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -17,6 +16,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
+import com.babylon.wallet.android.utils.graphEntryWhileAlive
 
 @VisibleForTesting
 internal const val ARG_AUTHORIZED_REQUEST_INTERACTION_ID = "arg_authorized_request_interaction_id"
@@ -118,9 +118,7 @@ fun NavGraphBuilder.chooseAccounts(
             }
         }
     ) {
-        val parentEntry = remember(it) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
-        }
+        val parentEntry = navController.graphEntryWhileAlive(it, ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH) ?: return@composable
         val sharedVM = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
         ChooseAccountsScreen(
             viewModel = hiltViewModel(),
