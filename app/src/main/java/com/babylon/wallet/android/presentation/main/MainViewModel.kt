@@ -26,7 +26,9 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.SargonOsState
+import com.radixdlt.sargon.os.storage.MnemonicStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -68,9 +70,14 @@ class MainViewModel @Inject constructor(
     private val incomingRequestsDelegate: IncomingRequestsDelegate,
     private val sargonOsManager: SargonOsManager,
     private val discoverRepository: DiscoverRepository,
-    private val alertHandler: AlertHandler
+    private val alertHandler: AlertHandler,
+    private val mnemonicStorage: MnemonicStorage
 ) : StateViewModel<MainViewModel.State>(),
     OneOffEventHandler<MainViewModel.Event> by OneOffEventHandlerImpl() {
+
+    private var foregroundChecksJob: Job? = null
+    private var migrationCheckedThisForeground = false
+    private var authenticationInProgress = false
 
     val statusEvents = appEventBus.events
         .filterIsInstance<AppEvent.Status>()
@@ -183,7 +190,7 @@ class MainViewModel @Inject constructor(
                     isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
                 )
             }
-        }.launchIn(viewModelScope)
+        }.onEach { runForegroundChecks() }.launchIn(viewModelScope)
     }
 
     private fun observeAppLockState() {
@@ -197,6 +204,7 @@ class MainViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(isAppLocked = isAppLocked)
                     }
+                    if (!isAppLocked) runForegroundChecks()
                 }
         }
     }
@@ -251,6 +259,10 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAppToForeground() {
+        if (authenticationInProgress) return
+        if (foregroundChecksJob?.isActive != true && !_state.value.isUpdatingProtection && !_state.value.showProtectionUpdate) {
+            migrationCheckedThisForeground = false
+        }
         val isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
         _state.update { state ->
             state.copy(isDeviceSecure = isDeviceSecure)
@@ -263,6 +275,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun onBeforeBiometricsRequest() {
+        authenticationInProgress = true
         // Avoids double biometrics request. In older Android versions < 30 pin/pattern unlock
         // used to be invoked in a different activity. This would result in biometrics being
         // requested once by the WalletInteractor and then another time by advanced lock
@@ -273,6 +286,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAfterBiometricsResult() {
+        authenticationInProgress = false
         // Resumes app lock feature when biometrics respond to WalletInteractor
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             appLockStateProvider.resumeLocking()
@@ -286,8 +300,46 @@ class MainViewModel @Inject constructor(
     }
 
     private fun runForegroundChecks() {
-        viewModelScope.launch {
+        if (authenticationInProgress || foregroundChecksJob?.isActive == true) return
+        val currentState = _state.value
+        if (currentState.isAppLocked || currentState.initialAppState != AppState.Wallet) return
+        foregroundChecksJob = viewModelScope.launch {
             checkKeystoreIntegrityUseCase()
+            if (!migrationCheckedThisForeground) {
+                migrationCheckedThisForeground = true
+                mnemonicStorage.pendingMigrationCount().onSuccess { count ->
+                    if (count > 0) {
+                        _state.update { it.copy(showProtectionUpdate = true) }
+                    } else {
+                        mnemonicStorage.migrate().onSuccess { result ->
+                            if (result.cleanupPending) {
+                                _state.update { it.copy(showProtectionUpdate = true, protectionUpdateFailed = true) }
+                            }
+                        }.onFailure { Timber.w("Mnemonic key cleanup could not finish") }
+                    }
+                }.onFailure { Timber.w("Mnemonic protection inspection failed; records preserved") }
+            }
+        }
+    }
+
+    fun deferProtectionUpdate() {
+        if (!_state.value.isUpdatingProtection) _state.update { it.copy(showProtectionUpdate = false) }
+    }
+
+    fun updateMnemonicProtection() {
+        if (_state.value.isUpdatingProtection) return
+        _state.update { it.copy(isUpdatingProtection = true, protectionUpdateFailed = false) }
+        viewModelScope.launch {
+            try {
+                val result = mnemonicStorage.migrate()
+                val unfinished = result.fold(
+                    onSuccess = { it.remaining > 0 || it.cleanupPending },
+                    onFailure = { true }
+                )
+                _state.update { it.copy(showProtectionUpdate = unfinished, protectionUpdateFailed = unfinished) }
+            } finally {
+                _state.update { it.copy(isUpdatingProtection = false) }
+            }
         }
     }
 
@@ -305,6 +357,9 @@ class MainViewModel @Inject constructor(
     }
 
     data class State(
+        val showProtectionUpdate: Boolean = false,
+        val protectionUpdateFailed: Boolean = false,
+        val isUpdatingProtection: Boolean = false,
         val initialAppState: AppState = AppState.Loading,
         val showDeviceRootedWarning: Boolean = false,
         val dappRequestFailure: UiMessage.ErrorMessage? = null,

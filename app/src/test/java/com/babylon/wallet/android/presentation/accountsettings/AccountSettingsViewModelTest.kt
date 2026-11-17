@@ -17,7 +17,7 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
@@ -52,7 +52,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
     private val getFactorSourceIntegrityStatusMessagesUseCase = mockk<GetFactorSourceIntegrityStatusMessagesUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
-    private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    private val sampleProfile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities()
     private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
     private val eventBus = mockk<AppEventBus>()
     private val acStateDetailsObserver = mockk<AccessControllerStateDetailsObserver>()

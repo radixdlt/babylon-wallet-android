@@ -24,7 +24,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -68,7 +68,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getAccountAddressBookEntriesOnCurrentNetworkUseCase = mockk<GetAccountAddressBookEntriesOnCurrentNetworkUseCase>()
     private val addAddressBookEntryUseCase = mockk<AddAddressBookEntryUseCase>()
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities()
     private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
     private val otherAccounts = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.drop(1).orEmpty()
     private val account1WithAssets = AccountWithAssets(

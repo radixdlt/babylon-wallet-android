@@ -7,13 +7,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.radixdlt.sargon.os.driver.BiometricsHandler
 import com.radixdlt.sargon.os.storage.KeySpec
-import com.radixdlt.sargon.os.storage.KeystoreAccessRequest
+import com.radixdlt.sargon.os.storage.MnemonicStorage
 import com.radixdlt.sargon.os.storage.decrypt
 import com.radixdlt.sargon.os.storage.encrypt
-import com.radixdlt.sargon.os.storage.read
-import com.radixdlt.sargon.os.storage.write
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -36,20 +33,14 @@ import javax.inject.Singleton
 class EncryptedPreferencesManager @Inject constructor(
     @EncryptedPreferences private val preferences: DataStore<Preferences>,
     @PermanentEncryptedPreferences private val permanentPreferences: DataStore<Preferences>,
-    private val biometricsHandler: BiometricsHandler,
+    private val mnemonicStorage: MnemonicStorage,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
     private val p2pLinksKeySpec by lazy { KeySpec.Cache(P2P_LINKS_CACHE_KEY_ALIAS) }
 
     suspend fun readMnemonic(key: String): Result<String> {
-        return preferences.read(
-            key = stringPreferencesKey(key),
-            keystoreAccessRequest = KeystoreAccessRequest.ForMnemonic(
-                hasStrongAuthenticator = biometricsHandler.hasStrongAuthenticator,
-                authorize = ::authorize
-            )
-        ).fold(
+        return mnemonicStorage.read(key).fold(
             onSuccess = {
                 if (it.isNullOrEmpty()) {
                     Result.failure(ProfileException.NoMnemonic)
@@ -69,14 +60,7 @@ class EncryptedPreferencesManager @Inject constructor(
     }
 
     suspend fun saveMnemonic(key: String, newValue: String): Result<Unit> {
-        return preferences.write(
-            key = stringPreferencesKey(key),
-            value = newValue,
-            keystoreAccessRequest = KeystoreAccessRequest.ForMnemonic(
-                hasStrongAuthenticator = biometricsHandler.hasStrongAuthenticator,
-                authorize = ::authorize
-            )
-        ).mapError {
+        return mnemonicStorage.write(key, newValue).mapError {
             Timber.e(it)
             if (it is UserNotAuthenticatedException) {
                 ProfileException.SecureStorageAccess
@@ -86,7 +70,12 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun clearInvalidatedMnemonics(): Result<Unit> = mnemonicStorage.clearInvalidatedMnemonics()
+
     suspend fun keyExist(key: String): Boolean {
+        if (key.startsWith("mnemonic")) {
+            return mnemonicStorage.contains(key)
+        }
         val preferencesKey = stringPreferencesKey(key)
         return preferences.data.map { preference ->
             preference.contains(preferencesKey)
@@ -114,6 +103,10 @@ class EncryptedPreferencesManager @Inject constructor(
     }
 
     suspend fun removeEntryForKey(key: String) {
+        if (key.startsWith("mnemonic")) {
+            mnemonicStorage.remove(key).getOrThrow()
+            return
+        }
         preferences.edit {
             it.remove(stringPreferencesKey(key))
         }
@@ -188,23 +181,6 @@ class EncryptedPreferencesManager @Inject constructor(
     }
 
     suspend fun clear() = preferences.edit { it.clear() }
-
-    private suspend fun authorize(args: KeystoreAccessRequest.AuthorizationArgs): Result<KeystoreAccessRequest.AuthorizationArgs> {
-        return biometricsHandler.askForBiometrics(args.cipher)
-            .mapCatching { cipher ->
-                when (args) {
-                    is KeystoreAccessRequest.AuthorizationArgs.Decrypt -> args.copy(
-                        cipher = requireNotNull(cipher)
-                    )
-
-                    is KeystoreAccessRequest.AuthorizationArgs.Encrypt -> args.copy(
-                        cipher = requireNotNull(cipher)
-                    )
-
-                    KeystoreAccessRequest.AuthorizationArgs.TimeWindowAuth -> args
-                }
-            }
-    }
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->
         if (exception is IOException) {

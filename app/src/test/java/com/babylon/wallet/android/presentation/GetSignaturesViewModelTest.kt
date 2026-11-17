@@ -148,7 +148,8 @@ class GetSignaturesViewModelTest {
                 authorizedDapps = emptyList(),
                 resourcePreferences = emptyList(),
                 addressBook = emptyList(),
-                mfaFactorInstances = emptyList()
+                mfaFactorInstances = emptyList(),
+                tokenPriceServices = emptyList()
             )
         )
     ).changeGatewayToNetworkId(NetworkId.MAINNET)

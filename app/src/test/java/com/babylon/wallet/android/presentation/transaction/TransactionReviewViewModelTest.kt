@@ -68,7 +68,8 @@ import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
+import com.radixdlt.sargon.extensions.stokenet
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -254,7 +255,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     )
 
     private val profile = Profile.sample()
-        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+        .changeGateway(Gateway.mainnet).unHideAllEntities()
         .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
 
     @Before
@@ -269,7 +270,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
-        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.mainnet
         coEvery { signAndNotariseTransactionUseCase(any(), any()) } returns Result.success(notarizationResult)
         coEvery { searchFeePayersUseCase(any(), any(), any(), any()) } returns Result.success(
             TransactionFeePayers(
@@ -366,7 +367,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.stokenet
         val vm = vm.value
         advanceUntilIdle()
         vm.onSignAndSubmitTransaction()

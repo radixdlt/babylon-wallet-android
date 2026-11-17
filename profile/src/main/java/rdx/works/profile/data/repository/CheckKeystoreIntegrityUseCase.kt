@@ -1,11 +1,10 @@
 package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.extensions.asGeneral
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.update
-import rdx.works.core.KeystoreManager
 import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.profile.domain.GetProfileUseCase
@@ -15,12 +14,11 @@ import javax.inject.Singleton
 
 @Singleton
 class CheckKeystoreIntegrityUseCase @Inject constructor(
-    private val mnemonicRepository: MnemonicRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val keystoreManager: KeystoreManager
+    private val mnemonicRepository: MnemonicRepository
 ) {
 
-    private val _didMnemonicIntegrityChange = MutableStateFlow(false)
+    private val _didMnemonicIntegrityChange = MutableSharedFlow<Boolean>(replay = 1).apply { tryEmit(false) }
     val didMnemonicIntegrityChange: Flow<Boolean> = _didMnemonicIntegrityChange.asSharedFlow()
 
     suspend operator fun invoke() {
@@ -29,18 +27,18 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
         val deviceFactorSources = profile.deviceFactorSources
         if (deviceFactorSources.isEmpty()) return
 
-        keystoreManager.resetMnemonicKeySpecWhenInvalidated()
-            .onSuccess { invalidated ->
-                if (invalidated) {
-                    deviceFactorSources.forEach { deviceFactorSource ->
-                        mnemonicRepository.deleteMnemonic(deviceFactorSource.value.id.asGeneral())
-                    }
-
-                    _didMnemonicIntegrityChange.update { true }
-                }
-            }.onFailure {
-                logNonFatalException(it)
-                Timber.d(it, "Failed to regenerate encryption key")
+        try {
+            mnemonicRepository.clearInvalidatedMnemonics().getOrThrow()
+            val missing = deviceFactorSources.any {
+                !mnemonicRepository.mnemonicExist(it.value.id.asGeneral())
             }
+            // Refresh per-mnemonic status even when the aggregate result has not changed.
+            _didMnemonicIntegrityChange.emit(missing)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            logNonFatalException(error)
+            Timber.d(error, "Failed to inspect mnemonic records; records preserved")
+        }
     }
 }

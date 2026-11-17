@@ -28,7 +28,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.profile.domain.GetProfileUseCase
@@ -51,7 +50,6 @@ class ImportMnemonicsViewModel @Inject constructor(
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
-    private val keystoreManager: KeystoreManager,
     private val sargonOsManager: SargonOsManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<ImportMnemonicsViewModel.State>(),
@@ -65,9 +63,6 @@ class ImportMnemonicsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profileToCheck = args.backupType?.let { backupType ->
-                // Reset keyspec before importing any mnemonic, when keyspec is invalid
-                keystoreManager.resetMnemonicKeySpecWhenInvalidated()
-
                 getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
                     ?.let {
                         ProfileToCheck.Specific(it)

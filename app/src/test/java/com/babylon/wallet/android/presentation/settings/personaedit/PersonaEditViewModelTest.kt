@@ -24,7 +24,7 @@ import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
 import com.radixdlt.sargon.PersonaDataIdentifiedName
 import com.radixdlt.sargon.PersonaDataNameVariant
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
@@ -62,7 +62,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
 
     private val nameFieldId = PersonaDataEntryId.randomUUID()
     private val emailFieldId = PersonaDataEntryId.randomUUID()
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+    private val profile = Profile.sample().changeGateway(Gateway.mainnet).unHideAllEntities().let {
         val mainnetNetwork = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
         val firstPersona = mainnetNetwork.personas.first().copy(
             personaData = PersonaData(

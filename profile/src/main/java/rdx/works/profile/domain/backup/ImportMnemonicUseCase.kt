@@ -21,15 +21,17 @@ class ImportMnemonicUseCase @Inject constructor(
             kind = FactorSourceKind.DEVICE,
             mnemonicWithPassphrase = mnemonicWithPassphrase
         ) == factorSourceId
-        return if (isValid) {
-            return mnemonicRepository.saveMnemonic(factorSourceId, mnemonicWithPassphrase).fold(onSuccess = {
-                preferencesManager.markFactorSourceBackedUp(factorSourceId)
-                Result.success(Unit)
-            }, onFailure = {
-                Result.failure(ProfileException.SecureStorageAccess)
-            })
-        } else {
-            Result.failure(ProfileException.InvalidMnemonic)
-        }
+        if (!isValid) return Result.failure(ProfileException.InvalidMnemonic)
+
+        // Backup restoration imports seeds before a profile exists, so foreground recovery cannot run yet.
+        val recovery = mnemonicRepository.clearInvalidatedMnemonics()
+        if (recovery.isFailure) return recovery
+
+        return mnemonicRepository.saveMnemonic(factorSourceId, mnemonicWithPassphrase).fold(onSuccess = {
+            preferencesManager.markFactorSourceBackedUp(factorSourceId)
+            Result.success(Unit)
+        }, onFailure = {
+            Result.failure(ProfileException.SecureStorageAccess)
+        })
     }
 }
