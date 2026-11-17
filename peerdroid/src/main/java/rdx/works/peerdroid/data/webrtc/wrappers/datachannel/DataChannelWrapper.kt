@@ -3,8 +3,9 @@ package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.sync.Mutex
@@ -79,6 +80,9 @@ data class DataChannelWrapper(
     val dataChannelEvents: Flow<DataChannelWrapperEvent>
         get() = webRtcDataChannel
             .eventFlow()
+            // Every package is kept, in order, while a message is processed: the receipt confirmation can wait for the
+            // wallet's own message to be sent, and a full buffer would drop packages (the observer uses trySend).
+            .buffer(Channel.UNLIMITED)
             .transform { dataChannelMessage ->
                 when (dataChannelMessage) {
                     is DataChannelMessage.Message.MetaData -> {
@@ -122,7 +126,6 @@ data class DataChannelWrapper(
                     }
                 }
             }
-            .conflate()
             .transform { dataChannelEvent ->
                 when (dataChannelEvent) {
                     is DataChannelEvent.CompleteMessage -> {
