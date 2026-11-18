@@ -101,7 +101,8 @@ fun BadgeRequirementCard(
                         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
                     ) {
                         Text(
-                            text = status.resource?.name?.takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.assetTransfer_badge_unknown),
+                            text = status.resource?.name?.takeIf { it.isNotEmpty() }
+                                ?: stringResource(id = R.string.assetTransfer_badge_unknown),
                             style = RadixTheme.typography.body1HighImportance,
                             color = RadixTheme.colors.text
                         )
@@ -156,7 +157,8 @@ fun BadgeRequirementCard(
                         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
                     ) {
                         Text(
-                            text = status.resource?.name?.takeIf { it.isNotEmpty() } ?: stringResource(id = R.string.assetTransfer_badge_unknown),
+                            text = status.resource?.name?.takeIf { it.isNotEmpty() }
+                                ?: stringResource(id = R.string.assetTransfer_badge_unknown),
                             style = RadixTheme.typography.body1HighImportance,
                             color = RadixTheme.colors.text
                         )
@@ -263,4 +265,3 @@ private fun BadgeRequirementCardErrorCheckFailedPreview() {
         )
     }
 }
-
