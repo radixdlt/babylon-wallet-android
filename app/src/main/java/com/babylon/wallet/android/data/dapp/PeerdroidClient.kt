@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
@@ -40,6 +41,10 @@ interface PeerdroidClient {
     val hasAtLeastOneConnection: Flow<Boolean>
 
     val openConnectionIds: Flow<Set<String>>
+
+    /** Whether the connector of this link is connected, as it changes. */
+    fun isConnectionOpen(remoteConnectorId: String): Flow<Boolean> =
+        openConnectionIds.map { connectorIds -> remoteConnectorId in connectorIds }.distinctUntilChanged()
 
     suspend fun connect(
         p2pTransportProfile: P2pTransportProfile,
@@ -96,6 +101,11 @@ class PeerdroidClientImpl @Inject constructor(
             .map { statuses ->
                 statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
             }
+
+    override fun isConnectionOpen(remoteConnectorId: String): Flow<Boolean> =
+        peerdroidConnector.peerConnectionStatus
+            .map { statuses -> statuses[remoteConnectorId] == PeerConnectionStatus.OPEN }
+            .distinctUntilChanged()
 
     override suspend fun connect(
         p2pTransportProfile: P2pTransportProfile,
