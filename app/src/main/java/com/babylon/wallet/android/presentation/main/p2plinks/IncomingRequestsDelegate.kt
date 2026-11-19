@@ -22,12 +22,12 @@ import com.radixdlt.sargon.RadixConnectPassword
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -64,6 +64,7 @@ class IncomingRequestsDelegate @Inject constructor(
     ) {
         super.invoke(scope, state, oneOffEventHandler)
         handleAllIncomingRequests()
+        observeAppLifecycle()
         observeP2PLinks()
     }
 
@@ -147,14 +148,21 @@ class IncomingRequestsDelegate @Inject constructor(
                 val p2pLinks = p2pLinksAndP2pTransportProfile.first
                 Timber.d("found ${p2pLinks.size} p2p links")
 
-                p2pLinks.asList().forEach { p2PLink ->
-                    establishLinkConnection(
-                        p2pTransportProfile = p2pLinksAndP2pTransportProfile.second,
-                        connectionPassword = p2PLink.connectionPassword
-                    )
+                // All at once: a link waits for nobody else's transports to start (each one's WebRTC takes a moment to
+                // reach the signaling server).
+                coroutineScope {
+                    p2pLinks.asList().forEach { p2PLink ->
+                        launch {
+                            establishLinkConnection(
+                                p2pTransportProfile = p2pLinksAndP2pTransportProfile.second,
+                                connectionPassword = p2PLink.connectionPassword
+                            )
+                        }
+                    }
                 }
             }
             .onCompletion {
+                // The main screen closed.
                 terminatePeerdroid()
             }
             .launchIn(viewModelScope)
@@ -166,56 +174,64 @@ class IncomingRequestsDelegate @Inject constructor(
     ) {
         peerdroidClient.connect(p2pTransportProfile, connectionPassword)
             .onSuccess {
-                if (incomingDappRequestsJob == null) {
-                    Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
-                    // We must run this only once
-                    // otherwise for each new link connection
-                    // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
-                    // I think this can be improved.
-                    incomingDappRequestsJob = viewModelScope.launch {
-                        peerdroidClient
-                            .listenForIncomingRequests()
-                            .cancellable()
-                            .collect { dappToWalletInteraction ->
-                                val remoteConnectorId = dappToWalletInteraction.remoteEntityId
-                                val requestId = dappToWalletInteraction.interactionId
-                                Timber.d(
-                                    "\uD83E\uDD16 wallet received incoming request from " +
-                                        "remote connector $remoteConnectorId with id $requestId"
-                                )
-                                verifyIncomingRequest(dappToWalletInteraction)
-                            }
-                    }
-                    incomingDappRequestErrorsJob = viewModelScope.launch {
-                        peerdroidClient
-                            .listenForIncomingRequestErrors()
-                            .cancellable()
-                            .collect { error ->
-                                reportFailure(error.exception)
-                            }
-                    }
-                }
-
-                reconnectOnAppForeground()
+                listenForIncomingMessages()
             }
             .onFailure { throwable ->
                 Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
             }
     }
 
-    private fun reconnectOnAppForeground() {
+    /**
+     * Listens, once for every link (they all share one stream of messages), to what the connector extensions send.
+     */
+    private fun listenForIncomingMessages() {
+        if (incomingDappRequestsJob != null) return
+        Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
+        incomingDappRequestsJob = viewModelScope.launch {
+            peerdroidClient
+                .listenForIncomingRequests()
+                .cancellable()
+                .collect { dappToWalletInteraction ->
+                    val remoteConnectorId = dappToWalletInteraction.remoteEntityId
+                    val requestId = dappToWalletInteraction.interactionId
+                    Timber.d(
+                        "\uD83E\uDD16 wallet received incoming request from " +
+                            "remote connector $remoteConnectorId with id $requestId"
+                    )
+                    verifyIncomingRequest(dappToWalletInteraction)
+                }
+        }
+        incomingDappRequestErrorsJob = viewModelScope.launch {
+            peerdroidClient
+                .listenForIncomingRequestErrors()
+                .cancellable()
+                .collect { error ->
+                    reportFailure(error.exception)
+                }
+        }
+    }
+
+    /**
+     * Tells the transports when the app comes to the foreground and goes to the background, for the whole life of the
+     * main screen. Each transport recovers its own connections on the foreground (WebRTC reopens the signaling
+     * sessions that may have died): nothing is terminated here, so no connection that is still up is cut.
+     */
+    private fun observeAppLifecycle() {
         observeAppLifecycleJob?.cancel()
         observeAppLifecycleJob = appLifecycleObserver.lifecycleEvents.onEach { event ->
-            val isConnected = peerdroidClient.hasAtLeastOneConnection.firstOrNull() ?: false
-
             when (event) {
-                Lifecycle.Event.ON_START -> if (isConnected) {
-                    Timber.d("P2P link connection is still active on app foreground")
-                } else {
-                    observeP2PLinks()
+                Lifecycle.Event.ON_START -> {
+                    Timber.d("\uD83E\uDD16 app in the foreground: the transports check their connections")
+                    peerdroidClient.onAppForeground()
                 }
 
-                else -> null
+                // WebRTC keeps its connections in the background: it only notes it, to check them on the foreground.
+                Lifecycle.Event.ON_STOP -> {
+                    Timber.d("\uD83E\uDD16 app in the background")
+                    peerdroidClient.onAppBackground()
+                }
+
+                else -> Unit
             }
         }.launchIn(viewModelScope)
     }

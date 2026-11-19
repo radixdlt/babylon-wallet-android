@@ -63,6 +63,17 @@ interface PeerdroidClient {
     suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
     fun terminate()
+
+    /**
+     * The app came back to the foreground: each transport checks its connections, which may have died while the app
+     * was in the background.
+     */
+    fun onAppForeground()
+
+    /**
+     * The app went to the background.
+     */
+    fun onAppBackground()
 }
 
 @Suppress("TooManyFunctions")
@@ -143,6 +154,14 @@ class PeerdroidClientImpl @Inject constructor(
 
     override fun terminate() {
         peerdroidConnector.terminateConnectionToConnectorExtension()
+    }
+
+    override fun onAppForeground() {
+        peerdroidConnector.onAppForeground()
+    }
+
+    override fun onAppBackground() {
+        peerdroidConnector.onAppBackground()
     }
 
     private suspend fun parseIncomingMessage(
