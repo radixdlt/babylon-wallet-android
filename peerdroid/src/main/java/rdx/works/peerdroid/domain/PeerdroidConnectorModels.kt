@@ -30,8 +30,13 @@ value class RemoteClientHolder(
 internal data class WebSocketHolder(
     val webSocketClient: WebSocketClient,
     val listenMessagesJob: Job,
-    val p2pTransportProfile: P2pTransportProfile
-)
+    val p2pTransportProfile: P2pTransportProfile,
+    // Kept to open the signaling session again (see PeerdroidConnectorImpl.onAppForeground).
+    val password: RadixConnectPassword
+) {
+    // Never the password: a holder that ends up in a log line must not carry the link's secret.
+    override fun toString(): String = "WebSocketHolder(signalingServer=${p2pTransportProfile.signalingServer})"
+}
 
 internal data class PeerConnectionHolder(
     val connectionIdHolder: ConnectionIdHolder,
