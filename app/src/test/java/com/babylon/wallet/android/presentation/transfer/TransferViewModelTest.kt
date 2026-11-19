@@ -114,7 +114,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         super.setUp()
         coEvery { getAccountDepositResourceRulesUseCase.invoke(any()) } returns emptySet()
         coEvery { getTransferBadgeRequirementsUseCase.invoke(any(), any()) } returns Result.success(
-            GetTransferBadgeRequirementsUseCase.Result(status = BadgeRequirementStatus.None, proofs = emptyList())
+            GetTransferBadgeRequirementsUseCase.Result(status = BadgeRequirementStatus.None, requiredBadges = emptyList())
         )
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address.string
         every { getWalletAssetsUseCase.observe(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))

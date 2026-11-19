@@ -7,7 +7,8 @@ import com.babylon.wallet.android.utils.callSafely
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceSpecifier
-import com.radixdlt.sargon.TransferWithdrawProofs
+import com.radixdlt.sargon.RestrictedWithdrawalStatus
+import com.radixdlt.sargon.TransferRequiredBadges
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import rdx.works.core.domain.resources.Resource
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 /**
  * The badges a transfer of restricted tokens needs. Sargon reads the withdraw rules of the
- * transferred resources and what the account holds ([TransferWithdrawProofs]); this only adds
+ * transferred resources and what the account holds ([TransferRequiredBadges]); this only adds
  * the badges' names and icons for the person.
  */
 class GetTransferBadgeRequirementsUseCase @Inject constructor(
@@ -26,32 +27,33 @@ class GetTransferBadgeRequirementsUseCase @Inject constructor(
 
     data class Result(
         val status: BadgeRequirementStatus,
-        /** The proofs to give to the transfer manifest. */
-        val proofs: List<ResourceSpecifier>
+        /** The badges to prove in the transfer manifest. */
+        val requiredBadges: List<ResourceSpecifier>
     )
 
     suspend operator fun invoke(
         fromAccount: AccountAddress,
         resources: Set<ResourceAddress>
     ): kotlin.Result<Result> = sargonOsManager.callSafely(dispatcher) {
-        transferWithdrawProofs(fromAccount = fromAccount, resources = resources.toList())
+        transferRequiredBadges(fromAccount = fromAccount, resources = resources.toList())
     }.map { outcome ->
-        Result(status = outcome.toStatus(fromAccount), proofs = outcome.proofs)
+        Result(status = outcome.toStatus(fromAccount), requiredBadges = outcome.requiredBadges)
     }
 
-    private suspend fun TransferWithdrawProofs.toStatus(fromAccount: AccountAddress): BadgeRequirementStatus {
+    private suspend fun TransferRequiredBadges.toStatus(fromAccount: AccountAddress): BadgeRequirementStatus {
         if (restrictedWithdrawals.isEmpty()) return BadgeRequirementStatus.None
 
-        val unsatisfied = restrictedWithdrawals.firstOrNull { !it.isSatisfied }
+        val unsatisfied = restrictedWithdrawals.firstOrNull { it.status != RestrictedWithdrawalStatus.SATISFIED }
         return when {
             unsatisfied == null -> BadgeRequirementStatus.Success(
-                resource = proofs.firstOrNull()?.let { resourceForDisplay(it.address, fromAccount) }
+                resource = requiredBadges.firstOrNull()?.let { resourceForDisplay(it.address, fromAccount) }
             )
 
-            unsatisfied.badges.isEmpty() -> BadgeRequirementStatus.Error(
-                resource = resourceForDisplay(unsatisfied.resource, fromAccount),
-                reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable
-            )
+            unsatisfied.status == RestrictedWithdrawalStatus.NOT_WITHDRAWABLE || unsatisfied.badges.isEmpty() ->
+                BadgeRequirementStatus.Error(
+                    resource = resourceForDisplay(unsatisfied.resource, fromAccount),
+                    reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable
+                )
 
             else -> BadgeRequirementStatus.Error(
                 resource = resourceForDisplay(unsatisfied.badges.first(), fromAccount),

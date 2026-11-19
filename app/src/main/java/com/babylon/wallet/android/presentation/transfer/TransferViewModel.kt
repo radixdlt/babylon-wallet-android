@@ -120,7 +120,7 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    // Sargon finds the badges the restricted tokens need, and the proofs to add to the manifest.
+    // Sargon finds the badges the restricted tokens need, to prove in the manifest.
     private suspend fun checkWithdrawerBadgeRequirements(
         fromAccount: Account,
         spendingAddresses: Set<ResourceAddress>
@@ -132,7 +132,7 @@ class TransferViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         badgeRequirementStatus = result.status,
-                        resolvedRequiredBadges = result.proofs
+                        resolvedRequiredBadges = result.requiredBadges
                     )
                 }
             }.onFailure { error ->

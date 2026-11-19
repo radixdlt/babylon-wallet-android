@@ -7,7 +7,8 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.RestrictedWithdrawal
 import com.radixdlt.sargon.SargonOs
-import com.radixdlt.sargon.TransferWithdrawProofs
+import com.radixdlt.sargon.RestrictedWithdrawalStatus
+import com.radixdlt.sargon.TransferRequiredBadges
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.os.SargonOsManager
@@ -43,8 +44,8 @@ class GetTransferBadgeRequirementsUseCaseTest {
     private val badge = ResourceAddress.sampleMainnet.candy
     private val badgeResource = Resource.FungibleResource(address = badge, ownedAmount = 1.toDecimal192())
 
-    private fun sargonReturns(outcome: TransferWithdrawProofs) {
-        coEvery { sargonOs.transferWithdrawProofs(account, listOf(restrictedToken)) } returns outcome
+    private fun sargonReturns(outcome: TransferRequiredBadges) {
+        coEvery { sargonOs.transferRequiredBadges(account, listOf(restrictedToken)) } returns outcome
     }
 
     private fun gatewayKnows(resource: Resource) {
@@ -55,22 +56,22 @@ class GetTransferBadgeRequirementsUseCaseTest {
 
     @Test
     fun `no restricted token needs nothing`() = runTest(testDispatcher) {
-        sargonReturns(TransferWithdrawProofs(proofs = emptyList(), restrictedWithdrawals = emptyList()))
+        sargonReturns(TransferRequiredBadges(requiredBadges = emptyList(), restrictedWithdrawals = emptyList()))
 
         val result = sut(account, setOf(restrictedToken)).getOrThrow()
 
         assertEquals(BadgeRequirementStatus.None, result.status)
-        assertTrue(result.proofs.isEmpty())
+        assertTrue(result.requiredBadges.isEmpty())
     }
 
     @Test
     fun `a held badge gives its proof to the manifest`() = runTest(testDispatcher) {
         val proof = ResourceSpecifier.Fungible(resourceAddress = badge, amount = 1.toDecimal192())
         sargonReturns(
-            TransferWithdrawProofs(
-                proofs = listOf(proof),
+            TransferRequiredBadges(
+                requiredBadges = listOf(proof),
                 restrictedWithdrawals = listOf(
-                    RestrictedWithdrawal(resource = restrictedToken, badges = listOf(badge), isSatisfied = true)
+                    RestrictedWithdrawal(resource = restrictedToken, badges = listOf(badge), status = RestrictedWithdrawalStatus.SATISFIED)
                 )
             )
         )
@@ -79,16 +80,16 @@ class GetTransferBadgeRequirementsUseCaseTest {
         val result = sut(account, setOf(restrictedToken)).getOrThrow()
 
         assertEquals(BadgeRequirementStatus.Success(badgeResource), result.status)
-        assertEquals(listOf(proof), result.proofs)
+        assertEquals(listOf(proof), result.requiredBadges)
     }
 
     @Test
     fun `a missing badge is shown`() = runTest(testDispatcher) {
         sargonReturns(
-            TransferWithdrawProofs(
-                proofs = emptyList(),
+            TransferRequiredBadges(
+                requiredBadges = emptyList(),
                 restrictedWithdrawals = listOf(
-                    RestrictedWithdrawal(resource = restrictedToken, badges = listOf(badge), isSatisfied = false)
+                    RestrictedWithdrawal(resource = restrictedToken, badges = listOf(badge), status = RestrictedWithdrawalStatus.MISSING_BADGES)
                 )
             )
         )
@@ -106,10 +107,35 @@ class GetTransferBadgeRequirementsUseCaseTest {
     fun `a token nobody may withdraw is shown`() = runTest(testDispatcher) {
         val token = Resource.FungibleResource(address = restrictedToken, ownedAmount = null)
         sargonReturns(
-            TransferWithdrawProofs(
-                proofs = emptyList(),
+            TransferRequiredBadges(
+                requiredBadges = emptyList(),
                 restrictedWithdrawals = listOf(
-                    RestrictedWithdrawal(resource = restrictedToken, badges = emptyList(), isSatisfied = false)
+                    RestrictedWithdrawal(resource = restrictedToken, badges = emptyList(), status = RestrictedWithdrawalStatus.NOT_WITHDRAWABLE)
+                )
+            )
+        )
+        gatewayKnows(token)
+
+        val result = sut(account, setOf(restrictedToken)).getOrThrow()
+
+        assertEquals(
+            BadgeRequirementStatus.Error(token, BadgeRequirementStatus.Error.Reason.NotWithdrawable),
+            result.status
+        )
+    }
+
+    @Test
+    fun `a rule a transfer cannot meet is shown as not withdrawable, whatever the badges`() = runTest(testDispatcher) {
+        val token = Resource.FungibleResource(address = restrictedToken, ownedAmount = null)
+        sargonReturns(
+            TransferRequiredBadges(
+                requiredBadges = emptyList(),
+                restrictedWithdrawals = listOf(
+                    RestrictedWithdrawal(
+                        resource = restrictedToken,
+                        badges = listOf(badge),
+                        status = RestrictedWithdrawalStatus.NOT_WITHDRAWABLE
+                    )
                 )
             )
         )
@@ -125,7 +151,7 @@ class GetTransferBadgeRequirementsUseCaseTest {
 
     @Test
     fun `a failure of Sargon is reported`() = runTest(testDispatcher) {
-        coEvery { sargonOs.transferWithdrawProofs(any(), any()) } throws IllegalStateException("no connection")
+        coEvery { sargonOs.transferRequiredBadges(any(), any()) } throws IllegalStateException("no connection")
 
         assertTrue(sut(account, setOf(restrictedToken)).isFailure)
     }
