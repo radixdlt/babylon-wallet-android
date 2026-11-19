@@ -45,6 +45,9 @@ class GetTransferBadgeRequirementsUseCase @Inject constructor(
 
         val unsatisfied = restrictedWithdrawals.firstOrNull { it.status != RestrictedWithdrawalStatus.SATISFIED }
         return when {
+            // Met by the account's own signature alone: no badge to show.
+            unsatisfied == null && requiredBadges.isEmpty() -> BadgeRequirementStatus.None
+
             unsatisfied == null -> BadgeRequirementStatus.Success(
                 resource = requiredBadges.firstOrNull()?.let { resourceForDisplay(it.address, fromAccount) }
             )

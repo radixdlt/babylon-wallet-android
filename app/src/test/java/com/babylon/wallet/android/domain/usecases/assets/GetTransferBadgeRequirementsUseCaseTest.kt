@@ -150,6 +150,27 @@ class GetTransferBadgeRequirementsUseCaseTest {
     }
 
     @Test
+    fun `a rule met by the account's own signature shows no badge`() = runTest(testDispatcher) {
+        sargonReturns(
+            TransferRequiredBadges(
+                requiredBadges = emptyList(),
+                restrictedWithdrawals = listOf(
+                    RestrictedWithdrawal(
+                        resource = restrictedToken,
+                        badges = emptyList(),
+                        status = RestrictedWithdrawalStatus.SATISFIED
+                    )
+                )
+            )
+        )
+
+        val result = sut(account, setOf(restrictedToken)).getOrThrow()
+
+        assertEquals(BadgeRequirementStatus.None, result.status)
+        assertTrue(result.requiredBadges.isEmpty())
+    }
+
+    @Test
     fun `a failure of Sargon is reported`() = runTest(testDispatcher) {
         coEvery { sargonOs.transferRequiredBadges(any(), any()) } throws IllegalStateException("no connection")
 
