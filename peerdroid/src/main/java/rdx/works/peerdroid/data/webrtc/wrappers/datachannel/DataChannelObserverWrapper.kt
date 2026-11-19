@@ -37,7 +37,8 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelMessage> = callbackFlow {
                     val message = decodeAndParsePackageFromJson(jsonString)
                     trySend(message)
                 } catch (exception: Exception) {
-                    Timber.e("📯 an error occurred while decoding the package 📦: ${exception.localizedMessage} ⬅")
+                    // The error type only, to keep log lines short.
+                    Timber.e("📯 an error occurred while decoding the package 📦: ${exception.javaClass.simpleName} ⬅")
                     trySend(DataChannelMessage.UnknownError(message = "error occurred while decoding the package"))
                 }
             }

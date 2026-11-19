@@ -118,6 +118,8 @@ internal class PeerdroidConnectorImpl(
 
     private val _peerConnectionStatus = MutableStateFlow(emptyMap<String, PeerConnectionStatus>())
 
+    private val logThrottle = LogThrottle()
+
     // Serialises, link by link, starting, stopping and restarting the signaling session, so that none undoes another.
     private val linkLocks = ConcurrentHashMap<ConnectionIdHolder, Mutex>()
 
@@ -155,7 +157,7 @@ internal class PeerdroidConnectorImpl(
             lockOf(connectionId).withLock {
                 val current = mapOfWebSockets[connectionId]
                 if (current?.p2pTransportProfile == p2pTransportProfile) {
-                    Timber.d("⚙️ already tried to establish a link connection with connectionId: $connectionId")
+                    RadixConnectLog.d("⚙️ ${connectionId.logId} webrtc already started: kept")
                     return@withLock Result.success(Unit)
                 }
                 // Another signaling server: the session with the previous one is closed, not left open.
@@ -183,7 +185,8 @@ internal class PeerdroidConnectorImpl(
         reason: String,
         atGeneration: Long
     ): Result<Unit> {
-        Timber.d("⚙️ establishing a link connection with connectionId: $connectionId")
+        val startedAt = System.currentTimeMillis()
+        RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc starting: signaling server ${p2pTransportProfile.signalingServer}")
         val webSocketClient = webSocketClientFactory()
         return webSocketClient.initSession(
             connectionId = connectionId,
@@ -193,7 +196,7 @@ internal class PeerdroidConnectorImpl(
             failedStarts.remove(connectionId)
             if (generation.get() != atGeneration) {
                 webSocketClient.closeSession()
-                Timber.d("⚙️ link connection with connectionId: $connectionId not kept: every connection was terminated meanwhile")
+                RadixConnectLog.d("⚙️ ${connectionId.logId} webrtc not started: every connection was terminated meanwhile")
                 return Result.success(Unit)
             }
             val job = listenForMessagesFromRemoteClients(p2pTransportProfile, connectionId, webSocketClient)
@@ -203,17 +206,21 @@ internal class PeerdroidConnectorImpl(
                 p2pTransportProfile = p2pTransportProfile,
                 password = password
             )
-            Timber.d("⚙️ link connection with connectionId: $connectionId $reason ✅")
-        }.onFailure {
+            val elapsedMs = System.currentTimeMillis() - startedAt
+            RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc $reason: signaling server connected in $elapsedMs ms")
+        }.onFailure { error ->
             if (generation.get() == atGeneration) {
                 failedStarts[connectionId] = FailedStart(p2pTransportProfile = p2pTransportProfile, password = password)
             }
-            Timber.e("⚙️ failed to establish a link connection with connectionId: $connectionId")
+            recordFailure(connectionId, "could not connect to the signaling server: ${error.describe()}")
         }
     }
 
     override suspend fun deleteConnector(connectionId: ConnectionIdHolder) {
-        Timber.d("⚙️ \uD83D\uDDD1️ delete link connection with connectionId: ${connectionId.id}")
+        if (mapOfWebSockets.containsKey(connectionId)) {
+            RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc stopping: the link is deleted")
+        }
+        logThrottle.forget(connectionId.id)
         withContext(ioDispatcher) {
             lockOf(connectionId).withLock { deleteLocked(connectionId) }
         }
@@ -242,7 +249,7 @@ internal class PeerdroidConnectorImpl(
         mapOfPeerConnections.keys.removeAll(peerConnectionsForTermination.keys)
         mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
         updatePeerConnectionStatus(connectionId = connectionId, isOpen = false, isDeleted = true)
-        Timber.d("⚙️ \uD83D\uDDD1️ link connection with connectionId: ${connectionId.id} deleted ✅")
+        RadixConnectLog.d("⚙️ ${connectionId.logId} webrtc stopped")
     }
 
     override fun terminateConnectionToConnectorExtension() {
@@ -250,7 +257,7 @@ internal class PeerdroidConnectorImpl(
         failedStarts.clear()
         connectingSinceMs.clear()
         applicationScope.launch(ioDispatcher) {
-            Timber.d("⚙️ \uD83D\uDEAB terminating all link connections and clear: websockets, peer connections, and data channels")
+            RadixConnectLog.i("⚙️ webrtc terminating every connection (${mapOfWebSockets.size} links)")
             mapOfWebSockets.values.forEach { webSocketHolder ->
                 webSocketHolder.listenMessagesJob.cancel()
                 webSocketHolder.webSocketClient.closeSession()
@@ -283,12 +290,16 @@ internal class PeerdroidConnectorImpl(
         return withContext(ioDispatcher) {
             val connectionIdHolder = ConnectionIdHolder(id = remoteConnectorId)
             if (mapOfDataChannels.contains(key = connectionIdHolder)) {
-                mapOfDataChannels[connectionIdHolder]
+                val result = mapOfDataChannels[connectionIdHolder]
                     ?.dataChannel
                     ?.sendMessage(message)
                     ?: Result.failure(MessageNotSentException("failed to send message to CE because data channel doesn't exist"))
+                result.onFailure { error ->
+                    // The size only: never the contents.
+                    recordFailure(connectionIdHolder, "failed to send a message (${message.length} chars): ${error.describe()}")
+                }
             } else {
-                Timber.e("📯 failed to send message to CE: $connectionIdHolder because its data channel is closed❗")
+                recordFailure(connectionIdHolder, "failed to send a message (${message.length} chars): no open data channel")
                 Result.failure(MessageNotSentException("failed to send message to CE"))
             }
         }
@@ -419,6 +430,7 @@ internal class PeerdroidConnectorImpl(
                                     remoteClientHolder = remoteClientHolder
                                 )
                                 if (isSuccess.not()) {
+                                    recordFailure(connectionId, "could not answer the offer of the connector extension")
                                     terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                                     return@collect
                                 }
@@ -433,7 +445,7 @@ internal class PeerdroidConnectorImpl(
 
                         is Confirmation -> {}
                         is Error -> {
-                            Timber.d("⚙️ \uD83D\uDCE1 error ❗ ⬇")
+                            recordFailure(connectionId, "signaling server error: ${signalingServerMessage.javaClass.simpleName}")
                         }
                     }
                 }
@@ -483,7 +495,14 @@ internal class PeerdroidConnectorImpl(
                             connectionIdHolder = connectionId,
                             webRtcDataChannel = webRtcManager.getDataChannel()
                         )
-                        readers.start(remoteClient = remoteClientHolder, events = dataChannel.dataChannelEvents)
+                        readers.start(
+                            remoteClient = remoteClientHolder,
+                            events = dataChannel.dataChannelEvents.onEach { dataChannelEvent ->
+                                if (dataChannelEvent is DataChannelWrapperEvent.Error) {
+                                    recordFailure(connectionId, "data channel error (invalid or unverified message)")
+                                }
+                            }
+                        )
                         mapOfDataChannels[connectionId] = DataChannelHolder(
                             connectionIdHolder = connectionId,
                             remoteClientHolder = remoteClientHolder,
@@ -495,14 +514,14 @@ internal class PeerdroidConnectorImpl(
                     }
 
                     is PeerConnectionEvent.Disconnected -> {
-                        Timber.d("⚙️ ⚡ peer connection disconnected for remote client: $remoteClientHolder \uD83D\uDD34")
+                        recordFailure(connectionId, "peer connection disconnected")
                         terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
                         updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = false)
                     }
 
                     is PeerConnectionEvent.Failed -> {
-                        Timber.d("⚙️ ⚡ peer connection failed for remote client: $remoteClientHolder ❌")
+                        recordFailure(connectionId, "peer connection failed")
                         terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
                         updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = false)
@@ -510,7 +529,7 @@ internal class PeerdroidConnectorImpl(
                 }
             }
             .catch { exception ->
-                Timber.e("⚙️ ⚡ an exception occurred: ${exception.localizedMessage} ❗")
+                recordFailure(connectionId, "peer connection error: ${exception.describe()}")
                 terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                 isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
                 updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = false)
@@ -645,6 +664,12 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
+    // Logged with the short connection id and the reason, collapsed when repeated.
+    private fun recordFailure(connectionId: ConnectionIdHolder, reason: String) {
+        val redactedReason = reason.redactIpAddresses()
+        logThrottle.log(connectionId.id, "⚙️ ${connectionId.logId} webrtc: $redactedReason") { line -> RadixConnectLog.w(line) }
+    }
+
     private fun updatePeerConnectionStatus(
         connectionId: ConnectionIdHolder,
         isConnecting: Boolean = false,
@@ -667,7 +692,13 @@ internal class PeerdroidConnectorImpl(
             status != PeerConnectionStatus.CONNECTING -> connectingSinceMs.remove(connectionId)
             previousStatus != PeerConnectionStatus.CONNECTING -> connectingSinceMs[connectionId] = monotonicMillis()
         }
+        if (status != previousStatus) {
+            val change = "${previousStatus.describe()} → ${status.describe()}"
+            RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc status: $change (data channels: ${mapOfDataChannels.size})")
+        }
     }
+
+    private fun PeerConnectionStatus?.describe(): String = this?.name?.lowercase() ?: "not running"
 }
 
 /** How long a peer connection may negotiate before the foreground takes it for stuck and opens the link again. */

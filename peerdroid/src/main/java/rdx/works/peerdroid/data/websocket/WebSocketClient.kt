@@ -30,6 +30,7 @@ import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
+import rdx.works.peerdroid.data.describe
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.websocket.model.RpcMessage
@@ -96,7 +97,7 @@ internal class WebSocketClient(applicationContext: Context) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("🛰 connection exception: ${exception.localizedMessage}❗")
+            Timber.e("🛰 connection exception: ${exception.describe()}❗")
             Result.failure(exception)
         }
     }
@@ -119,7 +120,8 @@ internal class WebSocketClient(applicationContext: Context) {
                 }
                 ?: flowOf(SignalingServerMessage.Error.Unknown)
         } catch (exception: Exception) {
-            Timber.e("🛰 incoming message exception: ${exception.localizedMessage}❗")
+            // The error type only, to keep log lines short.
+            Timber.e("🛰 incoming message exception: ${exception.javaClass.simpleName}❗")
             flowOf(SignalingServerMessage.Error.Unknown)
         }
     }
@@ -187,7 +189,7 @@ internal class WebSocketClient(applicationContext: Context) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("🛰 failed to send message: ${exception.localizedMessage}❗")
+            Timber.e("🛰 failed to send message: ${exception.describe()}❗")
         }
     }
 

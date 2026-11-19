@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.login.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -35,6 +36,8 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.peerdroid.domain.ConnectionIdHolder
+import rdx.works.peerdroid.domain.shortId
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -146,7 +149,7 @@ class IncomingRequestsDelegate @Inject constructor(
             .distinctUntilChanged()
             .map { p2pLinksAndP2pTransportProfile ->
                 val p2pLinks = p2pLinksAndP2pTransportProfile.first
-                Timber.d("found ${p2pLinks.size} p2p links")
+                Timber.tag(LOG_TAG).i("🤖 connecting the ${p2pLinks.size} linked connectors")
 
                 // All at once: a link waits for nobody else's transports to start (each one's WebRTC takes a moment to
                 // reach the signaling server).
@@ -163,7 +166,7 @@ class IncomingRequestsDelegate @Inject constructor(
             }
             .onCompletion {
                 // The main screen closed.
-                terminatePeerdroid()
+                terminatePeerdroid(reason = "the observation of the linked connectors ended")
             }
             .launchIn(viewModelScope)
     }
@@ -177,7 +180,7 @@ class IncomingRequestsDelegate @Inject constructor(
                 listenForIncomingMessages()
             }
             .onFailure { throwable ->
-                Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
+                Timber.tag(LOG_TAG).e("🤖 failed to connect a linked connector: ${throwable.javaClass.simpleName}")
             }
     }
 
@@ -186,17 +189,15 @@ class IncomingRequestsDelegate @Inject constructor(
      */
     private fun listenForIncomingMessages() {
         if (incomingDappRequestsJob != null) return
-        Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
+        Timber.tag(LOG_TAG).d("🤖 listening for incoming requests from dApps")
         incomingDappRequestsJob = viewModelScope.launch {
             peerdroidClient
                 .listenForIncomingRequests()
                 .cancellable()
                 .collect { dappToWalletInteraction ->
-                    val remoteConnectorId = dappToWalletInteraction.remoteEntityId
                     val requestId = dappToWalletInteraction.interactionId
-                    Timber.d(
-                        "\uD83E\uDD16 wallet received incoming request from " +
-                            "remote connector $remoteConnectorId with id $requestId"
+                    Timber.tag(LOG_TAG).d(
+                        "🤖 ${dappToWalletInteraction.remoteEntityId.logId()} verifying incoming interaction=$requestId"
                     )
                     verifyIncomingRequest(dappToWalletInteraction)
                 }
@@ -221,13 +222,13 @@ class IncomingRequestsDelegate @Inject constructor(
         observeAppLifecycleJob = appLifecycleObserver.lifecycleEvents.onEach { event ->
             when (event) {
                 Lifecycle.Event.ON_START -> {
-                    Timber.d("\uD83E\uDD16 app in the foreground: the transports check their connections")
+                    Timber.tag(LOG_TAG).i("🤖 app in the foreground: the transports check their connections")
                     peerdroidClient.onAppForeground()
                 }
 
                 // WebRTC keeps its connections in the background: it only notes it, to check them on the foreground.
                 Lifecycle.Event.ON_STOP -> {
-                    Timber.d("\uD83E\uDD16 app in the background")
+                    Timber.tag(LOG_TAG).i("🤖 app in the background")
                     peerdroidClient.onAppBackground()
                 }
 
@@ -236,8 +237,8 @@ class IncomingRequestsDelegate @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun terminatePeerdroid() {
-        Timber.d("\uD83E\uDD16 Peerdroid is terminating")
+    private fun terminatePeerdroid(reason: String) {
+        Timber.tag(LOG_TAG).i("🤖 terminating every Radix Connect connection: $reason")
         incomingDappRequestsJob?.cancel()
         incomingDappRequestsJob = null
         incomingDappRequestErrorsJob?.cancel()
@@ -252,8 +253,15 @@ class IncomingRequestsDelegate @Inject constructor(
         }
     }
 
+    // The short form of a connector's id (a hash of the link's password): never the full id.
+    private fun RemoteEntityID.logId(): String = when (this) {
+        is RemoteEntityID.ConnectorId -> "link=${ConnectionIdHolder(id).shortId}"
+        is RemoteEntityID.RadixMobileConnectRemoteSession -> "mobile session"
+    }
+
     companion object {
 
         private val REQUEST_HANDLING_DELAY = 300.milliseconds
+        private const val LOG_TAG = "RadixConnect"
     }
 }

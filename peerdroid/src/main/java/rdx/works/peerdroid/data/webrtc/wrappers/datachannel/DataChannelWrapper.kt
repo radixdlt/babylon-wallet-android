@@ -16,6 +16,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.webrtc.DataChannel
 import rdx.works.peerdroid.data.PackageDto
+import rdx.works.peerdroid.data.describe
+import rdx.works.peerdroid.data.logId
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
 import rdx.works.peerdroid.domain.MessageNotSentException
@@ -34,7 +36,7 @@ data class DataChannelWrapper(
 
     init {
         Timber.d(
-            "📯 init DataChannelWrapper for remote connector: ${connectionIdHolder.id} " +
+            "📯 init DataChannelWrapper for ${connectionIdHolder.logId} " +
                 "with label the remote client id ${this.webRtcDataChannel.label()}",
         )
     }
@@ -75,7 +77,10 @@ data class DataChannelWrapper(
             listOfPackages.forEachIndexed { index, packageDto ->
                 if (index == 0) {
                     val metadata = packageDto as PackageDto.MetaData
-                    Timber.d("📯 send message 📦 with messageId = ${metadata.messageId} to remote connector: ${connectionIdHolder.id}")
+                    Timber.d(
+                        "📯 send message 📦 with messageId = ${metadata.messageId} (${listOfPackages.size - 1} chunks) " +
+                            "to ${connectionIdHolder.logId}"
+                    )
                     if (!send(packageDto = metadata)) {
                         return Result.failure(MessageNotSentException(rejectedPackageReason()))
                     }
@@ -91,13 +96,13 @@ data class DataChannelWrapper(
             }
             Result.success(Unit)
         } catch (iobe: IndexOutOfBoundsException) {
-            Timber.e("📯 failed to wrap byte array to byte buffer: ${iobe.localizedMessage}❗")
+            Timber.e("📯 failed to wrap byte array to byte buffer: ${iobe.describe()}❗")
             Result.failure(sendFailure(packagesSent, "failed to wrap byte array to byte buffer: ${iobe.localizedMessage}", iobe))
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("📯 failed to convert and send the message: ${exception.localizedMessage}❗")
+            Timber.e("📯 failed to convert and send the message: ${exception.describe()}❗")
             Result.failure(sendFailure(packagesSent, "failed to send message with exception: ${exception.localizedMessage}", exception))
         }
     }
@@ -154,11 +159,11 @@ data class DataChannelWrapper(
                         }
                     }
                     is DataChannelMessage.RemoteConnectorReceivedMessage.Confirmation -> {
-                        Timber.d("📯 remote connector ${connectionIdHolder.id} received the message❕ ⬅️️")
+                        Timber.d("📯 ${connectionIdHolder.logId} received the message❕ ⬅️️")
                         emit(DataChannelEvent.ReceiveMessage.Confirmation(messageId = dataChannelMessage.messageId))
                     }
                     is DataChannelMessage.RemoteConnectorReceivedMessage.Error -> {
-                        Timber.d("📯 remote connector ${connectionIdHolder.id} failed to receive the message❗️ ⬅️️")
+                        Timber.d("📯 ${connectionIdHolder.logId} failed to receive the message❗️ ⬅️️")
                         emit(DataChannelEvent.ReceiveMessage.Error(messageId = dataChannelMessage.messageId))
                     }
                     is DataChannelMessage.StateChanged -> {
@@ -185,7 +190,7 @@ data class DataChannelWrapper(
                                 )
                                 Timber.d(
                                     "📯 forward the complete message with messageId = ${dataChannelEvent.messageId} " +
-                                        "from remote connector ${connectionIdHolder.id} to the wallet ✅"
+                                        "from ${connectionIdHolder.logId} to the wallet ✅"
                                 )
                             }
                             .onFailure {
@@ -193,7 +198,7 @@ data class DataChannelWrapper(
                             }
                     }
                     is DataChannelEvent.StateChanged -> {
-                        Timber.d("📯 state for remote connector: ${connectionIdHolder.id} changed: ${dataChannelEvent.state} 📶️")
+                        Timber.d("📯 state for ${connectionIdHolder.logId} changed: ${dataChannelEvent.state} 📶️")
                         emit(
                             DataChannelWrapperEvent.StateChangedForRemoteConnector(
                                 connectionIdHolder = connectionIdHolder,
@@ -254,7 +259,7 @@ data class DataChannelWrapper(
         val confirmationDto = PackageDto.ReceiveMessageConfirmation(
             messageId = messageId
         )
-        Timber.d("📯 send ReceiveMessageConfirmation ❕ for messageId = $messageId to remote connector ${connectionIdHolder.id} ➡️")
+        Timber.d("📯 send ReceiveMessageConfirmation ❕ for messageId = $messageId to ${connectionIdHolder.logId} ➡️")
         return sending.withLock { send(packageDto = confirmationDto) }
     }
 
@@ -263,7 +268,7 @@ data class DataChannelWrapper(
         val errorDto = PackageDto.ReceiveMessageError(
             messageId = messageId
         )
-        Timber.d("📯 send sendReceiveMessageError ❗️ or messageId = $messageId to remote connector ${connectionIdHolder.id} ➡️")
+        Timber.d("📯 send sendReceiveMessageError ❗️ or messageId = $messageId to ${connectionIdHolder.logId} ➡️")
         return sending.withLock { send(errorDto) }
     }
 
@@ -279,14 +284,14 @@ data class DataChannelWrapper(
     fun close() {
         Timber.d(
             "📯 DataChannelWrapper of ${this.webRtcDataChannel} close for remote connector: " +
-                "${connectionIdHolder.id} 🔻 and with remote client id ${this.webRtcDataChannel.label()}"
+                "${connectionIdHolder.logId} 🔻 and with remote client id ${this.webRtcDataChannel.label()}"
         )
         // The observer is left to the channel's event flow, which unregisters it when it ends (the channel closing
         // ends it): unregistering it here first kept that flow, and the reader collecting it, alive for good.
         webRtcDataChannel.close()
         Timber.d(
             "📯 ${this.webRtcDataChannel} state: ${this.webRtcDataChannel.state()}, for remote connector: " +
-                "${connectionIdHolder.id} and with remote client id ${this.webRtcDataChannel.label()}"
+                "${connectionIdHolder.logId} and with remote client id ${this.webRtcDataChannel.label()}"
         )
     }
 
