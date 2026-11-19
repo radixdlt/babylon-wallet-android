@@ -42,6 +42,7 @@ import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
+import rdx.works.peerdroid.domain.MessageNotSentException
 import rdx.works.peerdroid.domain.PeerConnectionHolder
 import rdx.works.peerdroid.domain.PeerConnectionStatus
 import rdx.works.peerdroid.domain.RemoteClientHolder
@@ -208,10 +209,10 @@ internal class PeerdroidConnectorImpl(
                 mapOfDataChannels[connectionIdHolder]
                     ?.dataChannel
                     ?.sendMessage(message)
-                    ?: Result.failure(Throwable("failed to send message to CE because data channel doesn't exist"))
+                    ?: Result.failure(MessageNotSentException("failed to send message to CE because data channel doesn't exist"))
             } else {
                 Timber.e("📯 failed to send message to CE: $connectionIdHolder because its data channel is closed❗")
-                Result.failure(Throwable("failed to send message to CE"))
+                Result.failure(MessageNotSentException("failed to send message to CE"))
             }
         }
     }
