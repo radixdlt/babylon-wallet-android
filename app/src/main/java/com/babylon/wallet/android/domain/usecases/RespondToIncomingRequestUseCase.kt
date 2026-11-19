@@ -122,7 +122,8 @@ class RespondToIncomingRequestUseCase @Inject constructor(
             )
         )
 
-        respondWithForAnyTransaction(request = request, payload = payload)
+        // The transaction is submitted already: its answer may still reach the dApp later.
+        respondWithForAnyTransaction(request = request, payload = payload, resendIfNotSent = true)
     }
 
     suspend fun respondWithSuccessSubintent(
@@ -141,18 +142,21 @@ class RespondToIncomingRequestUseCase @Inject constructor(
             )
         )
 
-        respondWithForAnyTransaction(request = request, payload = payload)
+        // The caller shows a failure, and the person may sign again: a late copy would give the dApp a second subintent.
+        respondWithForAnyTransaction(request = request, payload = payload, resendIfNotSent = false)
             .map { responseItems.response.expirationTimestamp }
     }
 
     private suspend fun respondWithForAnyTransaction(
         request: DappToWalletInteraction,
-        payload: WalletToDappInteractionResponse.Success
+        payload: WalletToDappInteractionResponse.Success,
+        resendIfNotSent: Boolean
     ) = when (request.remoteEntityId) {
         is RemoteEntityID.ConnectorId -> {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = request.remoteEntityId.id,
-                payload = payload.toJson()
+                payload = payload.toJson(),
+                resendIfNotSent = resendIfNotSent
             ).mapCatching { IncomingRequestResponse.SuccessCE }
         }
 
