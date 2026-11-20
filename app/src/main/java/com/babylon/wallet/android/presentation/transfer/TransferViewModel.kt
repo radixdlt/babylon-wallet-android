@@ -46,7 +46,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -80,6 +82,9 @@ class TransferViewModel @Inject constructor(
 
     internal val args = TransferArgs(savedStateHandle)
 
+    // Bumped by a retry, so that the badge requirements are checked again for the same account and assets.
+    private val badgeRequirementRetries = MutableStateFlow(0)
+
     override fun initialState(): State = State()
 
     init {
@@ -96,7 +101,7 @@ class TransferViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _state
+            val accountAndAssets = _state
                 .map { state ->
                     val fromAccount = state.fromAccount
                     val spendingAddresses = state.targetAccounts.flatMap { targetAccount ->
@@ -105,6 +110,8 @@ class TransferViewModel @Inject constructor(
                     fromAccount to spendingAddresses
                 }
                 .distinctUntilChanged()
+
+            combine(accountAndAssets, badgeRequirementRetries) { key, _ -> key }
                 .collectLatest { (fromAccount, spendingAddresses) ->
                     if (fromAccount != null && spendingAddresses.isNotEmpty()) {
                         checkWithdrawerBadgeRequirements(fromAccount, spendingAddresses)
@@ -118,6 +125,10 @@ class TransferViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    fun onBadgeRequirementRetry() {
+        badgeRequirementRetries.update { it + 1 }
     }
 
     // Sargon finds the badges the restricted tokens need, to prove in the manifest.

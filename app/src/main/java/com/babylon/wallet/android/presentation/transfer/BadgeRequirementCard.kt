@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -43,6 +44,7 @@ import rdx.works.core.domain.resources.Resource
 @Composable
 fun BadgeRequirementCard(
     status: BadgeRequirementStatus,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (status) {
@@ -64,7 +66,8 @@ fun BadgeRequirementCard(
             title = status.title(),
             statusIcon = DSR.ic_warning_error,
             statusIconTint = RadixTheme.colors.error,
-            message = stringResource(id = status.messageRes())
+            message = stringResource(id = status.messageRes()),
+            onRetry = onRetry.takeIf { status.reason == BadgeRequirementStatus.Error.Reason.CheckFailed }
         )
 
         BadgeRequirementStatus.None, BadgeRequirementStatus.Loading -> Unit
@@ -94,7 +97,8 @@ private fun BadgeRequirementCardContent(
     @DrawableRes statusIcon: Int,
     statusIconTint: Color,
     message: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRetry: (() -> Unit)? = null
 ) {
     Row(
         modifier = modifier
@@ -165,6 +169,14 @@ private fun BadgeRequirementCardContent(
                     color = RadixTheme.colors.textSecondary
                 )
             }
+            onRetry?.let {
+                RadixTextButton(
+                    text = stringResource(id = R.string.common_retry),
+                    onClick = it,
+                    isWithoutPadding = true,
+                    throttleClicks = true
+                )
+            }
         }
     }
 }
@@ -177,7 +189,8 @@ private fun BadgeRequirementCardSuccessPreview() {
         BadgeRequirementCard(
             status = BadgeRequirementStatus.Success(
                 resource = Badge.sample().resource
-            )
+            ),
+            onRetry = {}
         )
     }
 }
@@ -191,7 +204,8 @@ private fun BadgeRequirementCardErrorMissingPreview() {
             status = BadgeRequirementStatus.Error(
                 resource = Badge.sample().resource,
                 reason = BadgeRequirementStatus.Error.Reason.MissingBadge
-            )
+            ),
+            onRetry = {}
         )
     }
 }
@@ -206,7 +220,8 @@ private fun BadgeRequirementCardErrorNotWithdrawablePreview() {
                 resource = Badge.sample.other().resource,
                 reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable,
                 restrictedResource = Badge.sample.other().resource.address
-            )
+            ),
+            onRetry = {}
         )
     }
 }
@@ -220,7 +235,8 @@ private fun BadgeRequirementCardErrorCheckFailedPreview() {
             status = BadgeRequirementStatus.Error(
                 resource = null,
                 reason = BadgeRequirementStatus.Error.Reason.CheckFailed
-            )
+            ),
+            onRetry = {}
         )
     }
 }

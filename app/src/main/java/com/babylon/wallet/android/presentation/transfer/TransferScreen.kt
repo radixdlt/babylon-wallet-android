@@ -112,6 +112,7 @@ fun TransferScreen(
         onNextNFTsPageRequest = viewModel::onNextNFTsPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
         onTransferSubmit = viewModel::onTransferSubmit,
+        onBadgeRequirementRetry = viewModel::onBadgeRequirementRetry,
         onInfoClick = onInfoClick
     )
 }
@@ -156,6 +157,7 @@ fun TransferContent(
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit,
     onTransferSubmit: () -> Unit,
+    onBadgeRequirementRetry: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -360,6 +362,7 @@ fun TransferContent(
                 ) {
                     BadgeRequirementCard(
                         status = state.badgeRequirementStatus,
+                        onRetry = onBadgeRequirementRetry,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = RadixTheme.dimensions.paddingDefault)
@@ -481,6 +484,7 @@ fun TransferContentPreview() {
             onNextNFTsPageRequest = {},
             onStakesRequest = {},
             onTransferSubmit = {},
+            onBadgeRequirementRetry = {},
             onInfoClick = {}
         )
     }
