@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.preferences.ss.list
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -25,7 +26,10 @@ class SignalingServersViewModel @Inject constructor(
 ) : StateViewModel<SignalingServersViewModel.State>() {
 
     init {
-        getProfileUseCase.flow.onEach {
+        getProfileUseCase.flow.onEach { profile ->
+            // The diagnostics are shown where the rest of Radix Connect's are: debug builds and developer mode.
+            val isDiagnosticsAvailable = BuildConfig.DEBUG_MODE || profile.appPreferences.security.isDeveloperModeEnabled
+            _state.update { state -> state.copy(isDiagnosticsAvailable = isDiagnosticsAvailable) }
             loadServers()
         }.launchIn(viewModelScope)
     }
@@ -68,6 +72,7 @@ class SignalingServersViewModel @Inject constructor(
     data class State(
         val current: P2pTransportProfile? = null,
         val items: List<P2pTransportProfile> = emptyList(),
-        val errorMessage: UiMessage.ErrorMessage? = null
+        val errorMessage: UiMessage.ErrorMessage? = null,
+        val isDiagnosticsAvailable: Boolean = false
     ) : UiState
 }

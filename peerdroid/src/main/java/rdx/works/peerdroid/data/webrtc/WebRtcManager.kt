@@ -11,6 +11,7 @@ import org.webrtc.DataChannel
 import org.webrtc.MediaConstraints
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
+import rdx.works.peerdroid.data.describe
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.RemoteIceCandidate
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -128,7 +129,7 @@ internal class WebRtcManager(
                     Result.success(Unit)
                 }
                 .onFailure { throwable ->
-                    Timber.e("🔌 failed to add ice candidate with error: ${throwable.message}")
+                    Timber.e("🔌 failed to add ice candidate with error: ${throwable.describe()}")
                     Result.failure<Throwable>(throwable)
                 }
         } ?: Result.failure(UninitializedPropertyAccessException("property peerConnection has not been initialized"))

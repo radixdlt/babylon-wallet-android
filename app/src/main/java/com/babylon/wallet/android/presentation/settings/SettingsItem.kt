@@ -6,11 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.SecurityProblem
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.titleRes
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_TELEGRAM_URL
 import com.babylon.wallet.android.utils.Flavors
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
+import rdx.works.core.domain.RadixConnectTransport
 import rdx.works.core.domain.ThemeSelection
 
 sealed interface SettingsItem {
@@ -129,6 +131,7 @@ sealed interface SettingsItem {
         data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
         data object SignalingServers : WalletPreferences
+        data class RadixConnect(val transport: RadixConnectTransport) : WalletPreferences
         data object RelayServices : WalletPreferences
         data object TokenPriceServices : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
@@ -142,7 +145,8 @@ sealed interface SettingsItem {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_title)
                 AddressBook -> stringResource(id = R.string.preferences_addressBook_title)
                 Gateways -> stringResource(id = R.string.preferences_gateways)
-                SignalingServers -> "Signaling Servers"
+                SignalingServers -> stringResource(id = R.string.preferences_radixConnect_servers_title)
+                is RadixConnect -> stringResource(id = R.string.preferences_radixConnect_title)
                 RelayServices -> "Radix Connect Relay Services"
                 TokenPriceServices -> stringResource(id = R.string.preferences_tokenPriceServices_title)
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_title)
@@ -160,8 +164,9 @@ sealed interface SettingsItem {
                 DepositGuarantees -> stringResource(id = R.string.preferences_depositGuarantees_subtitle)
                 AddressBook -> stringResource(id = R.string.preferences_addressBook_subtitle)
                 Gateways -> null
-                SignalingServers -> "Manage signaling server and ICE profile options."
-                RelayServices -> "Manage Radix Connect Relay services."
+                SignalingServers -> stringResource(id = R.string.preferences_radixConnect_servers_subtitle)
+                is RadixConnect -> stringResource(id = transport.titleRes())
+                RelayServices -> "Relay services for mobile-to-mobile connections (not iroh's relays)."
                 TokenPriceServices -> stringResource(id = R.string.preferences_tokenPriceServices_subtitle)
                 is DeveloperMode -> stringResource(id = R.string.appSettings_developerMode_subtitle)
                 EntityHiding -> stringResource(id = R.string.preferences_hiddenEntities_subtitle)
@@ -182,6 +187,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> DSR.ic_filter_list
                 AddressBook -> DSR.ic_address_book
                 SignalingServers -> DSR.ic_sensors
+                is RadixConnect -> DSR.ic_radix_connect_small
                 RelayServices -> DSR.ic_sensors
                 TokenPriceServices -> DSR.ic_token_price_services
                 is DeveloperMode -> DSR.ic_developer_mode

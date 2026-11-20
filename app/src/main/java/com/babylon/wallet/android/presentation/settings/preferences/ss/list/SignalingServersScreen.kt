@@ -22,13 +22,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.DiagnosticsRow
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ErrorAlertDialog
@@ -44,7 +47,8 @@ fun SignalingServersScreen(
     viewModel: SignalingServersViewModel,
     onBackClick: () -> Unit,
     onServerClick: (P2pTransportProfile) -> Unit,
-    onAddServerClick: () -> Unit
+    onAddServerClick: () -> Unit,
+    onDiagnosticsClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -53,6 +57,7 @@ fun SignalingServersScreen(
         onBackClick = onBackClick,
         onAddClick = onAddServerClick,
         onItemClick = onServerClick,
+        onDiagnosticsClick = onDiagnosticsClick,
         onDismissErrorMessage = viewModel::onDismissErrorMessage
     )
 }
@@ -64,6 +69,7 @@ private fun SignalingServersContent(
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
     onItemClick: (P2pTransportProfile) -> Unit,
+    onDiagnosticsClick: () -> Unit,
     onDismissErrorMessage: () -> Unit
 ) {
     state.errorMessage?.let {
@@ -78,7 +84,7 @@ private fun SignalingServersContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = "Signaling Servers",
+                    title = stringResource(id = R.string.preferences_radixConnect_servers_webRtc),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
@@ -99,7 +105,7 @@ private fun SignalingServersContent(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingMedium
                     ),
-                    text = "Choose and manage signaling server profiles used for WalletConnect P2P.",
+                    text = "Choose and manage signaling server profiles used for Radix Connect over WebRTC.",
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.textSecondary
                 )
@@ -181,6 +187,13 @@ private fun SignalingServersContent(
                 }
             }
 
+            if (state.isDiagnosticsAvailable) {
+                item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    DiagnosticsRow(onClick = onDiagnosticsClick)
+                }
+            }
+
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
 
@@ -246,6 +259,7 @@ private fun SignalingServersPreview(
             onBackClick = {},
             onAddClick = {},
             onItemClick = {},
+            onDiagnosticsClick = {},
             onDismissErrorMessage = {}
         )
     }
