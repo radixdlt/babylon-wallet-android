@@ -81,9 +81,10 @@ class DappMessengerImpl @Inject constructor(
 
     /**
      * Once the person decided, the answer goes out even if the screen that asked closes meanwhile
-     * (it does as soon as they approve or reject): tied to the screen, a send could be cancelled
-     * half way, and the connector never got the answer. The transport bounds this first attempt,
-     * and its result is returned at once: the caller is never held by the attempts that follow.
+     * (it does as soon as they approve or reject). Over iroh a send waits for the connector to
+     * confirm it, which takes a round trip: tied to the screen, it was cancelled half way, and the
+     * connector never got the answer. Each transport bounds this first attempt, and its result is
+     * returned at once: the caller is never held by the attempts that follow.
      *
      * [resendIfNotSent] only where the caller does not act on a failure: a failure answer, and the
      * answer to a transaction already submitted. Where the caller shows the failure (a

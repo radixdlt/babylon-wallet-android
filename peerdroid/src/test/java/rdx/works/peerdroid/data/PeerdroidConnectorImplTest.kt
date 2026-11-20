@@ -86,6 +86,7 @@ class PeerdroidConnectorImplTest {
         applicationContext = mockk(relaxed = true),
         applicationScope = backgroundScope,
         ioDispatcher = StandardTestDispatcher(testScheduler),
+        understandsWalletNotices = { false },
         webSocketClientFactory = { Session(opens = sessionOutcomes.removeFirstOrNull() ?: true).also { sessions += it }.client },
         webRtcManagerFactory = { webRtcManager },
         monotonicMillis = { testScheduler.currentTime }

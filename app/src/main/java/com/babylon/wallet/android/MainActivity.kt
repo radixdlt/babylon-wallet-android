@@ -43,6 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreview
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import com.babylon.wallet.android.presentation.ui.composables.card.EventBusComposableEntryPoint
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.AppLifecycleObserver
 import com.babylon.wallet.android.utils.openInAppUrl
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import com.radixdlt.sargon.os.driver.OnBiometricsLifecycleCallbacks
@@ -80,6 +81,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var alertHandler: AlertHandler
+
+    @Inject
+    lateinit var appLifecycleObserver: AppLifecycleObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -155,6 +159,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.onAppToForeground()
+    }
+
+    override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
+        super.onTopResumedActivityChanged(isTopResumedActivity)
+        appLifecycleObserver.onTopResumedActivityChanged(this, isTopResumedActivity)
     }
 
     @Composable

@@ -88,7 +88,7 @@ data class DataChannelWrapper(
                 } else {
                     val chunk = packageDto as PackageDto.Chunk
                     if (!send(packageDto = chunk)) {
-                        // Part of the message is out: the connector extension may act on it, so this is not "not sent".
+                        // Part of the message is out: it must not be sent again over another transport.
                         return Result.failure(IllegalStateException("${rejectedPackageReason()} after $index packages"))
                     }
                     packagesSent++

@@ -39,6 +39,10 @@ class IncomingRequestsDelegateTest {
     private val peerdroidClient = FakePeerdroidClient()
     private val lifecycleObserver = object : AppLifecycleObserver {
         override val lifecycleEvents = MutableSharedFlow<Lifecycle.Event>()
+        override val inFront = MutableStateFlow<Boolean?>(null)
+        override fun onTopResumedActivityChanged(activity: Any, isTop: Boolean) {
+            inFront.value = isTop
+        }
     }
     // Like the real ones, these flows never complete: completing would terminate the connections.
     private val p2pLinksRepository = mockk<P2PLinksRepository> {
@@ -72,7 +76,7 @@ class IncomingRequestsDelegateTest {
     }
 
     @Test
-    fun `coming to the foreground tells the transports, even when a connection is reported active`() = runTest {
+    fun `coming to the foreground checks the iroh connections even when a connection is reported active`() = runTest {
         peerdroidClient.hasConnection.value = true
         startDelegate()
         assertEquals(1, peerdroidClient.connectCount)
@@ -95,13 +99,31 @@ class IncomingRequestsDelegateTest {
         runCurrent()
 
         assertEquals(1, peerdroidClient.appForegroundCount)
-        // Each transport recovers its own connections: terminating them would cut the ones that are still up.
+        // Each transport recovers its own connections: terminating them would cut the iroh sessions just restarted.
         assertEquals(0, peerdroidClient.terminateCount)
         assertEquals(1, peerdroidClient.connectCount)
     }
 
     @Test
-    fun `going to the background is told to the transports, and nothing else`() = runTest {
+    fun `leaving the front and coming back is told to the transports, before the background`() = runTest {
+        startDelegate()
+        // Nothing is told before it is known.
+        assertEquals(emptyList<Boolean>(), peerdroidClient.inFrontToldValues)
+
+        // The recent apps screen opened: the app is still resumed, but no longer in front.
+        lifecycleObserver.inFront.value = false
+        runCurrent()
+        assertEquals(listOf(false), peerdroidClient.inFrontToldValues)
+        assertEquals(0, peerdroidClient.appBackgroundCount)
+
+        lifecycleObserver.inFront.value = true
+        runCurrent()
+        assertEquals(listOf(false, true), peerdroidClient.inFrontToldValues)
+        assertEquals(0, peerdroidClient.appForegroundCount)
+    }
+
+    @Test
+    fun `going to the background asks for the iroh sessions to stop, and nothing else`() = runTest {
         startDelegate()
 
         lifecycleObserver.lifecycleEvents.emit(Lifecycle.Event.ON_STOP)
@@ -123,6 +145,7 @@ class IncomingRequestsDelegateTest {
 
         override val hasAtLeastOneConnection: Flow<Boolean> = hasConnection
         override val openConnectionIds: Flow<Set<String>> = flowOf(emptySet())
+        override fun isConnectionOpen(remoteConnectorId: String): Flow<Boolean> = flowOf(false)
 
         override suspend fun connect(p2pTransportProfile: P2pTransportProfile, connectionPassword: RadixConnectPassword): Result<Unit> {
             connectCount++
@@ -146,6 +169,12 @@ class IncomingRequestsDelegateTest {
 
         override fun onAppBackground() {
             appBackgroundCount++
+        }
+
+        val inFrontToldValues = mutableListOf<Boolean>()
+
+        override fun onAppInFront(inFront: Boolean) {
+            inFrontToldValues += inFront
         }
     }
 }

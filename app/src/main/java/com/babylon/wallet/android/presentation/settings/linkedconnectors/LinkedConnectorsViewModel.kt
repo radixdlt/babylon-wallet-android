@@ -9,23 +9,54 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.RenameInput
+import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.extensions.clientID
+import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.peerdroid.domain.LinkDiagnostics
+import rdx.works.peerdroid.domain.PeerConnectionStatus
+import rdx.works.peerdroid.domain.RadixConnectDiagnostics
+import rdx.works.peerdroid.domain.TransportDiagnostics
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class LinkedConnectorsViewModel @Inject constructor(
     private val p2pLinksRepository: P2PLinksRepository,
+    private val radixConnectDiagnostics: RadixConnectDiagnostics,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<LinkedConnectorsUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = LinkedConnectorsScreenArgs(savedStateHandle)
+
+    /**
+     * How each linked connector is connected, by [PublicKeyHash] of its link; null until first known. Refreshed while
+     * the screen shows it.
+     */
+    val connectorConnections: StateFlow<ImmutableMap<PublicKeyHash, ConnectorConnection>?> = flow {
+        while (true) {
+            emit(currentConnectorConnections())
+            delay(CONNECTIONS_REFRESH_INTERVAL)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
+        initialValue = null
+    )
 
     override fun initialState(): LinkedConnectorsUiState = LinkedConnectorsUiState(
         showAddLinkConnectorScreen = args.shouldShowAddLinkConnectorScreen,
@@ -104,6 +135,38 @@ class LinkedConnectorsViewModel @Inject constructor(
 
     fun onSnackbarMessageShown() {
         _state.update { state -> state.copy(isLinkConnectorNameUpdated = false) }
+    }
+
+    private suspend fun currentConnectorConnections(): ImmutableMap<PublicKeyHash, ConnectorConnection> {
+        val diagnosticsByConnectionId = radixConnectDiagnostics.linkDiagnostics().associateBy { it.connectionId }
+        return p2pLinksRepository.getP2PLinks().asList().associate { link ->
+            link.id to diagnosticsByConnectionId[link.clientID().hex].connection()
+        }.toImmutableMap()
+    }
+
+    companion object {
+        private val CONNECTIONS_REFRESH_INTERVAL = 2.seconds
+    }
+}
+
+/**
+ * Which transport carries a linked connector.
+ */
+enum class ConnectorConnection {
+    IROH,
+    WEBRTC,
+    NOT_CONNECTED
+}
+
+/**
+ * iroh when it is connected, since messages then go over it, else WebRTC when connected.
+ */
+internal fun LinkDiagnostics?.connection(): ConnectorConnection {
+    val connectedTransports = this?.transports.orEmpty().filter { it.status == PeerConnectionStatus.OPEN }
+    return when {
+        connectedTransports.any { it is TransportDiagnostics.Iroh } -> ConnectorConnection.IROH
+        connectedTransports.any { it is TransportDiagnostics.WebRtc } -> ConnectorConnection.WEBRTC
+        else -> ConnectorConnection.NOT_CONNECTED
     }
 }
 

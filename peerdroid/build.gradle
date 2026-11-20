@@ -57,6 +57,8 @@ dependencies {
     implementation libs.slf4j
 
     implementation project(":webrtc-library")
+    // Radix Connect over iroh (QUIC through iroh relay servers)
+    implementation libs.radixConnectIrohAndroid
     implementation project(':core')
 
     //Timber

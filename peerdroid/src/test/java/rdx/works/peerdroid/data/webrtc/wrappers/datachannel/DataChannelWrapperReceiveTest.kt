@@ -37,7 +37,6 @@ class DataChannelWrapperReceiveTest {
     private val releaseSend = CountDownLatch(1)
 
     private val dataChannel = mockk<DataChannel>(relaxed = true) {
-        every { state() } returns DataChannel.State.OPEN
         every { registerObserver(capture(observer)) } answers { }
         every { label() } returns "link"
         every { send(any()) } answers {

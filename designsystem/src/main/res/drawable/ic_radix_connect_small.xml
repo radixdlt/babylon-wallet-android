@@ -1,0 +1,33 @@
+<!-- Radix Connect, at the size and in the style of the other preference icons (24dp, 2dp strokes,
+     one colour the list tints): the phone and its signal, drawn after ic_radix_connect. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M9,4L6,4C4.9,4 4,4.9 4,6L4,19C4,20.1 4.9,21 6,21L14,21C15.1,21 16,20.1 16,19L16,14"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:strokeColor="#003057"/>
+    <path
+        android:pathData="M12,8.5A2.5,2.5 0,0 1,14.5 11"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeColor="#003057"/>
+    <path
+        android:pathData="M12,5.5A5.5,5.5 0,0 1,17.5 11"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeColor="#003057"/>
+    <path
+        android:pathData="M12,2.5A8.5,8.5 0,0 1,20.5 11"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeColor="#003057"/>
+</vector>

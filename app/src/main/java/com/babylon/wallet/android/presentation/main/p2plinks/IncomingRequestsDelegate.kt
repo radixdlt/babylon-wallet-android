@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -214,8 +215,9 @@ class IncomingRequestsDelegate @Inject constructor(
 
     /**
      * Tells the transports when the app comes to the foreground and goes to the background, for the whole life of the
-     * main screen. Each transport recovers its own connections on the foreground (WebRTC reopens the signaling
-     * sessions that may have died): nothing is terminated here, so no connection that is still up is cut.
+     * main screen. Each transport recovers its own connections on the foreground (iroh restarts the sessions it
+     * stopped and checks the ones it kept; WebRTC reopens the signaling sessions that may have died): nothing is
+     * terminated here, so no session just restarted is cut.
      */
     private fun observeAppLifecycle() {
         observeAppLifecycleJob?.cancel()
@@ -226,15 +228,22 @@ class IncomingRequestsDelegate @Inject constructor(
                     peerdroidClient.onAppForeground()
                 }
 
-                // WebRTC keeps its connections in the background: it only notes it, to check them on the foreground.
+                // Requests cannot be approved in the background: the iroh sessions stop after a grace period (no dialing,
+                // no keep-alives) and start again on the foreground. WebRTC keeps its connections.
                 Lifecycle.Event.ON_STOP -> {
-                    Timber.tag(LOG_TAG).i("🤖 app in the background")
+                    Timber.tag(LOG_TAG).i("🤖 app in the background: iroh sessions stop after a grace period")
                     peerdroidClient.onAppBackground()
                 }
 
                 else -> Unit
             }
         }.launchIn(viewModelScope)
+        // In front of the person or not: said as soon as the recent apps screen opens, since an app closed there is
+        // killed some 50 ms after it stops, too soon to say anything then.
+        appLifecycleObserver.inFront
+            .filterNotNull()
+            .onEach { inFront -> peerdroidClient.onAppInFront(inFront) }
+            .launchIn(viewModelScope)
     }
 
     private fun terminatePeerdroid(reason: String) {

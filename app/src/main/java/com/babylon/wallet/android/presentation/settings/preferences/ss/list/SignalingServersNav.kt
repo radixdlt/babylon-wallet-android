@@ -18,7 +18,8 @@ fun NavController.signalingServers() {
 fun NavGraphBuilder.signalingServers(
     onBackClick: () -> Unit,
     onServerClick: (P2pTransportProfile) -> Unit,
-    onAddServerClick: () -> Unit
+    onAddServerClick: () -> Unit,
+    onDiagnosticsClick: () -> Unit
 ) {
     composable(
         route = ROUTE,
@@ -31,7 +32,8 @@ fun NavGraphBuilder.signalingServers(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onServerClick = onServerClick,
-            onAddServerClick = onAddServerClick
+            onAddServerClick = onAddServerClick,
+            onDiagnosticsClick = onDiagnosticsClick
         )
     }
 }

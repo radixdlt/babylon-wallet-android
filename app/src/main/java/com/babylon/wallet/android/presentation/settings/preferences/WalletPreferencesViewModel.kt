@@ -15,10 +15,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.deleteCrashlyticsUnsentReports
+import rdx.works.core.domain.RadixConnectTransport
 import rdx.works.core.domain.ThemeSelection
 import rdx.works.core.enableCrashlytics
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.preferences.RadixConnectPreferences
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security.UpdateAdvancedLockUseCase
 import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
@@ -28,6 +30,7 @@ import javax.inject.Inject
 class WalletPreferencesViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
+    private val radixConnectPreferences: RadixConnectPreferences,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase,
     private val updateAdvancedLockUseCase: UpdateAdvancedLockUseCase
 ) : StateViewModel<WalletPreferencesUiState>() {
@@ -42,6 +45,7 @@ class WalletPreferencesViewModel @Inject constructor(
         observeDevModeSetting()
         observeAdvancedLockSetting()
         observeThemeSelectionSetting()
+        observeRadixConnectSetting()
         if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
                 val updateCrashReportingPreference = PreferencesUiItem.Preference(
@@ -109,6 +113,16 @@ class WalletPreferencesViewModel @Inject constructor(
         }
     }
 
+    private fun observeRadixConnectSetting() {
+        viewModelScope.launch {
+            radixConnectPreferences.transport.collect { transport ->
+                _state.updateSetting<SettingsItem.WalletPreferences.RadixConnect> {
+                    SettingsItem.WalletPreferences.RadixConnect(transport = transport)
+                }
+            }
+        }
+    }
+
     fun onAdvancedLockToggled(enabled: Boolean) = viewModelScope.launch {
         updateAdvancedLockUseCase(enabled)
     }
@@ -160,6 +174,7 @@ data class WalletPreferencesUiState(
                 ),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.RadixConnect(RadixConnectTransport.DEFAULT)),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.SignalingServers),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.RelayServices),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.TokenPriceServices),

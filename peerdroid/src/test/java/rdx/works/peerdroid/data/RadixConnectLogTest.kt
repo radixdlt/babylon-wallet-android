@@ -1,8 +1,10 @@
 package rdx.works.peerdroid.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import rdx.works.peerdroid.domain.ConnectionIdHolder
+import rdx.works.peerdroid.domain.MessageNotSentException
 
 class RadixConnectLogTest {
 
@@ -11,6 +13,29 @@ class RadixConnectLogTest {
         val connectionId = ConnectionIdHolder("1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b")
 
         assertEquals("link=1a2b3c4d", connectionId.logId)
+    }
+
+    @Test
+    fun `a message is described by its interaction id and size, never its contents`() {
+        val message = """{"items":{"persona":{"label":"Alice"}},"interactionId":"4c1d2b6e-0f6e-4b0a-9a7e-2f1d3c4b5a69"}"""
+
+        assertEquals("interaction=4c1d2b6e-0f6e-4b0a-9a7e-2f1d3c4b5a69 (${message.length} chars)", describeMessage(message))
+    }
+
+    @Test
+    fun `only a top-level interaction id that looks like one is used`() {
+        assertNull(interactionIdOf("""{"items":{"interactionId":"nested"}}"""))
+        assertNull(interactionIdOf("""{"interactionId":"Alice's secret phrase"}"""))
+        assertNull(interactionIdOf("""{"interactionId":42}"""))
+        assertNull(interactionIdOf("not json"))
+        assertNull(interactionIdOf("""["interactionId"]"""))
+        assertEquals("interaction=? (8 chars)", describeMessage("not json"))
+    }
+
+    @Test
+    fun `send failures tell whether the message may have been delivered`() {
+        assertEquals("not sent, MessageNotSentException", MessageNotSentException("not connected").sendFailureCategory())
+        assertEquals("maybe delivered, IllegalStateException", IllegalStateException("timed out").sendFailureCategory())
     }
 
     @Test
@@ -26,8 +51,8 @@ class RadixConnectLogTest {
     @Test
     fun `what is not an IP address is left alone`() {
         val lines = listOf(
-            "peerdroid::signaling: connected at 12:30:45 after 3 attempts",
-            "signaling=wss://signaling-server.example.com./ rtt=42ms version 1.22.2",
+            "radix_connect_iroh::session: connected at 12:30:45 after 3 attempts",
+            "relay=https://euc1-1.relay.n0.iroh.link./ rtt=42ms version 1.22.2",
             "wallet 4d99dc649e → efcc89cfbf state=connected"
         )
 

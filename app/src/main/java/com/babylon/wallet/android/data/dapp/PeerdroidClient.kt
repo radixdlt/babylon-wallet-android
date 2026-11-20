@@ -71,15 +71,18 @@ interface PeerdroidClient {
     fun terminate()
 
     /**
-     * The app came back to the foreground: each transport checks its connections, which may have died while the app
-     * was in the background.
+     * The app came back to the foreground: the connections that can be checked quickly (iroh) are checked at once,
+     * since they may have died while the app was frozen in the background.
      */
     fun onAppForeground()
 
     /**
-     * The app went to the background.
+     * The app went to the background: the iroh sessions stop after a grace period, until [onAppForeground].
      */
     fun onAppBackground()
+
+    /** Whether the app is in front of the person (resumed); see [rdx.works.peerdroid.data.PeerdroidConnector.onAppInFront]. */
+    fun onAppInFront(inFront: Boolean)
 }
 
 @Suppress("TooManyFunctions")
@@ -174,6 +177,10 @@ class PeerdroidClientImpl @Inject constructor(
 
     override fun onAppBackground() {
         peerdroidConnector.onAppBackground()
+    }
+
+    override fun onAppInFront(inFront: Boolean) {
+        peerdroidConnector.onAppInFront(inFront)
     }
 
     private suspend fun parseIncomingMessage(

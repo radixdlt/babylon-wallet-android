@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -46,10 +47,12 @@ import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
+import rdx.works.peerdroid.domain.LinkEvent
 import rdx.works.peerdroid.domain.MessageNotSentException
 import rdx.works.peerdroid.domain.PeerConnectionHolder
 import rdx.works.peerdroid.domain.PeerConnectionStatus
 import rdx.works.peerdroid.domain.RemoteClientHolder
+import rdx.works.peerdroid.domain.TransportDiagnostics
 import rdx.works.peerdroid.domain.WebSocketHolder
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
@@ -77,21 +80,45 @@ interface PeerdroidConnector {
     suspend fun sendDataChannelMessageToAllRemoteClients(message: String): Result<Unit>
 
     /**
-     * The app came back to the foreground: the connections that may have died while it was in the background are
-     * checked, and reopened when they are down. Returns at once.
+     * A connectivity snapshot of the link [connectionId] on this transport (no secrets), or null when the transport
+     * does not provide one.
+     */
+    fun diagnostics(connectionId: ConnectionIdHolder): TransportDiagnostics? = null
+
+    /**
+     * The last few things that happened to the link [connectionId] on this transport (no secrets), oldest first.
+     */
+    fun recentEvents(connectionId: ConnectionIdHolder): List<LinkEvent> = emptyList()
+
+    /**
+     * The app came back to the foreground. Its connections may have died while the process was frozen, unnoticed
+     * until a timeout: a transport that can check them quickly does so now. Returns at once.
      */
     fun onAppForeground() = Unit
 
     /**
-     * The app went to the background. Returns at once.
+     * The app went to the background, where requests cannot be approved: a transport may stop what costs battery
+     * there until [onAppForeground]. Returns at once.
      */
     fun onAppBackground() = Unit
+
+    /**
+     * Whether the app is in front of the person (resumed). It leaves the front before the background: on the way to the
+     * recent apps screen, where it is closed by swiping it away with no time left to say anything, so the connectors are
+     * told here that it is no longer in front. Returns at once.
+     */
+    fun onAppInFront(inFront: Boolean) = Unit
 }
 
+@Suppress("LongParameterList")
 internal class PeerdroidConnectorImpl(
     @ApplicationContext private val applicationContext: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    // Whether the connector extension of a link (by [ConnectionIdHolder.id]) understands the messages without an
+    // interaction id (`walletRequests`, `walletPresence`): the released connector extension expects an interaction id
+    // on every wallet message.
+    private val understandsWalletNotices: suspend (connectionId: String) -> Boolean,
     // The clients of the signaling server and of WebRTC, and a monotonic clock in ms that counts deep sleep too (a
     // negotiation frozen in the background has lasted that long): replaced in tests.
     private val webSocketClientFactory: () -> WebSocketClient = { WebSocketClient(applicationContext) },
@@ -111,6 +138,9 @@ internal class PeerdroidConnectorImpl(
     // One DataChannel for each CE (browser) and CE will forward the messages to the right client (dApp) based on the request id.
     private val mapOfDataChannels = ConcurrentHashMap<ConnectionIdHolder, DataChannelHolder>()
 
+    // The requests the app took from each link and has not answered, told to its connector on every channel.
+    private val held = HeldRequests()
+
     // Every open data channel's reader, all handing their messages to dataChannelMessagesFromRemoteClients.
     private val readers = DataChannelReaders(applicationScope + ioDispatcher)
 
@@ -118,7 +148,12 @@ internal class PeerdroidConnectorImpl(
 
     private val _peerConnectionStatus = MutableStateFlow(emptyMap<String, PeerConnectionStatus>())
 
+    // The last failure of each link, for the diagnostics.
+    private val lastErrors = ConcurrentHashMap<ConnectionIdHolder, String>()
+
     private val logThrottle = LogThrottle()
+
+    private val events = LinkEventLog()
 
     // Serialises, link by link, starting, stopping and restarting the signaling session, so that none undoes another.
     private val linkLocks = ConcurrentHashMap<ConnectionIdHolder, Mutex>()
@@ -208,6 +243,7 @@ internal class PeerdroidConnectorImpl(
             )
             val elapsedMs = System.currentTimeMillis() - startedAt
             RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc $reason: signaling server connected in $elapsedMs ms")
+            events.record(connectionId, SOURCE, "$reason: signaling server connected")
         }.onFailure { error ->
             if (generation.get() == atGeneration) {
                 failedStarts[connectionId] = FailedStart(p2pTransportProfile = p2pTransportProfile, password = password)
@@ -218,8 +254,10 @@ internal class PeerdroidConnectorImpl(
 
     override suspend fun deleteConnector(connectionId: ConnectionIdHolder) {
         if (mapOfWebSockets.containsKey(connectionId)) {
-            RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc stopping: the link is deleted")
+            RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc stopping: the link is deleted or no longer uses webrtc")
+            events.record(connectionId, SOURCE, "stopped")
         }
+        lastErrors.remove(connectionId)
         logThrottle.forget(connectionId.id)
         withContext(ioDispatcher) {
             lockOf(connectionId).withLock { deleteLocked(connectionId) }
@@ -258,6 +296,7 @@ internal class PeerdroidConnectorImpl(
         connectingSinceMs.clear()
         applicationScope.launch(ioDispatcher) {
             RadixConnectLog.i("⚙️ webrtc terminating every connection (${mapOfWebSockets.size} links)")
+            mapOfWebSockets.keys.forEach { connectionId -> events.record(connectionId, SOURCE, "stopped: all connections terminated") }
             mapOfWebSockets.values.forEach { webSocketHolder ->
                 webSocketHolder.listenMessagesJob.cancel()
                 webSocketHolder.webSocketClient.closeSession()
@@ -283,6 +322,14 @@ internal class PeerdroidConnectorImpl(
     // The incoming messages of every open data channel, in one flow (see DataChannelReaders).
     override val dataChannelMessagesFromRemoteClients: SharedFlow<DataChannelWrapperEvent> = readers.messages
 
+    override fun recentEvents(connectionId: ConnectionIdHolder): List<LinkEvent> = events.recent(connectionId)
+
+    override fun diagnostics(connectionId: ConnectionIdHolder): TransportDiagnostics.WebRtc = TransportDiagnostics.WebRtc(
+        status = _peerConnectionStatus.value[connectionId.id],
+        lastError = lastErrors[connectionId],
+        signalingServer = mapOfWebSockets[connectionId]?.p2pTransportProfile?.signalingServer
+    )
+
     override suspend fun sendDataChannelMessageToRemoteClient(
         remoteConnectorId: String,
         message: String
@@ -294,6 +341,8 @@ internal class PeerdroidConnectorImpl(
                     ?.dataChannel
                     ?.sendMessage(message)
                     ?: Result.failure(MessageNotSentException("failed to send message to CE because data channel doesn't exist"))
+                // Only the links that are told which requests the app holds keep track of them.
+                if (result.isSuccess && understandsWalletNotices(connectionIdHolder.id)) held.sent(connectionIdHolder, message)
                 result.onFailure { error ->
                     // The size only: never the contents.
                     recordFailure(connectionIdHolder, "failed to send a message (${message.length} chars): ${error.describe()}")
@@ -305,20 +354,29 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
+    // Whether the app is in the background, as the connectors that understand it are told over their data channel (a
+    // `walletPresence` message): the extension's pending request cards say so.
+    @Volatile
+    private var appInBackground = false
+
     // Whether the app went to the background since it was last in the foreground.
     @Volatile
     private var wentToBackground = false
 
     override fun onAppBackground() {
         wentToBackground = true
+        tellPresence(inBackground = true)
     }
 
+    override fun onAppInFront(inFront: Boolean) = tellPresence(inBackground = !inFront)
+
     // The signaling session of a link may have died while the app was in the background (nothing notices: the socket has
-    // no keep-alive), and then the connector extension cannot reach the wallet again. So back in the foreground, every
+    // no keep-alive), and then the connector extension cannot reach the wallet again. So back from the background, every
     // link that is neither open nor negotiating opens a new signaling session, link by link and all at once; the links
     // connected are left alone. A link whose session could not be opened at all (e.g. no network when the app started)
     // is opened then too, and so is a link whose negotiation has not ended after NEGOTIATION_LIMIT_MS (e.g. frozen in
-    // the background).
+    // the background). This is what made the app terminate and reconnect every transport in the foreground before;
+    // doing it here, link by link, leaves iroh's sessions running.
     override fun onAppForeground() {
         val wasInBackground = wentToBackground
         wentToBackground = false
@@ -373,6 +431,18 @@ internal class PeerdroidConnectorImpl(
             .forEach { remoteClientHolder -> terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId) }
         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
         updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = false)
+    }
+
+    private fun tellPresence(inBackground: Boolean) {
+        if (appInBackground == inBackground) return
+        appInBackground = inBackground
+        if (mapOfDataChannels.isEmpty()) return
+        applicationScope.launch(ioDispatcher) {
+            val message = walletPresenceMessage(inBackground)
+            mapOfDataChannels.forEach { (connectionId, channel) ->
+                if (understandsWalletNotices(connectionId.id)) channel.dataChannel.sendMessage(message)
+            }
+        }
     }
 
     override suspend fun sendDataChannelMessageToAllRemoteClients(message: String): Result<Unit> {
@@ -501,6 +571,11 @@ internal class PeerdroidConnectorImpl(
                                 if (dataChannelEvent is DataChannelWrapperEvent.Error) {
                                     recordFailure(connectionId, "data channel error (invalid or unverified message)")
                                 }
+                                if (dataChannelEvent is DataChannelWrapperEvent.MessageFromRemoteConnectionId &&
+                                    understandsWalletNotices(connectionId.id)
+                                ) {
+                                    held.took(connectionId, dataChannelEvent.messageInJsonString)
+                                }
                             }
                         )
                         mapOfDataChannels[connectionId] = DataChannelHolder(
@@ -511,6 +586,14 @@ internal class PeerdroidConnectorImpl(
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
                         updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = true)
                         Timber.d("⚙️ ℹ️ current count of data channels: ${mapOfDataChannels.size}")
+                        // Once the channel can carry them: which of its requests the app still has (a connector
+                        // sends again one the app lost with its process), and whether it is in the background.
+                        applicationScope.launch(ioDispatcher) {
+                            delay(PRESENCE_ON_NEW_CHANNEL_DELAY_MS)
+                            if (!understandsWalletNotices(connectionId.id)) return@launch
+                            dataChannel.sendMessage(held.inventoryMessage(connectionId))
+                            if (appInBackground) dataChannel.sendMessage(walletPresenceMessage(inBackground = true))
+                        }
                     }
 
                     is PeerConnectionEvent.Disconnected -> {
@@ -664,9 +747,11 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-    // Logged with the short connection id and the reason, collapsed when repeated.
+    // Logged with the short connection id and the reason, collapsed when repeated, and kept for the diagnostics.
     private fun recordFailure(connectionId: ConnectionIdHolder, reason: String) {
         val redactedReason = reason.redactIpAddresses()
+        lastErrors[connectionId] = redactedReason
+        events.record(connectionId, SOURCE, redactedReason)
         logThrottle.log(connectionId.id, "⚙️ ${connectionId.logId} webrtc: $redactedReason") { line -> RadixConnectLog.w(line) }
     }
 
@@ -695,11 +780,23 @@ internal class PeerdroidConnectorImpl(
         if (status != previousStatus) {
             val change = "${previousStatus.describe()} → ${status.describe()}"
             RadixConnectLog.i("⚙️ ${connectionId.logId} webrtc status: $change (data channels: ${mapOfDataChannels.size})")
+            events.record(connectionId, SOURCE, change)
         }
     }
 
     private fun PeerConnectionStatus?.describe(): String = this?.name?.lowercase() ?: "not running"
+
+    companion object {
+        private const val SOURCE = "webrtc"
+    }
 }
+
+/** Lets a channel just connected finish opening before it carries the presence. */
+private const val PRESENCE_ON_NEW_CHANNEL_DELAY_MS = 500L
+
+/** The message telling a connector whether the wallet's app is in the background. */
+internal fun walletPresenceMessage(inBackground: Boolean): String =
+    """{"discriminator":"walletPresence","inBackground":$inBackground}"""
 
 /** How long a peer connection may negotiate before the foreground takes it for stuck and opens the link again. */
 private const val NEGOTIATION_LIMIT_MS = 30_000L
