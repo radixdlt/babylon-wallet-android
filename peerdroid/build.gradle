@@ -65,5 +65,6 @@ dependencies {
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
     testImplementation libs.coroutinesTest
+    testImplementation libs.mockk
     testRuntimeOnly libs.sargonDesktop
 }
