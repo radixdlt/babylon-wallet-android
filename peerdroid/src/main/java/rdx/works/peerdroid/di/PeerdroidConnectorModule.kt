@@ -13,14 +13,27 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
 import org.webrtc.PeerConnectionFactory
+import rdx.works.peerdroid.data.CompositePeerdroidConnector
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.data.PeerdroidConnectorImpl
+import rdx.works.peerdroid.data.PeerdroidTransport
+import rdx.works.peerdroid.data.RadixConnectTransportSettings
+import rdx.works.peerdroid.domain.RadixConnectDiagnostics
 import javax.inject.Singleton
+
+/**
+ * The Radix Connect singletons. Opaque outside peerdroid: the app gets the [PeerdroidConnector] and the
+ * [RadixConnectDiagnostics] interfaces of the same instance.
+ */
+class RadixConnectComponents internal constructor(
+    internal val connector: CompositePeerdroidConnector
+)
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -78,13 +91,47 @@ object PeerdroidConnectorModule {
 
     @Provides
     @Singleton
-    internal fun providePeerdroidConnector(
+    @WebRtcTransport
+    internal fun provideWebRtcPeerdroidConnector(
         @ApplicationContext applicationContext: Context,
         @ApplicationScope applicationScope: CoroutineScope,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        settings: RadixConnectTransportSettings
     ): PeerdroidConnector = PeerdroidConnectorImpl(
         applicationContext = applicationContext,
         applicationScope = applicationScope,
-        ioDispatcher = ioDispatcher
+        ioDispatcher = ioDispatcher,
+        // A link that has connected over iroh has a connector extension with the iroh build, which knows them.
+        understandsWalletNotices = { connectionId -> connectionId in settings.irohCapableConnectionIds.first() }
     )
+
+    /**
+     * The connector the app uses: WebRTC and/or iroh per link, following [RadixConnectTransportSettings].
+     */
+    @Provides
+    @Singleton
+    internal fun provideRadixConnectComponents(
+        @WebRtcTransport webRtcConnector: PeerdroidConnector,
+        @IrohTransport irohConnector: PeerdroidConnector,
+        settings: RadixConnectTransportSettings,
+        @ApplicationScope applicationScope: CoroutineScope,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
+    ): RadixConnectComponents = RadixConnectComponents(
+        connector = CompositePeerdroidConnector(
+            connectors = mapOf(
+                PeerdroidTransport.WEBRTC to webRtcConnector,
+                PeerdroidTransport.IROH to irohConnector
+            ),
+            settings = settings,
+            applicationScope = applicationScope,
+            ioDispatcher = ioDispatcher
+        )
+    )
+
+    @Provides
+    internal fun providePeerdroidConnector(components: RadixConnectComponents): PeerdroidConnector = components.connector
+
+    @Provides
+    internal fun provideRadixConnectDiagnostics(components: RadixConnectComponents): RadixConnectDiagnostics =
+        components.connector
 }

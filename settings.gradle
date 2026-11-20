@@ -21,6 +21,14 @@ dependencyResolutionManagement {
             }
         }
         maven { url 'https://jitpack.io' }
+        // Radix Connect over iroh, published by its author (github.com/genkipool/radix-connect-iroh): its group is
+        // resolved only from that repository, pinned to a commit of its `maven` branch.
+        exclusiveContent {
+            forRepository {
+                maven { url 'https://raw.githubusercontent.com/genkipool/radix-connect-iroh/d7141726a9bd23362ffad95805661a3d05178ead' }
+            }
+            filter { includeGroup 'io.github.genkipool' }
+        }
     }
 
 }

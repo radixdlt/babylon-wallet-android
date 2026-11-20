@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.linkedconnectors
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,7 +54,9 @@ import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,6 +69,7 @@ fun LinkedConnectorsScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val connectorConnections by viewModel.connectorConnections.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -110,6 +114,7 @@ fun LinkedConnectorsScreen(
             modifier = modifier,
             isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress,
             activeLinkedConnectorsList = state.activeConnectors,
+            connectorConnections = connectorConnections,
             isLinkConnectorNameUpdated = state.isLinkConnectorNameUpdated,
             onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
             onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
@@ -138,6 +143,7 @@ private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
     isAddingNewLinkConnectorInProgress: Boolean,
     activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
+    connectorConnections: ImmutableMap<PublicKeyHash, ConnectorConnection>?,
     isLinkConnectorNameUpdated: Boolean,
     onSnackbarMessageShown: () -> Unit,
     onLinkNewConnectorClick: () -> Unit,
@@ -189,6 +195,7 @@ private fun LinkedConnectorsContent(
             ActiveLinkedConnectorsListContent(
                 modifier = Modifier.fillMaxWidth(),
                 activeLinkedConnectorsList = activeLinkedConnectorsList,
+                connectorConnections = connectorConnections,
                 onLinkNewConnectorClick = onLinkNewConnectorClick,
                 onRenameConnectorClick = onRenameConnectorClick,
                 onDeleteConnectorClick = { connectionLinkToDelete = it },
@@ -230,6 +237,7 @@ private fun LinkedConnectorsContent(
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
     activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
+    connectorConnections: ImmutableMap<PublicKeyHash, ConnectorConnection>?,
     onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
     onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
@@ -247,6 +255,7 @@ private fun ActiveLinkedConnectorsListContent(
         itemsIndexed(activeLinkedConnectorsList) { index, activeLinkedConnector ->
             ActiveLinkedConnectorContent(
                 activeLinkedConnector = activeLinkedConnector,
+                connection = connectorConnections?.let { it[activeLinkedConnector.id] ?: ConnectorConnection.NOT_CONNECTED },
                 onRenameConnectorClick = onRenameConnectorClick,
                 onDeleteConnectorClick = onDeleteConnectorClick
             )
@@ -292,6 +301,8 @@ private fun ActiveLinkedConnectorsListContent(
 @Composable
 private fun ActiveLinkedConnectorContent(
     activeLinkedConnector: ConnectorUiItem,
+    // Null until known.
+    connection: ConnectorConnection?,
     modifier: Modifier = Modifier,
     onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
     onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
@@ -303,14 +314,23 @@ private fun ActiveLinkedConnectorContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = activeLinkedConnector.name,
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.text,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = activeLinkedConnector.name,
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                // Always laid out (blank until known), so that the row never changes height.
+                Text(
+                    text = connection?.let { stringResource(id = it.labelRes()) } ?: NO_BREAK_SPACE,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
             IconButton(
                 onClick = { onRenameConnectorClick(activeLinkedConnector) }
             ) {
@@ -333,6 +353,15 @@ private fun ActiveLinkedConnectorContent(
     }
 }
 
+private const val NO_BREAK_SPACE = "\u00A0"
+
+@StringRes
+private fun ConnectorConnection.labelRes(): Int = when (this) {
+    ConnectorConnection.IROH -> R.string.linkedConnectors_status_connectedIroh
+    ConnectorConnection.WEBRTC -> R.string.linkedConnectors_status_connectedWebRtc
+    ConnectorConnection.NOT_CONNECTED -> R.string.linkedConnectors_status_notConnected
+}
+
 @UsesSampleValues
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
@@ -350,6 +379,10 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
                     name = "firefox connection"
                 )
             ).toPersistentList(),
+            connectorConnections = persistentMapOf(
+                PublicKeyHash.sample.invoke() to ConnectorConnection.IROH,
+                PublicKeyHash.sample.other() to ConnectorConnection.NOT_CONNECTED
+            ),
             isAddingNewLinkConnectorInProgress = false,
             isLinkConnectorNameUpdated = false,
             onSnackbarMessageShown = {},
@@ -367,6 +400,7 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = persistentListOf(),
+            connectorConnections = null,
             isAddingNewLinkConnectorInProgress = false,
             isLinkConnectorNameUpdated = false,
             onLinkNewConnectorClick = {},

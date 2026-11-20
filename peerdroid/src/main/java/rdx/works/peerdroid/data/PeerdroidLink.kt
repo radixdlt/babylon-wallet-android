@@ -6,10 +6,12 @@ import com.radixdlt.sargon.P2pTransportProfile
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
@@ -102,6 +104,13 @@ internal class PeerdroidLinkImpl(
     // This CompletableDeferred will return a result indicating if the peer connection is ready or not.
     private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
+    // Set once connectionListener.completeLinking started: from then on the linking always runs to its end.
+    @Volatile
+    private var isCompletingLinking = false
+
+    @Volatile
+    private var linkingConnectionId: ConnectionIdHolder? = null
+
     override suspend fun addConnection(
         p2pLink: P2pLink,
         p2pTransportProfile: P2pTransportProfile,
@@ -109,31 +118,42 @@ internal class PeerdroidLinkImpl(
     ): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
+        isCompletingLinking = false
 
         // get connection id from encryption key
         val connectionId = ConnectionIdHolder(p2pLink)
-        Timber.tag("LinkingCE").d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
+        linkingConnectionId = connectionId
+        Timber.tag("LinkingCE").d("🗼 ${connectionId.logId} start linking over webrtc")
 
         webRtcManager = WebRtcManager(applicationContext, p2pTransportProfile)
 
-        withContext(ioDispatcher) {
-            observePeerConnectionUntilEstablished(connectionId.id, connectionListener)
-            peerConnectionDeferred.await() // wait until the peer connection is initialized and ready to negotiate
-            // and now establish the web socket
-            webSocketClient.initSession(
-                connectionId = connectionId,
-                encryptionKey = p2pLink.connectionPassword,
-                signalingServerUrl = p2pTransportProfile.signalingServer
-            )
-                .onSuccess {
-                    listenForIncomingMessagesFromSignalingServer(webSocketClient)
-                }
-                .onFailure {
-                    terminateWithError()
-                }
-        }
+        return try {
+            withContext(ioDispatcher) {
+                observePeerConnectionUntilEstablished(connectionId.id, connectionListener)
+                peerConnectionDeferred.await() // wait until the peer connection is initialized and ready to negotiate
+                // and now establish the web socket
+                webSocketClient.initSession(
+                    connectionId = connectionId,
+                    encryptionKey = p2pLink.connectionPassword,
+                    signalingServerUrl = p2pTransportProfile.signalingServer
+                )
+                    .onSuccess {
+                        listenForIncomingMessagesFromSignalingServer(webSocketClient)
+                    }
+                    .onFailure {
+                        terminateWithError("could not connect to the signaling server: ${it.describe()}")
+                    }
+            }
 
-        return addConnectionDeferred.await()
+            addConnectionDeferred.await()
+        } catch (exception: CancellationException) {
+            // The caller gave up (e.g. the linking completed over another transport): close the signaling and WebRTC
+            // connections, unless the linking is being completed already, which then finishes and closes them itself.
+            if (!isCompletingLinking) {
+                withContext(NonCancellable) { terminateConnection() }
+            }
+            throw exception
+        }
     }
 
     override suspend fun sendMessage(
@@ -195,17 +215,17 @@ internal class PeerdroidLinkImpl(
                     }
                     is SignalingServerMessage.Error.Validation -> {
                         Timber.tag("LinkingCE").d("🗼️ \uD83D\uDCE1️️ validation error ❗ ⬇️")
-                        terminateWithError()
+                        terminateWithError("signaling server validation error")
                     }
                     is SignalingServerMessage.Error.Unknown -> {
                         Timber.tag("LinkingCE").d("🗼️ \uD83D\uDCE1️️ unknown error ❗ ⬇️")
-                        terminateWithError()
+                        terminateWithError("signaling server error")
                     }
                 }
             }
             .catch { exception ->
-                Timber.tag("LinkingCE").e("🗼️ ⬇️ an exception occurred: ${exception.localizedMessage}")
-                terminateWithError()
+                Timber.tag("LinkingCE").e("🗼️ ⬇️ an exception occurred: ${exception.describe()}")
+                terminateWithError("signaling error: ${exception.describe()}")
             }
             .flowOn(ioDispatcher)
             .cancellable()
@@ -248,29 +268,38 @@ internal class PeerdroidLinkImpl(
                         // give some time to ensure the CE got the connected event too and
                         // started listening the data channel
                         delay(0.5.seconds)
-                        connectionListener.completeLinking(connectionId)
+                        isCompletingLinking = true
+                        // The connector extension may already have the link client message: always finish.
+                        withContext(NonCancellable) { connectionListener.completeLinking(connectionId) }
                             .onSuccess {
                                 Timber.tag("LinkingCE").d("🗼️ linking completed")
                                 terminateWithSuccess()
                             }
                             .onFailure { throwable ->
-                                Timber.tag("LinkingCE").e("🗼️ failed to complete linking: ${throwable.message}❗")
-                                terminateWithError()
+                                if (throwable is LinkingSupersededException) {
+                                    // Not a failure of WebRTC: another transport completed the linking.
+                                    Timber.tag("LinkingCE").d("🗼 ${linkingConnectionId?.logId} closing webrtc: ${throwable.message}")
+                                    terminateConnection()
+                                    peerConnectionDeferred.complete(Result.failure(throwable))
+                                    addConnectionDeferred.complete(Result.failure(throwable))
+                                } else {
+                                    terminateWithError("could not complete the linking: ${throwable.describe()}")
+                                }
                             }
                     }
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.tag("LinkingCE").d("🗼 ⚡ signaling state changed: peer connection disconnected 🔴")
-                        terminateWithError()
+                        terminateWithError("peer connection disconnected")
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.tag("LinkingCE").d("🗼 ⚡ signaling state changed: peer connection failed ❌")
-                        terminateWithError()
+                        terminateWithError("peer connection failed")
                     }
                 }
             }
             .catch { exception ->
-                Timber.tag("LinkingCE").e("🗼 ⚡ an exception occurred: ${exception.localizedMessage}")
-                terminateWithError()
+                Timber.tag("LinkingCE").e("🗼 ⚡ an exception occurred: ${exception.describe()}")
+                terminateWithError("peer connection error: ${exception.describe()}")
             }
             .completeWhenDisconnected()
             .flowOn(ioDispatcher)
@@ -296,12 +325,12 @@ internal class PeerdroidLinkImpl(
                         answerPayload = sessionDescriptionValue.toAnswerPayload()
                     )
                 } else {
-                    terminateWithError()
+                    terminateWithError("could not set the local description")
                 }
             }
             .onFailure { throwable ->
-                Timber.tag("LinkingCE").e("🗼️ failed to create answer: ${throwable.message}❗")
-                terminateWithError()
+                Timber.tag("LinkingCE").e("🗼️ failed to create answer: ${throwable.describe()}❗")
+                terminateWithError("could not create the answer: ${throwable.describe()}")
             }
     }
 
@@ -330,7 +359,9 @@ internal class PeerdroidLinkImpl(
         webRtcManager.addRemoteIceCandidate(remoteIceCandidate = remoteIceCandidate)
     }
 
-    private suspend fun terminateWithError() {
+    // Logged once per failed linking, with the short connection id and the reason.
+    private suspend fun terminateWithError(reason: String) {
+        Timber.tag("LinkingCE").w("🗼 ${linkingConnectionId?.logId} webrtc linking failed: ${reason.redactIpAddresses()}")
         terminateConnection()
         peerConnectionDeferred.complete(Result.failure(IllegalStateException("peer connection couldn't initialize")))
         addConnectionDeferred.complete(Result.failure(IllegalStateException("data channel couldn't initialize")))

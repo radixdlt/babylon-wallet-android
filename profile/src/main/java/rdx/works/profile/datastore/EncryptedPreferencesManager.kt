@@ -165,6 +165,20 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, p2pLinkListJson, p2pLinksKeySpec)
     }
 
+    /** The links removed here whose connector extension was not told yet (with their passwords): kept like the links. */
+    fun getRetiredP2PLinksJson(): Flow<Result<String>?> {
+        return permanentPreferences.data.catchIOException()
+            .map { preferences ->
+                preferences[stringPreferencesKey(RETIRED_P2P_LINKS_PREFERENCES_KEY)]
+                    .takeIf { !it.isNullOrEmpty() }
+                    ?.decrypt(p2pLinksKeySpec)
+            }
+    }
+
+    suspend fun saveRetiredP2PLinksJson(retiredP2PLinksJson: String) {
+        putString(permanentPreferences, RETIRED_P2P_LINKS_PREFERENCES_KEY, retiredP2PLinksJson, p2pLinksKeySpec)
+    }
+
     suspend fun saveP2PLinksWalletPrivateKey(privateKeyHex: String) {
         putString(permanentPreferences, P2P_LINKS_WALLET_PK_PREFERENCES_KEY, privateKeyHex, p2pLinksKeySpec)
     }
@@ -196,6 +210,7 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
         private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
         private const val P2P_LINKS_WALLET_PK_PREFERENCES_KEY = "p2p_links_wallet_pk_key"
+        private const val RETIRED_P2P_LINKS_PREFERENCES_KEY = "retired_p2p_links_key"
         private const val P2P_LINKS_CACHE_KEY_ALIAS = "p2pLinksCacheKey"
     }
 }

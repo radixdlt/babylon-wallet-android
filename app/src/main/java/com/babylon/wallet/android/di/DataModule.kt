@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
+import com.babylon.wallet.android.data.dapp.RadixConnectTransportSettingsImpl
 import com.babylon.wallet.android.data.repository.dapps.DAppDirectoryRepository
 import com.babylon.wallet.android.data.repository.dapps.DAppDirectoryRepositoryImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
@@ -20,6 +21,10 @@ import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoReposit
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepositoryImpl
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepository
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepositoryImpl
+import com.babylon.wallet.android.data.repository.radixconnect.IrohRelaysRepository
+import com.babylon.wallet.android.data.repository.radixconnect.IrohRelaysRepositoryImpl
 import com.babylon.wallet.android.data.repository.rns.RNSRepository
 import com.babylon.wallet.android.data.repository.rns.RNSRepositoryImpl
 import com.babylon.wallet.android.data.repository.state.StateRepository
@@ -38,6 +43,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.preferences.PreferencesManagerImpl
+import rdx.works.core.preferences.RadixConnectPreferences
+import rdx.works.core.preferences.RadixConnectPreferencesImpl
+import rdx.works.peerdroid.data.RadixConnectTransportSettings
 import javax.inject.Singleton
 
 @Suppress("TooManyFunctions")
@@ -99,6 +107,12 @@ interface DataModule {
 
     @Binds
     @Singleton
+    fun bindRetiredP2PLinksRepository(
+        repository: RetiredP2PLinksRepositoryImpl
+    ): RetiredP2PLinksRepository
+
+    @Binds
+    @Singleton
     fun bindHomeCardsRepository(
         repository: HomeCardsRepositoryImpl
     ): HomeCardsRepository
@@ -114,6 +128,24 @@ interface DataModule {
     fun bindPreferenceManager(
         preferencesManager: PreferencesManagerImpl
     ): PreferencesManager
+
+    @Binds
+    @Singleton
+    fun bindRadixConnectPreferences(
+        radixConnectPreferences: RadixConnectPreferencesImpl
+    ): RadixConnectPreferences
+
+    @Binds
+    @Singleton
+    fun bindIrohRelaysRepository(
+        repository: IrohRelaysRepositoryImpl
+    ): IrohRelaysRepository
+
+    @Binds
+    @Singleton
+    fun bindRadixConnectTransportSettings(
+        settings: RadixConnectTransportSettingsImpl
+    ): RadixConnectTransportSettings
 
     @Binds
     @Singleton

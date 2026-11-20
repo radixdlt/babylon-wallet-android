@@ -14,17 +14,23 @@ import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.preferences.addressbook.addressBook
-import com.babylon.wallet.android.presentation.settings.preferences.addressbook.addressBook as addressBookRoute
 import com.babylon.wallet.android.presentation.settings.preferences.assetshiding.hiddenAssetsScreen
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.DiagnosedTransport
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.irohRelayServerDetails
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.irohRelayServers
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.radixConnectDiagnostics
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.radixConnectSettings
+import com.babylon.wallet.android.presentation.settings.preferences.radixconnect.transportServers
 import com.babylon.wallet.android.presentation.settings.preferences.rs.relayServices
 import com.babylon.wallet.android.presentation.settings.preferences.ss.details.signalingServerDetails
 import com.babylon.wallet.android.presentation.settings.preferences.ss.list.signalingServers
 import com.babylon.wallet.android.presentation.settings.preferences.theme.themeSelection
 import com.babylon.wallet.android.presentation.settings.preferences.tokenpriceservices.tokenPriceServices
 import com.radixdlt.sargon.extensions.id
+import com.babylon.wallet.android.presentation.settings.preferences.addressbook.addressBook as addressBookRoute
 
 const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
 const val ROUTE_WALLET_PREFERENCES_GRAPH = "settings_wallet_preferences_graph"
@@ -61,6 +67,20 @@ fun NavGraphBuilder.preferencesNavGraph(
         themeSelection {
             navController.popBackStack()
         }
+        transportServers(
+            onBackClick = navController::popBackStack,
+            onIrohClick = { navController.irohRelayServers() },
+            onWebRtcClick = { navController.signalingServers() }
+        )
+        irohRelayServers(
+            onBackClick = navController::popBackStack,
+            onRelayServerClick = { relayServer -> navController.irohRelayServerDetails(relayServer) },
+            onAddRelayServerClick = { navController.irohRelayServerDetails(null) },
+            onDiagnosticsClick = { navController.radixConnectDiagnostics(DiagnosedTransport.IROH) }
+        )
+        radixConnectDiagnostics(
+            onBackClick = navController::popBackStack
+        )
         signalingServers(
             onBackClick = navController::popBackStack,
             onServerClick = {
@@ -68,9 +88,16 @@ fun NavGraphBuilder.preferencesNavGraph(
             },
             onAddServerClick = {
                 navController.signalingServerDetails(null)
-            }
+            },
+            onDiagnosticsClick = { navController.radixConnectDiagnostics(DiagnosedTransport.WEBRTC) }
         )
         signalingServerDetails(
+            onBackClick = navController::popBackStack
+        )
+        radixConnectSettings(
+            onBackClick = navController::popBackStack
+        )
+        irohRelayServerDetails(
             onBackClick = navController::popBackStack
         )
         relayServices(
@@ -135,7 +162,11 @@ fun NavGraphBuilder.walletPreferencesScreen(
                     }
 
                     SettingsItem.WalletPreferences.SignalingServers -> {
-                        navController.signalingServers()
+                        navController.transportServers()
+                    }
+
+                    is SettingsItem.WalletPreferences.RadixConnect -> {
+                        navController.radixConnectSettings()
                     }
 
                     SettingsItem.WalletPreferences.RelayServices -> {

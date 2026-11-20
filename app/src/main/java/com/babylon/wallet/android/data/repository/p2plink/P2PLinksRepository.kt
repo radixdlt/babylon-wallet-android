@@ -8,6 +8,7 @@ import com.radixdlt.sargon.extensions.P2pLinks
 import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -18,7 +19,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.profile.datastore.EncryptedPreferencesManager
+import timber.log.Timber
 import javax.inject.Inject
 
 interface P2PLinksRepository {
@@ -31,7 +34,11 @@ interface P2PLinksRepository {
 
     suspend fun addOrUpdateP2PLink(p2pLink: P2pLink)
 
+    /** Removed by the user: the connector extension is told (see [LinkRemovalNotifier]), then the connector deleted. */
     suspend fun removeP2PLink(id: PublicKeyHash)
+
+    /** Removed by the connector extension: its connector is deleted at once. The link removed, if it was one. */
+    suspend fun removeP2PLinkRemovedByConnector(connectorId: String): P2pLink?
 
     fun showRelinkConnectors(): Flow<Boolean>
 
@@ -44,6 +51,7 @@ interface P2PLinksRepository {
 
 class P2PLinksRepositoryImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
+    private val retiredP2PLinksRepository: RetiredP2PLinksRepository,
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
@@ -95,8 +103,28 @@ class P2PLinksRepositoryImpl @Inject constructor(
             val p2pLink = p2pLinks.getBy(id) ?: return@withContext
             val newP2PLinks = getSavedP2PLinks().remove(p2pLink)
 
+            // Removed first: should the app stop in between, a link is never both linked and retired.
             saveP2PLinks(newP2PLinks.asList())
+            try {
+                retiredP2PLinksRepository.retire(p2pLink.connectionPassword)
+            } catch (exception: Exception) {
+                if (exception is CancellationException) throw exception
+                // Without a notice to keep, the connector is deleted at once, untold, as before notices existed.
+                Timber.w("The removal notice could not be kept (${exception.javaClass.simpleName}): deleting the connector")
+                peerdroidClient.deleteLink(p2pLink.connectionPassword)
+            }
+        }
+    }
+
+    override suspend fun removeP2PLinkRemovedByConnector(connectorId: String): P2pLink? {
+        return withContext(ioDispatcher) {
+            val p2pLinks = getSavedP2PLinks()
+            val p2pLink = p2pLinks.asList().find { ConnectionIdHolder(it.connectionPassword).id == connectorId }
+                ?: return@withContext null
+
+            saveP2PLinks(p2pLinks.remove(p2pLink).asList())
             peerdroidClient.deleteLink(p2pLink.connectionPassword)
+            p2pLink
         }
     }
 

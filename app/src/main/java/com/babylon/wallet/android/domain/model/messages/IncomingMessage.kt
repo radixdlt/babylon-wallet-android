@@ -7,4 +7,7 @@ sealed interface IncomingMessage {
     data object ParsingError : IncomingMessage
 
     data class Error(val exception: RadixWalletException) : IncomingMessage
+
+    /** The connector extension forgot this wallet: the link with it is removed here too. */
+    data class LinkRemoved(val remoteConnectorId: String) : IncomingMessage
 }
