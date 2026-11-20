@@ -42,10 +42,6 @@ class FakeRadixConnectPreferences(
         irohCapableConnectionIdsState.value = irohCapableConnectionIdsState.value - connectionId
     }
 
-    override suspend fun clearIrohCapableConnectionIds() {
-        irohCapableConnectionIdsState.value = emptySet()
-    }
-
     val irohLinkMemories = mutableMapOf<String, String>()
 
     override suspend fun irohLinkMemory(connectionId: String): String? = irohLinkMemories[connectionId]
@@ -56,9 +52,5 @@ class FakeRadixConnectPreferences(
 
     override suspend fun removeIrohLinkMemory(connectionId: String) {
         irohLinkMemories.remove(connectionId)
-    }
-
-    override suspend fun clearIrohLinkMemories() {
-        irohLinkMemories.clear()
     }
 }

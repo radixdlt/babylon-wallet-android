@@ -48,7 +48,7 @@ class RadixConnectPreferencesImplTest {
     }
 
     @Test
-    fun `the iroh memory of each link is kept, forgotten link by link, and cleared with the wallet`() = runBlocking {
+    fun `the iroh memory of each link is kept and forgotten link by link`() = runBlocking {
         assertNull(sut.irohLinkMemory("link-a"))
 
         sut.setIrohLinkMemory("link-a", "memory a")
@@ -60,12 +60,6 @@ class RadixConnectPreferencesImplTest {
         sut.removeIrohLinkMemory("link-a")
         assertNull(sut.irohLinkMemory("link-a"))
         assertEquals("memory b", sut.irohLinkMemory("link-b"))
-
-        sut.addIrohCapableConnectionId("link-b")
-        sut.clearIrohLinkMemories()
-        assertNull(sut.irohLinkMemory("link-b"))
-        // Only the memories: the rest of the settings stay.
-        assertEquals(setOf("link-b"), sut.irohCapableConnectionIds.first())
     }
 
     @Test
@@ -146,8 +140,5 @@ class RadixConnectPreferencesImplTest {
 
         sut.removeIrohCapableConnectionId("a")
         assertEquals(setOf("b"), sut.irohCapableConnectionIds.first())
-
-        sut.clearIrohCapableConnectionIds()
-        assertTrue(sut.irohCapableConnectionIds.first().isEmpty())
     }
 }

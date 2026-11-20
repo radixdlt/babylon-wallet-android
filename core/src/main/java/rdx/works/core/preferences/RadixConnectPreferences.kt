@@ -44,8 +44,6 @@ interface RadixConnectPreferences {
 
     suspend fun removeIrohCapableConnectionId(connectionId: String)
 
-    suspend fun clearIrohCapableConnectionIds()
-
     /**
      * What the iroh library remembers of the link [connectionId] (an opaque string with no secret: the relay the
      * connector was last seen on and when it was last connected), or null when nothing is known yet.
@@ -55,11 +53,6 @@ interface RadixConnectPreferences {
     suspend fun setIrohLinkMemory(connectionId: String, memory: String)
 
     suspend fun removeIrohLinkMemory(connectionId: String)
-
-    /**
-     * Forgets the iroh memory of every link (the wallet is deleted).
-     */
-    suspend fun clearIrohLinkMemories()
 }
 
 class RadixConnectPreferencesImpl @Inject constructor(
@@ -103,10 +96,6 @@ class RadixConnectPreferencesImpl @Inject constructor(
         dataStore.edit { preferences -> preferences.updateIrohCapableConnectionIds { it - connectionId } }
     }
 
-    override suspend fun clearIrohCapableConnectionIds() {
-        dataStore.edit { preferences -> preferences.remove(KEY_IROH_CAPABLE_CONNECTION_IDS) }
-    }
-
     override suspend fun irohLinkMemory(connectionId: String): String? =
         dataStore.data.first()[irohLinkMemoryKey(connectionId)]
 
@@ -118,13 +107,6 @@ class RadixConnectPreferencesImpl @Inject constructor(
         dataStore.edit { preferences -> preferences.remove(irohLinkMemoryKey(connectionId)) }
     }
 
-    override suspend fun clearIrohLinkMemories() {
-        dataStore.edit { preferences ->
-            preferences.asMap().keys
-                .filter { key -> key.name.startsWith(IROH_LINK_MEMORY_KEY_PREFIX) }
-                .forEach { key -> preferences.remove(key) }
-        }
-    }
 
     private fun irohLinkMemoryKey(connectionId: String) = stringPreferencesKey(IROH_LINK_MEMORY_KEY_PREFIX + connectionId)
 
