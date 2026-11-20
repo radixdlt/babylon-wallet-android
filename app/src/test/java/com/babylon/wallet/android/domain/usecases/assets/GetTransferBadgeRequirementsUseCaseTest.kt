@@ -89,7 +89,11 @@ class GetTransferBadgeRequirementsUseCaseTest {
             TransferRequiredBadges(
                 requiredBadges = emptyList(),
                 restrictedWithdrawals = listOf(
-                    RestrictedWithdrawal(resource = restrictedToken, badges = listOf(badge), status = RestrictedWithdrawalStatus.MISSING_BADGES)
+                    RestrictedWithdrawal(
+                        resource = restrictedToken,
+                        badges = listOf(badge),
+                        status = RestrictedWithdrawalStatus.MISSING_BADGES
+                    )
                 )
             )
         )
@@ -114,7 +118,11 @@ class GetTransferBadgeRequirementsUseCaseTest {
             TransferRequiredBadges(
                 requiredBadges = emptyList(),
                 restrictedWithdrawals = listOf(
-                    RestrictedWithdrawal(resource = restrictedToken, badges = emptyList(), status = RestrictedWithdrawalStatus.NOT_WITHDRAWABLE)
+                    RestrictedWithdrawal(
+                        resource = restrictedToken,
+                        badges = emptyList(),
+                        status = RestrictedWithdrawalStatus.NOT_WITHDRAWABLE
+                    )
                 )
             )
         )
@@ -159,6 +167,23 @@ class GetTransferBadgeRequirementsUseCaseTest {
             ),
             result.status
         )
+    }
+
+    @Test
+    fun `an NFT the Gateway does not know is drawn as an NFT collection`() = runTest(testDispatcher) {
+        val nft = ResourceAddress.sampleMainnet.nonFungibleGCMembership
+        coEvery { sargonOs.transferRequiredBadges(account, listOf(nft)) } returns TransferRequiredBadges(
+            requiredBadges = emptyList(),
+            restrictedWithdrawals = listOf(
+                RestrictedWithdrawal(resource = nft, badges = emptyList(), status = RestrictedWithdrawalStatus.NOT_WITHDRAWABLE)
+            )
+        )
+        coEvery { stateRepository.getResources(setOf(nft), account, any(), any()) } returns Result.failure(RuntimeException())
+
+        val status = sut(account, setOf(nft)).getOrThrow().status as BadgeRequirementStatus.Error
+
+        assertEquals(Resource.NonFungibleResource(address = nft, amount = 0, items = emptyList()), status.resource)
+        assertEquals(BadgeRequirementStatus.Error.Reason.NotWithdrawable, status.reason)
     }
 
     @Test
