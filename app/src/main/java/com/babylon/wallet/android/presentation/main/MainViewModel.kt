@@ -254,6 +254,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onConnectorRemovedMessageShown() {
+        _state.update { it.copy(connectorRemovedByExtension = null) }
+    }
+
     fun onInvalidRequestMessageShown() {
         _state.update { it.copy(dappRequestFailure = null) }
     }
@@ -363,6 +367,8 @@ class MainViewModel @Inject constructor(
         val initialAppState: AppState = AppState.Loading,
         val showDeviceRootedWarning: Boolean = false,
         val dappRequestFailure: UiMessage.ErrorMessage? = null,
+        /** The name of the connector whose extension forgot this wallet, so it was removed here too. */
+        val connectorRemovedByExtension: String? = null,
         val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
         val showMobileConnectWarning: Boolean = false,
         val isAdvancedLockEnabled: Boolean = false,

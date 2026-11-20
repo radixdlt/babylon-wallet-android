@@ -3,7 +3,9 @@ package com.babylon.wallet.android.presentation.main.p2plinks
 import androidx.lifecycle.Lifecycle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.repository.p2plink.LinkRemovalNotifier
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
@@ -27,6 +29,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
@@ -47,6 +50,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Suppress("LongParameterList")
 class IncomingRequestsDelegate @Inject constructor(
     private val p2PLinksRepository: P2PLinksRepository,
+    private val retiredP2PLinksRepository: RetiredP2PLinksRepository,
+    private val linkRemovalNotifier: LinkRemovalNotifier,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val peerdroidClient: PeerdroidClient,
     private val appEventBus: AppEventBus,
@@ -58,7 +63,9 @@ class IncomingRequestsDelegate @Inject constructor(
 
     private var incomingDappRequestsJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
+    private var linkRemovalsJob: Job? = null
     private var observeP2PLinksJob: Job? = null
+    private var observeRetiredP2PLinksJob: Job? = null
     private var observeAppLifecycleJob: Job? = null
 
     override fun invoke(
@@ -170,6 +177,34 @@ class IncomingRequestsDelegate @Inject constructor(
                 terminatePeerdroid(reason = "the observation of the linked connectors ended")
             }
             .launchIn(viewModelScope)
+        // Restarted with the links: terminating Peerdroid closes the links of the notices too.
+        observeRetiredP2PLinks()
+    }
+
+    /**
+     * Tells the connector extensions of the links removed here, one notice per link, for as long as it is retired:
+     * see [LinkRemovalNotifier].
+     */
+    private fun observeRetiredP2PLinks() {
+        observeRetiredP2PLinksJob?.cancel()
+        observeRetiredP2PLinksJob = viewModelScope.launch {
+            val notices = mutableMapOf<String, Job>()
+            combine(
+                retiredP2PLinksRepository.observeRetiredP2PLinks(),
+                getProfileUseCase.flow.map { it.appPreferences.p2pTransportProfiles.current }.distinctUntilChanged()
+            ) { retiredLinks, p2pTransportProfile -> retiredLinks to p2pTransportProfile }
+                .distinctUntilChanged()
+                .collect { (retiredLinks, p2pTransportProfile) ->
+                    val wanted = retiredLinks.associateBy { it.connectorId }
+                    (notices.keys - wanted.keys).forEach { connectorId -> notices.remove(connectorId)?.cancel() }
+                    if (wanted.isNotEmpty()) listenForIncomingMessages()
+                    wanted.forEach { (connectorId, retiredLink) ->
+                        if (notices[connectorId]?.isActive != true) {
+                            notices[connectorId] = launch { linkRemovalNotifier.deliver(retiredLink, p2pTransportProfile) }
+                        }
+                    }
+                }
+        }
     }
 
     private suspend fun establishLinkConnection(
@@ -209,6 +244,15 @@ class IncomingRequestsDelegate @Inject constructor(
                 .cancellable()
                 .collect { error ->
                     reportFailure(error.exception)
+                }
+        }
+        linkRemovalsJob = viewModelScope.launch {
+            peerdroidClient
+                .listenForLinkRemovals()
+                .cancellable()
+                .collect { removal ->
+                    val removed = linkRemovalNotifier.onLinkRemovedByConnector(removal.remoteConnectorId) ?: return@collect
+                    _state.update { it.copy(connectorRemovedByExtension = removed.displayName) }
                 }
         }
     }
@@ -252,6 +296,8 @@ class IncomingRequestsDelegate @Inject constructor(
         incomingDappRequestsJob = null
         incomingDappRequestErrorsJob?.cancel()
         incomingDappRequestErrorsJob = null
+        linkRemovalsJob?.cancel()
+        linkRemovalsJob = null
         peerdroidClient.terminate()
     }
 

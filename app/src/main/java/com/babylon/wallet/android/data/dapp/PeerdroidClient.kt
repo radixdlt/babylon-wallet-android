@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInteraction
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingMessage
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
@@ -66,6 +69,8 @@ interface PeerdroidClient {
 
     fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error>
 
+    fun listenForLinkRemovals(): Flow<IncomingMessage.LinkRemoved>
+
     suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
     fun terminate()
@@ -88,6 +93,7 @@ interface PeerdroidClient {
 @Suppress("TooManyFunctions")
 class PeerdroidClientImpl @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector,
+    private val retiredP2PLinksRepository: RetiredP2PLinksRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
 ) : PeerdroidClient {
@@ -159,6 +165,10 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
+    override fun listenForLinkRemovals(): Flow<IncomingMessage.LinkRemoved> {
+        return listenForIncomingMessages().filterIsInstance()
+    }
+
     override fun listenForLedgerResponses(): Flow<LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
@@ -184,6 +194,28 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     private suspend fun parseIncomingMessage(
+        remoteConnectorId: String,
+        messageInJsonString: String
+    ): IncomingMessage {
+        val link = connectorLogId(remoteConnectorId)
+        return when {
+            isLinkRemoved(messageInJsonString) -> {
+                Timber.tag(LOG_TAG).i("🤖 $link the connector removed the link")
+                IncomingMessage.LinkRemoved(remoteConnectorId)
+            }
+
+            // A link removed here only waits to tell its connector extension: nothing else it sends is handled (no
+            // dApp request, no ledger response), and nothing is answered.
+            retiredP2PLinksRepository.isRetired(remoteConnectorId) -> {
+                Timber.tag(LOG_TAG).w("🤖 $link ignored a message (${messageInJsonString.length} chars): the link was removed")
+                IncomingMessage.ParsingError
+            }
+
+            else -> parseDappOrLedgerMessage(remoteConnectorId, messageInJsonString)
+        }
+    }
+
+    private suspend fun parseDappOrLedgerMessage(
         remoteConnectorId: String,
         messageInJsonString: String
     ): IncomingMessage {
@@ -240,6 +272,14 @@ class PeerdroidClientImpl @Inject constructor(
         )
     }
 
+    // Exactly `{"discriminator":"linkRemoved"}`: a message with anything else in it (e.g. a dApp request that happens to
+    // carry that discriminator) is not a removal, as the app's lenient Json would otherwise decode it as one.
+    private fun isLinkRemoved(messageInJsonString: String): Boolean = runCatching {
+        json.parseToJsonElement(messageInJsonString).jsonObject.keys == setOf(DISCRIMINATOR_KEY) &&
+            json.decodeFromString<ConnectorExtensionExchangeInteraction>(messageInJsonString) ==
+            ConnectorExtensionExchangeInteraction.LinkRemoved
+    }.getOrDefault(false)
+
     // The error types only, to keep log lines short.
     private fun parseLedgerInteraction(link: String, messageInJsonString: String): IncomingMessage = runCatching {
         val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
@@ -269,6 +309,7 @@ class PeerdroidClientImpl @Inject constructor(
 
     private companion object {
         const val LOG_TAG = "RadixConnect"
+        const val DISCRIMINATOR_KEY = "discriminator"
     }
 
     private suspend fun sendFailureResponseToDApp(

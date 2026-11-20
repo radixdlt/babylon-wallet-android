@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepository
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.extensions.string
 import dagger.Module
@@ -37,10 +38,12 @@ object NetworkApiModule {
     @Singleton
     fun providePeerdroidClient(
         peerdroidConnector: PeerdroidConnector,
+        retiredP2PLinksRepository: RetiredP2PLinksRepository,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         json: Json
     ): PeerdroidClient = PeerdroidClientImpl(
         peerdroidConnector = peerdroidConnector,
+        retiredP2PLinksRepository = retiredP2PLinksRepository,
         ioDispatcher = ioDispatcher,
         json = json
     )

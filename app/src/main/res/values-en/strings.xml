@@ -218,6 +218,8 @@
   <string name="linkedConnectors_title">Linked Connectors</string>
   <string name="linkedConnectors_subtitle">Your Radix Wallet is linked to the following desktop browsers using the Connector browser extension.</string>
   <string name="linkedConnectors_lastConnected">Last connected %s</string>
+  <string name="linkedConnectors_removedByConnector_title">Connector Removed</string>
+  <string name="linkedConnectors_removedByConnector_message">“%s” forgot this wallet, so it was removed here too.</string>
   <string name="linkedConnectors_linkNewConnector">Link New Connector</string>
   <string name="linkedConnectors_newConnection_title">Link Connector</string>
   <string name="linkedConnectors_newConnection_subtitle">Open your Radix Connector extension\'s menu by clicking its icon in your list of browser extensions, and scan the QR code shown.</string>

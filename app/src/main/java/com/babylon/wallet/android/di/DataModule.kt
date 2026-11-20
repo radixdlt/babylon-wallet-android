@@ -21,6 +21,8 @@ import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoReposit
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepositoryImpl
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepository
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepositoryImpl
 import com.babylon.wallet.android.data.repository.radixconnect.IrohRelaysRepository
 import com.babylon.wallet.android.data.repository.radixconnect.IrohRelaysRepositoryImpl
 import com.babylon.wallet.android.data.repository.rns.RNSRepository
@@ -102,6 +104,12 @@ interface DataModule {
     fun bindP2PLinksRepository(
         repository: P2PLinksRepositoryImpl
     ): P2PLinksRepository
+
+    @Binds
+    @Singleton
+    fun bindRetiredP2PLinksRepository(
+        repository: RetiredP2PLinksRepositoryImpl
+    ): RetiredP2PLinksRepository
 
     @Binds
     @Singleton

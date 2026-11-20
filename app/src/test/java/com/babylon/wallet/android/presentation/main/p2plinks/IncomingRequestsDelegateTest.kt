@@ -4,6 +4,7 @@ import androidx.lifecycle.Lifecycle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.data.repository.p2plink.RetiredP2PLinksRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
@@ -48,6 +49,9 @@ class IncomingRequestsDelegateTest {
     private val p2pLinksRepository = mockk<P2PLinksRepository> {
         every { observeP2PLinks() } returns MutableStateFlow(P2pLinks(P2pLink.sample()))
     }
+    private val retiredP2PLinksRepository = mockk<RetiredP2PLinksRepository> {
+        every { observeRetiredP2PLinks() } returns MutableStateFlow(emptyList())
+    }
     private val incomingRequestRepository = mockk<IncomingRequestRepository> {
         every { currentRequestToHandle } returns emptyFlow()
     }
@@ -59,6 +63,8 @@ class IncomingRequestsDelegateTest {
     private fun TestScope.startDelegate() {
         val delegate = IncomingRequestsDelegate(
             p2PLinksRepository = p2pLinksRepository,
+            retiredP2PLinksRepository = retiredP2PLinksRepository,
+            linkRemovalNotifier = mockk(relaxed = true),
             incomingRequestRepository = incomingRequestRepository,
             peerdroidClient = peerdroidClient,
             appEventBus = mockk(relaxed = true),
@@ -157,6 +163,7 @@ class IncomingRequestsDelegateTest {
         override fun listenForIncomingRequests(): Flow<DappToWalletInteraction> = emptyFlow()
         override fun listenForLedgerResponses(): Flow<LedgerResponse> = emptyFlow()
         override fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error> = emptyFlow()
+        override fun listenForLinkRemovals(): Flow<IncomingMessage.LinkRemoved> = emptyFlow()
         override suspend fun deleteLink(connectionPassword: RadixConnectPassword) = Unit
 
         override fun terminate() {

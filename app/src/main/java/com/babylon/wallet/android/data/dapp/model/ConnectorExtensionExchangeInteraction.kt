@@ -17,4 +17,12 @@ sealed interface ConnectorExtensionExchangeInteraction {
         @SerialName("accounts")
         val accounts: List<Account>
     ) : ConnectorExtensionExchangeInteraction
+
+    /**
+     * The link was removed on the side that sends it, so the other side removes it too. Either side sends it: the
+     * wallet when its user removed the connector, the connector extension when its user forgot the wallet.
+     */
+    @Serializable
+    @SerialName("linkRemoved")
+    data object LinkRemoved : ConnectorExtensionExchangeInteraction
 }

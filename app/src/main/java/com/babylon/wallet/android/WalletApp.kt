@@ -196,6 +196,17 @@ fun WalletApp(
                 dismissText = null
             )
         }
+        state.connectorRemovedByExtension?.let { connectorName ->
+            BasicPromptAlertDialog(
+                finish = {
+                    mainViewModel.onConnectorRemovedMessageShown()
+                },
+                titleText = stringResource(id = R.string.linkedConnectors_removedByConnector_title),
+                messageText = stringResource(id = R.string.linkedConnectors_removedByConnector_message, connectorName),
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = null
+            )
+        }
         if (state.showMobileConnectWarning) {
             BasicPromptAlertDialog(
                 finish = {
