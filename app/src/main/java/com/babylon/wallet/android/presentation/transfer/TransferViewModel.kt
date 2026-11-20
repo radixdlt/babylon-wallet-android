@@ -22,8 +22,8 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressBookEntry
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.RnsDomainConfiguredReceiver
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.clamped
