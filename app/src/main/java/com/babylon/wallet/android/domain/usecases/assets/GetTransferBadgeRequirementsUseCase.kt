@@ -9,6 +9,7 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.RestrictedWithdrawalStatus
 import com.radixdlt.sargon.TransferRequiredBadges
+import com.radixdlt.sargon.extensions.isNonFungible
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import rdx.works.core.domain.resources.Resource
@@ -73,7 +74,12 @@ class GetTransferBadgeRequirementsUseCase @Inject constructor(
             underAccountAddress = fromAccount,
             withDetails = false,
             withAllMetadata = false
-        ).getOrNull()?.firstOrNull() ?: Resource.FungibleResource(address = address, ownedAmount = null)
+        ).getOrNull()?.firstOrNull() ?: if (address.isNonFungible) {
+            // Unknown to the Gateway: drawn as an NFT collection or a token, by address only.
+            Resource.NonFungibleResource(address = address, amount = 0, items = emptyList())
+        } else {
+            Resource.FungibleResource(address = address, ownedAmount = null)
+        }
 
     private val ResourceSpecifier.address: ResourceAddress
         get() = when (this) {

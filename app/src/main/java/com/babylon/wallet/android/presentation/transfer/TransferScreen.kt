@@ -354,7 +354,10 @@ fun TransferContent(
 
                 val isEnabled = remember(state) { state.isSubmitEnabled }
 
-                if (state.badgeRequirementStatus != BadgeRequirementStatus.None) {
+                // Shown once checked: while checking, the send button shows the progress.
+                if (state.badgeRequirementStatus is BadgeRequirementStatus.Success ||
+                    state.badgeRequirementStatus is BadgeRequirementStatus.Error
+                ) {
                     BadgeRequirementCard(
                         status = state.badgeRequirementStatus,
                         modifier = Modifier
