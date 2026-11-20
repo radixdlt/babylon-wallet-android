@@ -22,6 +22,10 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelMessage> = callbackFlow {
         override fun onStateChange() {
             val state = this@eventFlow.state()
             trySend(DataChannelMessage.StateChanged(state = state))
+            // A closed channel sends nothing more: its flow ends with it, and so does whoever reads it.
+            if (state == DataChannel.State.CLOSED) {
+                channel.close()
+            }
         }
 
         override fun onMessage(p0: DataChannel.Buffer?) {
@@ -33,7 +37,8 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelMessage> = callbackFlow {
                     val message = decodeAndParsePackageFromJson(jsonString)
                     trySend(message)
                 } catch (exception: Exception) {
-                    Timber.e("📯 an error occurred while decoding the package 📦: ${exception.localizedMessage} ⬅")
+                    // The error type only, to keep log lines short.
+                    Timber.e("📯 an error occurred while decoding the package 📦: ${exception.javaClass.simpleName} ⬅")
                     trySend(DataChannelMessage.UnknownError(message = "error occurred while decoding the package"))
                 }
             }

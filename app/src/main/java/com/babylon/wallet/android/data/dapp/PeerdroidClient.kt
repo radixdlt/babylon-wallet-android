@@ -31,6 +31,7 @@ import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
 import rdx.works.peerdroid.domain.PeerConnectionStatus
+import rdx.works.peerdroid.domain.shortId
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -63,6 +64,17 @@ interface PeerdroidClient {
     suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
     fun terminate()
+
+    /**
+     * The app came back to the foreground: each transport checks its connections, which may have died while the app
+     * was in the background.
+     */
+    fun onAppForeground()
+
+    /**
+     * The app went to the background.
+     */
+    fun onAppBackground()
 }
 
 @Suppress("TooManyFunctions")
@@ -119,7 +131,8 @@ class PeerdroidClientImpl @Inject constructor(
                     messageInJsonString = messageFromRemoteClient.messageInJsonString
                 )
             }.catch { exception ->
-                Timber.e("\uD83E\uDD16 caught exception: ${exception.localizedMessage}")
+                // The error type only, to keep log lines short.
+                Timber.tag(LOG_TAG).e("🤖 stopped reading incoming messages: ${exception.javaClass.simpleName}")
             }
             .cancellable()
             .flowOn(ioDispatcher)
@@ -145,10 +158,19 @@ class PeerdroidClientImpl @Inject constructor(
         peerdroidConnector.terminateConnectionToConnectorExtension()
     }
 
+    override fun onAppForeground() {
+        peerdroidConnector.onAppForeground()
+    }
+
+    override fun onAppBackground() {
+        peerdroidConnector.onAppBackground()
+    }
+
     private suspend fun parseIncomingMessage(
         remoteConnectorId: String,
         messageInJsonString: String
     ): IncomingMessage {
+        val link = connectorLogId(remoteConnectorId)
         // Try to parse as a dApp interaction
         val dAppInteraction = runCatching {
             DappToWalletInteractionUnvalidated.fromJson(messageInJsonString)
@@ -156,14 +178,21 @@ class PeerdroidClientImpl @Inject constructor(
 
         if (dAppInteraction == null) {
             // Try to parse as a ledger interaction
-            return parseLedgerInteraction(messageInJsonString)
+            return parseLedgerInteraction(link, messageInJsonString).also { incomingMessage ->
+                if (incomingMessage is LedgerResponse) {
+                    Timber.tag(LOG_TAG).i("🤖 $link accepted a ledger response, interaction=${incomingMessage.id}")
+                }
+            }
         }
 
         // It's a dApp interaction, validate the version
         val interactionVersion = dAppInteraction.metadata.version.toLong()
         if (interactionVersion != Constants.WALLET_INTERACTION_VERSION) {
             val currentVersion = Constants.WALLET_INTERACTION_VERSION
-            Timber.e("The version of the request: $interactionVersion is incompatible. Wallet version: $currentVersion")
+            Timber.tag(LOG_TAG).w(
+                "🤖 $link rejected interaction=${dAppInteraction.interactionId}: version $interactionVersion is incompatible " +
+                    "with the wallet's $currentVersion, answering with a failure"
+            )
             sendFailureResponseToDApp(
                 requestId = dAppInteraction.interactionId,
                 remoteConnectorId = remoteConnectorId,
@@ -178,9 +207,14 @@ class PeerdroidClientImpl @Inject constructor(
         return dAppInteraction.toDomainModel(
             remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)
         ).fold(
-            onSuccess = { it },
+            onSuccess = {
+                Timber.tag(LOG_TAG).i("🤖 $link accepted a dApp request, interaction=${dAppInteraction.interactionId}")
+                it
+            },
             onFailure = { error ->
-                Timber.e("failed to parse incoming message: ${error.localizedMessage}")
+                Timber.tag(LOG_TAG).w(
+                    "🤖 $link rejected interaction=${dAppInteraction.interactionId}: invalid request (${error.javaClass.simpleName})"
+                )
                 when (error) {
                     is RadixWalletException -> IncomingMessage.Error(error)
                     else -> IncomingMessage.ParsingError
@@ -189,7 +223,8 @@ class PeerdroidClientImpl @Inject constructor(
         )
     }
 
-    private fun parseLedgerInteraction(messageInJsonString: String): IncomingMessage = runCatching {
+    // The error types only, to keep log lines short.
+    private fun parseLedgerInteraction(link: String, messageInJsonString: String): IncomingMessage = runCatching {
         val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
         interaction.toDomainModel()
     }.fold(
@@ -197,17 +232,27 @@ class PeerdroidClientImpl @Inject constructor(
         onFailure = { error ->
             when (error) {
                 is SerializationException -> {
-                    Timber.e("Failed to parse incoming ledger interaction with serialization exception: ${error.localizedMessage}")
+                    Timber.tag(LOG_TAG).w(
+                        "🤖 $link rejected a message (${messageInJsonString.length} chars): neither a dApp request nor a ledger " +
+                            "response (${error.javaClass.simpleName})"
+                    )
                     IncomingMessage.ParsingError
                 }
 
                 else -> {
-                    Timber.e("Failed to parse ledger response: ${error.localizedMessage}")
+                    Timber.tag(LOG_TAG).w("🤖 $link rejected a ledger response: ${error.javaClass.simpleName}")
                     IncomingMessage.Error(RadixWalletException.DappRequestException.InvalidRequestChallenge)
                 }
             }
         }
     )
+
+    // The short form of the connector's id (a hash of the link's password): never the full id.
+    private fun connectorLogId(remoteConnectorId: String) = "link=${ConnectionIdHolder(remoteConnectorId).shortId}"
+
+    private companion object {
+        const val LOG_TAG = "RadixConnect"
+    }
 
     private suspend fun sendFailureResponseToDApp(
         remoteConnectorId: String,
