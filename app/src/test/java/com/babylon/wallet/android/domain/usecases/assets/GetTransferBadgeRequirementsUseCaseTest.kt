@@ -98,7 +98,11 @@ class GetTransferBadgeRequirementsUseCaseTest {
         val result = sut(account, setOf(restrictedToken)).getOrThrow()
 
         assertEquals(
-            BadgeRequirementStatus.Error(badgeResource, BadgeRequirementStatus.Error.Reason.MissingBadge),
+            BadgeRequirementStatus.Error(
+                resource = badgeResource,
+                reason = BadgeRequirementStatus.Error.Reason.MissingBadge,
+                restrictedResource = restrictedToken
+            ),
             result.status
         )
     }
@@ -119,7 +123,11 @@ class GetTransferBadgeRequirementsUseCaseTest {
         val result = sut(account, setOf(restrictedToken)).getOrThrow()
 
         assertEquals(
-            BadgeRequirementStatus.Error(token, BadgeRequirementStatus.Error.Reason.NotWithdrawable),
+            BadgeRequirementStatus.Error(
+                resource = token,
+                reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable,
+                restrictedResource = restrictedToken
+            ),
             result.status
         )
     }
@@ -144,7 +152,11 @@ class GetTransferBadgeRequirementsUseCaseTest {
         val result = sut(account, setOf(restrictedToken)).getOrThrow()
 
         assertEquals(
-            BadgeRequirementStatus.Error(token, BadgeRequirementStatus.Error.Reason.NotWithdrawable),
+            BadgeRequirementStatus.Error(
+                resource = token,
+                reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable,
+                restrictedResource = restrictedToken
+            ),
             result.status
         )
     }

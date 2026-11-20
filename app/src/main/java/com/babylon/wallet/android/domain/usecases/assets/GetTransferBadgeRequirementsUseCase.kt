@@ -55,12 +55,14 @@ class GetTransferBadgeRequirementsUseCase @Inject constructor(
             unsatisfied.status == RestrictedWithdrawalStatus.NOT_WITHDRAWABLE || unsatisfied.badges.isEmpty() ->
                 BadgeRequirementStatus.Error(
                     resource = resourceForDisplay(unsatisfied.resource, fromAccount),
-                    reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable
+                    reason = BadgeRequirementStatus.Error.Reason.NotWithdrawable,
+                    restrictedResource = unsatisfied.resource
                 )
 
             else -> BadgeRequirementStatus.Error(
                 resource = resourceForDisplay(unsatisfied.badges.first(), fromAccount),
-                reason = BadgeRequirementStatus.Error.Reason.MissingBadge
+                reason = BadgeRequirementStatus.Error.Reason.MissingBadge,
+                restrictedResource = unsatisfied.resource
             )
         }
     }

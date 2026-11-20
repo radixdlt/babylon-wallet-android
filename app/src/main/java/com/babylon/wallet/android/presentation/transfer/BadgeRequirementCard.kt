@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transfer
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.isNonFungible
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 
@@ -180,14 +182,7 @@ fun BadgeRequirementCard(
                             )
                             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                             Text(
-                                text = when (status.reason) {
-                                    BadgeRequirementStatus.Error.Reason.MissingBadge ->
-                                        stringResource(id = R.string.assetTransfer_badge_error_missing_message)
-                                    BadgeRequirementStatus.Error.Reason.NotWithdrawable ->
-                                        stringResource(id = R.string.assetTransfer_badge_error_notWithdrawable_message)
-                                    BadgeRequirementStatus.Error.Reason.CheckFailed ->
-                                        stringResource(id = R.string.assetTransfer_badge_error_checkFailed_message)
-                                },
+                                text = stringResource(id = status.messageRes()),
                                 style = RadixTheme.typography.body2Regular,
                                 color = RadixTheme.colors.textSecondary
                             )
@@ -263,5 +258,24 @@ private fun BadgeRequirementCardErrorCheckFailedPreview() {
                 reason = BadgeRequirementStatus.Error.Reason.CheckFailed
             )
         )
+    }
+}
+
+/** The message names what the restricted resource really is: a token or an NFT. */
+@StringRes
+internal fun BadgeRequirementStatus.Error.messageRes(): Int {
+    val isNft = restrictedResource?.isNonFungible == true
+    return when (reason) {
+        BadgeRequirementStatus.Error.Reason.MissingBadge -> if (isNft) {
+            R.string.assetTransfer_badge_error_missing_nft_message
+        } else {
+            R.string.assetTransfer_badge_error_missing_message
+        }
+        BadgeRequirementStatus.Error.Reason.NotWithdrawable -> if (isNft) {
+            R.string.assetTransfer_badge_error_notWithdrawable_nft_message
+        } else {
+            R.string.assetTransfer_badge_error_notWithdrawable_message
+        }
+        BadgeRequirementStatus.Error.Reason.CheckFailed -> R.string.assetTransfer_badge_error_checkFailed_message
     }
 }
