@@ -47,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.assets.NFTsViewMode
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressBookEntry
@@ -98,6 +99,7 @@ fun TransferScreen(
         cancelQrScan = viewModel::cancelQrScan,
         onChooseAssetTabClick = viewModel::onChooseAssetTabSelected,
         onChooseAssetCollectionClick = viewModel::onChooseAssetCollectionToggle,
+        onChooseAssetNFTsViewModeClick = viewModel::onChooseAssetNFTsViewModeSelected,
         onSheetClosed = viewModel::onSheetClose,
         onAddAssetsClick = viewModel::onAddAssetsClick,
         onRemoveAssetClick = viewModel::onRemoveAsset,
@@ -142,6 +144,7 @@ fun TransferContent(
     cancelQrScan: () -> Unit,
     onChooseAssetTabClick: (AssetsTab) -> Unit,
     onChooseAssetCollectionClick: (String) -> Unit,
+    onChooseAssetNFTsViewModeClick: (NFTsViewMode) -> Unit,
     onSheetClosed: () -> Unit,
     onAddAssetsClick: (TargetAccount) -> Unit,
     onRemoveAssetClick: (TargetAccount, SpendingAsset) -> Unit,
@@ -410,6 +413,7 @@ fun TransferContent(
                         state = sheetState,
                         onTabClick = onChooseAssetTabClick,
                         onCollectionClick = onChooseAssetCollectionClick,
+                        onNFTsViewModeClick = onChooseAssetNFTsViewModeClick,
                         onCloseClick = onSheetClosed,
                         onAssetSelectionChanged = onAssetSelectionChanged,
                         onNextNFtsPageRequest = onNextNFTsPageRequest,
@@ -455,6 +459,7 @@ fun TransferContentPreview() {
             cancelQrScan = {},
             onChooseAssetTabClick = {},
             onChooseAssetCollectionClick = {},
+            onChooseAssetNFTsViewModeClick = {},
             onSheetClosed = {},
             onAddAssetsClick = {},
             onRemoveAssetClick = { _, _ -> },

@@ -263,7 +263,8 @@ fun PoolUnitTabPreview() {
                     onNextNFtsPageRequest = {},
                     onFungibleClick = {},
                     onPoolUnitClick = {},
-                    onNonFungibleItemClick = { _, _ -> }
+                    onNonFungibleItemClick = { _, _ -> },
+                    onNFTsViewModeClick = {}
                 ),
                 onInfoClick = {}
             )
