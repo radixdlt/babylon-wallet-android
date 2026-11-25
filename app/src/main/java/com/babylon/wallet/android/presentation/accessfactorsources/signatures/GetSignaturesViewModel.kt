@@ -23,18 +23,15 @@ import com.radixdlt.sargon.FactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.FactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.NeglectFactorReason
 import com.radixdlt.sargon.NeglectedFactor
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PerFactorOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfSubintentHash
 import com.radixdlt.sargon.PerFactorOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -89,10 +86,9 @@ class GetSignaturesViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        getProfileUseCase.flow.map { it.currentNetwork?.id == NetworkId.STOKENET }
-            .onEach { isOnStokenet ->
-                _state.update { state -> state.copy(isMfaEnabled = isOnStokenet) }
-            }.launchIn(viewModelScope)
+        // MFA is disabled on every network for now, so `isMfaEnabled` stays `false`: a factor can't be skipped, only
+        // the signing rejected. Signing with the MFA signing keys, e.g. a shared account's pre-authorization, isn't
+        // affected.
     }
 
     private suspend fun onAccess(factorSource: AccessedFactorSource): Result<AccessOutcome> = when (factorSource) {

@@ -60,8 +60,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 97
-        versionName "1.22.3"
+        versionCode 98
+        versionName "1.23.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"

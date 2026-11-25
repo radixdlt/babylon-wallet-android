@@ -492,10 +492,15 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     private suspend fun ExecutionSummary.addressesOfAccountsRequiringAcRecovery(): Set<AccountAddress> {
-        val acRecoveryClassification = detailedClassification as? DetailedManifestClass.AccessControllerRecovery
-        return acRecoveryClassification?.let { classification ->
+        // A recovery, timed or not, may pay its fee from the access controller's recovery fee vault.
+        val acAddresses = when (val classification = detailedClassification) {
+            is DetailedManifestClass.AccessControllerRecovery -> classification.acAddresses
+            is DetailedManifestClass.AccessControllerTimedRecovery -> classification.acAddresses
+            else -> null
+        }
+        return acAddresses?.let { addresses ->
             sargonOsManager.callSafely(dispatcher) {
-                classification.acAddresses.mapNotNull { acAddress ->
+                addresses.mapNotNull { acAddress ->
                     (entityByAccessControllerAddress(acAddress) as? AccountOrPersona.AccountEntity)?.v1?.address
                 }
             }.onFailure { throwable ->

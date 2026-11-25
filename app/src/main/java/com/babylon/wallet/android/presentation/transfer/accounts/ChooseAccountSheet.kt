@@ -86,6 +86,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.radixdlt.sargon.AddressBookEntryTarget
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressBookEntry
@@ -93,6 +94,7 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.sargon.accountAddressOrNull
+import rdx.works.core.sargon.addressOrNull
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -569,11 +571,13 @@ private fun AddressBookEntrySelectionRow(
             )
         }
 
-        ActionableAddressView(
-            address = entry.address,
-            textStyle = RadixTheme.typography.body2Regular,
-            textColor = RadixTheme.colors.textSecondary
-        )
+        entry.addressOrNull?.let { address ->
+            ActionableAddressView(
+                address = address,
+                textStyle = RadixTheme.typography.body2Regular,
+                textColor = RadixTheme.colors.textSecondary
+            )
+        }
 
         entry.note?.takeIf { it.isNotBlank() }?.let { note ->
             Text(
@@ -590,7 +594,7 @@ private fun AddressBookEntrySelectionRow(
 private fun ChooseAccounts.AddAddressBookInput.toAddressBookEntryFormUiState() = AddressBookEntryFormUiState(
     titleMode = AddressBookEntryFormUiState.TitleMode.Add,
     address = address.string,
-    addressToShow = address.asGeneral(),
+    addressToShow = AddressBookEntryTarget.GlobalAddress(address.asGeneral()),
     isAddressEditable = false,
     isAddressScannerEnabled = false,
     hasAddressError = false,

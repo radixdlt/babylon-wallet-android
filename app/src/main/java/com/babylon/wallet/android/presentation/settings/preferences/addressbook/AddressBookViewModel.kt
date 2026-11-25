@@ -7,9 +7,12 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressBookEntry
+import com.radixdlt.sargon.AddressBookEntryTarget
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.networkId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -19,6 +22,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.rawString
 import rdx.works.core.sargon.sortedForDisplay
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.addressbook.AddAddressBookEntryUseCase
@@ -68,7 +72,7 @@ class AddressBookViewModel @Inject constructor(
             currentState.copy(
                 formInput = State.FormInput(
                     mode = State.FormInput.Mode.Edit(entry),
-                    address = entry.address.string,
+                    address = entry.target.rawString,
                     name = entry.name.value,
                     note = entry.note.orEmpty()
                 )
@@ -93,7 +97,7 @@ class AddressBookViewModel @Inject constructor(
 
         viewModelScope.launch {
             runCatching {
-                deleteAddressBookEntryUseCase(entry.address)
+                deleteAddressBookEntryUseCase(entry.target)
             }.onFailure {
                 onError(it)
             }.onSuccess { deleted ->
@@ -143,12 +147,13 @@ class AddressBookViewModel @Inject constructor(
         viewModelScope.launch {
             updateFormInput { it.copy(isSaving = true) }
 
-            val address = input.addressToSave ?: return@launch
+            val target = input.addressToSave ?: return@launch
             val name = DisplayName(input.trimmedName)
             val note = input.trimmedNote
 
             if (input.mode is State.FormInput.Mode.Add) {
                 val ownAddresses = getProfileUseCase().activeAccountsOnCurrentNetwork.map { it.address }
+                val address = (target as? AddressBookEntryTarget.GlobalAddress)?.value
                 if ((address as? Address.Account)?.v1 in ownAddresses) {
                     updateFormInput { it.copy(isSaving = false) }
                     _state.update { currentState ->
@@ -160,8 +165,8 @@ class AddressBookViewModel @Inject constructor(
 
             val saveResult = runCatching {
                 when (input.mode) {
-                    is State.FormInput.Mode.Add -> addAddressBookEntryUseCase(address, name, note)
-                    is State.FormInput.Mode.Edit -> updateAddressBookEntryUseCase(address, name, note)
+                    is State.FormInput.Mode.Add -> addAddressBookEntryUseCase(target, name, note)
+                    is State.FormInput.Mode.Edit -> updateAddressBookEntryUseCase(target, name, note)
                 }
             }
 
@@ -260,17 +265,23 @@ class AddressBookViewModel @Inject constructor(
             val trimmedNote: String?
                 get() = note.trim().takeIf { it.isNotEmpty() }
 
-            val validatedAddress: Address?
+            /** What the typed text names: an address, or a non-fungible such as the signature resource of someone's key. */
+            val validatedAddress: AddressBookEntryTarget?
                 get() = when (mode) {
                     is Mode.Add -> Address.validatedOnNetworkOrNull(
                         validating = address.trim().lowercase(),
                         networkId = mode.networkId
-                    )
+                    )?.let { AddressBookEntryTarget.GlobalAddress(it) } ?: runCatching {
+                        // A non-fungible's local id may be case sensitive, so it's taken as typed.
+                        NonFungibleGlobalId.init(address.trim())
+                    }.getOrNull()?.takeIf { it.resourceAddress.networkId == mode.networkId }?.let {
+                        AddressBookEntryTarget.NonFungible(it)
+                    }
 
-                    is Mode.Edit -> mode.entry.address
+                    is Mode.Edit -> mode.entry.target
                 }
 
-            val addressToSave: Address?
+            val addressToSave: AddressBookEntryTarget?
                 get() = validatedAddress
 
             val isAddressEditable: Boolean

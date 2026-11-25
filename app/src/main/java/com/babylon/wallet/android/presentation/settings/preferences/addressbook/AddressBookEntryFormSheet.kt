@@ -40,12 +40,13 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressBookEntryTarget
 import kotlinx.coroutines.launch
 
 data class AddressBookEntryFormUiState(
     val titleMode: TitleMode,
     val address: String,
-    val addressToShow: Address? = null,
+    val addressToShow: AddressBookEntryTarget? = null,
     val isAddressEditable: Boolean,
     val isAddressScannerEnabled: Boolean = true,
     val hasAddressError: Boolean = false,
@@ -190,15 +191,27 @@ fun AddressBookEntryFormSheet(
                                 }
                             )
                         } else {
-                            state.addressToShow?.let { address ->
-                                ActionableAddressView(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                    address = address,
+                            val addressModifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            when (val target = state.addressToShow) {
+                                is AddressBookEntryTarget.GlobalAddress -> ActionableAddressView(
+                                    modifier = addressModifier,
+                                    address = target.value,
                                     textStyle = RadixTheme.typography.body2Regular,
                                     textColor = RadixTheme.colors.textSecondary
                                 )
+
+                                // e.g. the signature resource of someone's key
+                                is AddressBookEntryTarget.NonFungible -> ActionableAddressView(
+                                    modifier = addressModifier,
+                                    globalId = target.value,
+                                    showOnlyLocalId = false,
+                                    textStyle = RadixTheme.typography.body2Regular,
+                                    textColor = RadixTheme.colors.textSecondary
+                                )
+
+                                null -> Unit
                             }
                         }
 

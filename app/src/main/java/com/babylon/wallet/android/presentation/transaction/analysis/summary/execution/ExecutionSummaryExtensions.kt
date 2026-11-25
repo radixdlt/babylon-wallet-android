@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.radixdlt.sargon.AccessControllerAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
@@ -473,8 +474,56 @@ private fun ExecutionSummary.resolveAccounts(
 }
 
 val ExecutionSummary.recoveryOrConfirmationRoleSignatureCount
-    get() = if (detailedClassification is DetailedManifestClass.AccessControllerRecovery) {
+    get() = if (detailedClassification?.isAccessControllerOperation == true) {
         1
     } else {
         0
+    }
+
+/** The operations signed with an access controller's roles, as a pre-authorization may make them. */
+val DetailedManifestClass.isAccessControllerOperation: Boolean
+    get() = when (this) {
+        is DetailedManifestClass.AccessControllerRecovery,
+        is DetailedManifestClass.AccessControllerTimedRecovery,
+        is DetailedManifestClass.AccessControllerConfirmRecovery,
+        is DetailedManifestClass.AccessControllerCancelRecovery,
+        is DetailedManifestClass.AccessControllerPrimaryRoleLock -> true
+
+        // Listed one by one, so that a new class has to be decided on here.
+        DetailedManifestClass.General,
+        is DetailedManifestClass.Transfer,
+        is DetailedManifestClass.ValidatorClaim,
+        is DetailedManifestClass.ValidatorStake,
+        is DetailedManifestClass.ValidatorUnstake,
+        is DetailedManifestClass.AccountDepositSettingsUpdate,
+        is DetailedManifestClass.PoolContribution,
+        is DetailedManifestClass.PoolRedemption,
+        is DetailedManifestClass.DeleteAccounts,
+        is DetailedManifestClass.SecurifyEntity,
+        is DetailedManifestClass.SecurifiedEntityCreation,
+        is DetailedManifestClass.AccessControllerRecoveryFee -> false
+    }
+
+/** The access controllers an access controller operation, or a recovery fee transfer, calls. */
+val DetailedManifestClass.accessControllerAddresses: List<AccessControllerAddress>
+    get() = when (this) {
+        is DetailedManifestClass.AccessControllerRecovery -> acAddresses
+        is DetailedManifestClass.AccessControllerTimedRecovery -> acAddresses
+        is DetailedManifestClass.AccessControllerConfirmRecovery -> acAddresses
+        is DetailedManifestClass.AccessControllerCancelRecovery -> acAddresses
+        is DetailedManifestClass.AccessControllerPrimaryRoleLock -> acAddresses
+        is DetailedManifestClass.AccessControllerRecoveryFee -> acAddresses
+
+        // Listed one by one, so that a new class has to be decided on here.
+        DetailedManifestClass.General,
+        is DetailedManifestClass.Transfer,
+        is DetailedManifestClass.ValidatorClaim,
+        is DetailedManifestClass.ValidatorStake,
+        is DetailedManifestClass.ValidatorUnstake,
+        is DetailedManifestClass.AccountDepositSettingsUpdate,
+        is DetailedManifestClass.PoolContribution,
+        is DetailedManifestClass.PoolRedemption,
+        is DetailedManifestClass.DeleteAccounts,
+        is DetailedManifestClass.SecurifyEntity,
+        is DetailedManifestClass.SecurifiedEntityCreation -> emptyList()
     }

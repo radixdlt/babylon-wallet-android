@@ -19,9 +19,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val validatorUnstakeProcessor: ValidatorUnstakeProcessor,
     private val accountDeletionProcessor: AccountDeletionProcessor,
     private val securifyEntityProcessor: SecurifyEntityProcessor,
-    private val initiateAccessControllerRecoveryProcessor: InitiateAccessControllerRecoveryProcessor,
-    private val confirmAccessControllerRecoveryProcessor: ConfirmAccessControllerRecoveryProcessor,
-    private val stopAccessControllerRecoveryProcessor: StopAccessControllerRecoveryProcessor,
+    private val accessControllerOperationProcessor: AccessControllerOperationProcessor,
 ) : SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
@@ -42,18 +40,16 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             )
             is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.SecurifyEntity -> securifyEntityProcessor.process(executionSummary, manifestClass)
-            is DetailedManifestClass.AccessControllerConfirmTimedRecovery -> confirmAccessControllerRecoveryProcessor.process(
-                executionSummary,
+            is DetailedManifestClass.SecurifiedEntityCreation,
+            is DetailedManifestClass.AccessControllerRecovery,
+            is DetailedManifestClass.AccessControllerTimedRecovery,
+            is DetailedManifestClass.AccessControllerConfirmRecovery,
+            is DetailedManifestClass.AccessControllerCancelRecovery,
+            is DetailedManifestClass.AccessControllerPrimaryRoleLock,
+            is DetailedManifestClass.AccessControllerRecoveryFee -> accessControllerOperationProcessor.process(
+                summary,
                 manifestClass
-            )
-            is DetailedManifestClass.AccessControllerRecovery -> initiateAccessControllerRecoveryProcessor.process(
-                executionSummary,
-                manifestClass
-            )
-            is DetailedManifestClass.AccessControllerStopTimedRecovery -> stopAccessControllerRecoveryProcessor.process(
-                executionSummary,
-                manifestClass
-            )
+            ) ?: PreviewType.NonConforming
         }
     }
 }

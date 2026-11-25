@@ -1,6 +1,6 @@
 package rdx.works.profile.domain.addressbook
 
-import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressBookEntryTarget
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,11 +14,11 @@ class AddAddressBookEntryUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        address: Address,
+        target: AddressBookEntryTarget,
         name: DisplayName,
         note: String?
     ): Boolean = withContext(defaultDispatcher) {
-        sargonOsManager.sargonOs.addAddressBookEntry(address, name, note)
+        sargonOsManager.sargonOs.addAddressBookEntry(target, name, note)
         true
     }
 }

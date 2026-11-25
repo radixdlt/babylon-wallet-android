@@ -39,6 +39,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
+import com.radixdlt.sargon.AddressBookEntryTarget
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressBookEntry
 
@@ -236,11 +237,22 @@ private fun AddressBookEntryRow(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                ActionableAddressView(
-                    address = entry.address,
-                    textStyle = RadixTheme.typography.body2Regular,
-                    textColor = RadixTheme.colors.textSecondary
-                )
+                when (val target = entry.target) {
+                    is AddressBookEntryTarget.GlobalAddress -> ActionableAddressView(
+                        address = target.value,
+                        textStyle = RadixTheme.typography.body2Regular,
+                        textColor = RadixTheme.colors.textSecondary
+                    )
+
+                    // e.g. the signature resource of someone's key
+                    is AddressBookEntryTarget.NonFungible -> ActionableAddressView(
+                        globalId = target.value,
+                        showOnlyLocalId = false,
+                        textStyle = RadixTheme.typography.body2Regular,
+                        textColor = RadixTheme.colors.textSecondary,
+                        isSingleLine = true
+                    )
+                }
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {

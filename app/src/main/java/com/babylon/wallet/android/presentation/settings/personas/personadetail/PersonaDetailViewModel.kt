@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCa
 import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EntitySecurityState
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,14 +26,12 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
-import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
@@ -122,10 +119,7 @@ class PersonaDetailViewModel @Inject constructor(
             }
         }
 
-        getProfileUseCase.flow.map { it.currentNetwork?.id == NetworkId.STOKENET }
-            .onEach { isOnStokenet ->
-                _state.update { state -> state.copy(isMfaEnabled = isOnStokenet) }
-            }.launchIn(viewModelScope)
+        // MFA (applying a shield) is disabled on every network for now, so `isMfaEnabled` keeps its default `false`.
     }
 
     override fun initialState(): State {
