@@ -219,14 +219,20 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
         return when (summary) {
             is Summary.FromExecution -> when (summary.manifest) {
-                is SummarizedManifest.Subintent -> signAndSubmit(subintentManifest = summary.manifest.manifest)
+                is SummarizedManifest.Subintent -> signAndSubmit(
+                    subintentManifest = summary.manifest.manifest,
+                    executionSummary = summary.summary
+                )
                 is SummarizedManifest.Transaction -> signAndSubmit(
                     transactionManifest = summary.manifest.manifest,
                     executionSummary = summary.summary
                 )
             }
 
-            is Summary.FromStaticAnalysis -> signAndSubmit(subintentManifest = summary.manifest.manifest)
+            is Summary.FromStaticAnalysis -> signAndSubmit(
+                subintentManifest = summary.manifest.manifest,
+                executionSummary = null
+            )
         }
     }
 
@@ -306,7 +312,10 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }.toUnitResult()
     }
 
-    private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<Unit> {
+    private suspend fun signAndSubmit(
+        subintentManifest: SubintentManifest,
+        executionSummary: ExecutionSummary?
+    ): Result<Unit> {
         val transactionRequest = data.value.request
         val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.PreAuthorized
             ?: error("Wrong kind: ${transactionRequest.kind}")
@@ -315,7 +324,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             manifest = subintentManifest,
             message = transactionRequest.unvalidatedManifestData.plainMessage,
             expiration = transactionRequestKind.expiration,
-            header = transactionRequestKind.header
+            header = transactionRequestKind.header,
+            executionSummary = executionSummary
         ).mapCatching { signedSubintent ->
             // Respond to dApp or throw an error if it fails, preventing the transaction status polling
             val expiration = respondToIncomingRequestUseCase.respondWithSuccessSubintent(

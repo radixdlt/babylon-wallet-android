@@ -5,6 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.DropdownMenu
@@ -94,7 +98,8 @@ fun ActionableAddressView(
     showOnlyLocalId: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
-    iconColor: Color = textColor
+    iconColor: Color = textColor,
+    isSingleLine: Boolean = false
 ) {
     val actionableAddress by ActionableAddress.remember(
         globalId = globalId,
@@ -107,7 +112,8 @@ fun ActionableAddressView(
         address = actionableAddress,
         textStyle = textStyle,
         textColor = textColor,
-        iconColor = iconColor
+        iconColor = iconColor,
+        isSingleLine = isSingleLine
     )
 }
 
@@ -142,22 +148,49 @@ private fun ActionableAddressView(
     address: ActionableAddress?,
     textStyle: TextStyle,
     textColor: Color,
-    iconColor: Color
+    iconColor: Color,
+    isSingleLine: Boolean = false
 ) {
     if (address != null) {
         Box(modifier = modifier) {
             val dependenciesProvider = LocalActionableAddressViewEntryPoint.current
             val coroutineScope = rememberCoroutineScope()
-
-            Text(
-                modifier = Modifier.throttleClickable {
-                    when (val action = address.action) {
-                        is ActionableAddress.Action.DropDown -> action.isExpanded.value = true
-                        is ActionableAddress.Action.Modal -> coroutineScope.launch {
-                            dependenciesProvider.appEventBus().sendEvent(AppEvent.AddressDetails(address))
-                        }
+            val onClick: () -> Unit = {
+                when (val action = address.action) {
+                    is ActionableAddress.Action.DropDown -> action.isExpanded.value = true
+                    is ActionableAddress.Action.Modal -> coroutineScope.launch {
+                        dependenciesProvider.appEventBus().sendEvent(AppEvent.AddressDetails(address))
                     }
-                },
+                }
+            }
+
+            if (isSingleLine) {
+                // A long id, e.g. of a key, cut off in the middle, so that both its resource and the end of its local
+                // id stay readable, keeping its icon at the end.
+                Row(
+                    modifier = Modifier.throttleClickable(onClick = onClick),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.weight(1f, fill = false),
+                        text = address.displayable,
+                        color = textColor,
+                        maxLines = 1,
+                        style = textStyle,
+                        overflow = TextOverflow.MiddleEllipsis
+                    )
+                    Icon(
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .size(with(LocalDensity.current) { textStyle.fontSize.toDp() }),
+                        painter = address.icon(),
+                        contentDescription = address.contentDescription(),
+                        tint = iconColor
+                    )
+                }
+            } else {
+                Text(
+                modifier = Modifier.throttleClickable(onClick = onClick),
                 text = buildAnnotatedString {
                     append(address.displayable)
                     append(" ")
@@ -179,6 +212,7 @@ private fun ActionableAddressView(
                     }
                 )
             )
+            }
 
             (address.action as? ActionableAddress.Action.DropDown)?.let { dropDownAction ->
                 DropDown(dropDownAction, address)

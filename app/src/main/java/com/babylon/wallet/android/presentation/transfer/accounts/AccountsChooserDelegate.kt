@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.radixdlt.sargon.AddressBookEntryTarget
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -232,7 +233,7 @@ class AccountsChooserDelegate @Inject constructor(
 
         runCatching {
             addAddressBookEntryUseCase(
-                address = input.address.asGeneral(),
+                target = AddressBookEntryTarget.GlobalAddress(input.address.asGeneral()),
                 name = DisplayName(input.trimmedName),
                 note = input.trimmedNote
             )

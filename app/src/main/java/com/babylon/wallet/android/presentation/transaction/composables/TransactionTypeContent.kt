@@ -59,6 +59,20 @@ fun TransactionTypeContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
 
+        if (previewType.controlOperations.isNotEmpty()) {
+            ControlOperationsContent(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                operations = previewType.controlOperations
+            )
+        }
+
+        // An access controller operation that moves nothing has no transfers to show, so leaves out their space too.
+        val hasTransfers = previewType.from.isNotEmpty() || previewType.to.isNotEmpty() ||
+            !previewType.involvedComponents.isEmpty
+        if (previewType.controlOperations.isNotEmpty() && hasTransfers) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        }
+
         WithdrawAccountContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
             from = previewType.from.toPersistentList(),
@@ -68,33 +82,35 @@ fun TransactionTypeContent(
             onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
         )
 
-        Column(
-            modifier = Modifier
-                .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
-                .padding(top = RadixTheme.dimensions.paddingLarge)
-        ) {
-            InvolvedComponentsContent(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                involvedComponents = previewType.involvedComponents,
-                onDAppClick = onDAppClick,
-                onUnknownComponentsClick = onUnknownComponentsClick,
-                onInfoClick = onInfoClick
-            )
-
-            DepositAccountContent(
+        if (previewType.controlOperations.isEmpty() || hasTransfers) {
+            Column(
                 modifier = Modifier
-                    .padding(
-                        start = RadixTheme.dimensions.paddingDefault,
-                        end = RadixTheme.dimensions.paddingDefault
-                    )
-                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                to = previewType.to.toPersistentList(),
-                hiddenResourceIds = state.hiddenResourceIds,
-                onEditGuaranteesClick = onEditGuaranteesClick,
-                onTransferableFungibleClick = onTransferableFungibleClick,
-                onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
-                onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
-            )
+                    .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
+                    .padding(top = RadixTheme.dimensions.paddingLarge)
+            ) {
+                InvolvedComponentsContent(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    involvedComponents = previewType.involvedComponents,
+                    onDAppClick = onDAppClick,
+                    onUnknownComponentsClick = onUnknownComponentsClick,
+                    onInfoClick = onInfoClick
+                )
+
+                DepositAccountContent(
+                    modifier = Modifier
+                        .padding(
+                            start = RadixTheme.dimensions.paddingDefault,
+                            end = RadixTheme.dimensions.paddingDefault
+                        )
+                        .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+                    to = previewType.to.toPersistentList(),
+                    hiddenResourceIds = state.hiddenResourceIds,
+                    onEditGuaranteesClick = onEditGuaranteesClick,
+                    onTransferableFungibleClick = onTransferableFungibleClick,
+                    onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                    onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
+                )
+            }
         }
 
         if (state.isPreAuthorization) {

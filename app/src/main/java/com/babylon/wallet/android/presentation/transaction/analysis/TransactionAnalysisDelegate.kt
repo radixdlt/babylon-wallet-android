@@ -146,6 +146,8 @@ class TransactionAnalysisDelegate @Inject constructor(
             is CommonException.ReservedInstructionsNotAllowedInManifest -> {
                 RadixWalletException.DappRequestException.UnacceptableManifest(cause = error)
             }
+            // Raised by the analysis itself, e.g. for access controller operations it can't show in full.
+            is RadixWalletException.DappRequestException.UnacceptableManifest -> error
             is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
                 RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits
             }

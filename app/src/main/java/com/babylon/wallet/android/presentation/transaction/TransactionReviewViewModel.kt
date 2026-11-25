@@ -25,6 +25,7 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesD
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.model.ControlOperation
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
@@ -550,7 +551,8 @@ sealed interface PreviewType {
         val to: List<AccountWithTransferables>,
         val involvedComponents: InvolvedComponents,
         override val badges: List<Badge>,
-        private val newlyCreatedGlobalIds: List<NonFungibleGlobalId> = emptyList()
+        private val newlyCreatedGlobalIds: List<NonFungibleGlobalId> = emptyList(),
+        val controlOperations: List<ControlOperation> = emptyList()
     ) : PreviewType {
 
         val newlyCreatedResources: List<Resource>

@@ -1,6 +1,6 @@
 package rdx.works.profile.domain.addressbook
 
-import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressBookEntryTarget
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -12,7 +12,7 @@ class DeleteAddressBookEntryUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend operator fun invoke(address: Address): Boolean = withContext(defaultDispatcher) {
-        sargonOsManager.sargonOs.deleteAddressBookEntry(address)
+    suspend operator fun invoke(target: AddressBookEntryTarget): Boolean = withContext(defaultDispatcher) {
+        sargonOsManager.sargonOs.deleteAddressBookEntry(target)
     }
 }

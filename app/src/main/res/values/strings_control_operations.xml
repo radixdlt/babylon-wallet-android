@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The review of access controller operations on accounts the user shares, e.g. a DAO's account. -->
+<resources>
+    <string name="controlOperation_heading_updateAccountControl">Update account control</string>
+    <string name="controlOperation_heading_recoveryFees">Recovery fees</string>
+    <string name="controlOperation_heading_createAccount">Create account</string>
+    <string name="controlOperation_heading_createPersona">Create persona</string>
+    <string name="controlOperation_newAccount">New Account</string>
+    <string name="controlOperation_newPersona">New Persona</string>
+
+    <string name="controlOperation_rules_new">New rules</string>
+    <string name="controlOperation_rules_pending">Pending rules</string>
+    <string name="controlOperation_rules_cancelled">Cancelled rules</string>
+    <string name="controlOperation_rules_rules">Rules</string>
+
+    <string name="controlOperation_effect_applied">Applied once submitted</string>
+    <string name="controlOperation_effect_timed">Timed update, can be completed after %s</string>
+    <string name="controlOperation_effect_timedNoDelay">Timed update; its delay couldn\'t be read</string>
+    <string name="controlOperation_effect_currentDelay">Timed recovery stays at %s</string>
+    <string name="controlOperation_effect_noCurrentDelay">No timed recovery, or its delay couldn\'t be read</string>
+    <string name="controlOperation_effect_proposedByPrimary">Proposed by the Primary Role</string>
+    <string name="controlOperation_effect_proposedByRecovery">Proposed by the Recovery Role</string>
+    <string name="controlOperation_effect_locksPrimary">Locks Primary Role</string>
+    <string name="controlOperation_effect_unlocksPrimary">Unlocks Primary Role</string>
+    <string name="controlOperation_effect_confirms">Confirms the pending update</string>
+    <string name="controlOperation_effect_completesTimed">Completes the timed update</string>
+    <string name="controlOperation_effect_stopsTimer">Stops the timer; the update can still be confirmed</string>
+    <string name="controlOperation_effect_stopsTimerOnly">Stops the timer</string>
+    <string name="controlOperation_effect_cancelsPrimary">Cancels the Primary Role\'s pending update</string>
+    <string name="controlOperation_effect_cancelsRecovery">Cancels the Recovery Role\'s pending update</string>
+    <string name="controlOperation_effect_created">Controlled by the rules below</string>
+    <string name="controlOperation_effect_timedRecoveryDelay">Timed recovery after %s</string>
+    <string name="controlOperation_effect_addsToRecoveryFee">Adds %s XRD to the recovery fee vault</string>
+    <string name="controlOperation_effect_withdrawsFromRecoveryFee">Withdraws %s XRD from the recovery fee vault</string>
+
+    <!-- A period too long for the shield setup's units, spelled out in parts joined by ", " -->
+    <string name="controlOperation_period_day">1 day</string>
+    <string name="controlOperation_period_days">%d days</string>
+    <string name="controlOperation_period_hour">1 hour</string>
+    <string name="controlOperation_period_hours">%d hours</string>
+    <string name="controlOperation_period_minute">1 minute</string>
+    <string name="controlOperation_period_minutes">%d minutes</string>
+
+    <string name="controlOperation_role_primary">Primary Role</string>
+    <string name="controlOperation_role_recovery">Recovery Role</string>
+    <string name="controlOperation_role_confirmation">Confirmation Role</string>
+
+    <string name="controlOperation_requirement_anyone">Anyone</string>
+    <string name="controlOperation_requirement_anyoneSubtitle">No factor needed</string>
+    <string name="controlOperation_requirement_noOne">No one</string>
+    <string name="controlOperation_requirement_noOneSubtitle">Can never be used</string>
+    <string name="controlOperation_requirement_anyOfThese">Any of these</string>
+    <string name="controlOperation_requirement_allOfThese">All of these</string>
+    <string name="controlOperation_requirement_countOf">Any %1$d of these %2$d</string>
+    <string name="controlOperation_requirement_or">OR</string>
+    <string name="controlOperation_requirement_and">AND</string>
+    <string name="controlOperation_requirement_oneOfOptions">One of %d options</string>
+    <string name="controlOperation_requirement_allOfParts">All of %d parts</string>
+    <string name="controlOperation_requirement_tapToReview">Tap to review</string>
+    <string name="controlOperation_requirement_anyAmount">Any amount</string>
+    <string name="controlOperation_requirement_anyNft">Any NFT of this collection</string>
+    <string name="controlOperation_badge_unknownKey">Unknown key</string>
+    <string name="controlOperation_badge_notInAddressBook">Not in your address book</string>
+</resources>

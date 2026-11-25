@@ -2,8 +2,9 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.accessControllerAddresses
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.isAccessControllerOperation
 import com.radixdlt.sargon.AddressOfAccountOrPersona
-import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
@@ -34,8 +35,8 @@ class Analysis private constructor(
                     it.address == address.v1
                 }?.asProfileEntity()
             }
-        } + (summary.detailedManifestClass as? DetailedManifestClass.AccessControllerRecovery)?.let { classification ->
-            classification.acAddresses.mapNotNull { acAddress ->
+        } + summary.detailedManifestClass?.takeIf { it.isAccessControllerOperation }?.let { classification ->
+            classification.accessControllerAddresses.mapNotNull { acAddress ->
                 profile.activeAccountsOnCurrentNetwork.find { account ->
                     account.securityStateAccessControllerAddress == acAddress
                 }?.asProfileEntity() ?: profile.activePersonasOnCurrentNetwork.find { persona ->

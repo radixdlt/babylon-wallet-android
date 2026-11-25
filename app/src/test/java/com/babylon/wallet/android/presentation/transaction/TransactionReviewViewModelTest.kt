@@ -30,16 +30,14 @@ import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
 import com.babylon.wallet.android.domain.utils.AccessControllerStateDetailsObserver
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.InitiateAccessControllerRecoveryProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccessControllerOperationProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDeletionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDepositSettingsProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ConfirmAccessControllerRecoveryProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.SecurifyEntityProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.StopAccessControllerRecoveryProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
@@ -190,14 +188,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getProfileUseCase = getProfileUseCase,
             sargonOsManager = sargonOsManager
         ),
-        initiateAccessControllerRecoveryProcessor = InitiateAccessControllerRecoveryProcessor(
-            sargonOsManager = sargonOsManager
-        ),
-        confirmAccessControllerRecoveryProcessor = ConfirmAccessControllerRecoveryProcessor(
-            sargonOsManager = sargonOsManager
-        ),
-        stopAccessControllerRecoveryProcessor = StopAccessControllerRecoveryProcessor(
-            sargonOsManager = sargonOsManager
+        accessControllerOperationProcessor = AccessControllerOperationProcessor(
+            sargonOsManager = sargonOsManager,
+            generalTransferProcessor = GeneralTransferProcessor(
+                resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
+                getProfileUseCase = getProfileUseCase,
+                resolveComponentAddressesUseCase = resolveComponentAddressesUseCase
+            ),
+            getProfileUseCase = getProfileUseCase
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
