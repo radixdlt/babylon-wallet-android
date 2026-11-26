@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
+import com.babylon.wallet.android.presentation.ui.composables.assets.NFTsViewMode
 import com.radixdlt.sargon.Account
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
@@ -86,6 +87,10 @@ class AssetsChooserDelegate @Inject constructor(
 
     fun onCollectionToggle(collectionId: String) {
         updateSheetState { it.copy(assetsViewState = it.assetsViewState.onCollectionToggle(collectionId)) }
+    }
+
+    fun onNFTsViewModeSelected(viewMode: NFTsViewMode) {
+        updateSheetState { it.copy(assetsViewState = it.assetsViewState.copy(nftsViewMode = viewMode)) }
     }
 
     fun onAssetSelectionChanged(asset: SpendingAsset, isChecked: Boolean) {

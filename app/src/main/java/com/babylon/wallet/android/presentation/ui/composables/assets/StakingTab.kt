@@ -833,7 +833,8 @@ fun StakingTabPreview() {
                     onNextNFtsPageRequest = {},
                     onFungibleClick = {},
                     onPoolUnitClick = {},
-                    onNonFungibleItemClick = { _, _ -> }
+                    onNonFungibleItemClick = { _, _ -> },
+                    onNFTsViewModeClick = {}
                 ),
                 onInfoClick = {}
             )

@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.timedrecovery.remainingTime
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.composables.assets.NFTsViewMode
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.presentation.ui.model.shared.TimedRecoveryDisplayData
 import com.babylon.wallet.android.utils.AppEvent.FixSecurityIssue.ImportedMnemonic
@@ -370,6 +371,10 @@ class AccountViewModel @Inject constructor(
 
     fun onCollectionToggle(collectionId: String) {
         _state.update { it.copy(assetsViewState = it.assetsViewState.onCollectionToggle(collectionId)) }
+    }
+
+    fun onNFTsViewModeSelected(viewMode: NFTsViewMode) {
+        _state.update { it.copy(assetsViewState = it.assetsViewState.copy(nftsViewMode = viewMode)) }
     }
 
     fun onLockerDepositClick(deposit: AccountLockerDeposit) {

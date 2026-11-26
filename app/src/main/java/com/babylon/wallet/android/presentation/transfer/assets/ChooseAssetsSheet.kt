@@ -25,6 +25,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
+import com.babylon.wallet.android.presentation.ui.composables.assets.NFTsViewMode
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import rdx.works.core.domain.resources.Resource
 
@@ -35,6 +36,7 @@ fun ChooseAssetsSheet(
     state: ChooseAssets,
     onTabClick: (AssetsTab) -> Unit,
     onCollectionClick: (String) -> Unit,
+    onNFTsViewModeClick: (NFTsViewMode) -> Unit,
     onCloseClick: () -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -125,6 +127,7 @@ fun ChooseAssetsSheet(
                     onStakesRequest = onStakesRequest,
                     onTabClick = onTabClick,
                     onCollectionClick = onCollectionClick,
+                    onNFTsViewModeClick = onNFTsViewModeClick,
                 ),
                 onInfoClick = {
                     onInfoClick(state.assetsViewState.selectedTab.toInfoTag())
@@ -144,6 +147,7 @@ fun ChooseAssetsSheetPreview() {
             ),
             onTabClick = {},
             onCollectionClick = {},
+            onNFTsViewModeClick = {},
             onCloseClick = {},
             onAssetSelectionChanged = { _, _ -> },
             onNextNFtsPageRequest = {},

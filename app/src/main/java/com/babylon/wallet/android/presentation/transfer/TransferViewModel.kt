@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDele
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.babylon.wallet.android.presentation.ui.composables.assets.NFTsViewMode
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressBookEntry
@@ -278,6 +279,8 @@ class TransferViewModel @Inject constructor(
     fun onChooseAssetTabSelected(tab: AssetsTab) = assetsChooserDelegate.onTabSelected(tab)
 
     fun onChooseAssetCollectionToggle(collectionId: String) = assetsChooserDelegate.onCollectionToggle(collectionId)
+
+    fun onChooseAssetNFTsViewModeSelected(viewMode: NFTsViewMode) = assetsChooserDelegate.onNFTsViewModeSelected(viewMode)
 
     fun onAddAssetsClick(targetAccount: TargetAccount) {
         val currentState = state.value
