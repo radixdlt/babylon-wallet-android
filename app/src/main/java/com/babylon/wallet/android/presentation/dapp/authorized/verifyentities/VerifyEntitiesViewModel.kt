@@ -138,6 +138,9 @@ class VerifyEntitiesViewModel @Inject constructor(
                         )
                     )
                 )
+            } else {
+                // Only the persona was requested, so its proof completes the verification.
+                sendEvent(state.value.entitiesVerifiedEvent())
             }
             setSigningInProgress(false)
         }.onFailure {
