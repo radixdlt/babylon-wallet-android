@@ -2,10 +2,14 @@ package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -33,7 +37,16 @@ data class DataChannelWrapper(
         )
     }
 
-    suspend fun sendMessage(message: String): Result<Unit> {
+    // One message at a time on the channel, all its packages together: the connector extension reassembles one
+    // message at a time, so the packages of two messages sent at once interleave and one of them is lost, and a
+    // message left half sent (its sender cancelled after the first package) keeps it from reading later ones.
+    private val sending = Mutex()
+
+    suspend fun sendMessage(message: String): Result<Unit> = sending.withLock {
+        withContext(NonCancellable) { sendChunked(message) }
+    }
+
+    private suspend fun sendChunked(message: String): Result<Unit> {
         return try {
             val listOfPackages = splitMessage(messageInByteArray = message.toByteArray())
             listOfPackages.forEachIndexed { index, packageDto ->
@@ -67,6 +80,9 @@ data class DataChannelWrapper(
     val dataChannelEvents: Flow<DataChannelWrapperEvent>
         get() = webRtcDataChannel
             .eventFlow()
+            // Every package is kept, in order, while a message is processed: the receipt confirmation can wait for the
+            // wallet's own message to be sent, and a full buffer would drop packages (the observer uses trySend).
+            .buffer(Channel.UNLIMITED)
             .transform { dataChannelMessage ->
                 when (dataChannelMessage) {
                     is DataChannelMessage.Message.MetaData -> {
@@ -110,7 +126,6 @@ data class DataChannelWrapper(
                     }
                 }
             }
-            .conflate()
             .transform { dataChannelEvent ->
                 when (dataChannelEvent) {
                     is DataChannelEvent.CompleteMessage -> {
@@ -197,7 +212,7 @@ data class DataChannelWrapper(
             messageId = messageId
         )
         Timber.d("📯 send ReceiveMessageConfirmation ❕ for messageId = $messageId to remote connector ${connectionIdHolder.id} ➡️")
-        return send(packageDto = confirmationDto)
+        return sending.withLock { send(packageDto = confirmationDto) }
     }
 
     // once the incoming message is assembled but not verified send an error to the extension
@@ -206,7 +221,7 @@ data class DataChannelWrapper(
             messageId = messageId
         )
         Timber.d("📯 send sendReceiveMessageError ❗️ or messageId = $messageId to remote connector ${connectionIdHolder.id} ➡️")
-        return send(errorDto)
+        return sending.withLock { send(errorDto) }
     }
 
     private suspend fun send(packageDto: PackageDto): Boolean {
