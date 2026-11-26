@@ -112,6 +112,7 @@ fun TransferScreen(
         onNextNFTsPageRequest = viewModel::onNextNFTsPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
         onTransferSubmit = viewModel::onTransferSubmit,
+        onBadgeRequirementRetry = viewModel::onBadgeRequirementRetry,
         onInfoClick = onInfoClick
     )
 }
@@ -156,6 +157,7 @@ fun TransferContent(
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit,
     onTransferSubmit: () -> Unit,
+    onBadgeRequirementRetry: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -354,6 +356,19 @@ fun TransferContent(
 
                 val isEnabled = remember(state) { state.isSubmitEnabled }
 
+                // Shown once checked: while checking, the send button shows the progress.
+                if (state.badgeRequirementStatus is BadgeRequirementStatus.Success ||
+                    state.badgeRequirementStatus is BadgeRequirementStatus.Error
+                ) {
+                    BadgeRequirementCard(
+                        status = state.badgeRequirementStatus,
+                        onRetry = onBadgeRequirementRetry,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = RadixTheme.dimensions.paddingDefault)
+                    )
+                }
+
                 RadixPrimaryButton(
                     text = stringResource(id = R.string.assetTransfer_sendTransferButton),
                     onClick = onTransferSubmit,
@@ -361,7 +376,7 @@ fun TransferContent(
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
                     enabled = isEnabled,
-                    isLoading = state.isLoadingAccountDepositResourceRules
+                    isLoading = state.isLoadingAccountDepositResourceRules || state.badgeRequirementStatus == BadgeRequirementStatus.Loading
                 )
             }
         }
@@ -469,6 +484,7 @@ fun TransferContentPreview() {
             onNextNFTsPageRequest = {},
             onStakesRequest = {},
             onTransferSubmit = {},
+            onBadgeRequirementRetry = {},
             onInfoClick = {}
         )
     }
