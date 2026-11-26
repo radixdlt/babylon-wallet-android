@@ -97,6 +97,31 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     }
 
     @Test
+    fun `a persona without the data asked for cannot be shared`() = runTest {
+        // More phone numbers than the persona holds: sharing it would fail half way (it used to close the app).
+        every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
+            fields = listOf(
+                RequiredPersonaField(
+                    PersonaDataField.Kind.PhoneNumber,
+                    DappToWalletInteraction.NumberOfValues(
+                        5,
+                        DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
+                    )
+                )
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onSelectPersona(samplePersona)
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.personaListToDisplay.first().selected)
+            assert(!item.continueButtonEnabled)
+        }
+    }
+
+    @Test
     fun `edit click triggers edit action with proper required fields`() = runTest {
         val vm = vm.value
         vm.onEditClick(samplePersona)

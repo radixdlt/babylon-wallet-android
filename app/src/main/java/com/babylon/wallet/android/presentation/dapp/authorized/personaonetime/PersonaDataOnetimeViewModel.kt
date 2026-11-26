@@ -9,12 +9,12 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -40,22 +40,31 @@ class PersonaDataOnetimeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork }.collect { personas ->
-                _state.update { state ->
-                    state.copy(
-                        personaListToDisplay = personas.map {
-                            PersonaUiModel(it, requiredPersonaFields = args.requiredPersonaFields)
-                        }.toImmutableList()
-                    )
-                }
+                // The persona chosen stays chosen when the profile changes (the person added the
+                // missing data, say), and whether it can be shared is decided again.
+                _state.update { state -> state.showing(personas, state.selectedPersonaAddress) }
             }
         }
     }
 
     fun onSelectPersona(persona: Persona) {
-        val updatedPersonas = state.value.personaListToDisplay.map {
-            it.copy(selected = it.persona.address == persona.address)
-        }.toPersistentList()
-        _state.update { it.copy(personaListToDisplay = updatedPersonas, continueButtonEnabled = true) }
+        // Kept even when the list has not loaded yet: it is shown selected once it does.
+        _state.update { state -> state.showing(state.personaListToDisplay.map { it.persona }, persona.address) }
+    }
+
+    /**
+     * The state showing [personas], with the one at [selected] chosen. Only a persona with all the data
+     * asked for can be shared, so Continue is enabled only for one: the others show what is missing.
+     */
+    private fun PersonaDataOnetimeUiState.showing(personas: List<Persona>, selected: IdentityAddress?): PersonaDataOnetimeUiState {
+        val list = personas.map {
+            PersonaUiModel(it, selected = it.address == selected, requiredPersonaFields = args.requiredPersonaFields)
+        }.toImmutableList()
+        return copy(
+            personaListToDisplay = list,
+            selectedPersonaAddress = selected,
+            continueButtonEnabled = list.any { it.selected && it.hasRequiredData }
+        )
     }
 
     fun onCreatePersona() {
@@ -81,6 +90,8 @@ sealed interface PersonaDataOnetimeEvent : OneOffEvent {
 
 data class PersonaDataOnetimeUiState(
     val personaListToDisplay: ImmutableList<PersonaUiModel> = persistentListOf(),
+    // The persona chosen, kept apart from the list: a choice made before the list loads is not lost.
+    val selectedPersonaAddress: IdentityAddress? = null,
     val continueButtonEnabled: Boolean = false,
     val showBack: Boolean = false
 ) : UiState {
