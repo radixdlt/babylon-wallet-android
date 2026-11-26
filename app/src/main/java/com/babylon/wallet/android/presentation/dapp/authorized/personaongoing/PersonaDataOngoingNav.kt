@@ -6,7 +6,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -20,6 +19,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
+import com.babylon.wallet.android.utils.graphEntryWhileAlive
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -97,9 +97,7 @@ fun NavGraphBuilder.personaDataOngoing(
             }
         }
     ) { entry ->
-        val parentEntry = remember(entry) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
-        }
+        val parentEntry = navController.graphEntryWhileAlive(entry, ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH) ?: return@composable
         val sharedVM = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
         PersonaDataOngoingScreen(
             sharedViewModel = sharedVM,

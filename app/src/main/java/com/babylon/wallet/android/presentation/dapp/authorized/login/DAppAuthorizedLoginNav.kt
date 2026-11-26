@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -12,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
+import com.babylon.wallet.android.utils.graphEntryWhileAlive
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 
@@ -61,9 +61,7 @@ fun NavGraphBuilder.dAppLoginAuthorized(
             }
         )
     ) { entry ->
-        val parentEntry = remember(entry) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
-        }
+        val parentEntry = navController.graphEntryWhileAlive(entry, ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH) ?: return@composable
         val vm = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
         DappAuthorizedLoginScreen(
             viewModel = vm,

@@ -5,7 +5,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -15,6 +14,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
+import com.babylon.wallet.android.utils.graphEntryWhileAlive
 
 @VisibleForTesting
 internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
@@ -83,9 +83,7 @@ fun NavGraphBuilder.ongoingAccounts(
             }
         }
     ) { entry ->
-        val parentEntry = remember(entry) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
-        }
+        val parentEntry = navController.graphEntryWhileAlive(entry, ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH) ?: return@composable
         val sharedVM = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
         val numberOfAccounts = checkNotNull(entry.arguments?.getInt(ARG_NUMBER_OF_ACCOUNTS))
         val quantifier = checkNotNull(entry.arguments?.getBoolean(ARG_EXACT_ACCOUNT_COUNT))
