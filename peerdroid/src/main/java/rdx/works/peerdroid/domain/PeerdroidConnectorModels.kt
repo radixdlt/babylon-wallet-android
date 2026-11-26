@@ -41,5 +41,7 @@ internal data class PeerConnectionHolder(
 
 internal data class DataChannelHolder(
     val connectionIdHolder: ConnectionIdHolder,
+    // The connection it belongs to: only that connection ending may take it away.
+    val remoteClientHolder: RemoteClientHolder,
     val dataChannel: DataChannelWrapper
 )
